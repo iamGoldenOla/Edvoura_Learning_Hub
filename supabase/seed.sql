@@ -1,0 +1,2 @@
+-- Reference data is created in migrations.
+-- Add local-only development seed data here when needed.

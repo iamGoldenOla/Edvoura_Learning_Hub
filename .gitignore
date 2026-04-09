@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.DS_Store
+.env
+.env.local
+.env.*.local
+coverage/
+.turbo/
+.pnpm-store/
+.idea/
+.vscode/
+*.log
+tmp/
+
+# Supabase local artifacts
+supabase/.temp/
+supabase/.branches/
+
+# Build outputs
+apps/*/dist/
+packages/*/dist/

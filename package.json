@@ -1,0 +1,21 @@
+{
+  "name": "edvoura-learning-hub",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --filter @edvoura/contracts build && pnpm --filter @edvoura/api build",
+    "dev:api": "pnpm --filter @edvoura/api start:dev",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @edvoura/contracts test && pnpm --filter @edvoura/api test",
+    "test:e2e": "pnpm --filter @edvoura/api test:e2e",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:db:reset": "supabase db reset",
+    "supabase:gen:types": "supabase gen types typescript --local > packages/contracts/src/generated/database.types.ts"
+  }
+}
