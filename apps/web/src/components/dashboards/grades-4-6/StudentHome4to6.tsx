@@ -1,4 +1,7 @@
 import React from 'react';
+import { 
+  Crown, Flame, Star, Rocket, Ruler, Microscope, BookOpen, Laptop, Target, Zap, Library 
+} from 'lucide-react';
 
 interface StudentProps {
   enrollments: any[];
@@ -16,8 +19,8 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
       <div className="bg-slate-900 rounded-3xl p-6 text-white flex flex-col md:flex-row justify-between items-center border-b-4 border-edvoura-gold shadow-xl">
         <div className="flex items-center gap-6">
           <div className="relative">
-            <div className="w-20 h-20 bg-slate-800 rounded-2xl border-2 border-slate-600 flex items-center justify-center text-4xl shadow-inner">
-              👑
+            <div className="w-20 h-20 bg-slate-800 rounded-2xl border-2 border-slate-600 flex items-center justify-center text-yellow-500 shadow-inner">
+              <Crown className="w-10 h-10" />
             </div>
             <div className="absolute -bottom-2 -right-2 bg-edvoura-gold text-edvoura-navy-dark text-xs font-black px-2 py-1 rounded-lg">
               LV 14
@@ -33,13 +36,13 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
         <div className="flex gap-4 mt-6 md:mt-0">
           <div className="bg-slate-800 p-4 rounded-xl text-center border border-slate-700 min-w-24">
             <div className="text-xs text-orange-400 uppercase tracking-widest font-bold mb-1 flex justify-center items-center gap-1">
-              🔥 Streak
+              <Flame className="w-3 h-3" /> Streak
             </div>
             <div className="text-2xl font-black text-white">12 Days</div>
           </div>
           <div className="bg-slate-800 p-4 rounded-xl text-center border border-slate-700 min-w-24">
             <div className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1 flex justify-center items-center gap-1">
-              ⭐ Total XP
+              <Star className="w-3 h-3" /> Total XP
             </div>
             <div className="text-2xl font-black text-white">4,250</div>
           </div>
@@ -53,8 +56,8 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
           
           {/* Live Session Counter */}
           <div className="bg-edvoura-navy text-white rounded-3xl shadow-xl p-8 relative overflow-hidden group">
-            <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-              <svg width="200" height="200" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L22 20H2L12 2Z"></path></svg>
+            <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:scale-110 transition-transform duration-700 text-white">
+              <Rocket className="w-64 h-64" />
             </div>
             
             <div className="flex justify-between items-start mb-6 relative z-10">
@@ -73,8 +76,8 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
                 <span className="bg-white/10 px-3 py-1 rounded-lg">Maths Room</span>
                 <span>Tutor: Dr. Adebayo</span>
               </div>
-              <button className="bg-white text-edvoura-navy font-black text-lg py-4 px-8 rounded-xl hover:bg-slate-100 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                JOIN GOOGLE MEET 🚀
+              <button className="bg-white text-edvoura-navy font-black text-lg py-4 px-8 rounded-xl flex items-center gap-3 hover:bg-slate-100 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                JOIN GOOGLE MEET <Rocket className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -84,8 +87,8 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {['Mathematics', 'Basic Science', 'English', 'Coding'].map((sub, i) => (
               <div key={i} className="bg-white p-4 rounded-2xl border-2 border-slate-100 shadow-sm text-center cursor-pointer hover:border-edvoura-navy hover:shadow-md transition-all">
-                <div className="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-xl mb-3">
-                  {i === 0 ? '📐' : i===1 ? '🔬' : i===2 ? '📚' : '💻'}
+                <div className="w-12 h-12 mx-auto bg-slate-50 rounded-full flex items-center justify-center text-slate-500 mb-3">
+                  {i === 0 ? <Ruler className="w-5 h-5" /> : i===1 ? <Microscope className="w-5 h-5" /> : i===2 ? <BookOpen className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
                 </div>
                 <h4 className="font-bold text-slate-800 text-sm">{sub}</h4>
                 <div className="w-full bg-slate-100 h-1.5 rounded-full mt-3 overflow-hidden">
@@ -103,7 +106,7 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
           <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-edvoura-gold"></div>
             <h2 className="text-lg font-bold flex items-center gap-2 mb-4 text-slate-800">
-              <span className="text-lg">🎯</span> Active Missions
+               <Target className="w-5 h-5 text-red-500" /> Active Missions
             </h2>
             <div className="space-y-3">
               {[1,2,3].map((a, i) => (
@@ -124,12 +127,12 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
           {/* Quick Tools */}
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl p-4 text-white shadow-md cursor-pointer hover:-translate-y-1 transition-transform">
-              <span className="text-2xl block mb-2">⚡</span>
+              <Zap className="w-6 h-6 mb-2" />
               <span className="font-bold text-sm block">Quiz Centre</span>
               <span className="text-xs opacity-80">(Timed)</span>
             </div>
             <div className="bg-gradient-to-br from-teal-400 to-emerald-500 rounded-2xl p-4 text-white shadow-md cursor-pointer hover:-translate-y-1 transition-transform">
-              <span className="text-2xl block mb-2">🗂️</span>
+              <Library className="w-6 h-6 mb-2" />
               <span className="font-bold text-sm block">Flashcards</span>
               <span className="text-xs opacity-80">Self-study</span>
             </div>

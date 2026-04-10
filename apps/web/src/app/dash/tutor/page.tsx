@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, MetricCard } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Video, ClipboardList, FolderUp, UserCheck } from 'lucide-react';
 
 export default function TutorDashboard() {
   return (
@@ -34,7 +35,7 @@ export default function TutorDashboard() {
           <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
             <div className="bg-slate-50 border-b border-slate-100 p-6 flex justify-between items-center">
               <CardTitle className="text-lg flex items-center gap-2">
-                <span>📹</span> Today's Sessions & Conferencing
+                <Video className="w-5 h-5 text-edvoura-navy" /> Today's Sessions & Conferencing
               </CardTitle>
             </div>
             <CardContent className="p-0">
@@ -97,15 +98,15 @@ export default function TutorDashboard() {
               <h3 className="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider">Creation Suite</h3>
               <div className="space-y-2">
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>📋</span> Quiz Builder</span>
+                  <span className="flex items-center gap-3"><ClipboardList className="w-4 h-4 text-slate-400" /> Quiz Builder</span>
                   <span className="text-slate-300 font-bold">→</span>
                 </button>
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>📁</span> Resource Uploader</span>
+                  <span className="flex items-center gap-3"><FolderUp className="w-4 h-4 text-slate-400" /> Resource Uploader</span>
                   <span className="text-slate-300 font-bold">→</span>
                 </button>
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>👔</span> Manage Roster</span>
+                  <span className="flex items-center gap-3"><UserCheck className="w-4 h-4 text-slate-400" /> Manage Roster</span>
                   <span className="text-slate-300 font-bold">→</span>
                 </button>
               </div>

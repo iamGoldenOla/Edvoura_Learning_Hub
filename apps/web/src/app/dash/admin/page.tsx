@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, MetricCard } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Database, CreditCard, Megaphone, Wrench, ShieldCheck, Activity } from 'lucide-react';
 
 export default function AdminDashboard() {
   return (
@@ -9,7 +10,7 @@ export default function AdminDashboard() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-900 rounded-2xl p-8 text-white shadow-xl">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
-            <span className="text-edvoura-gold">⌘</span> Platform Operations
+            <Activity className="text-edvoura-gold w-8 h-8" /> Platform Operations
           </h1>
           <p className="mt-2 text-slate-400 font-medium tracking-wide text-sm">Super Admin Command Center</p>
         </div>
@@ -116,16 +117,16 @@ export default function AdminDashboard() {
               <h3 className="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider">System Administration</h3>
               <div className="space-y-2">
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>🗃️</span> Manage Content Library</span>
+                  <span className="flex items-center gap-3"><Database className="w-4 h-4 text-slate-400" /> Manage Content Library</span>
                 </button>
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>💳</span> Subscription Plans Config</span>
+                  <span className="flex items-center gap-3"><CreditCard className="w-4 h-4 text-slate-400" /> Subscription Plans Config</span>
                 </button>
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>📢</span> Broadcast Notification</span>
+                  <span className="flex items-center gap-3"><Megaphone className="w-4 h-4 text-slate-400" /> Broadcast Notification</span>
                 </button>
                 <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center justify-between shadow-sm">
-                  <span className="flex items-center gap-3"><span>🛠️</span> Support Tickets (3 New)</span>
+                  <span className="flex items-center gap-3"><Wrench className="w-4 h-4 text-slate-400" /> Support Tickets (3 New)</span>
                 </button>
               </div>
             </CardContent>
@@ -133,7 +134,9 @@ export default function AdminDashboard() {
 
           <Card className="rounded-2xl shadow-sm border-slate-200 bg-slate-50">
             <CardContent className="p-6 text-center text-sm text-slate-500">
-              <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">🛡️</div>
+              <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-3 text-edvoura-navy">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
               <p className="font-bold text-slate-700 mb-1">Edvoura Sentinel Active</p>
               <p className="text-xs">All automated background workers (Progress, Reminders, Alerts) are operating nominally.</p>
             </CardContent>

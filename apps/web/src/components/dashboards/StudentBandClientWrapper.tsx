@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
+import { useBand } from './BandContext';
 import StudentHome1to3 from './grades-1-3/StudentHome1to3';
 import StudentHome4to6 from './grades-4-6/StudentHome4to6';
 import StudentHome7to12 from './grades-7-12/StudentHome7to12';
@@ -14,21 +15,19 @@ interface WrapperProps {
 }
 
 export default function StudentBandClientWrapper(props: WrapperProps) {
-  const router = useRouter();
-  const [band, setBand] = useState<string>(props.initialBand || '7-12');
+  const { band, setBand } = useBand();
 
   const handleBandChange = (newBand: string) => {
     setBand(newBand);
-    router.push(`/dash/student?band=${newBand}`);
   };
 
   return (
     <div className="p-8">
       
-      {/* Developer / Testing Toggle (Since real band is pending backend linkage) */}
+      {/* Developer / Testing Toggle */}
       <div className="mb-8 p-4 bg-slate-100 rounded-lg flex items-center gap-4 justify-between border border-slate-200">
         <div className="text-sm font-medium text-slate-500">
-          👀 Developer Toggle: Simulate Learner Band
+          Developer Toggle: Simulate Learner Band
         </div>
         <div className="flex bg-white rounded-md p-1 shadow-sm border border-slate-200">
           <button 

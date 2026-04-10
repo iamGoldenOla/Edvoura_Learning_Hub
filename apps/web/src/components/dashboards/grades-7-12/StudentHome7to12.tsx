@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, MetricCard } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Calendar, Library, MessageSquare, GraduationCap } from 'lucide-react';
 
 interface StudentProps {
   enrollments: any[];
@@ -163,16 +164,16 @@ export default function StudentHome7to12({ enrollments, assignments, upcomingLes
             <h3 className="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider">Productivity Suite</h3>
             <div className="space-y-2">
               <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center gap-3 shadow-sm">
-                <span>📅</span> Study Planner
+                <Calendar className="w-4 h-4 text-slate-400" /> Study Planner
               </button>
               <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center gap-3 shadow-sm">
-                <span>📚</span> Resource Library
+                <Library className="w-4 h-4 text-slate-400" /> Resource Library
               </button>
               <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center gap-3 shadow-sm">
-                <span>💬</span> Tutor Direct Chat
+                <MessageSquare className="w-4 h-4 text-slate-400" /> Tutor Direct Chat
               </button>
               <button className="w-full bg-white border border-slate-200 p-3 rounded-lg text-left text-sm font-medium text-slate-700 hover:border-edvoura-navy hover:text-edvoura-navy transition-colors flex items-center gap-3 shadow-sm">
-                <span>🎓</span> Certificate Wall
+                <GraduationCap className="w-4 h-4 text-slate-400" /> Certificate Wall
               </button>
             </div>
           </div>

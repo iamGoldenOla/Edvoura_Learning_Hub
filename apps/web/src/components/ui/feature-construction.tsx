@@ -1,21 +1,26 @@
 import React from 'react';
+import { Settings, Wrench } from 'lucide-react';
 
 interface Props {
   title: string;
   description?: string;
-  icon?: string;
+  icon?: any; // Accepting a ReactNode/Lucide Icon now
 }
 
-export function FeatureConstruction({ title, description, icon = '🚧' }: Props) {
+export function FeatureConstruction({ title, description, icon: IconOrString = Wrench }: Props) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center animate-in zoom-in-95 duration-500">
       <div className="relative mb-8 group">
         <div className="absolute inset-0 bg-edvoura-gold/20 blur-2xl rounded-full scale-150 group-hover:scale-175 transition-transform duration-1000"></div>
-        <div className="w-32 h-32 bg-white rounded-3xl border-2 border-slate-200 shadow-xl flex items-center justify-center text-6xl relative z-10 rotate-3 group-hover:rotate-6 transition-transform">
-          {icon}
+        <div className="w-32 h-32 bg-white rounded-3xl border-2 border-slate-200 shadow-xl flex items-center justify-center text-edvoura-navy relative z-10 rotate-3 group-hover:rotate-6 transition-transform">
+          {typeof IconOrString === 'string' ? (
+            <span className="text-6xl">{IconOrString}</span>
+          ) : (
+            <IconOrString className="w-16 h-16" />
+          )}
         </div>
         <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-edvoura-navy rounded-full border-4 border-white flex items-center justify-center text-white shadow-md z-20 animate-spin" style={{ animationDuration: '4s' }}>
-          ⚙️
+          <Settings className="w-6 h-6" />
         </div>
       </div>
       

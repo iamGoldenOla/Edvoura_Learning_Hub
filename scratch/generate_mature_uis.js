@@ -1,9 +1,37 @@
-import React from 'react';
+const fs = require('fs');
+const path = require('path');
+
+const DASH_DIR = path.resolve('C:\\Users\\Akinola Olujobi\\Documents\\Edvoura_Learning_Hub\\apps\\web\\src\\app\\dash');
+
+// Helper to Recursively get all page.tsx files
+function getAllPageFiles(dirPath, arrayOfFiles) {
+  files = fs.readdirSync(dirPath);
+
+  arrayOfFiles = arrayOfFiles || [];
+
+  files.forEach(function(file) {
+    if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+      arrayOfFiles = getAllPageFiles(dirPath + "/" + file, arrayOfFiles);
+    } else {
+      if (file === 'page.tsx') {
+        arrayOfFiles.push(path.join(dirPath, "/", file));
+      }
+    }
+  });
+
+  return arrayOfFiles;
+}
+
+const formatTitle = (routeStr) => {
+  return routeStr.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+const TEMPLATE = (title) => `import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
 
-export default function UsersPage() {
+export default function ${title.replace(/\s+/g, '')}Page() {
   return (
     <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8">
       
@@ -11,9 +39,9 @@ export default function UsersPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <LayoutGrid className="text-edvoura-gold w-8 h-8" /> Users Dashboard
+            <LayoutGrid className="text-edvoura-gold w-8 h-8" /> ${title} Dashboard
           </h1>
-          <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for Users records and actions.</p>
+          <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for ${title} records and actions.</p>
         </div>
         <div className="mt-6 md:mt-0 flex gap-3">
           <Button variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">Export Report</Button>
@@ -55,7 +83,7 @@ export default function UsersPage() {
       {/* Data Table Mock */}
       <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
         <CardHeader className="bg-slate-50 border-b border-slate-100 p-6 flex flex-row justify-between items-center">
-          <CardTitle className="text-lg text-slate-800">Recent Users Activity</CardTitle>
+          <CardTitle className="text-lg text-slate-800">Recent ${title} Activity</CardTitle>
           <Button variant="ghost" className="text-xs h-8 text-edvoura-navy font-bold">View All</Button>
         </CardHeader>
         <CardContent className="p-0">
@@ -88,3 +116,26 @@ export default function UsersPage() {
     </div>
   );
 }
+`;
+
+function execute() {
+  const allPages = getAllPageFiles(DASH_DIR);
+  let changed = 0;
+
+  allPages.forEach(file => {
+    const content = fs.readFileSync(file, 'utf-8');
+    // If it is a FeatureConstruction fallback
+    if (content.includes('FeatureConstruction')) {
+      const parentDirName = path.basename(path.dirname(file));
+      const humanName = formatTitle(parentDirName);
+      const newContent = TEMPLATE(humanName);
+      fs.writeFileSync(file, newContent, 'utf-8');
+      console.log("Overwrote " + file + " with " + humanName + " template.");
+      changed++;
+    }
+  });
+
+  console.log("\\nDone! Successfully upgraded " + changed + " pages using mature solid designs.");
+}
+
+execute();

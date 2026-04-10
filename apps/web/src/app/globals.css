@@ -1,30 +1,149 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-edvoura-navy: #1e3a8a;
-  --color-edvoura-navy-light: #2563eb;
-  --color-edvoura-navy-dark: #1e293b;
-  --color-edvoura-gold: #fbbf24;
-  --color-edvoura-gold-light: #fcd34d;
-  --font-sans: var(--font-geist-sans);
+  /* Primary Navy Scale */
+  --color-navy: #0A1628;
+  --color-navy-mid: #112240;
+  --color-navy-light: #1B3461;
+
+  /* Yellow / Gold Accent */
+  --color-yellow: #F5C518;
+  --color-yellow-light: #FFD84D;
+  --color-yellow-dim: #C9A012;
+
+  /* Neutrals */
+  --color-off-white: #F7F8FC;
+  --color-grey: #8892A4;
+  --color-grey-light: #E8ECF2;
+  --color-dark: #060E1C;
+
+  /* Semantic */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* Legacy aliases (so existing dashboard code doesn't break) */
+  --color-edvoura-navy: #0A1628;
+  --color-edvoura-navy-light: #1B3461;
+  --color-edvoura-navy-dark: #060E1C;
+  --color-edvoura-gold: #F5C518;
+  --color-edvoura-gold-light: #FFD84D;
+
+  /* Fonts */
+  --font-heading: var(--font-syne);
+  --font-body: var(--font-dm-sans);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-  }
+:root {
+  --background: #F7F8FC;
+  --foreground: #0A1628;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
   @apply antialiased;
+}
+
+/* Headings use Syne */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, 'Syne', sans-serif);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0A1628;
+}
+::-webkit-scrollbar-thumb {
+  background: #1B3461;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F5C518;
+}
+
+/* Animation keyframes */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Utility classes */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 3s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+.animate-pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.08) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* Yellow underline accent */
+.yellow-underline {
+  position: relative;
+  display: inline-block;
+}
+.yellow-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: #F5C518;
+  border-radius: 2px;
+}
+
+/* Grid overlay for hero */
+.hero-grid-overlay {
+  background-image:
+    linear-gradient(rgba(245,197,24,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,197,24,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
 }
