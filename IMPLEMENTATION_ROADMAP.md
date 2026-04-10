@@ -19,7 +19,7 @@ Status: Complete ✅
 
 ### Phase 2: Onboarding and Identity
 
-Status: Active ✅ (in progress — see CHANGELOG_INTERNAL for completed items)
+Status: Complete ✅
 
 - Parent signup and child onboarding
 - Student onboarding by grade band
@@ -29,31 +29,32 @@ Status: Active ✅ (in progress — see CHANGELOG_INTERNAL for completed items)
 
 ### Phase 3: Academic Core
 
-Status: Planned
+Status: Complete ✅
 
 - Subject and grade taxonomy APIs
 - Class creation and enrollment
-- Lesson scheduling
-- Attendance capture
-- Assignment lifecycle
-- Submission and grading flows
-- Quiz and test lifecycle
+- Lesson scheduling with live session provisioning (Zoom / Google Meet)
+- Attendance capture and recording
+- Assignment lifecycle with submission and grading flows
+- Quiz and test lifecycle with auto-scoring
+- Progress snapshot generation (daily worker job)
+- Paystack customer creation on parent onboarding
 
 ### Phase 4: Live Learning and Communication
 
-Status: Planned
+Status: Planned (Next)
 
-- Zoom integration as primary live class provider
-- Google Meet integration as secondary provider
-- Notification orchestration
-- Email delivery and webhook reconciliation
+- Zoom integration improvements (OAuth refresh, webhook for meeting events)
+- Google Meet OAuth flow implementation
+- Notification orchestration for lesson reminders
+- Email delivery webhook reconciliation
 - Parent alerting and tutor operational reminders
 
 ### Phase 5: Billing and Entitlements
 
 Status: Planned
 
-- Stripe customer and subscription lifecycle
+- Paystack customer and subscription lifecycle
 - Plans, invoices, and payment reconciliation
 - Family entitlements and access gating
 - Coupon and referral support
@@ -62,7 +63,7 @@ Status: Planned
 
 Status: Planned
 
-- Progress snapshots
+- Progress snapshots enhancements
 - Rewards, badges, and streaks
 - Games metadata
 - Spelling bee events
@@ -85,11 +86,11 @@ Status: Planned
 - Auditability before convenience for privileged operations
 - Documentation updates in the same change as architecture updates
 
-## Immediate Next Build Targets (Phase 3)
+## Immediate Next Build Targets (Phase 4)
 
-1. Zoom and Google Meet lesson provisioning (live session metadata on lesson create).
-2. Assignment submission endpoints and grade write-back.
-3. Quiz attempt start, answer submission, and auto-scoring for objective questions.
-4. Progress snapshot generation job in the worker.
-5. Paystack customer creation on parent profile completion (sync `paystack_customer_code`).
-6. Local Supabase migration validation with Docker Desktop.
+1. Zoom OAuth token refresh and meeting event webhooks.
+2. Google Meet full OAuth integration (service account or user consent flow).
+3. Lesson reminder notification scheduling via `pg_cron`.
+4. Email delivery webhook reconciliation with Resend.
+5. Parent alert workflows for upcoming lessons and late assignments.
+6. Tutor operational reminders for ungraded submissions and upcoming classes.

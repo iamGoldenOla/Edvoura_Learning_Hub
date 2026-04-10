@@ -3,19 +3,25 @@ import {
   createLessonSchema,
   createAssignmentSchema,
   createQuizSchema,
+  recordAttendanceSchema,
   type CreateClassDto,
   type CreateLessonDto,
   type CreateAssignmentDto,
   type CreateQuizDto,
+  type RecordAttendanceDto,
 } from '@edvoura/contracts';
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../common/database/database.service.js';
 import { ApplicationError } from '../../common/errors/application-error.js';
+import { LiveSessionService } from './live-session.service.js';
 
 @Injectable()
 export class AcademicsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly liveSessionService: LiveSessionService,
+  ) {}
 
   // ─── Classes ──────────────────────────────────────────────────────────────
 
@@ -96,7 +102,7 @@ export class AcademicsService {
       throw new ApplicationError(404, 'class_not_found', 'Class not found.');
     }
 
-    return this.databaseService.db
+    const lesson = await this.databaseService.db
       .insertInto('lessons')
       .values({
         class_id: classId,
@@ -116,6 +122,17 @@ export class AcademicsService {
       })
       .returning(['id', 'title', 'status', 'scheduled_start_at', 'scheduled_end_at'])
       .executeTakeFirstOrThrow();
+
+    // Provision live session (Zoom / Google Meet / stub)
+    const session = await this.liveSessionService.provisionSession(
+      lesson.id!,
+      parsed.provider,
+      parsed.scheduledStartAt,
+      parsed.scheduledEndAt,
+      parsed.title,
+    );
+
+    return { ...lesson, liveSession: session };
   }
 
   async listLessons(classId: string) {
@@ -170,6 +187,25 @@ export class AcademicsService {
       .executeTakeFirstOrThrow();
   }
 
+  async listAssignments(classId: string) {
+    return this.databaseService.db
+      .selectFrom('assignments')
+      .select([
+        'id',
+        'title',
+        'instructions',
+        'status',
+        'due_at as dueAt',
+        'points_possible as pointsPossible',
+        'lesson_id as lessonId',
+        'created_by_user_id as createdByUserId',
+        'created_at as createdAt',
+      ])
+      .where('class_id', '=', classId)
+      .orderBy('created_at', 'desc')
+      .execute();
+  }
+
   // ─── Quizzes ──────────────────────────────────────────────────────────────
 
   async createQuiz(classId: string, creatorUserId: string, dto: CreateQuizDto) {
@@ -202,5 +238,71 @@ export class AcademicsService {
       })
       .returning(['id', 'title', 'status', 'starts_at', 'ends_at'])
       .executeTakeFirstOrThrow();
+  }
+
+  // ─── Attendance ───────────────────────────────────────────────────────────
+
+  async recordAttendance(lessonId: string, recorderUserId: string, dto: RecordAttendanceDto) {
+    const parsed = recordAttendanceSchema.parse(dto);
+
+    const lessonRecord = await this.databaseService.db
+      .selectFrom('lessons')
+      .select('id')
+      .where('id', '=', lessonId)
+      .executeTakeFirst();
+
+    if (!lessonRecord) {
+      throw new ApplicationError(404, 'lesson_not_found', 'Lesson not found.');
+    }
+
+    const results = [];
+    for (const student of parsed.students) {
+      const row = await this.databaseService.db
+        .insertInto('lesson_attendance')
+        .values({
+          lesson_id: lessonId,
+          student_user_id: student.studentUserId,
+          status: student.status,
+          joined_at: student.joinedAt ?? null,
+          left_at: student.leftAt ?? null,
+          recorded_by_user_id: recorderUserId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .onConflict((oc) =>
+          oc.columns(['lesson_id', 'student_user_id']).doUpdateSet({
+            status: student.status,
+            joined_at: student.joinedAt ?? null,
+            left_at: student.leftAt ?? null,
+            recorded_by_user_id: recorderUserId,
+            updated_at: new Date().toISOString(),
+          }),
+        )
+        .returning(['id', 'student_user_id', 'status'])
+        .executeTakeFirstOrThrow();
+
+      results.push(row);
+    }
+
+    return results;
+  }
+
+  async getAttendance(lessonId: string) {
+    return this.databaseService.db
+      .selectFrom('lesson_attendance as la')
+      .innerJoin('profiles as p', 'p.id', 'la.student_user_id')
+      .select([
+        'la.id',
+        'la.student_user_id as studentUserId',
+        'p.full_name as studentName',
+        'la.status',
+        'la.joined_at as joinedAt',
+        'la.left_at as leftAt',
+        'la.recorded_by_user_id as recordedByUserId',
+        'la.created_at as createdAt',
+      ])
+      .where('la.lesson_id', '=', lessonId)
+      .orderBy('p.full_name', 'asc')
+      .execute();
   }
 }

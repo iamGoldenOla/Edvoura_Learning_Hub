@@ -180,4 +180,52 @@ export class BillingService {
     };
     return map[paystackStatus] ?? 'incomplete';
   }
+
+  // ─── Paystack customer creation ─────────────────────────────────────────
+
+  async createPaystackCustomer(
+    email: string,
+    fullName: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<{ customerCode: string } | null> {
+    if (!this.env.PAYSTACK_SECRET_KEY) {
+      this.logger.warn('PAYSTACK_SECRET_KEY not set — skipping customer creation');
+      return null;
+    }
+
+    try {
+      const response = await fetch('https://api.paystack.co/customer', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.env.PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          first_name: fullName.split(' ')[0] ?? fullName,
+          last_name: fullName.split(' ').slice(1).join(' ') || undefined,
+          metadata: metadata ?? {},
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Paystack customer API responded with ${response.status}`);
+      }
+
+      const result = (await response.json()) as {
+        status: boolean;
+        data: { customer_code: string };
+      };
+
+      if (!result.status || !result.data?.customer_code) {
+        throw new Error('Paystack customer creation returned unexpected response');
+      }
+
+      this.logger.log(`Paystack customer created: ${result.data.customer_code} for ${email}`);
+      return { customerCode: result.data.customer_code };
+    } catch (err) {
+      this.logger.error('Paystack customer creation failed', err);
+      return null;
+    }
+  }
 }

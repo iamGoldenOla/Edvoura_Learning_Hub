@@ -14,6 +14,8 @@ import { PlatformModule } from './modules/platform/platform.module.js';
 import { StudentsModule } from './modules/students/students.module.js';
 import { TutorsModule } from './modules/tutors/tutors.module.js';
 import { UsersModule } from './modules/users/users.module.js';
+import { SubmissionsModule } from './modules/submissions/submissions.module.js';
+import { QuizAttemptsModule } from './modules/quiz-attempts/quiz-attempts.module.js';
 
 @Module({})
 export class AppModule {
@@ -34,6 +36,8 @@ export class AppModule {
         NotificationsModule,
         BillingModule,
         AdminModule,
+        SubmissionsModule,
+        QuizAttemptsModule,
       ],
     };
   }

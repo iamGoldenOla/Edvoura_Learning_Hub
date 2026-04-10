@@ -15,6 +15,7 @@ import {
   createLessonSchema,
   createAssignmentSchema,
   createQuizSchema,
+  recordAttendanceSchema,
 } from '@edvoura/contracts';
 
 import { CurrentUser } from '../../common/auth/current-user.decorator.js';
@@ -24,13 +25,17 @@ import { RolesGuard } from '../../common/auth/roles.guard.js';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe.js';
 import type { AuthenticatedRequestUser } from '../../common/auth/authenticated-user.interface.js';
 import { AcademicsService } from './academics.service.js';
+import { LiveSessionService } from './live-session.service.js';
 
 @ApiTags('academics')
 @ApiBearerAuth()
 @Controller('academics')
 @UseGuards(SupabaseJwtGuard, RolesGuard)
 export class AcademicsController {
-  constructor(private readonly academicsService: AcademicsService) {}
+  constructor(
+    private readonly academicsService: AcademicsService,
+    private readonly liveSessionService: LiveSessionService,
+  ) {}
 
   // ─── Classes ─────────────────────────────────────────────────────────────
 
@@ -60,7 +65,7 @@ export class AcademicsController {
   @Post('classes/:classId/lessons')
   @HttpCode(HttpStatus.CREATED)
   @Roles('tutor', 'admin', 'super_admin')
-  @ApiOperation({ summary: 'Create a lesson under a class' })
+  @ApiOperation({ summary: 'Create a lesson under a class (provisions live session)' })
   async createLesson(
     @CurrentUser() user: AuthenticatedRequestUser,
     @Param('classId') classId: string,
@@ -73,6 +78,12 @@ export class AcademicsController {
   @ApiOperation({ summary: 'List lessons for a class' })
   async listLessons(@Param('classId') classId: string) {
     return this.academicsService.listLessons(classId);
+  }
+
+  @Get('lessons/:lessonId/session')
+  @ApiOperation({ summary: 'Get live session details for a lesson' })
+  async getLessonSession(@Param('lessonId') lessonId: string) {
+    return this.liveSessionService.getSessionForLesson(lessonId);
   }
 
   // ─── Assignments ──────────────────────────────────────────────────────────
@@ -89,6 +100,12 @@ export class AcademicsController {
     return this.academicsService.createAssignment(classId, user.userId, createAssignmentSchema.parse(body));
   }
 
+  @Get('classes/:classId/assignments')
+  @ApiOperation({ summary: 'List assignments for a class' })
+  async listAssignments(@Param('classId') classId: string) {
+    return this.academicsService.listAssignments(classId);
+  }
+
   // ─── Quizzes ──────────────────────────────────────────────────────────────
 
   @Post('classes/:classId/quizzes')
@@ -101,5 +118,25 @@ export class AcademicsController {
     @Body(new ZodValidationPipe(createQuizSchema)) body: unknown,
   ) {
     return this.academicsService.createQuiz(classId, user.userId, createQuizSchema.parse(body));
+  }
+
+  // ─── Attendance ───────────────────────────────────────────────────────────
+
+  @Post('lessons/:lessonId/attendance')
+  @HttpCode(HttpStatus.OK)
+  @Roles('tutor', 'admin', 'super_admin')
+  @ApiOperation({ summary: 'Record attendance for a lesson' })
+  async recordAttendance(
+    @CurrentUser() user: AuthenticatedRequestUser,
+    @Param('lessonId') lessonId: string,
+    @Body(new ZodValidationPipe(recordAttendanceSchema)) body: unknown,
+  ) {
+    return this.academicsService.recordAttendance(lessonId, user.userId, recordAttendanceSchema.parse(body));
+  }
+
+  @Get('lessons/:lessonId/attendance')
+  @ApiOperation({ summary: 'Get attendance records for a lesson' })
+  async getAttendance(@Param('lessonId') lessonId: string) {
+    return this.academicsService.getAttendance(lessonId);
   }
 }

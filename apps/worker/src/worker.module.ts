@@ -5,6 +5,7 @@ import { DatabaseModule } from '../../api/src/common/database/database.module.js
 import { SupabaseModule } from '../../api/src/common/supabase/supabase.module.js';
 import { NotificationQueueProcessor } from './processors/notification-queue.processor.js';
 import { BillingEventProcessor } from './processors/billing-event.processor.js';
+import { ProgressSnapshotProcessor } from './processors/progress-snapshot.processor.js';
 
 @Module({})
 export class WorkerModule {
@@ -16,7 +17,7 @@ export class WorkerModule {
         DatabaseModule,
         SupabaseModule,
       ],
-      providers: [NotificationQueueProcessor, BillingEventProcessor],
+      providers: [NotificationQueueProcessor, BillingEventProcessor, ProgressSnapshotProcessor],
     };
   }
 }

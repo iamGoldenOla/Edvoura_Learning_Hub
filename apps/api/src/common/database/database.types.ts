@@ -9,6 +9,9 @@ import type {
   QuizStatus,
   SubscriptionStatus,
   LiveClassProvider,
+  SubmissionStatus,
+  QuizAttemptStatus,
+  AttendanceStatus,
 } from '@edvoura/contracts';
 
 // ─── Core identity ───────────────────────────────────────────────────────────
@@ -38,6 +41,7 @@ export interface UserRolesTable {
 export interface ParentProfilesTable {
   user_id: string;
   preferred_contact_method: string | null;
+  paystack_customer_code: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -165,6 +169,30 @@ export interface LessonsTable {
   updated_at: string;
 }
 
+export interface LessonLiveSessionsTable {
+  lesson_id: string;
+  provider: LiveClassProvider;
+  external_meeting_id: string | null;
+  join_url: string | null;
+  host_url: string | null;
+  passcode: string | null;
+  raw_payload: unknown;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LessonAttendanceTable {
+  id?: string;
+  lesson_id: string;
+  student_user_id: string;
+  status: AttendanceStatus;
+  joined_at: string | null;
+  left_at: string | null;
+  recorded_by_user_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AssignmentsTable {
   id?: string;
   class_id: string;
@@ -175,6 +203,39 @@ export interface AssignmentsTable {
   due_at: string | null;
   points_possible: string; // numeric => string in pg driver
   created_by_user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssignmentSubmissionsTable {
+  id?: string;
+  assignment_id: string;
+  student_user_id: string;
+  status: SubmissionStatus;
+  submitted_at: string | null;
+  text_response: string | null;
+  metadata: unknown;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubmissionFilesTable {
+  id?: string;
+  submission_id: string;
+  bucket_id: string;
+  object_path: string;
+  uploaded_by_user_id: string;
+  created_at: string;
+}
+
+export interface SubmissionGradesTable {
+  id?: string;
+  submission_id: string;
+  grader_user_id: string;
+  score: string | null; // numeric => string
+  feedback_text: string | null;
+  rubric_json: unknown;
+  graded_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -205,6 +266,41 @@ export interface QuizQuestionsTable {
   points: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface QuizAttemptsTable {
+  id?: string;
+  quiz_id: string;
+  student_user_id: string;
+  status: QuizAttemptStatus;
+  started_at: string;
+  submitted_at: string | null;
+  score: string | null; // numeric => string
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuizResponsesTable {
+  id?: string;
+  attempt_id: string;
+  question_id: string;
+  answer_json: unknown;
+  is_correct: boolean | null;
+  awarded_points: string | null; // numeric => string
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProgressSnapshotsTable {
+  id?: string;
+  student_user_id: string;
+  subject_id: string | null;
+  snapshot_date: string;
+  attendance_rate: string | null; // numeric => string
+  assignment_completion_rate: string | null;
+  average_score: string | null;
+  mastery_notes: string | null;
+  created_at: string;
 }
 
 // ─── Notifications ───────────────────────────────────────────────────────────
@@ -326,11 +422,20 @@ export interface Database {
   classes: ClassesTable;
   class_enrollments: ClassEnrollmentsTable;
   lessons: LessonsTable;
+  lesson_attendance: LessonAttendanceTable;
   assignments: AssignmentsTable;
+  assignment_submissions: AssignmentSubmissionsTable;
+  submission_files: SubmissionFilesTable;
+  submission_grades: SubmissionGradesTable;
   quizzes: QuizzesTable;
   quiz_questions: QuizQuestionsTable;
+  quiz_attempts: QuizAttemptsTable;
+  quiz_responses: QuizResponsesTable;
+  progress_snapshots: ProgressSnapshotsTable;
   notifications: NotificationsTable;
   notification_deliveries: NotificationDeliveriesTable;
+  // private schema
+  'private.lesson_live_sessions': LessonLiveSessionsTable;
   // billing schema — Kysely needs schema-qualified names
   'billing.plans': BillingPlansTable;
   'billing.subscriptions': BillingSubscriptionsTable;

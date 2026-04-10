@@ -8,22 +8,23 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 
 ## Last Session Handoff (2026-04-10)
 
-Phase 2 was completed. All domain module shells are now real implementations:
+Phase 3 was completed. The Academic Core is now fully operational:
 
-- `parents`: profile completion + child onboarding (creates Supabase auth user) + child listing
-- `students`: profile completion + me endpoint
-- `tutors`: profile completion + me endpoint (approval status visible)
-- `admin`: role assign/revoke, tutor approve/reject, pending tutor list
-- `academics`: class/lesson/assignment/quiz creation and listing (role-scoped)
-- `billing`: Paystack webhook with HMAC-SHA512 verification, subscription + charge + invoice sync
-- `notifications`: in-app creation + Resend email delivery (console stub in dev)
-- `apps/worker`: standalone NestJS worker with 5s polling loop
+- `academics`: Lesson creation now provisions Zoom/Google Meet live sessions automatically. List assignments and attendance endpoints added.
+- `submissions`: Full assignment submission lifecycle — students submit work, tutors grade it, students get notified. Late submission detection included.
+- `quiz-attempts`: Full quiz lifecycle — add questions, start attempt, submit with auto-scoring (JSON equality), get results.
+- `attendance`: Batch attendance recording and retrieval for lessons.
+- `live-session.service`: Zoom Server-to-Server OAuth integration for meeting provisioning. Google Meet stubbed pending OAuth flow.
+- `billing`: Paystack customer creation API added. Customer code synced on parent profile completion.
+- `parents`: Profile completion now creates a Paystack customer and stores `paystack_customer_code` on `parent_profiles`.
+- `apps/worker`: Progress snapshot processor added — runs daily to compute attendance rate, assignment completion rate, and average score per student-subject pair.
+- Schema migration: Renamed all `stripe_*` billing columns to `paystack_*` equivalents. Added `paystack_customer_code` to `parent_profiles`.
 
 Payment gateway is **Paystack** (not Stripe). All Stripe references replaced.
 
 TypeScript typecheck passes with 0 errors.
 
-Next session: Phase 3 — Zoom/Meet lesson provisioning, assignment submission, quiz attempts, progress snapshots, Paystack customer creation on parent onboarding.
+Next session: Phase 4 — Zoom/Meet OAuth improvements, notification orchestration for lesson reminders, email delivery webhooks, parent alerting workflows.
 
 
 ## Working Rules

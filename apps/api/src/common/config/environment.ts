@@ -22,6 +22,13 @@ const environmentSchema = z.object({
   // Email notifications (Resend)
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_FROM_EMAIL: z.string().email().default('notifications@edvoura.com'),
+  // Live class providers
+  ZOOM_ACCOUNT_ID: z.string().min(1).optional(),
+  ZOOM_CLIENT_ID: z.string().min(1).optional(),
+  ZOOM_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_MEET_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_MEET_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_MEET_REDIRECT_URI: z.string().url().optional(),
   // Support
   SUPPORT_EMAIL: z.string().email().default('support@edvoura.com'),
   DEFAULT_TIMEZONE: z.string().default('Africa/Lagos'),

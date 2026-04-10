@@ -97,6 +97,20 @@ export const subscriptionStatuses = [
 export const subscriptionStatusSchema = z.enum(subscriptionStatuses);
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>;
 
+// ─── Phase 3: Submission / Quiz / Attendance enums ───────────────────────────
+
+export const submissionStatuses = ['draft', 'submitted', 'late', 'graded', 'returned'] as const;
+export const submissionStatusSchema = z.enum(submissionStatuses);
+export type SubmissionStatus = z.infer<typeof submissionStatusSchema>;
+
+export const quizAttemptStatuses = ['in_progress', 'submitted', 'graded', 'timed_out'] as const;
+export const quizAttemptStatusSchema = z.enum(quizAttemptStatuses);
+export type QuizAttemptStatus = z.infer<typeof quizAttemptStatusSchema>;
+
+export const attendanceStatuses = ['present', 'absent', 'late', 'excused'] as const;
+export const attendanceStatusSchema = z.enum(attendanceStatuses);
+export type AttendanceStatus = z.infer<typeof attendanceStatusSchema>;
+
 // ─── Parent onboarding DTOs ──────────────────────────────────────────────────
 
 export const completeParentProfileSchema = z.object({
@@ -199,3 +213,56 @@ export const createQuizSchema = z.object({
   timeLimitMinutes: z.number().int().positive().optional(),
 });
 export type CreateQuizDto = z.infer<typeof createQuizSchema>;
+
+// ─── Phase 3: Assignment submission DTOs ─────────────────────────────────────
+
+export const submitAssignmentSchema = z.object({
+  textResponse: z.string().max(10000).optional(),
+});
+export type SubmitAssignmentDto = z.infer<typeof submitAssignmentSchema>;
+
+export const gradeSubmissionSchema = z.object({
+  score: z.number().min(0),
+  feedbackText: z.string().max(5000).optional(),
+  rubricJson: z.record(z.unknown()).optional(),
+});
+export type GradeSubmissionDto = z.infer<typeof gradeSubmissionSchema>;
+
+// ─── Phase 3: Quiz question + attempt DTOs ───────────────────────────────────
+
+export const addQuizQuestionSchema = z.object({
+  questionType: z.string().min(1).max(50),
+  prompt: z.string().min(1).max(5000),
+  optionsJson: z.unknown().default([]),
+  correctAnswerJson: z.unknown().default({}),
+  points: z.number().positive().default(1),
+});
+export const addQuizQuestionsSchema = z.object({
+  questions: z.array(addQuizQuestionSchema).min(1).max(200),
+});
+export type AddQuizQuestionsDto = z.infer<typeof addQuizQuestionsSchema>;
+
+export const startQuizAttemptSchema = z.object({});
+export type StartQuizAttemptDto = z.infer<typeof startQuizAttemptSchema>;
+
+export const quizResponseInputSchema = z.object({
+  questionId: z.string().uuid(),
+  answerJson: z.unknown().default({}),
+});
+export const submitQuizAttemptSchema = z.object({
+  responses: z.array(quizResponseInputSchema).min(1),
+});
+export type SubmitQuizAttemptDto = z.infer<typeof submitQuizAttemptSchema>;
+
+// ─── Phase 3: Attendance DTOs ────────────────────────────────────────────────
+
+export const attendanceRecordSchema = z.object({
+  studentUserId: z.string().uuid(),
+  status: attendanceStatusSchema,
+  joinedAt: z.string().datetime().optional(),
+  leftAt: z.string().datetime().optional(),
+});
+export const recordAttendanceSchema = z.object({
+  students: z.array(attendanceRecordSchema).min(1),
+});
+export type RecordAttendanceDto = z.infer<typeof recordAttendanceSchema>;

@@ -4,17 +4,21 @@ import {
   type CompleteParentProfileDto,
   type OnboardChildDto,
 } from '@edvoura/contracts';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 import { DatabaseService } from '../../common/database/database.service.js';
 import { SupabaseService } from '../../common/supabase/supabase.service.js';
 import { ApplicationError } from '../../common/errors/application-error.js';
+import { BillingService } from '../billing/billing.service.js';
 
 @Injectable()
 export class ParentsService {
+  private readonly logger = new Logger(ParentsService.name);
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly supabaseService: SupabaseService,
+    private readonly billingService: BillingService,
   ) {}
 
   async completeProfile(userId: string, dto: CompleteParentProfileDto): Promise<void> {
@@ -38,6 +42,7 @@ export class ParentsService {
       .values({
         user_id: userId,
         preferred_contact_method: parsed.preferredContactMethod ?? null,
+        paystack_customer_code: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -61,6 +66,34 @@ export class ParentsService {
       })
       .onConflict((oc) => oc.columns(['user_id', 'role']).doNothing())
       .execute();
+
+    // Create Paystack customer (non-blocking — failure does not block profile completion)
+    const profile = await this.databaseService.db
+      .selectFrom('profiles')
+      .select('email')
+      .where('id', '=', userId)
+      .executeTakeFirst();
+
+    if (profile) {
+      const customer = await this.billingService.createPaystackCustomer(
+        profile.email,
+        parsed.fullName,
+        { userId },
+      );
+
+      if (customer) {
+        await this.databaseService.db
+          .updateTable('parent_profiles')
+          .set({
+            paystack_customer_code: customer.customerCode,
+            updated_at: new Date().toISOString(),
+          })
+          .where('user_id', '=', userId)
+          .execute();
+
+        this.logger.log(`Paystack customer ${customer.customerCode} linked to parent ${userId}`);
+      }
+    }
   }
 
   async onboardChild(parentUserId: string, dto: OnboardChildDto): Promise<{ studentUserId: string }> {
