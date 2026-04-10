@@ -8,7 +8,7 @@ EDVOURA is in the clean rebuild stage. The priority is a stable backend foundati
 
 ### Phase 1: Foundation
 
-Status: Active
+Status: Complete ✅
 
 - Establish workspace structure
 - Define canonical architecture
@@ -19,7 +19,7 @@ Status: Active
 
 ### Phase 2: Onboarding and Identity
 
-Status: Next
+Status: Active ✅ (in progress — see CHANGELOG_INTERNAL for completed items)
 
 - Parent signup and child onboarding
 - Student onboarding by grade band
@@ -85,9 +85,11 @@ Status: Planned
 - Auditability before convenience for privileged operations
 - Documentation updates in the same change as architecture updates
 
-## Immediate Next Build Targets
+## Immediate Next Build Targets (Phase 3)
 
-1. Wire database access into core user context endpoints.
-2. Implement onboarding mutation flows for parent, student, and tutor paths.
-3. Add baseline webhook module for Stripe and Resend.
-4. Add job worker entrypoint using the same shared infrastructure as the API.
+1. Zoom and Google Meet lesson provisioning (live session metadata on lesson create).
+2. Assignment submission endpoints and grade write-back.
+3. Quiz attempt start, answer submission, and auto-scoring for objective questions.
+4. Progress snapshot generation job in the worker.
+5. Paystack customer creation on parent profile completion (sync `paystack_customer_code`).
+6. Local Supabase migration validation with Docker Desktop.

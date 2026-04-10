@@ -6,6 +6,26 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, durable documentation, and production-oriented engineering discipline.
 
+## Last Session Handoff (2026-04-10)
+
+Phase 2 was completed. All domain module shells are now real implementations:
+
+- `parents`: profile completion + child onboarding (creates Supabase auth user) + child listing
+- `students`: profile completion + me endpoint
+- `tutors`: profile completion + me endpoint (approval status visible)
+- `admin`: role assign/revoke, tutor approve/reject, pending tutor list
+- `academics`: class/lesson/assignment/quiz creation and listing (role-scoped)
+- `billing`: Paystack webhook with HMAC-SHA512 verification, subscription + charge + invoice sync
+- `notifications`: in-app creation + Resend email delivery (console stub in dev)
+- `apps/worker`: standalone NestJS worker with 5s polling loop
+
+Payment gateway is **Paystack** (not Stripe). All Stripe references replaced.
+
+TypeScript typecheck passes with 0 errors.
+
+Next session: Phase 3 — Zoom/Meet lesson provisioning, assignment submission, quiz attempts, progress snapshots, Paystack customer creation on parent onboarding.
+
+
 ## Working Rules
 
 - Read `README.md`, `PROJECT_RULES.md`, `PROJECT_STRUCTURE.md`, and `ARCHITECTURE_DECISIONS.md` before major changes.

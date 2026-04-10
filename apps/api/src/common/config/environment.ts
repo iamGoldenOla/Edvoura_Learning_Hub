@@ -16,6 +16,15 @@ const environmentSchema = z.object({
   JWT_AUDIENCE: z.string().default('authenticated'),
   JWT_ISSUER: z.string().url().optional(),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  // Paystack billing
+  PAYSTACK_SECRET_KEY: z.string().min(1).optional(),
+  PAYSTACK_WEBHOOK_SECRET: z.string().min(1).optional(),
+  // Email notifications (Resend)
+  RESEND_API_KEY: z.string().min(1).optional(),
+  RESEND_FROM_EMAIL: z.string().email().default('notifications@edvoura.com'),
+  // Support
+  SUPPORT_EMAIL: z.string().email().default('support@edvoura.com'),
+  DEFAULT_TIMEZONE: z.string().default('Africa/Lagos'),
 });
 
 export type Environment = z.infer<typeof environmentSchema> & {
