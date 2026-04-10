@@ -1,27 +1,32 @@
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
-import { ArrowRight, Clock } from 'lucide-react';
+import { ArrowRight, Clock, Star, BookOpen, Search } from 'lucide-react';
+import Image from 'next/image';
 
 // TODO: Replace with Supabase query → blog_posts
 const blogPosts = [
   {
     slug: 'how-online-tutoring-is-transforming-nigerian-education',
-    title: 'How Online Tutoring Is Transforming Nigerian Education',
-    excerpt: 'From Lagos to Kano, online tutoring is breaking geographical barriers and giving every child access to quality education. Here\'s what the data shows.',
+    title: 'How Online Tutoring Is Transforming Global Education',
+    excerpt: 'From Lagos to Toronto, online tutoring is breaking geographical barriers and giving every child access to quality education. Here\'s what the data shows.',
     category: 'Education',
     date: 'Oct 08, 2026',
     readTime: '5 min read',
-    color: 'bg-blue-500',
+    img: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop',
+    color: 'bg-info',
+    tilt: 'rotate-1'
   },
   {
     slug: 'preparing-your-child-for-waec-2027',
-    title: 'Preparing Your Child for WAEC 2027: A Parent\'s Guide',
-    excerpt: 'WAEC preparation doesn\'t start in SS3 — it starts now. Here\'s a month-by-month breakdown of how to set your child up for success.',
+    title: 'Preparing Your Child for Exams: A Parent\'s Guide',
+    excerpt: 'Exam preparation doesn\'t start in the final month — it starts now. Here\'s a month-by-month breakdown of how to set your child up for success.',
     category: 'Exam Prep',
     date: 'Oct 02, 2026',
     readTime: '8 min read',
-    color: 'bg-purple-500',
+    img: 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?q=80&w=2070&auto=format&fit=crop',
+    color: 'bg-error',
+    tilt: '-rotate-1'
   },
   {
     slug: '5-study-habits-of-top-performing-students',
@@ -30,89 +35,120 @@ const blogPosts = [
     category: 'Student Tips',
     date: 'Sep 28, 2026',
     readTime: '4 min read',
-    color: 'bg-green-500',
-  },
-  {
-    slug: 'why-nigerian-parents-are-choosing-edvoura',
-    title: 'Why Nigerian Parents Are Choosing Edvoura Over Traditional Lesson Teachers',
-    excerpt: 'The shift from in-home lesson teachers to structured online tutoring is accelerating. Parents share their reasons for making the switch.',
-    category: 'Platform',
-    date: 'Sep 20, 2026',
-    readTime: '6 min read',
-    color: 'bg-yellow-dim',
+    img: 'https://images.unsplash.com/photo-1510172951991-856a654063f9?q=80&w=1974&auto=format&fit=crop',
+    color: 'bg-success',
+    tilt: 'rotate-2'
   },
   {
     slug: 'the-science-of-gamified-learning',
-    title: 'The Science Behind Gamified Learning: Why It Works',
+    title: 'The Science Behind Gamified Learning',
     excerpt: 'Badges, streaks, and leaderboards aren\'t just gimmicks — they\'re backed by decades of behavioural psychology research.',
-    category: 'Education',
+    category: 'Psychology',
     date: 'Sep 14, 2026',
     readTime: '7 min read',
-    color: 'bg-blue-500',
-  },
-  {
-    slug: 'how-to-become-an-edvoura-tutor',
-    title: 'How to Become an Edvoura Tutor: Requirements & Process',
-    excerpt: 'Interested in teaching on Edvoura? Here\'s everything you need to know about our application process, requirements, and what to expect.',
-    category: 'Tutors',
-    date: 'Sep 08, 2026',
-    readTime: '5 min read',
-    color: 'bg-purple-500',
+    img: 'https://images.unsplash.com/photo-1497633762265-9a177c809dd3?q=80&w=2070&auto=format&fit=crop',
+    color: 'bg-yellow',
+    tilt: '-rotate-2'
   },
 ];
 
 export default function BlogPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-off-white selection:bg-yellow selection:text-navy font-body">
       <Navbar />
 
-      {/* Hero */}
-      <section className="bg-navy pt-[72px] relative overflow-hidden">
-        <div className="hero-grid-overlay absolute inset-0 pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-20 md:py-24 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-4">Blog</p>
-          <h1 className="font-heading font-extrabold text-white max-w-3xl mx-auto leading-tight" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>
-            Insights, Tips & Updates
+      {/* Hero (Parallax) */}
+      <section 
+        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1497633762265-9a177c809dd3?q=80&w=2070&auto=format&fit=crop")' }}
+      >
+        <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 text-center pt-10 z-10">
+          <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
+            INSIGHTS & UPDATES
+          </div>
+          <h1 className="font-heading font-black text-white max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#0A1628]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+            The Science of Global Learning
           </h1>
-          <p className="mt-6 text-grey text-base max-w-xl mx-auto">
-            Practical advice for students, parents, and educators — straight from the Edvoura team.
+          <p className="text-white text-xl max-w-2xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-6 rounded-2xl border-4 border-white shadow-[6px_6px_0px_#F5C518] transform rotate-1">
+            Practical advice for students, parents, and educators — straight from the Edvoura academic board.
           </p>
+          
+          <div className="mt-12 flex justify-center max-w-md mx-auto relative group">
+             <input 
+               type="text" 
+               placeholder="Search articles..." 
+               className="w-full bg-white border-4 border-navy rounded-2xl px-12 py-4 font-bold shadow-[8px_8px_0px_#0A1628] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
+             />
+             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-navy" />
+          </div>
         </div>
       </section>
 
-      {/* Posts Grid */}
-      <section className="bg-off-white py-20 md:py-28">
+      {/* Featured Grid */}
+      <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogPosts.map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="bg-white border border-grey-light rounded-2xl overflow-hidden group hover:border-yellow hover:shadow-md transition-all duration-300"
-              >
-                {/* Colour bar header */}
-                <div className={`h-2 ${post.color}`} />
-                <div className="p-7">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-dim bg-yellow/10 px-3 py-1 rounded-full">{post.category}</span>
-                    <span className="flex items-center gap-1 text-[10px] text-grey font-medium">
-                      <Clock className="w-3 h-3" /> {post.readTime}
-                    </span>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
+              {blogPosts.map((post, i) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className={`group relative flex flex-col bg-white border-4 border-navy rounded-[2.5rem] p-8 shadow-[12px_12px_0px_#0A1628] hover:-translate-y-2 hover:shadow-[15px_15px_0px_#0A1628] transition-all duration-300 ${post.tilt}`}
+                >
+                  <div className="relative aspect-video rounded-[2rem] overflow-hidden border-4 border-navy mb-8 bg-navy shrink-0">
+                     <Image src={post.img} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
+                     <div className="absolute top-4 left-4 bg-white border-2 border-navy px-3 py-1 rounded-lg text-xs font-black shadow-[2px_2px_0px_#0A1628]">
+                        {post.category}
+                     </div>
                   </div>
-                  <h3 className="font-heading font-bold text-navy text-lg leading-snug mb-3 group-hover:text-yellow transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-grey text-sm leading-relaxed mb-5 line-clamp-3">{post.excerpt}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-grey font-medium">{post.date}</span>
-                    <span className="text-yellow text-sm font-semibold inline-flex items-center gap-1 group-hover:gap-2 transition-all">
-                      Read <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
+                  
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex items-center gap-4 mb-4 text-xs font-black uppercase tracking-widest text-navy/60">
+                       <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {post.readTime}</span>
+                       <span>{post.date}</span>
+                    </div>
+                    <h2 className="font-heading font-black text-navy text-2xl md:text-3xl mb-4 group-hover:text-info transition-colors leading-tight">
+                       {post.title}
+                    </h2>
+                    <p className="text-navy font-bold text-lg mb-8 line-clamp-3 opacity-80">{post.excerpt}</p>
+                    
+                    <div className="mt-auto flex items-center justify-between border-t-2 border-navy/10 pt-6">
+                       <div className="flex items-center gap-2 text-navy font-black underline decoration-4 underline-offset-4">
+                          Read Now 
+                       </div>
+                       <div className="w-10 h-10 rounded-full border-4 border-navy flex items-center justify-center group-hover:bg-yellow group-hover:rotate-45 transition-all">
+                          <ArrowRight className="w-5 h-5 text-navy" />
+                       </div>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+           </div>
+           
+           <div className="mt-20 flex justify-center">
+              <button className="bg-navy text-white border-4 border-navy font-heading font-black px-12 py-5 rounded-2xl shadow-[10px_10px_0px_#F5C518] hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_#F5C518] transition-all text-xl">
+                 Load More Articles
+              </button>
+           </div>
+        </div>
+      </section>
+
+      {/* Newsletter (Brutalist) */}
+      <section className="bg-error py-24 border-b-8 border-navy relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+           <h2 className="font-heading font-black text-white text-4xl md:text-6xl mb-8 drop-shadow-[4px_4px_0px_#0A1628]">Stay in the Loop</h2>
+           <p className="text-white text-xl font-bold mb-10">Get the latest academic insights and platform updates delivered to your inbox.</p>
+           <div className="flex flex-col sm:flex-row gap-4 items-stretch justify-center">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="bg-white border-4 border-navy rounded-xl px-6 py-4 font-bold text-navy shadow-[6px_6px_0px_#0A1628] focus:outline-none"
+              />
+              <button className="bg-yellow text-navy border-4 border-navy font-heading font-black px-10 py-4 rounded-xl shadow-[6px_6px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] transition-all">
+                 Subscribe
+              </button>
+           </div>
         </div>
       </section>
 

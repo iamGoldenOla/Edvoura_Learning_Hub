@@ -1,149 +1,178 @@
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
-import { Mail, Phone, MapPin, Clock, Send, MessageSquare } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, MessageSquare, ArrowRight, Globe, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-off-white selection:bg-yellow selection:text-navy font-body">
       <Navbar />
 
-      {/* Hero */}
-      <section className="bg-navy pt-[72px] relative overflow-hidden">
-        <div className="hero-grid-overlay absolute inset-0 pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-20 md:py-24 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-4">Contact</p>
-          <h1 className="font-heading font-extrabold text-white max-w-3xl mx-auto leading-tight" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>
-            We&apos;d Love to Hear From You
+      {/* Hero (Parallax + Brutalist) */}
+      <section 
+        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop")' }}
+      >
+        <div className="absolute inset-0 bg-success/85 backdrop-blur-sm" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-10 text-center z-10">
+          <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
+            CONTACT US
+          </div>
+          <h1 className="font-heading font-black text-navy max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#FFFFFF]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+            We&apos;re Here to Support Your Journey
           </h1>
-          <p className="mt-6 text-grey text-base max-w-xl mx-auto">
-            Have a question, feedback, or partnership inquiry? Our team typically responds within 24 hours.
+          <p className="text-navy text-xl max-w-3xl mx-auto font-bold bg-white/70 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
+            Have a question about our global tutors or want to book a free introductory session? Our team typically responds within 24 hours.
           </p>
         </div>
       </section>
 
       {/* Contact Grid */}
-      <section className="bg-off-white py-20 md:py-28">
+      <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
 
             {/* Contact Info Cards */}
-            <div className="lg:col-span-2 space-y-5">
-              <div className="bg-navy rounded-2xl p-8 text-white">
-                <h3 className="font-heading font-bold text-lg mb-6">Get in Touch</h3>
-                <div className="space-y-5">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-navy-mid rounded-xl flex items-center justify-center shrink-0">
-                      <Mail className="w-5 h-5 text-yellow" />
+            <div className="lg:col-span-2 space-y-10">
+              <div className="bg-navy rounded-[2.5rem] p-10 text-white border-8 border-navy-mid shadow-[15px_15px_0px_#F5C518] transform -rotate-1">
+                <h3 className="font-heading font-black text-3xl mb-10 flex items-center gap-4">
+                   <Globe className="w-8 h-8 text-yellow" /> Get in Touch
+                </h3>
+                <div className="space-y-8">
+                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
+                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
+                      <Mail className="w-7 h-7 text-navy" />
                     </div>
                     <div>
-                      <p className="text-xs text-grey font-bold uppercase tracking-widest mb-1">Email</p>
-                      <p className="text-sm text-white/80">hello@edvouralearninghub.com</p>
+                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Email</p>
+                      <p className="text-xl text-white font-bold">hello@edvoura.com</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-navy-mid rounded-xl flex items-center justify-center shrink-0">
-                      <Phone className="w-5 h-5 text-yellow" />
+                  
+                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
+                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
+                      <Phone className="w-7 h-7 text-navy" />
                     </div>
                     <div>
-                      <p className="text-xs text-grey font-bold uppercase tracking-widest mb-1">Phone</p>
-                      <p className="text-sm text-white/80">+234 (0) 801 234 5678</p>
+                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Support Line</p>
+                      <p className="text-xl text-white font-bold">+1 (555) EDVOURA</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-navy-mid rounded-xl flex items-center justify-center shrink-0">
-                      <MapPin className="w-5 h-5 text-yellow" />
+
+                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
+                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
+                      <Clock className="w-7 h-7 text-navy" />
                     </div>
                     <div>
-                      <p className="text-xs text-grey font-bold uppercase tracking-widest mb-1">Office</p>
-                      <p className="text-sm text-white/80">Lagos, Nigeria</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-navy-mid rounded-xl flex items-center justify-center shrink-0">
-                      <Clock className="w-5 h-5 text-yellow" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-grey font-bold uppercase tracking-widest mb-1">Hours</p>
-                      <p className="text-sm text-white/80">Mon – Fri, 8am – 6pm WAT</p>
+                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Operating Hours</p>
+                      <p className="text-xl text-white font-bold">24/7 Global Support</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white border border-grey-light rounded-2xl p-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <MessageSquare className="w-5 h-5 text-yellow" />
-                  <h3 className="font-heading font-bold text-navy">Quick Help</h3>
+              {/* Quick Help Card */}
+              <div className="bg-yellow border-4 border-navy rounded-[2.5rem] p-10 shadow-[10px_10px_0px_#0A1628] transform rotate-1">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-12 h-12 bg-white border-4 border-navy rounded-xl flex items-center justify-center shadow-[4px_4px_0px_#0A1628]">
+                    <HelpCircle className="w-6 h-6 text-navy" />
+                  </div>
+                  <h3 className="font-heading font-black text-2xl text-navy">Quick Resources</h3>
                 </div>
-                <ul className="space-y-3 text-sm text-grey">
-                  <li className="hover:text-yellow cursor-pointer transition-colors">→ How do I reset my password?</li>
-                  <li className="hover:text-yellow cursor-pointer transition-colors">→ How do I cancel my subscription?</li>
-                  <li className="hover:text-yellow cursor-pointer transition-colors">→ How do I become a tutor?</li>
-                  <li className="hover:text-yellow cursor-pointer transition-colors">→ How do I add another child?</li>
+                <ul className="space-y-4">
+                  {[
+                    'How do I book a free session?',
+                    'Supported curriculums (WAEC, AP, SAT)',
+                    'Becoming a vetted Global Tutor',
+                    'Parent dashboard setup'
+                  ].map((item, idx) => (
+                    <li key={idx} className="flex items-center gap-3 font-bold text-navy hover:translate-x-2 transition-transform cursor-pointer group">
+                      <div className="w-6 h-6 rounded bg-navy text-white flex items-center justify-center text-[10px] font-black group-hover:bg-info">
+                         {idx + 1}
+                      </div>
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
 
             {/* Contact Form */}
             <div className="lg:col-span-3">
-              <div className="bg-white border border-grey-light rounded-2xl p-8 md:p-10">
-                <h2 className="font-heading font-extrabold text-navy text-2xl mb-2">Send Us a Message</h2>
-                <p className="text-grey text-sm mb-8">Fill out the form below and we&apos;ll get back to you as soon as possible.</p>
+              <div className="bg-off-white border-8 border-navy rounded-[2.5rem] p-8 md:p-14 shadow-[20px_20px_0px_#22C55E] -rotate-1">
+                <div className="mb-10 text-center md:text-left">
+                  <h2 className="font-heading font-black text-navy text-4xl mb-4">Send Us a Message</h2>
+                  <p className="text-navy/60 text-lg font-bold">Fill out the form and our global team will be in touch shortly.</p>
+                </div>
 
-                {/* TODO: Wire to API endpoint or Supabase function */}
-                <form className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <form className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <label className="block text-sm font-semibold text-navy mb-1.5">Full Name</label>
+                      <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Full Name</label>
                       <input
                         type="text"
-                        placeholder="Your full name"
-                        className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
+                        placeholder="Sarah Jenkins"
+                        className="w-full px-6 py-5 rounded-2xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-navy mb-1.5">Email Address</label>
+                      <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Email Address</label>
                       <input
                         type="email"
-                        placeholder="you@example.com"
-                        className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
+                        placeholder="sarah@example.com"
+                        className="w-full px-6 py-5 rounded-2xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-navy mb-1.5">Subject</label>
-                    <select className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all">
+                    <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Subject</label>
+                    <select className="w-full px-6 py-5 rounded-2xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all appearance-none cursor-pointer">
                       <option value="">Select a topic</option>
-                      <option value="general">General Enquiry</option>
-                      <option value="support">Technical Support</option>
-                      <option value="billing">Billing & Payments</option>
-                      <option value="tutor">Become a Tutor</option>
-                      <option value="partnership">Partnership / Business</option>
-                      <option value="feedback">Feedback</option>
+                      <option value="general">Book Free Introductory Session</option>
+                      <option value="support">Academic Support Enquiry</option>
+                      <option value="billing">Global Payments / Billing</option>
+                      <option value="tutor">Become a Global Tutor</option>
+                      <option value="partnership">School Partnerships</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-navy mb-1.5">Message</label>
+                    <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Message</label>
                     <textarea
                       rows={5}
                       placeholder="Tell us how we can help..."
-                      className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey resize-none"
+                      className="w-full px-6 py-5 rounded-3xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full md:w-auto bg-yellow hover:bg-yellow-light text-navy font-heading font-bold px-10 py-3.5 rounded-xl transition-colors text-sm inline-flex items-center justify-center gap-2"
+                    className="group w-full md:w-auto bg-navy text-white font-heading font-black px-16 py-6 rounded-2xl border-4 border-navy shadow-[10px_10px_0px_#22C55E] hover:translate-x-1 hover:translate-y-1 hover:shadow-[5px_5px_0px_#22C55E] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-2xl flex items-center justify-center gap-4"
                   >
-                    <Send className="w-4 h-4" /> Send Message
+                    SEND MESSAGE <Send className="w-6 h-6 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
                   </button>
                 </form>
               </div>
             </div>
 
           </div>
+        </div>
+      </section>
+
+      {/* Solid Brutalist CTA */}
+      <section className="bg-yellow relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[6px_6px_0px_#FFFFFF] transform rotate-[-2deg]">
+             READY TO ACING IT?
+          </h2>
+          <Link
+            href="/signup"
+            className="inline-block bg-navy text-white font-heading font-black px-16 py-6 rounded-2xl border-4 border-white shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-2xl transform rotate-2 w-full sm:w-auto"
+          >
+            JOIN EDVOURA NOW
+          </Link>
         </div>
       </section>
 

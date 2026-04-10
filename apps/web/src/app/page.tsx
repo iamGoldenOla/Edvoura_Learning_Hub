@@ -1,426 +1,362 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import {
   Video, Brain, ClipboardList, Users, Star, ArrowRight, Play,
-  CheckCircle2, UserPlus, Search, BookOpen, ChevronRight,
-  Calculator, Microscope, BookOpenText, Globe, Monitor, Palette, Languages, Ruler
+  CheckCircle2, UserPlus, Search, BookOpen, Shield,
+  Gamepad2, Sparkles, Sprout, Hammer, Trophy, LayoutDashboard, Clock, Globe
 } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-off-white selection:bg-yellow selection:text-navy font-body">
       <Navbar />
 
-      {/* ===== HERO SECTION ===== */}
-      <section className="relative bg-navy pt-[72px] overflow-hidden">
-        <div className="hero-grid-overlay absolute inset-0 pointer-events-none" />
-        {/* Yellow glow */}
-        <div className="absolute top-20 right-20 w-[500px] h-[500px] bg-yellow/12 rounded-full blur-[120px] pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-20 md:py-28 lg:py-32">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left Column */}
-            <div>
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 bg-yellow/10 border border-yellow/20 text-yellow text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
-                <Star className="w-3.5 h-3.5 fill-yellow" />
-                Nigeria&apos;s Premier Online Tutoring Hub
+      {/* ===== HERO SECTION (PARALLAX + 3D NEO-BRUTALIST) ===== */}
+      <section 
+        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1427504494785-3a9a2753cd0e?q=80&w=2070&auto=format&fit=crop")' }}
+      >
+        <div className="absolute inset-0 bg-yellow/90 backdrop-blur-sm" />
+        
+        <div className="relative max-w-[1400px] mx-auto px-6 md:px-8 z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            
+            {/* Left Column — Copy */}
+            <div className="max-w-2xl relative">
+              <div className="inline-flex items-center gap-2 bg-white border-4 border-navy text-navy font-heading font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
+                <Star className="w-5 h-5 fill-navy" />
+                Premium K-12 Global Learning
               </div>
 
-              <h1 className="font-heading font-extrabold text-white leading-[1.1] tracking-tight" style={{ fontSize: 'clamp(2.4rem, 5vw, 4rem)' }}>
-                Unlock Your Child&apos;s{' '}
-                <span className="yellow-underline">Full Potential</span>
-                {' '}— Online
+              <h1 className="font-heading font-black text-navy leading-[1] tracking-tight drop-shadow-[4px_4px_0px_#FFFFFF]" style={{ fontSize: 'clamp(3.5rem, 6vw, 5.5rem)' }}>
+                Unlock Your
+                <br />
+                Child&apos;s{' '}
+                <span className="relative inline-block mt-2">
+                  <span className="relative z-10 bg-navy text-white px-2 border-4 border-white shadow-[6px_6px_0px_rgba(255,255,255,0.4)] rotate-2 inline-block">Potential</span>
+                </span>
               </h1>
 
-              <p className="mt-6 text-grey text-base md:text-lg leading-relaxed max-w-xl">
-                Expert tutors. Live sessions via Google Meet. Interactive learning tools. Edvoura connects K-12 students with qualified teachers — anywhere, anytime.
+              <p className="mt-10 text-navy text-xl leading-relaxed max-w-xl font-bold bg-white/50 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#0A1628]">
+                Expert tutors from around the world. Private 1-on-1 sessions. Highly interactive 3D learning tools. The gamified platform built for international academic excellence.
               </p>
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 mt-10">
+              {/* Neo-brutalist CTAs */}
+              <div className="flex flex-col sm:flex-row gap-6 mt-10">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center gap-2 bg-yellow hover:bg-yellow-light text-navy font-heading font-bold px-8 py-3.5 rounded-xl transition-colors text-base"
+                  className="group inline-flex items-center justify-center gap-2 bg-success text-white font-heading font-black px-10 py-5 rounded-2xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl"
                 >
-                  Get Started Free <ArrowRight className="w-4 h-4" />
+                  Start Free Trial <ArrowRight className="w-6 h-6 group-hover:rotate-45 transition-transform" />
                 </Link>
-                <button className="inline-flex items-center justify-center gap-2 border border-navy-light text-white hover:border-yellow/40 hover:text-yellow font-medium px-8 py-3.5 rounded-xl transition-colors text-base">
-                  <Play className="w-4 h-4 fill-current" /> Watch Demo
+                <button className="inline-flex items-center justify-center gap-2 bg-white text-navy font-heading font-black px-10 py-5 rounded-2xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl">
+                  <Play className="w-6 h-6 fill-navy" /> Watch Demo
                 </button>
               </div>
-
-              {/* Stats Row */}
-              <div className="flex gap-8 mt-12 pt-8 border-t border-navy-light/40">
-                {[
-                  { value: '500+', label: 'Students' },
-                  { value: '50+', label: 'Expert Tutors' },
-                  { value: '20+', label: 'Subjects' },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <p className="text-2xl md:text-3xl font-heading font-extrabold text-yellow">{stat.value}</p>
-                    <p className="text-xs uppercase tracking-widest text-grey font-semibold mt-1">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            {/* Right Column — Floating UI Card */}
-            <div className="hidden lg:block relative">
-              {/* Main Card */}
-              <div className="bg-navy-mid border border-navy-light rounded-2xl p-6 shadow-2xl relative z-10">
-                <div className="h-1 w-full bg-yellow rounded-full mb-6" />
-                <div className="flex items-center gap-4 mb-5">
-                  <div className="w-12 h-12 bg-navy-light rounded-full flex items-center justify-center text-yellow">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-white font-heading font-bold">Dr. Adebayo Okonkwo</p>
-                    <p className="text-grey text-sm">Senior Mathematics Tutor</p>
-                  </div>
-                  <div className="ml-auto flex items-center gap-1.5 bg-success/15 text-success text-xs font-bold px-3 py-1 rounded-full">
-                    <span className="w-2 h-2 bg-success rounded-full animate-pulse-live" />
-                    LIVE
-                  </div>
-                </div>
-
-                <div className="bg-yellow/10 text-yellow text-xs font-semibold px-3 py-1 rounded-full inline-flex mb-4">
-                  Mathematics • Grade 7
-                </div>
-
-                <p className="text-white font-heading font-bold text-lg mb-4">Introduction to Algebraic Expressions</p>
-
-                {/* Progress */}
-                <div className="mb-5">
-                  <div className="flex justify-between text-xs mb-1.5">
-                    <span className="text-grey font-medium">Session Progress</span>
-                    <span className="text-yellow font-bold">65%</span>
-                  </div>
-                  <div className="w-full h-2 bg-navy-light rounded-full overflow-hidden">
-                    <div className="h-full bg-yellow rounded-full" style={{ width: '65%' }} />
-                  </div>
-                </div>
-
-                {/* Student Avatars */}
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500'].map((bg, i) => (
-                      <div key={i} className={`w-7 h-7 ${bg} rounded-full border-2 border-navy-mid text-white text-[10px] font-bold flex items-center justify-center`}>
-                        {String.fromCharCode(65 + i)}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-grey">12 students joined</p>
-                </div>
+            {/* Right Column — 3D Image composition */}
+            <div className="hidden lg:block relative z-10 w-full h-[600px] perspective-[1500px]">
+              {/* 3D Tilted Card */}
+              <div className="absolute inset-0 bg-white border-8 border-navy rounded-[2rem] shadow-[20px_20px_0px_#0A1628] overflow-hidden transform rotate-x-[5deg] rotate-y-[-15deg] rotate-z-[2deg] hover:rotate-x-0 hover:rotate-y-0 hover:rotate-z-0 hover:shadow-[10px_10px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 transition-all duration-700 ease-out z-10">
+                <Image
+                  src="/images/hero_student.png"
+                  alt="Student learning online"
+                  fill
+                  className="object-cover object-[center_30%]"
+                  priority
+                />
               </div>
 
-              {/* Floating Card 1 — Top Right */}
-              <div className="absolute -top-4 -right-4 bg-navy-mid border border-navy-light rounded-xl p-4 shadow-xl animate-float z-20">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-yellow/15 rounded-lg flex items-center justify-center">
-                    <Star className="w-4 h-4 text-yellow fill-yellow" />
+              {/* Overlapping Info Card */}
+              <div className="absolute bottom-10 -left-10 bg-white border-4 border-navy rounded-2xl p-4 shadow-[8px_8px_0px_#0A1628] z-30 transform -rotate-3 hover:rotate-0 transition-transform cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border-4 border-navy flex-shrink-0 bg-yellow flex items-center justify-center">
+                    <Image src="/images/tutor_session.png" alt="Tutor" width={64} height={64} className="object-cover h-full" />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-bold">Top Performer</p>
-                    <p className="text-grey text-xs">Award unlocked!</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Card 2 — Bottom Left */}
-              <div className="absolute -bottom-4 -left-6 bg-navy-mid border border-navy-light rounded-xl p-4 shadow-xl animate-float-delayed z-20">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-info/15 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-4 h-4 text-info" />
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-bold">Next Session</p>
-                    <p className="text-grey text-xs">Today, 4:00 PM</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-navy font-heading font-black text-xl">Dr. Adebayo O.</p>
+                      <span className="bg-success text-white border-2 border-navy font-bold px-2 py-0.5 rounded shadow-[2px_2px_0px_#0A1628]">
+                        LIVE
+                      </span>
+                    </div>
+                    <p className="text-grey font-bold">International Faculty</p>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* ===== HOW IT WORKS ===== */}
-      <section className="bg-off-white py-20 md:py-28">
+      {/* ===== EXPLORER BAND (GRADES 1-3) ===== */}
+      <section className="bg-info py-24 relative overflow-hidden border-b-8 border-navy">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">How It Works</p>
-            <h2 className="font-heading font-extrabold text-navy" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
-              Start Learning in 3 Simple Steps
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                step: '01',
-                icon: UserPlus,
-                title: 'Create Your Account',
-                desc: 'Sign up as a student, parent, or tutor in under 2 minutes. It\'s completely free to get started.',
-              },
-              {
-                step: '02',
-                icon: Search,
-                title: 'Match With a Tutor',
-                desc: 'We connect you with a qualified, vetted tutor that fits your child\'s learning goals and schedule.',
-              },
-              {
-                step: '03',
-                icon: BookOpen,
-                title: 'Start Learning',
-                desc: 'Join live sessions via Google Meet, complete assignments, take quizzes, and track progress in real time.',
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="relative bg-white border border-grey-light rounded-2xl p-8 group hover:border-yellow hover:shadow-lg transition-all duration-300"
-              >
-                <span className="absolute top-6 right-6 text-6xl font-heading font-extrabold text-navy/[0.06] leading-none select-none">{item.step}</span>
-                <div className="w-14 h-14 bg-navy rounded-xl flex items-center justify-center mb-6 group-hover:bg-yellow transition-colors duration-300">
-                  <item.icon className="w-6 h-6 text-white group-hover:text-navy transition-colors duration-300" />
-                </div>
-                <h3 className="font-heading font-bold text-navy text-lg mb-3">{item.title}</h3>
-                <p className="text-grey text-sm leading-relaxed">{item.desc}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            {/* Image Box */}
+            <div className="relative group perspective-[2000px]">
+              <div className="relative bg-white border-8 border-navy rounded-[3rem] shadow-[15px_15px_0px_#0A1628] overflow-hidden transform rotate-y-12 rotate-z-[-3deg] group-hover:rotate-y-0 group-hover:rotate-z-0 group-hover:translate-x-2 group-hover:translate-y-2 group-hover:shadow-[5px_5px_0px_#0A1628] transition-all duration-500 z-20">
+                <Image 
+                  src="/images/teddy.png" 
+                  alt="Child friendly learning on Edvoura" 
+                  width={800} 
+                  height={800} 
+                  className="w-full h-auto object-cover"
+                />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== FEATURES ===== */}
-      <section className="bg-navy py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">Platform Features</p>
-            <h2 className="font-heading font-extrabold text-white" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
-              Everything Your Child Needs to Excel
-            </h2>
-            <p className="mt-4 text-grey max-w-2xl mx-auto text-sm md:text-base">
-              A unified ecosystem designed for students, parents, and tutors — with tools that make learning efficient, engaging, and measurable.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              { icon: Video, title: 'Live Sessions via Google Meet', desc: 'Real-time, face-to-face instruction with screen sharing, breakout rooms, and session recording.', tag: 'Real-time' },
-              { icon: Brain, title: 'Interactive Quizzes & Games', desc: 'Subject-specific quizzes, drag-and-drop games, and timed mock exams that make learning stick.', tag: 'Engagement' },
-              { icon: ClipboardList, title: 'Assignments & Grading', desc: 'Tutors create, distribute, and grade assignments. Students submit work. Parents track progress.', tag: 'Workflow' },
-              { icon: Users, title: 'Parent Dashboard', desc: 'Real-time visibility into your child\'s attendance, scores, session schedule, and tutor communications.', tag: 'Transparency' },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className="bg-navy-mid border border-navy-light rounded-2xl p-8 group hover:border-t-yellow hover:border-t-2 transition-all duration-300"
-              >
-                <div className="flex items-start justify-between mb-6">
-                  <div className="w-12 h-12 bg-yellow/10 rounded-xl flex items-center justify-center">
-                    <feature.icon className="w-6 h-6 text-yellow" />
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-dim bg-yellow/10 px-3 py-1 rounded-full">
-                    {feature.tag}
-                  </span>
-                </div>
-                <h3 className="font-heading font-bold text-white text-lg mb-3">{feature.title}</h3>
-                <p className="text-grey text-sm leading-relaxed">{feature.desc}</p>
+              
+              <div className="absolute -top-10 -right-10 w-24 h-24 bg-yellow border-4 border-navy rounded-3xl flex items-center justify-center rotate-12 shadow-[6px_6px_0px_#0A1628] z-30 animate-[bounce_3s_infinite]">
+                <Star className="w-12 h-12 text-navy fill-navy" />
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* ===== SUBJECTS ===== */}
-      <section className="bg-white py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">Subjects</p>
-            <h2 className="font-heading font-extrabold text-navy" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
-              Comprehensive K-12 Curriculum Coverage
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {[
-              { icon: Calculator, name: 'Mathematics', tutors: '14 Tutors' },
-              { icon: Microscope, name: 'Sciences', tutors: '12 Tutors' },
-              { icon: BookOpenText, name: 'English', tutors: '10 Tutors' },
-              { icon: Globe, name: 'Social Studies', tutors: '8 Tutors' },
-              { icon: Monitor, name: 'Computer Science', tutors: '6 Tutors' },
-              { icon: Palette, name: 'Creative Arts', tutors: '5 Tutors' },
-              { icon: Languages, name: 'Languages', tutors: '7 Tutors' },
-              { icon: Ruler, name: 'Further Maths', tutors: '4 Tutors' },
-            ].map((subject) => (
-              <div
-                key={subject.name}
-                className="bg-off-white border border-grey-light rounded-2xl p-6 text-center group hover:border-yellow hover:shadow-md transition-all duration-300 cursor-pointer"
-              >
-                <div className="w-14 h-14 mx-auto bg-white border border-grey-light rounded-xl flex items-center justify-center mb-4 group-hover:border-yellow group-hover:bg-yellow/5 transition-all">
-                  <subject.icon className="w-7 h-7 text-navy group-hover:text-yellow transition-colors" />
-                </div>
-                <h3 className="font-heading font-bold text-navy text-sm mb-1">{subject.name}</h3>
-                <p className="text-xs text-grey">{subject.tutors}</p>
+            {/* Text Box */}
+            <div className="lg:pl-8">
+              <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2">
+                GRADES 1—3
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== TESTIMONIALS ===== */}
-      <section className="bg-navy py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">Testimonials</p>
-            <h2 className="font-heading font-extrabold text-white" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
-              Trusted by Families Across Nigeria
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: 'My son went from struggling with fractions to topping his class in Mathematics. The tutors are incredibly patient and the live sessions feel like private school quality.',
-                name: 'Mrs. Folashade Adeyemi',
-                role: 'Parent of JSS3 Student',
-                color: 'bg-blue-500',
-              },
-              {
-                quote: 'I love the quizzes and the streaks system. It makes me want to study every day. My WAEC preparation feels so much less scary now that I can see my progress.',
-                name: 'Chukwuemeka Obi',
-                role: 'SS2 Student',
-                color: 'bg-green-500',
-              },
-              {
-                quote: 'As a tutor, the platform handles all the admin work — scheduling, grading, payments. I can focus entirely on teaching, which is what I love to do.',
-                name: 'Dr. Amina Ibrahim',
-                role: 'Mathematics & Physics Tutor',
-                color: 'bg-purple-500',
-              },
-            ].map((testimonial) => (
-              <div key={testimonial.name} className="bg-navy-mid border border-navy-light rounded-2xl p-8">
-                <div className="flex gap-1 mb-5">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} className="w-4 h-4 text-yellow fill-yellow" />
-                  ))}
-                </div>
-                <p className="text-white/70 text-sm leading-relaxed italic mb-8">
-                  &ldquo;{testimonial.quote}&rdquo;
+              <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628]">
+                Learning that feels like Playtime.
+              </h2>
+              <div className="bg-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform -rotate-1">
+                <p className="text-navy text-xl font-bold leading-relaxed">
+                  For our youngest learners (The Explorer Band), we replace rigid tables with vibrant sticker books, engaging subject games, and visual reward gardens.
                 </p>
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 ${testimonial.color} rounded-full flex items-center justify-center text-white font-bold text-sm`}>
-                    {testimonial.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="text-white text-sm font-bold">{testimonial.name}</p>
-                    <p className="text-grey text-xs">{testimonial.role}</p>
-                  </div>
-                </div>
               </div>
-            ))}
+              
+              <ul className="space-y-4 mb-10 bg-navy text-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#0A1628] transform rotate-1">
+                {[
+                  'Earn digital stickers and animated badges',
+                  'Interactive story-based lesson formats',
+                  'Safe, friendly, and visually stunning dashboards'
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-success border-2 border-navy flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#FFFFFF]">
+                      <CheckCircle2 className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="font-bold text-lg">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link href="/signup" className="inline-flex items-center justify-center gap-2 bg-yellow text-navy font-heading font-black px-8 py-5 rounded-xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl w-full sm:w-auto">
+                Discover The Explorer <ArrowRight className="w-6 h-6" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ===== PRICING ===== */}
-      <section className="bg-white py-20 md:py-28">
+      {/* ===== BUILDER BAND (GRADES 4-6) - NEW SECTION ===== */}
+      <section className="bg-success py-24 relative overflow-hidden border-b-8 border-navy">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">Pricing</p>
-            <h2 className="font-heading font-extrabold text-navy" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
-              Plans That Grow With Your Child
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-start">
-            {[
-              {
-                name: 'Starter',
-                price: '₦15,000',
-                period: '/month',
-                desc: 'Perfect for trying out live tutoring.',
-                features: ['4 live sessions/month', '1 subject', 'Basic progress reports', 'Email support'],
-                cta: 'Get Started',
-                popular: false,
-              },
-              {
-                name: 'Growth',
-                price: '₦35,000',
-                period: '/month',
-                desc: 'Most popular for serious learners.',
-                features: ['12 live sessions/month', '3 subjects', 'Full progress analytics', 'Quiz & assignment access', 'Priority support', 'Session recordings'],
-                cta: 'Get Started',
-                popular: true,
-              },
-              {
-                name: 'Premium',
-                price: '₦65,000',
-                period: '/month',
-                desc: 'The complete Edvoura experience.',
-                features: ['Unlimited sessions', 'All subjects', 'Exam prep (WAEC/JAMB)', 'Dedicated tutor', 'Parent dashboard', '24/7 priority support', 'Certificates'],
-                cta: 'Get Started',
-                popular: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-2xl p-8 border relative ${
-                  plan.popular
-                    ? 'bg-navy text-white border-yellow scale-[1.03] shadow-xl'
-                    : 'bg-white border-grey-light'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-yellow text-navy text-[10px] font-bold uppercase tracking-widest px-4 py-1 rounded-full flex items-center gap-1.5">
-                    <Star className="w-3 h-3 fill-navy" /> Most Popular
-                  </div>
-                )}
-                <h3 className={`font-heading font-bold text-lg mb-2 ${plan.popular ? 'text-white' : 'text-navy'}`}>{plan.name}</h3>
-                <p className={`text-sm mb-6 ${plan.popular ? 'text-grey' : 'text-grey'}`}>{plan.desc}</p>
-                <div className="mb-8">
-                  <span className={`text-4xl font-heading font-extrabold ${plan.popular ? 'text-yellow' : 'text-navy'}`}>{plan.price}</span>
-                  <span className={`text-sm ${plan.popular ? 'text-grey' : 'text-grey'}`}>{plan.period}</span>
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm">
-                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${plan.popular ? 'text-yellow' : 'text-success'}`} />
-                      <span className={plan.popular ? 'text-white/80' : 'text-grey'}>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href="/signup"
-                  className={`block text-center font-heading font-bold py-3 rounded-xl transition-colors text-sm ${
-                    plan.popular
-                      ? 'bg-yellow text-navy hover:bg-yellow-light'
-                      : 'border border-grey-light text-navy hover:border-yellow hover:text-yellow'
-                  }`}
-                >
-                  {plan.cta} <ChevronRight className="w-4 h-4 inline" />
-                </Link>
+          <div className="flex flex-col lg:flex-row-reverse gap-16 items-center">
+            {/* Image Box */}
+            <div className="relative group perspective-[2000px] flex-1">
+              <div className="relative bg-white border-8 border-navy rounded-[3rem] shadow-[15px_15px_0px_#0A1628] overflow-hidden transform -rotate-y-12 rotate-z-[3deg] group-hover:rotate-y-0 group-hover:rotate-z-0 transition-all duration-500 z-20">
+                <Image 
+                  src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?q=80&w=2070&auto=format&fit=crop" 
+                  alt="Students in the Builder Band" 
+                  width={800} 
+                  height={800} 
+                  className="w-full h-[500px] object-cover"
+                />
               </div>
-            ))}
+              <div className="absolute -bottom-10 -right-4 w-24 h-24 bg-navy border-4 border-white rounded-3xl flex items-center justify-center -rotate-6 shadow-[6px_6px_0px_#F5C518] z-30">
+                <Hammer className="w-12 h-12 text-yellow" />
+              </div>
+            </div>
+
+            {/* Text Box */}
+            <div className="flex-1 lg:pr-8">
+              <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] -rotate-2">
+                GRADES 4—6
+              </div>
+              <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628]">
+                Building Mastery & Confidence.
+              </h2>
+              <div className="bg-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform rotate-1">
+                <p className="text-navy text-xl font-bold leading-relaxed">
+                   For our intermediate learners (The Builder Band), we shift focus to structured subjects, badge walls, and competitive progress tracks that reward consistency and academic growth.
+                </p>
+              </div>
+              
+              <ul className="space-y-4 mb-10 bg-navy text-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#F5C518] transform -rotate-1">
+                {[
+                  'Subject-level Badge Walls & Milestones',
+                  'Structured Homework & Quiz Hubs',
+                  'Consistency Streaks & Peer Leaderboards'
+                ].map((feature, idx) => (
+                  <li key={idx} className="flex items-center gap-4">
+                    <div className="w-8 h-8 rounded-lg bg-yellow border-2 border-navy flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#0A1628] mt-0.5">
+                      <Trophy className="w-5 h-5 text-navy" />
+                    </div>
+                    <span className="font-bold text-lg">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link href="/signup" className="inline-flex items-center justify-center gap-2 bg-navy text-white font-heading font-black px-8 py-5 rounded-xl border-4 border-white shadow-[8px_8px_0px_#F5C518] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#F5C518] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl w-full sm:w-auto">
+                Discover The Builder <ArrowRight className="w-6 h-6" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ===== CTA BANNER ===== */}
-      <section className="bg-yellow py-16 md:py-20">
-        <div className="max-w-3xl mx-auto px-6 md:px-8 text-center">
-          <h2 className="font-heading font-extrabold text-navy" style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.4rem)' }}>
-            Ready to Transform Your Child&apos;s Education?
-          </h2>
-          <p className="mt-4 text-navy/70 text-base">
-            Join hundreds of Nigerian families who are already seeing real results with Edvoura.
+      {/* ===== ACHIEVER BAND (GRADES 7-12) ===== */}
+      <section className="bg-navy py-32 border-b-8 border-navy relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+        <div className="max-w-[1400px] mx-auto px-6 md:px-8 text-center pb-20 relative z-10">
+          <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#F5C518] rotate-2">
+            GRADES 7—12
+          </div>
+          <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-6 drop-shadow-[4px_4px_0px_#060E1C]">The Achiever View</h2>
+          <p className="bg-white text-navy font-bold text-xl px-6 py-4 rounded-xl border-4 border-navy shadow-[6px_6px_0px_#F5C518] max-w-2xl mx-auto transform -rotate-1">
+            A high-performance command center for SAT, WAEC, NECO, and JAMB prep across the globe.
           </p>
+        </div>
+
+        <div className="relative max-w-6xl mx-auto px-6 z-10 perspective-[2000px]">
+          <div className="relative bg-navy border-8 border-white rounded-[2rem] shadow-[20px_20px_0px_#F5C518] overflow-hidden transform rotate-x-[12deg] rotate-y-[-5deg] hover:rotate-x-0 hover:rotate-y-0 transition-transform duration-700 mx-auto group">
+            <Image 
+              src="/images/learning_dashboard_ui.png" 
+              alt="Edvoura Dashboard UI" 
+              width={1600} 
+              height={900} 
+              className="w-full h-auto brightness-110 group-hover:scale-105 transition-transform duration-1000"
+            />
+            <div className="absolute inset-0 bg-yellow/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          </div>
+        </div>
+      </section>
+
+      {/* ===== WHAT OUR CLIENTS SAY (REAMPED GLOBAL) ===== */}
+      <section className="py-32 bg-white border-b-8 border-navy relative overflow-hidden">
+         <div className="absolute -top-20 -left-20 w-64 h-64 bg-info/5 rounded-full blur-3xl" />
+         <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-yellow/5 rounded-full blur-3xl" />
+         
+         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+            <div className="text-center mb-24">
+               <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-6">Global Stories</h2>
+               <p className="text-navy text-xl font-bold max-w-2xl mx-auto">See how students from around the world are excelling with Edvoura.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+               {[
+                 {
+                   quote: "Edvoura matched me with a specialist for my AP Calculus prep. The sessions are world-class, and the dashboard tools are better than anything I've seen in Canada.",
+                   name: "Sarah Jenkins",
+                   role: "High School Senior, Toronto",
+                   location: "Canada",
+                   img: "/images/client_canada.png",
+                   color: "bg-error"
+                 },
+                 {
+                   quote: "My daughter loves the Explorer Band. The stickers and games keep her engaged for hours while she masters Mandarin and English simultaneously.",
+                   name: "Wei Zhang",
+                   role: "Parent of Grade 2 Student",
+                   location: "China",
+                   img: "/images/client_china.png",
+                   color: "bg-success"
+                 },
+                 {
+                   quote: "We use the platform for weekend intensive sessions. The quality of tutors available at any time is incredible. High-performance learning at its best.",
+                   name: "David Miller",
+                   role: "Parent of 8th Grader",
+                   location: "USA",
+                   img: "/images/client_usa.png",
+                   color: "bg-info"
+                 }
+               ].map((client, i) => (
+                 <div key={client.name} className={`bg-white border-4 border-navy rounded-[2.5rem] p-10 shadow-[10px_10px_0px_#0A1628] hover:-translate-y-2 transition-all duration-300 relative ${i % 2 === 0 ? 'rotate-1' : '-rotate-1'}`}>
+                    <div className="absolute -top-8 -left-2 text-9xl text-navy opacity-5 font-serif select-none pointer-events-none">"</div>
+                    <div className="relative z-10">
+                       <div className="flex gap-1 mb-8">
+                          {[1,2,3,4,5].map(s => <Star key={s} className="w-5 h-5 fill-yellow text-navy border-2 border-navy rounded-sm" />)}
+                       </div>
+                       <p className="text-navy text-lg font-bold italic mb-10 leading-relaxed">"{client.quote}"</p>
+                       <div className="flex items-center gap-4 border-t-4 border-navy/10 pt-8">
+                          <div className="w-16 h-16 rounded-2xl border-4 border-navy overflow-hidden bg-white shadow-[4px_4px_0px_#0A1628]">
+                             <Image src={client.img} alt={client.name} width={64} height={64} className="object-cover h-full" />
+                          </div>
+                          <div>
+                             <p className="font-heading font-black text-navy text-xl">{client.name}</p>
+                             <p className="text-navy text-sm font-bold opacity-70">{client.role}</p>
+                             <div className="flex items-center gap-1.5 mt-1">
+                                <Globe className="w-3.5 h-3.5 text-navy opacity-50" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-navy bg-navy/5 px-2 py-0.5 rounded">{client.location}</span>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* ===== FEATURED BLOG (NEO-BRUTALIST) ===== */}
+      <section className="bg-yellow py-32 border-b-8 border-navy relative overflow-hidden">
+         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+            <div className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
+               <div className="text-left">
+                  <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-6">Latest Insights</h2>
+                  <p className="text-navy text-xl font-bold max-w-xl">Deep dives into the science of learning and the future of global education.</p>
+               </div>
+               <Link href="/blog" className="bg-white border-4 border-navy text-navy font-heading font-black px-8 py-4 rounded-xl shadow-[6px_6px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] transition-all inline-flex items-center gap-2">
+                 Visit Blog <ArrowRight className="w-5 h-5" />
+               </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+               {[
+                 {
+                   title: "How Online Tutoring is Transforming Education",
+                   excerpt: "From remote villages to busy metropolises, digital education is the new frontier of equality.",
+                   img: "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop",
+                   date: "Oct 10, 2026"
+                 },
+                 {
+                   title: "The Neuro-Psychology of Learning Streaks",
+                   excerpt: "Why the human brain craves gamified progress and how we're using it to boost retention by 40%.",
+                   img: "https://images.unsplash.com/photo-1510172951991-856a654063f9?q=80&w=1974&auto=format&fit=crop",
+                   date: "Oct 08, 2026"
+                 }
+               ].map((post, i) => (
+                 <div key={post.title} className="group cursor-pointer">
+                    <div className="relative aspect-[16/9] border-8 border-navy rounded-[2.5rem] overflow-hidden shadow-[15px_15px_0px_#0A1628] mb-8 bg-white transition-transform group-hover:-translate-y-2">
+                       <Image src={post.img} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
+                    </div>
+                    <div className="inline-block bg-white border-4 border-navy text-navy text-xs font-black px-4 py-1.5 rounded-lg mb-4 shadow-[4px_4px_0px_#0A1628]">
+                       {post.date}
+                    </div>
+                    <h3 className="font-heading font-black text-navy text-3xl group-hover:text-white transition-colors tracking-tight mb-4">{post.title}</h3>
+                    <p className="text-navy font-bold text-lg mb-6 line-clamp-2 md:opacity-80 group-hover:opacity-100 transition-opacity">{post.excerpt}</p>
+                    <div className="flex items-center gap-2 text-navy font-black text-lg underline decoration-4 underline-offset-8">
+                       Read Article <ArrowRight className="w-5 h-5 group-hover:translate-x-4 transition-transform" />
+                    </div>
+                 </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* ===== SOLID BRUTALIST CTA BANNER ===== */}
+      <section className="bg-error relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-8 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-[-2deg]">
+            READY TO JOIN THE ELITE?
+          </h2>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 mt-8 bg-navy hover:bg-dark text-white font-heading font-bold px-10 py-4 rounded-xl transition-colors text-base"
+            className="inline-block bg-yellow text-navy font-heading font-black px-16 py-6 rounded-2xl border-4 border-navy shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-2xl transform rotate-2 w-full sm:w-auto"
           >
-            Start Learning Today <ArrowRight className="w-4 h-4" />
+            JOIN EDVOURA NOW
           </Link>
         </div>
       </section>

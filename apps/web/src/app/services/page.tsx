@@ -1,144 +1,190 @@
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
-  Video, Brain, ClipboardList, Users, BarChart, BookOpen, Shield, Headphones,
+  Video, Brain, ClipboardList, Users, BarChart, BookOpen, BookOpenText, Shield, Headphones,
   ArrowRight, CheckCircle2, Monitor, Star
 } from 'lucide-react';
 
 export default function ServicesPage() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-off-white selection:bg-yellow selection:text-navy font-body">
       <Navbar />
 
-      {/* Hero */}
-      <section className="bg-navy pt-[72px] relative overflow-hidden">
-        <div className="hero-grid-overlay absolute inset-0 pointer-events-none" />
-        <div className="absolute top-20 right-20 w-[400px] h-[400px] bg-yellow/8 rounded-full blur-[120px] pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-20 md:py-28 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-4">Our Services</p>
-          <h1 className="font-heading font-extrabold text-white max-w-3xl mx-auto leading-tight" style={{ fontSize: 'clamp(2.2rem, 4.5vw, 3.5rem)' }}>
-            A Complete Learning Ecosystem for Every Stakeholder
+      {/* Hero (Parallax + Brutalist) */}
+      <section 
+        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop")' }}
+      >
+        <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-10 text-center z-10">
+          <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
+            OUR SERVICES
+          </div>
+          <h1 className="font-heading font-black text-white max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#0A1628]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+            A Complete Learning Ecosystem Built to Win
           </h1>
-          <p className="mt-6 text-grey text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white text-xl max-w-3xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#F5C518] transform rotate-1">
             From live tutoring to exam preparation, Edvoura brings everything under one roof — designed for students, parents, and educators.
           </p>
-          <Link href="/signup" className="inline-flex items-center gap-2 mt-10 bg-yellow hover:bg-yellow-light text-navy font-heading font-bold px-8 py-3.5 rounded-xl transition-colors">
-            Get Started Free <ArrowRight className="w-4 h-4" />
-          </Link>
+          
+          <div className="mt-12 flex justify-center">
+            <Link href="/signup" className="inline-flex items-center gap-2 bg-success text-white border-4 border-navy font-heading font-black px-12 py-5 rounded-xl transition-all shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none text-2xl transform hover:scale-105">
+              Start Learning <ArrowRight className="w-6 h-6" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Dashboard 3D Preview Image */}
+        <div className="relative max-w-6xl mx-auto px-6 mt-16 perspective-[2000px] z-10">
+          <div className="relative rounded-[2rem] overflow-hidden border-8 border-navy shadow-[20px_20px_0px_#F5C518] transform rotate-x-[8deg] rotate-y-[-2deg] hover:rotate-x-0 hover:rotate-y-0 transition-transform duration-700 bg-white group cursor-pointer">
+            <div className="absolute inset-0 bg-yellow/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
+            <Image
+              src="/images/learning_dashboard_ui.png"
+              alt="Edvoura Learning Dashboard"
+              width={1600}
+              height={900}
+              className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
+            />
+          </div>
         </div>
       </section>
 
       {/* Core Services */}
-      <section className="bg-off-white py-20 md:py-28">
+      <section className="bg-white py-24 md:py-32 border-b-8 border-navy">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">Core Services</p>
-            <h2 className="font-heading font-extrabold text-navy" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
-              What We Offer
-            </h2>
+          <div className="text-center mb-24">
+            <div className="inline-block bg-info border-4 border-navy text-white font-heading font-black px-8 py-3 rounded-2xl mb-8 shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
+              <h2 className="text-4xl md:text-5xl uppercase tracking-tight">Core Offerings</h2>
+            </div>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-20">
             {[
               {
                 icon: Video, title: 'Live 1-on-1 & Group Tutoring', tag: 'Flagship',
                 desc: 'Real-time tutoring sessions delivered via Google Meet. Students connect with qualified tutors for personalised instruction, screen sharing, interactive whiteboards, and recorded sessions they can revisit anytime.',
                 features: ['Face-to-face video sessions', 'Screen sharing & whiteboard', 'Session recordings for review', 'Flexible scheduling'],
+                image: '/images/tutor_session.png',
+                color: 'bg-yellow'
               },
               {
                 icon: Brain, title: 'Interactive Learning Tools', tag: 'Engagement',
                 desc: 'Keep students engaged with gamified quizzes, drag-and-drop activities, flashcards, and subject-specific learning games — all designed to make concepts stick through active participation.',
                 features: ['Subject-specific quizzes', 'Drag-and-drop games', 'Flashcard decks', 'Streak & reward systems'],
-              },
-              {
-                icon: ClipboardList, title: 'Assignment & Grading System', tag: 'Workflow',
-                desc: 'Tutors create and distribute assignments with deadlines. Students submit work digitally. Tutors grade with feedback. Parents see everything — zero papers lost, zero excuses.',
-                features: ['Digital submission', 'Tutor feedback & grading', 'Deadline tracking', 'Parent visibility'],
-              },
-              {
-                icon: BookOpen, title: 'Exam Preparation (WAEC, JAMB, NECO)', tag: 'Results',
-                desc: 'Dedicated exam prep modules with 15+ years of past questions, timed mock CBTs under real conditions, and AI-powered readiness predictions across all subjects.',
-                features: ['15+ years past questions', 'Simulated CBT environment', 'Performance analytics', 'Subject-by-subject readiness'],
-              },
-              {
-                icon: Users, title: 'Parent Dashboard & Monitoring', tag: 'Transparency',
-                desc: 'Parents get real-time visibility into their child\'s sessions, attendance, scores, and tutor communications — all from a single, clean dashboard.',
-                features: ['Live session monitoring', 'Attendance tracking', 'Score reports', 'Direct tutor messaging'],
-              },
-              {
-                icon: BarChart, title: 'Performance Analytics', tag: 'Insight',
-                desc: 'Comprehensive analytics for students, parents, and tutors. Track score trends, identify weak areas, monitor attendance patterns, and measure growth over time.',
-                features: ['Score trend charts', 'Subject comparison', 'Weak area identification', 'Downloadable reports'],
+                image: '/images/hero_student.png',
+                color: 'bg-success'
               },
             ].map((service, i) => (
-              <div key={service.title} className={`bg-white border border-grey-light rounded-2xl p-8 md:p-10 flex flex-col md:flex-row gap-8 items-start ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
-                <div className="md:w-2/3">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-navy rounded-xl flex items-center justify-center">
-                      <service.icon className="w-6 h-6 text-yellow" />
+              <div key={service.title} className={`bg-off-white border-4 border-navy shadow-[15px_15px_0px_#0A1628] rounded-[2.5rem] p-8 md:p-14 flex flex-col lg:flex-row gap-12 items-center hover:-translate-y-2 transition-all duration-300 ${i % 2 === 1 ? 'lg:flex-row-reverse transform rotate-1' : 'transform -rotate-1'}`}>
+                <div className="lg:w-1/2">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className={`w-20 h-20 ${service.color} border-4 border-navy rounded-[1.5rem] flex items-center justify-center shadow-[6px_6px_0px_#0A1628] transform rotate-[-5deg]`}>
+                      <service.icon className="w-10 h-10 text-navy" />
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-yellow-dim bg-yellow/10 px-3 py-1 rounded-full">{service.tag}</span>
+                    <span className="font-black uppercase tracking-widest text-navy bg-white border-4 border-navy px-4 py-2 rounded-xl shadow-[4px_4px_0px_#0A1628] rotate-2">{service.tag}</span>
                   </div>
-                  <h3 className="font-heading font-extrabold text-navy text-xl mb-3">{service.title}</h3>
-                  <p className="text-grey text-sm leading-relaxed mb-6">{service.desc}</p>
-                  <ul className="grid grid-cols-2 gap-3">
+                  <h3 className="font-heading font-black text-navy text-4xl mb-6">{service.title}</h3>
+                  <p className="text-navy font-bold text-xl leading-relaxed mb-8">{service.desc}</p>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {service.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-navy">
-                        <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
+                      <li key={f} className="flex items-start gap-4 text-lg font-bold text-navy">
+                        <div className="w-8 h-8 rounded-lg bg-white border-2 border-navy flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#0A1628] mt-0.5">
+                          <CheckCircle2 className="w-5 h-5 text-success" />
+                        </div>
                         {f}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="md:w-1/3 bg-off-white border border-grey-light rounded-2xl h-48 md:h-full min-h-[200px] flex items-center justify-center">
-                  <service.icon className="w-16 h-16 text-grey-light" />
+                <div className="lg:w-1/2 w-full relative perspective-[1500px]">
+                  <div className="relative rounded-[2rem] overflow-hidden shadow-[12px_12px_0px_#0A1628] border-8 border-navy bg-navy transform rotate-y-[5deg] group-hover:rotate-y-0 transition-transform duration-500">
+                    <Image src={service.image} alt={service.title} width={800} height={600} className="w-full h-auto object-cover" />
+                  </div>
                 </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Grid of smaller services */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-20">
+             {[
+              {
+                icon: ClipboardList, title: 'Assignments',
+                desc: 'Tutors create and distribute assignments. Students submit work digitally. Parents see everything.',
+                color: 'bg-error'
+              },
+              {
+                icon: BookOpenText, title: 'Exam Preparation',
+                desc: 'Dedicated exam prep modules with 15+ years of past questions and timed mock CBTs.',
+                color: 'bg-info'
+              },
+              {
+                icon: Users, title: 'Parent Portal',
+                desc: 'Real-time visibility into your child\'s sessions, attendance, scores, and tutor communications.',
+                color: 'bg-yellow'
+              },
+              {
+                icon: BarChart, title: 'Performance Analytics',
+                desc: 'Track score trends, identify weak areas, and monitor attendance patterns over time.',
+                color: 'bg-success'
+              },
+            ].map((service, i) => (
+              <div key={service.title} className={`bg-white border-4 border-navy shadow-[10px_10px_0px_#0A1628] rounded-[2rem] p-8 hover:-translate-y-2 hover:shadow-[6px_6px_0px_#0A1628] transition-all duration-300 ${i % 2 === 0 ? 'rotate-1' : '-rotate-1'}`}>
+                <div className={`w-16 h-16 ${service.color} border-4 border-navy rounded-xl flex items-center justify-center mb-6 shadow-[4px_4px_0px_#0A1628] -rotate-3`}>
+                  <service.icon className={`w-8 h-8 ${service.color === 'bg-yellow' ? 'text-navy' : 'text-white'}`} />
+                </div>
+                <h3 className="font-heading font-black text-navy text-2xl mb-4">{service.title}</h3>
+                <p className="text-navy font-bold text-lg leading-relaxed">{service.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Who It's For */}
-      <section className="bg-navy py-20 md:py-28">
+      {/* Role Segmentation */}
+      <section className="bg-navy py-24 md:py-32 relative border-b-8 border-navy">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-dim mb-3">Built For</p>
-            <h2 className="font-heading font-extrabold text-white" style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)' }}>
+          <div className="text-center mb-20">
+            <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-6 drop-shadow-[4px_4px_0px_#F5C518] transform rotate-[-1deg]">
               Three Roles. One Platform.
             </h2>
+            <p className="bg-white/10 backdrop-blur-md border-4 border-white inline-block text-white font-bold text-xl px-6 py-3 rounded-xl shadow-[6px_6px_0px_#F5C518] transform rotate-1">
+              Customized environments for everyone involved.
+            </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: BookOpen, role: 'Students', desc: 'Live sessions, quizzes, games, assignments, exam prep — everything you need to succeed, in one place.', color: 'bg-blue-500' },
-              { icon: Users, role: 'Parents', desc: 'Full visibility into your child\'s learning. Monitor sessions, track progress, communicate with tutors.', color: 'bg-green-500' },
-              { icon: Monitor, role: 'Tutors', desc: 'Create content, manage students, track earnings, and grow your teaching career — all from your dashboard.', color: 'bg-purple-500' },
-            ].map((item) => (
-              <div key={item.role} className="bg-navy-mid border border-navy-light rounded-2xl p-8 text-center group hover:border-yellow transition-all duration-300">
-                <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-105 transition-transform`}>
-                  <item.icon className="w-8 h-8 text-white" />
+              { icon: BookOpen, role: 'Students', desc: 'Live sessions, gamified quizzes, assignments, exam prep — everything you need to succeed.', color: 'bg-info' },
+              { icon: Shield, role: 'Parents', desc: 'Full visibility. Monitor sessions, track progress, and communicate seamlessly.', color: 'bg-success' },
+              { icon: Monitor, role: 'Tutors', desc: 'Create content, manage your roster, track earnings, and grow your career.', color: 'bg-yellow' },
+            ].map((item, i) => (
+              <div key={item.role} className={`bg-off-white border-4 border-navy shadow-[10px_10px_0px_#F5C518] rounded-[2rem] p-10 text-center hover:-translate-y-2 hover:bg-white transition-all duration-300 ${i === 1 ? '-translate-y-4' : ''}`}>
+                <div className={`w-24 h-24 ${item.color} border-4 border-navy rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-[6px_6px_0px_#0A1628] rotate-6`}>
+                  <item.icon className={`w-10 h-10 ${item.color === 'bg-yellow' ? 'text-navy' : 'text-white'}`} />
                 </div>
-                <h3 className="font-heading font-bold text-white text-lg mb-3">{item.role}</h3>
-                <p className="text-grey text-sm leading-relaxed mb-6">{item.desc}</p>
-                <Link href="/signup" className="text-yellow text-sm font-semibold hover:text-yellow-light transition-colors inline-flex items-center gap-1">
-                  Get Started <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                <h3 className="font-heading font-black text-navy text-3xl mb-4">{item.role}</h3>
+                <p className="text-navy font-bold text-lg leading-relaxed mb-8">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-yellow py-16 md:py-20">
-        <div className="max-w-3xl mx-auto px-6 md:px-8 text-center">
-          <h2 className="font-heading font-extrabold text-navy text-2xl md:text-3xl mb-4">
-            Ready to Experience the Difference?
+      {/* Solid Brutalist CTA */}
+      <section className="bg-error relative py-24 md:py-32 border-b-8 border-navy z-10">
+         <div className="absolute w-full h-[200%] top-0 left-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-2">
+            EXPERIENCE THE DIFFERENCE
           </h2>
-          <p className="text-navy/70 text-sm mb-8">Join hundreds of Nigerian families already thriving on Edvoura.</p>
-          <Link href="/signup" className="inline-flex items-center gap-2 bg-navy hover:bg-dark text-white font-heading font-bold px-10 py-4 rounded-xl transition-colors">
-            Start Learning Today <ArrowRight className="w-4 h-4" />
+          <Link
+            href="/signup"
+            className="inline-flex items-center justify-center gap-3 bg-yellow text-navy font-heading font-black px-12 py-6 rounded-2xl border-4 border-navy shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-2xl transform -rotate-1 w-full sm:w-auto"
+          >
+            START LEARNING TODAY <ArrowRight className="w-6 h-6" />
           </Link>
         </div>
       </section>

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   /* Primary Navy Scale */
   --color-navy: #0A1628;
   --color-navy-mid: #112240;
@@ -95,9 +95,25 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes count-up {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+@keyframes metallic-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes luxury-glow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(245, 197, 24, 0.2)); }
+  50% { filter: drop-shadow(0 0 15px rgba(245, 197, 24, 0.6)); }
+}
+
+@keyframes kinetic-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-3px) rotate(1deg); }
+  66% { transform: translateY(2px) rotate(-1deg); }
+}
+
+@keyframes text-reveal-luxury {
+  from { letter-spacing: -0.2em; opacity: 0; filter: blur(10px); }
+  to { letter-spacing: 0.25em; opacity: 1; filter: blur(0); }
 }
 
 /* Utility classes */
@@ -124,26 +140,92 @@ h1, h2, h3, h4, h5, h6 {
   animation: shimmer 1.5s linear infinite;
 }
 
-/* Yellow underline accent */
-.yellow-underline {
-  position: relative;
-  display: inline-block;
-}
-.yellow-underline::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: #F5C518;
-  border-radius: 2px;
+.premium-shimmer-text {
+  @apply text-white;
+  background: linear-gradient(90deg, #FFFFFF 0%, #F5C518 50%, #FFFFFF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: metallic-shimmer 3s linear infinite;
 }
 
-/* Grid overlay for hero */
-.hero-grid-overlay {
-  background-image:
-    linear-gradient(rgba(245,197,24,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245,197,24,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
+.luxury-badge {
+  @apply relative inline-flex items-center justify-center bg-white/5 border border-white/10 backdrop-blur-sm shadow-xl;
+}
+
+.kinetic-logo {
+  animation: kinetic-float 6s ease-in-out infinite;
+}
+
+.reveal-luxury {
+  animation: text-reveal-luxury 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Neo-Brutalist Utility classes */
+.brutalist-card {
+  @apply bg-white border-[4px] border-dark overflow-hidden;
+  box-shadow: 12px 12px 0px #060E1C;
+}
+
+.brutalist-3d {
+  @apply transition-all duration-200 cursor-pointer;
+}
+
+.brutalist-3d:hover {
+  transform: translate(-10px, -10px);
+  box-shadow: 22px 22px 0px #060E1C;
+}
+
+.brutalist-3d:active {
+  transform: translate(0, 0);
+  box-shadow: 0px 0px 0px #060E1C;
+}
+
+/* Aggressive Header Shadow */
+.brutalist-header {
+  @apply bg-white border-[5px] border-dark p-12 mb-16;
+  box-shadow: 20px 20px 0px #F5C518;
+}
+
+.brutalist-button-primary {
+  @apply bg-yellow border-[3px] border-dark px-6 py-3 font-black uppercase tracking-widest text-dark transition-all duration-200;
+  box-shadow: 4px 4px 0px #060E1C;
+}
+
+.brutalist-button-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #060E1C;
+}
+
+.brutalist-button-primary:active {
+  transform: translate(0, 0);
+  box-shadow: 0px 0px 0px #060E1C;
+}
+
+/* Child-friendly "Eddy" Patterns */
+.pattern-dots {
+  background-image: radial-gradient(#0A1628 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-attachment: fixed;
+}
+
+.pattern-grid {
+  background-image: 
+    linear-gradient(#0A1628 1px, transparent 1px),
+    linear-gradient(90deg, #0A1628 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+/* Custom scrollbar for Brutalist */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-off-white border-l-[3px] border-dark;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-yellow border-[3px] border-dark;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-yellow-light;
 }
