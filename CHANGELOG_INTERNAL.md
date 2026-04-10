@@ -1,6 +1,17 @@
 # CHANGELOG_INTERNAL.md
 
-## 2026-04-10 (Phase 3)
+## [0.4.0] - 2026-04-10
+
+### Phase 4: Live Learning & Communication
+
+- **Zoom/Meet Integrations**: Implemented Zoom S2S token caching and Google Calendar Service Account JWT generation for automated Meet links.
+- **Webhooks**: Added `ResendWebhookController` to capture `email.delivered` and `email.bounced` events using Svix signature verification.
+- **Proactive Alerts**: Added `ParentAlertProcessor` for late assignments and `TutorReminderProcessor` for ungraded submissions.
+- **Lesson Reminders**: Implemented `LessonReminderProcessor` that polls for lessons starting in 1 hour and cues notifications for enrolled students and parents.
+- **Contracts**: Added `assignment_overdue`, `tutor_ungraded_reminder`, and `lesson_upcoming_tutor` to `NotificationKind` enum.
+- **Config**: Added Support for `experimentalDecorators` and `emitDecoratorMetadata` to worker `tsconfig.json` to process injection successfully.
+
+## [0.3.1] - 2026-04-10
 
 ### Phase 3: Academic Core — Submissions, Quiz Attempts, Live Sessions, Progress
 

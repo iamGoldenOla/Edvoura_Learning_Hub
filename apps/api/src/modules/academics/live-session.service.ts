@@ -31,6 +31,12 @@ export interface LiveSessionResult {
 export class LiveSessionService {
   private readonly logger = new Logger(LiveSessionService.name);
 
+  private zoomAccessToken: string | null = null;
+  private zoomTokenExpiresAt: number = 0;
+
+  private googleAccessToken: string | null = null;
+  private googleTokenExpiresAt: number = 0;
+
   constructor(
     @Inject(ENVIRONMENT) private readonly env: Environment,
     private readonly databaseService: DatabaseService,
@@ -48,7 +54,7 @@ export class LiveSessionService {
     if (provider === 'zoom') {
       result = await this.provisionZoom(lessonId, scheduledStart, scheduledEnd, topic);
     } else if (provider === 'google_meet') {
-      result = await this.provisionGoogleMeet(lessonId, topic);
+      result = await this.provisionGoogleMeet(lessonId, scheduledStart, scheduledEnd, topic);
     } else {
       // native_later — stub
       result = {
@@ -117,44 +123,50 @@ export class LiveSessionService {
 
   // ─── Zoom Server-to-Server OAuth ──────────────────────────────────────────
 
+  private async getZoomAccessToken(): Promise<string> {
+    const { ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET } = this.env;
+
+    if (!ZOOM_ACCOUNT_ID || !ZOOM_CLIENT_ID || !ZOOM_CLIENT_SECRET) {
+      throw new Error('Zoom credentials not configured');
+    }
+
+    // Return cached token if valid (5 min buffer)
+    if (this.zoomAccessToken && Date.now() < this.zoomTokenExpiresAt - 5 * 60 * 1000) {
+      this.logger.debug('Using cached Zoom access token');
+      return this.zoomAccessToken;
+    }
+
+    this.logger.log('Fetching new Zoom access token...');
+    const tokenResponse = await fetch(
+      `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${ZOOM_ACCOUNT_ID}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${ZOOM_CLIENT_ID}:${ZOOM_CLIENT_SECRET}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      },
+    );
+
+    if (!tokenResponse.ok) {
+      throw new Error(`Zoom OAuth failed: ${tokenResponse.status}`);
+    }
+
+    const tokenData = (await tokenResponse.json()) as ZoomTokenResponse;
+    this.zoomAccessToken = tokenData.access_token;
+    this.zoomTokenExpiresAt = Date.now() + tokenData.expires_in * 1000;
+
+    return this.zoomAccessToken;
+  }
+
   private async provisionZoom(
     lessonId: string,
     scheduledStart: string,
     scheduledEnd: string,
     topic: string,
   ): Promise<LiveSessionResult> {
-    const { ZOOM_ACCOUNT_ID, ZOOM_CLIENT_ID, ZOOM_CLIENT_SECRET } = this.env;
-
-    if (!ZOOM_ACCOUNT_ID || !ZOOM_CLIENT_ID || !ZOOM_CLIENT_SECRET) {
-      this.logger.warn('Zoom credentials not configured — creating stub session');
-      return {
-        lessonId,
-        provider: 'zoom',
-        externalMeetingId: `stub-${Date.now()}`,
-        joinUrl: null,
-        hostUrl: null,
-        passcode: null,
-      };
-    }
-
     try {
-      // Step 1: Get access token via Server-to-Server OAuth
-      const tokenResponse = await fetch(
-        `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${ZOOM_ACCOUNT_ID}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Basic ${Buffer.from(`${ZOOM_CLIENT_ID}:${ZOOM_CLIENT_SECRET}`).toString('base64')}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
-      );
-
-      if (!tokenResponse.ok) {
-        throw new Error(`Zoom OAuth failed: ${tokenResponse.status}`);
-      }
-
-      const tokenData = (await tokenResponse.json()) as ZoomTokenResponse;
+      const accessToken = await this.getZoomAccessToken();
 
       // Step 2: Create meeting
       const startTime = new Date(scheduledStart);
@@ -164,7 +176,7 @@ export class LiveSessionService {
       const meetingResponse = await fetch('https://api.zoom.us/v2/users/me/meetings', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -210,27 +222,152 @@ export class LiveSessionService {
     }
   }
 
-  // ─── Google Meet (stub — requires full OAuth flow) ────────────────────────
+  // ─── Google Meet (Service Account) ──────────────────────────────────────
+
+  private async getGoogleAccessToken(): Promise<string> {
+    const { GOOGLE_SERVICE_ACCOUNT_KEY_JSON, GOOGLE_CALENDAR_IMPERSONATE_EMAIL } = this.env;
+
+    if (!GOOGLE_SERVICE_ACCOUNT_KEY_JSON || !GOOGLE_CALENDAR_IMPERSONATE_EMAIL) {
+      throw new Error('Google Workspace credentials not configured');
+    }
+
+    // Return cached token if valid (5 min buffer)
+    if (this.googleAccessToken && Date.now() < this.googleTokenExpiresAt - 5 * 60 * 1000) {
+      this.logger.debug('Using cached Google access token');
+      return this.googleAccessToken;
+    }
+
+    this.logger.log('Fetching new Google access token...');
+    const credentials = JSON.parse(GOOGLE_SERVICE_ACCOUNT_KEY_JSON) as {
+      client_email: string;
+      private_key: string;
+      token_uri: string;
+    };
+
+    const { importPKCS8, SignJWT } = await import('jose');
+
+    const privateKey = await importPKCS8(credentials.private_key, 'RS256');
+
+    const jwt = await new SignJWT({
+      iss: credentials.client_email,
+      sub: GOOGLE_CALENDAR_IMPERSONATE_EMAIL,
+      scope: 'https://www.googleapis.com/auth/calendar.events',
+      aud: credentials.token_uri,
+    })
+      .setProtectedHeader({ alg: 'RS256' })
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(privateKey);
+
+    const response = await fetch(credentials.token_uri, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: jwt,
+      }),
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error(`Google OAuth failed: ${response.status} ${errBody}`);
+    }
+
+    const data = (await response.json()) as { access_token: string; expires_in: number };
+    this.googleAccessToken = data.access_token;
+    this.googleTokenExpiresAt = Date.now() + data.expires_in * 1000;
+
+    return this.googleAccessToken;
+  }
 
   private async provisionGoogleMeet(
     lessonId: string,
-    _topic: string,
+    scheduledStart: string,
+    scheduledEnd: string,
+    topic: string,
   ): Promise<LiveSessionResult> {
-    const { GOOGLE_MEET_CLIENT_ID } = this.env;
+    try {
+      const accessToken = await this.getGoogleAccessToken();
 
-    if (!GOOGLE_MEET_CLIENT_ID) {
-      this.logger.warn('Google Meet credentials not configured — creating stub session');
-    } else {
-      this.logger.log('Google Meet provisioning is stubbed — full OAuth flow needed');
+      const startTime = new Date(scheduledStart);
+      const endTime = new Date(scheduledEnd);
+
+      const eventBody = {
+        summary: topic,
+        start: { dateTime: startTime.toISOString() },
+        end: { dateTime: endTime.toISOString() },
+        conferenceData: {
+          createRequest: {
+            requestId: `edvoura-lesson-${lessonId}`,
+            conferenceSolutionKey: { type: 'hangoutsMeet' },
+          },
+        },
+      };
+
+      const calendarId = 'primary';
+      const response = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?conferenceDataVersion=1`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(eventBody),
+        },
+      );
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Google Calendar API failed: ${response.status} ${errBody}`);
+      }
+
+      const eventResponse = (await response.json()) as {
+        id: string;
+        hangoutLink?: string;
+        conferenceData?: {
+          entryPoints?: Array<{ entryPointType: string; uri: string; passcode?: string }>;
+        };
+      };
+
+      this.logger.log(`Google Meet created: ${eventResponse.id} for lesson ${lessonId}`);
+
+      let joinUrl = eventResponse.hangoutLink ?? null;
+      let passcode = null;
+
+      if (eventResponse.conferenceData?.entryPoints) {
+        const videoEntry = eventResponse.conferenceData.entryPoints.find(
+          (e) => e.entryPointType === 'video',
+        );
+        if (videoEntry) {
+          joinUrl = videoEntry.uri;
+          passcode = videoEntry.passcode ?? null;
+        }
+      }
+
+      return {
+        lessonId,
+        provider: 'google_meet',
+        externalMeetingId: eventResponse.id,
+        joinUrl,
+        hostUrl: joinUrl, // For Meet, join and host URL are the same
+        passcode,
+      };
+    } catch (err) {
+      if ((err as Error).message.includes('not configured')) {
+        this.logger.warn('Google Workspace credentials not configured — creating stub session');
+      } else {
+        this.logger.error(`Google Meet provisioning failed for lesson ${lessonId}`, err);
+      }
+      
+      return {
+        lessonId,
+        provider: 'google_meet',
+        externalMeetingId: `gmeet-stub-${Date.now()}`,
+        joinUrl: null,
+        hostUrl: null,
+        passcode: null,
+      };
     }
-
-    return {
-      lessonId,
-      provider: 'google_meet',
-      externalMeetingId: `gmeet-stub-${Date.now()}`,
-      joinUrl: null,
-      hostUrl: null,
-      passcode: null,
-    };
   }
 }

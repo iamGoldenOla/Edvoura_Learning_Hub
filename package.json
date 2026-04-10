@@ -8,8 +8,10 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "build": "pnpm --filter @edvoura/contracts build && pnpm --filter @edvoura/api build",
+    "build": "pnpm --filter @edvoura/contracts build && pnpm --filter @edvoura/api build && pnpm --filter @edvoura/web build",
     "dev:api": "pnpm --filter @edvoura/api start:dev",
+    "dev:web": "pnpm --filter @edvoura/web dev",
+    "dev": "pnpm --filter @edvoura/web dev",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter @edvoura/contracts test && pnpm --filter @edvoura/api test",
     "test:e2e": "pnpm --filter @edvoura/api test:e2e",

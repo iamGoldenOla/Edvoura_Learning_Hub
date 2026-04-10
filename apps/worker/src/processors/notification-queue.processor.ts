@@ -36,7 +36,10 @@ export class NotificationQueueProcessor {
     this.logger.log(`Processing ${queued.length} queued email notification(s)`);
 
     for (const delivery of queued) {
-      await this.attemptEmailDelivery(delivery);
+      await this.attemptEmailDelivery({
+        ...delivery,
+        deliveryId: delivery.deliveryId as string,
+      });
     }
   }
 

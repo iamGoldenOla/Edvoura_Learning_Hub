@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/apps/api/src/main.js",
-    "start:dev": "tsx watch src/main.ts",
+    "start:dev": "node --env-file=../../.env --loader ts-node/esm src/main.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:e2e": "vitest run test/**/*.e2e-spec.ts"
@@ -15,6 +15,7 @@
     "@edvoura/contracts": "workspace:*",
     "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^13.0.2",
+    "@fastify/static": "^9.1.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-fastify": "^11.0.0",
@@ -26,6 +27,7 @@
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "svix": "^1.90.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -33,6 +35,8 @@
     "@types/node": "^22.15.3",
     "@types/pg": "^8.15.4",
     "supertest": "^7.1.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"

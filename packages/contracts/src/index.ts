@@ -29,6 +29,9 @@ export const notificationKinds = [
   'submission_graded',
   'billing_issue',
   'admin_alert',
+  'assignment_overdue',
+  'tutor_ungraded_reminder',
+  'lesson_upcoming_tutor',
 ] as const;
 export const notificationKindSchema = z.enum(notificationKinds);
 export type NotificationKind = z.infer<typeof notificationKindSchema>;

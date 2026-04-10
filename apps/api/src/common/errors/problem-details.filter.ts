@@ -59,6 +59,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       return this.toErrorBody(status, 'http_exception', exception.message, path);
     }
 
+    console.error('[ProblemDetailsFilter] Unhandled exception:', exception);
     return this.toErrorBody(
       HttpStatus.INTERNAL_SERVER_ERROR,
       'internal_server_error',
