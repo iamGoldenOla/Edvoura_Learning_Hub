@@ -1,7 +1,7 @@
 create extension if not exists pgcrypto with schema extensions;
 create extension if not exists citext with schema extensions;
-create extension if not exists pgmq with schema extensions;
-create extension if not exists pg_cron with schema extensions;
+create extension if not exists pgmq;
+create extension if not exists pg_cron;
 
 create schema if not exists private;
 create schema if not exists billing;
