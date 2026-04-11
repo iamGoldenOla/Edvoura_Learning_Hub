@@ -121,19 +121,21 @@ Consequences:
 - A dedicated worker runtime will process queued jobs from the same codebase.
 - Revisit only if throughput or workflow complexity materially outgrows this model.
 
-## ADR-009: Stripe for Billing, Stripe Connect-Ready Data Model
+## ADR-009: Paystack for Billing
 
 Decision:
 
-- Use Stripe Billing for subscriptions and invoices now, with local tables ready for future Stripe Connect tutor payout flows.
+- Use Paystack for subscriptions, invoices, and payment processing, with local tables ready for future tutor payout flows.
 
 Why:
 
-- Stripe is the most practical path for recurring billing and future payout support.
+- Paystack provides the best regional coverage for the target market and supports recurring billing and customer management.
 
 Consequences:
 
-- Local billing tables mirror Stripe objects but do not replace Stripe as payment executor.
+- Local billing tables mirror Paystack objects but do not replace Paystack as payment executor.
+- Webhook verification uses HMAC-SHA512 with the Paystack secret key.
+- All `stripe_*` columns have been renamed to `paystack_*` in the schema.
 
 ## ADR-010: Private Storage by Default
 
@@ -149,20 +151,22 @@ Consequences:
 
 - File paths and access rules must be modeled intentionally.
 
-## ADR-011: Vercel Frontend, Cloud Run Backend Runtime
+## ADR-011: Next.js on Vercel, Cloud Run Backend Runtime
 
 Decision:
 
-- Deploy the future frontend to Vercel and the backend API and worker containers to Google Cloud Run.
+- Deploy the Next.js frontend (`apps/web`) to Vercel and the backend API and worker containers to Google Cloud Run.
 
 Why:
 
+- Next.js App Router provides server components, streaming, and optimal Vercel integration for the marketing and dashboard frontend.
 - This separates frontend delivery concerns from backend runtime reliability while keeping the operating model compact.
 
 Consequences:
 
 - The backend is not optimized around Vercel serverless constraints.
 - Webhooks and workers remain in a stable container runtime.
+- Frontend uses App Router with `src/app/` directory convention.
 
 ## ADR-012: Product Analytics Are Curated Mirrors, Not the Source of Truth
 
@@ -177,3 +181,38 @@ Why:
 Consequences:
 
 - Event naming and classification need governance.
+
+## ADR-013: Aggressive Neo-Brutalist 3D Design System
+
+Decision:
+
+- Adopt an aggressive Neo-Brutalist 3D visual language as the core design system for all Edvoura frontend surfaces.
+
+Why:
+
+- The design must feel premium, distinctive, and memorable — not generic or template-like.
+- High-contrast accessibility pairs well with the K-12 audience across age bands.
+- Bold 3D offset shadows and thick borders create tactile depth that differentiates the product.
+
+Consequences:
+
+- All dashboard and marketing components use brutalist utility classes (`brutalist-card`, `brutalist-3d`, `brutalist-header`).
+- Grade-band-specific themes layer on top of the base system (Adventure Park, Explorer Hub, Professional Cockpit).
+- CSS complexity is higher but encapsulated in `globals.css` utility classes.
+
+## ADR-014: Next.js App Router with Monorepo Integration
+
+Decision:
+
+- Use Next.js App Router (`src/app/` directory) within the pnpm monorepo for all frontend surfaces.
+
+Why:
+
+- App Router provides server components, parallel routes, and streaming that support the complex dashboard layouts.
+- Monorepo integration allows sharing `@edvoura/contracts` between frontend and backend.
+
+Consequences:
+
+- Route organization follows Next.js file-system conventions.
+- Dashboard routes are nested under `dash/` with role sub-routes.
+- Components are organized by domain (marketing, dashboards, ui).

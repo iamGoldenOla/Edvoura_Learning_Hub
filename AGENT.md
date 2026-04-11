@@ -4,30 +4,44 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 ## Mission
 
-Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, durable documentation, and production-oriented engineering discipline.
+Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-10 — late session)
+## Last Session Handoff (2026-04-11)
 
-### Current Status: Phase 7 Maturity · Neo-Brutalist Redesign Complete
+### Current Status: Phase 9.1 Complete · Full-Stack Platform Operational
 
-We have successfully overhauled the Edvoura Student Experience from a utilitarian dark mode to a **Vibrant Neo-Brutalist 3D** design system. This pivot focuses on high-contrast accessibility, playful energy, and premium tactile feedback.
+The Edvoura Learning Hub has reached full-stack operational status with a complete backend API, premium marketing website, authentication flows, and role-specific dashboards with an aggressive Neo-Brutalist 3D design system.
 
-### Redesign Summary
+### What Exists Today
 
-- **Visual Language**: High-contrast white backgrounds, navy blue command sidebars, and bold 3px/4px borders with solid 12px-16px 3D offset shadows.
+#### Backend (`apps/api` + `apps/worker`)
+- **Phase 1 — Foundation**: Auth, RBAC, core API skeleton, Supabase config, schema + RLS foundation.
+- **Phase 2 — Onboarding & Identity**: Parent/student/tutor/admin onboarding modules, Paystack billing webhooks, notification service, worker process.
+- **Phase 3 — Academic Core**: Assignment submissions with late detection, quiz attempts with auto-scoring, lesson attendance, live session provisioning (Zoom S2S + Google Meet stub), progress snapshots, Paystack customer creation.
+- **Phase 4 — Live Learning & Communication**: Zoom OAuth caching, Resend email webhooks, proactive parent alerts, tutor reminders, lesson reminder processor.
+
+#### Frontend (`apps/web` — Next.js)
+- **Phase 7 — Role Dashboards**: High-fidelity dashboards for Student, Parent, Tutor, and Admin roles. Student dashboard features 27 route pages (analytics, assignments, badges, classes, games, leaderboard, library, live lessons, quizzes, rewards, streaks, etc.). Grade-band-aware sidebar navigation for Grades 1-3, 4-6, and 7-12.
+- **Phase 9 — Marketing Website**: Premium landing page with animated hero, feature showcases, testimonials, CTA sections, and responsive Navbar/Footer. Login and signup auth flow pages.
+- **Phase 9.1 — Inner Marketing Pages**: About, Services, Pricing, Blog, Careers, and Contact pages — all fully styled with the Edvoura brand system.
+
+#### Design System — Aggressive Neo-Brutalist 3D
+- **Visual Language**: High-contrast white backgrounds, navy blue command sidebars, bold 3px/4px borders with solid 12px-16px 3D offset shadows.
 - **Grade-Specific Personalization**:
-    - **Grades 1-3 (Adventure Park)**: Playful "billboard" headers, rounded geometry, and cartoon-friendly iconography.
+    - **Grades 1-3 (Adventure Park)**: Playful "billboard" headers, rounded geometry, cartoon-friendly iconography.
     - **Grades 4-6 (Explorer Hub)**: Energy-focused "mission" layouts with vibrant squad leaderboards.
     - **Grades 7-12 (Professional Cockpit)**: Geometric precision and sophisticated data visualization.
-- **Shell Evolution**: Re-skinned `DashboardClientShell` with a deep navy anchor and a high-contrast top bar. Removed blurring/opaqueness to ensure the "3D" depth pop as requested by the user.
-- **Component System**: Overhauled `MockupComponents` (Growth Telemetry, Retention Sync, Live Stream) with semantic "neon" accent shadows and high-contrast styling.
+- **Shell**: Deep navy anchor `DashboardClientShell` with high-contrast top bar, search vault, and connection telemetry.
+- **Utility Classes**: `brutalist-card`, `brutalist-3d`, `brutalist-header` in `globals.css`.
+- **Texture**: "Eddy" dot-pattern at low 5% opacity as premium background texture.
+- **Component System**: Overhauled MockupComponents (Growth Telemetry, Retention Sync, Live Stream) with semantic neon accent shadows.
 
-### Engineering Improvements (this session)
+### Immediate Next Priorities
 
-- **Utility Classes**: Defined `brutalist-card`, `brutalist-3d`, and `brutalist-header` in `globals.css` for consistent usage across the monorepo.
-- **Pattern Language**: Integrated the "Eddy" dot-pattern (at low 5% opacity) as a premium background texture.
-- **Shell Polish**: Added a dedicated top-bar search vault and active connection telemetry for better immersion.
-
+1. **Phase 5 — Billing & Entitlements**: Paystack subscription lifecycle, plan management, invoice reconciliation, family access gating.
+2. **Phase 6 — Engagement**: Rewards, badges, streaks, games metadata, spelling bee.
+3. **Dashboard Data Binding**: Connect role dashboards to live backend API data (currently using mock/placeholder data).
+4. **Authentication Integration**: Wire Supabase Auth into the frontend login/signup flows.
 
 ## Working Rules
 

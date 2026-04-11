@@ -73,10 +73,11 @@ This file documents the canonical product workflows that the backend must suppor
 ### Subscription and Billing Lifecycle
 
 1. A parent or account owner starts a paid plan.
-2. Stripe owns payment execution and invoice state.
-3. Webhooks synchronize local subscription and invoice tables.
+2. Paystack owns payment execution and invoice state.
+3. Paystack webhooks (HMAC-SHA512 verified) synchronize local subscription and invoice tables.
 4. Entitlements determine access to classes, lessons, and premium features.
 5. Failed payment states are surfaced to the parent and admin dashboards.
+6. Paystack customer is auto-created during parent profile completion.
 
 ### Notifications and Alerts
 
@@ -92,6 +93,22 @@ This file documents the canonical product workflows that the backend must suppor
 2. High-risk actions are audited.
 3. Reporting hooks emit curated events for future dashboards.
 4. Moderation tooling can be layered in without changing the core architecture.
+
+### Marketing and Discovery
+
+1. Visitors land on the marketing homepage with animated hero and feature showcases.
+2. Inner pages (About, Services, Pricing, Blog, Careers, Contact) provide product context.
+3. Pricing page displays plan tiers with comparison.
+4. CTA sections direct visitors to signup.
+5. Responsive Navbar and Footer provide consistent navigation.
+
+### Dashboard Navigation and Grade-Band Experience
+
+1. Authenticated users are routed to their role-specific dashboard (Student, Parent, Tutor, Admin).
+2. Student dashboards detect the student's grade band and personalize the sidebar navigation.
+3. Grade-band themes adapt visual language: Adventure Park (1-3), Explorer Hub (4-6), Professional Cockpit (7-12).
+4. Each dashboard provides feature routes appropriate to the user's role and permissions.
+5. `DashboardClientShell` provides consistent layout with deep navy sidebar and high-contrast top bar.
 
 ## Workflow Guardrails
 

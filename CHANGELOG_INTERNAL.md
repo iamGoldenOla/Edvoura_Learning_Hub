@@ -1,5 +1,51 @@
 # CHANGELOG_INTERNAL.md
 
+## [0.9.1] - 2026-04-11
+
+### Neo-Brutalist Dashboard Intensification
+
+- **Design Overhaul**: Intensified all student dashboards to Aggressive Neo-Brutalist 3D design with high-contrast white backgrounds, navy blue command sidebars, and bold 3px/4px borders with solid 12px-16px 3D offset shadows.
+- **Grade-Specific Themes**:
+  - Grades 1-3 (Adventure Park): Playful billboard headers, rounded geometry, cartoon-friendly iconography.
+  - Grades 4-6 (Explorer Hub): Energy-focused mission layouts with vibrant squad leaderboards.
+  - Grades 7-12 (Professional Cockpit): Geometric precision and sophisticated data visualization.
+- **Shell Evolution**: Re-skinned `DashboardClientShell` with deep navy anchor, high-contrast top bar, search vault, and active connection telemetry.
+- **Component System**: Overhauled MockupComponents (Growth Telemetry, Retention Sync, Live Stream) with semantic neon accent shadows.
+- **Utility Classes**: Defined `brutalist-card`, `brutalist-3d`, `brutalist-header` in `globals.css`.
+- **Texture**: Integrated Eddy dot-pattern at 5% opacity as premium background texture.
+
+## [0.9.0] - 2026-04-10
+
+### Phase 9.1: Inner Marketing Pages
+
+- **About Page**: Company story, mission, team section with premium layout.
+- **Services Page**: Service offerings with feature cards and detailed descriptions.
+- **Pricing Page**: Tiered pricing plans with comparison table and CTA.
+- **Blog Page**: Blog listing with featured post and card grid.
+- **Careers Page**: Open positions, culture section, and application flow.
+- **Contact Page**: Contact form, office information, and map integration.
+
+### Phase 9: Premium Marketing Website
+
+- **Landing Page**: Animated hero section, feature showcases, testimonials carousel, statistics counter, and CTA sections.
+- **Navbar**: Responsive navigation with mobile drawer, brand logo, and auth CTAs.
+- **Footer**: Site map, social links, newsletter signup, and legal links.
+- **Auth Pages**: Login and Signup pages with form validation and brand styling.
+- **Design System**: Navy blue and gold brand palette, neo-brutalist accents, Inter/Outfit typography.
+
+## [0.7.0] - 2026-04-10
+
+### Phase 7: High-Fidelity Role Dashboards
+
+- **Student Dashboard**: 27 route pages including analytics, assignments, badges, classes, exam-prep, flashcards, games, garden, leaderboard, library, live lessons, messages, mock-exams, notes, past-questions, planner, quizzes, reading, rewards, stickers, stories, streaks, subjects, tracker, tutor, tutor-chat, and videos.
+- **Parent Dashboard**: Child overview, academic tracking, billing management.
+- **Tutor Dashboard**: Class management, grading queue, schedule overview.
+- **Admin Dashboard**: Platform operations, user management, analytics.
+- **Grade-Band Navigation**: Dynamic sidebar navigation adapting to Grades 1-3, 4-6, and 7-12 with band-specific styling and iconography.
+- **Shell Architecture**: `DashboardClientShell` layout with `StudentSidebarNav`, `StudentBandClientWrapper`, and `BandContext` for runtime grade-band switching.
+- **Scaffolded 38 Dynamic Route Pages** across all student sub-features.
+
+
 ## [0.4.0] - 2026-04-10
 
 ### Phase 4: Live Learning & Communication

@@ -48,8 +48,9 @@ EDVOURA uses a strong opinionated stack, not a menu of alternatives:
 - File storage: Supabase Storage private buckets with signed URL access
 - Notifications: in-app notifications table plus Resend for transactional email
 - Analytics: first-party domain events in Postgres, curated product telemetry mirrored to PostHog later
-- Billing: Stripe Billing now, Stripe Connect-ready data model for tutor payouts later
-- Runtime: Vercel for frontend, containerized API and workers on Google Cloud Run
+- Billing: Paystack Billing for subscriptions and payments, with local tables ready for tutor payouts later
+- Frontend framework: Next.js App Router on Vercel
+- Runtime: Vercel for Next.js frontend, containerized API and workers on Google Cloud Run
 - Testing: Vitest, Supertest, migration validation, and CI database reset checks
 - Observability: structured logs, OpenTelemetry, Sentry, audit tables, and health checks
 

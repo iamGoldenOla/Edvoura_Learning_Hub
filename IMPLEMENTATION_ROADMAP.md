@@ -2,7 +2,7 @@
 
 ## Current State
 
-EDVOURA is in the clean rebuild stage. The priority is a stable backend foundation that can support premium product growth without repeating the instability of the previous codebase.
+EDVOURA has progressed from the clean rebuild through backend foundation, onboarding, academic core, live learning communication, role dashboards, and a premium marketing website. The platform is now full-stack operational with mock data and ready for API data binding and billing integration.
 
 ## Delivery Sequence
 
@@ -26,6 +26,8 @@ Status: Complete ✅
 - Tutor onboarding profile and approval pipeline
 - Admin role assignment workflows
 - Current user context and dashboard bootstrap APIs
+- Paystack billing webhook integration
+- Notification service and worker process
 
 ### Phase 3: Academic Core
 
@@ -42,17 +44,49 @@ Status: Complete ✅
 
 ### Phase 4: Live Learning and Communication
 
-Status: Planned (Next)
+Status: Complete ✅
 
-- Zoom integration improvements (OAuth refresh, webhook for meeting events)
-- Google Meet OAuth flow implementation
-- Notification orchestration for lesson reminders
-- Email delivery webhook reconciliation
-- Parent alerting and tutor operational reminders
+- Zoom S2S OAuth token caching and meeting provisioning
+- Google Meet service account JWT generation (stub)
+- Resend webhook controller for email delivery tracking
+- Proactive parent alerts for late assignments
+- Tutor reminders for ungraded submissions
+- Lesson reminder processor for upcoming sessions
+
+### Phase 7: Role Dashboards
+
+Status: Complete ✅
+
+- High-fidelity Student, Parent, Tutor, and Admin dashboards
+- 27 student route pages (analytics, assignments, badges, classes, games, leaderboard, library, live, quizzes, rewards, streaks, etc.)
+- Grade-band-aware sidebar navigation (Grades 1-3, 4-6, 7-12)
+- `DashboardClientShell` with deep navy anchor and high-contrast top bar
+- `StudentBandClientWrapper` for grade-specific personalization
+- Aggressive Neo-Brutalist 3D design system with utility classes
+
+### Phase 9: Marketing Website
+
+Status: Complete ✅
+
+- Premium landing page with animated hero, feature showcases, testimonials, and CTA sections
+- Responsive Navbar with mobile drawer and Footer with site map
+- Login and Signup auth flow pages
+- Brand design system (navy/gold, neo-brutalist accents)
+
+### Phase 9.1: Inner Marketing Pages
+
+Status: Complete ✅
+
+- About page
+- Services page
+- Pricing page with plan tiers
+- Blog page
+- Careers page
+- Contact page
 
 ### Phase 5: Billing and Entitlements
 
-Status: Planned
+Status: Planned (Next)
 
 - Paystack customer and subscription lifecycle
 - Plans, invoices, and payment reconciliation
@@ -68,7 +102,7 @@ Status: Planned
 - Games metadata
 - Spelling bee events
 
-### Phase 7: Admin Intelligence and Scale
+### Phase 8: Admin Intelligence and Scale
 
 Status: Planned
 
@@ -78,6 +112,16 @@ Status: Planned
 - Performance hardening
 - Background job scaling
 
+### Phase 10: Data Binding and Production Readiness
+
+Status: Planned
+
+- Connect all frontend dashboards to live API data
+- Wire Supabase Auth into login/signup flows
+- End-to-end testing
+- Production deployment configuration
+- Performance optimization
+
 ## Build Principles
 
 - Foundation before feature sprawl
@@ -86,11 +130,11 @@ Status: Planned
 - Auditability before convenience for privileged operations
 - Documentation updates in the same change as architecture updates
 
-## Immediate Next Build Targets (Phase 4)
+## Immediate Next Build Targets (Phase 5)
 
-1. Zoom OAuth token refresh and meeting event webhooks.
-2. Google Meet full OAuth integration (service account or user consent flow).
-3. Lesson reminder notification scheduling via `pg_cron`.
-4. Email delivery webhook reconciliation with Resend.
-5. Parent alert workflows for upcoming lessons and late assignments.
-6. Tutor operational reminders for ungraded submissions and upcoming classes.
+1. Paystack subscription plan CRUD and management API
+2. Subscription creation and lifecycle management
+3. Invoice generation and payment reconciliation
+4. Family access gating based on subscription state
+5. Dashboard subscription status display
+6. Coupon and referral code support
