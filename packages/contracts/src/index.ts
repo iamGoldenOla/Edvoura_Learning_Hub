@@ -48,11 +48,22 @@ export const profileSchema = z.object({
   avatarPath: z.string().nullable(),
 });
 
+export const learnerProfileSchema = z.object({
+  gradeLevelCode: z.string(),
+  gradeLevelName: z.string(),
+  gradeBandCode: gradeBandCodeSchema,
+  gradeBandName: z.string(),
+  schoolName: z.string().nullable(),
+  academicGoalNotes: z.string().nullable(),
+});
+
 export const currentUserSchema = z.object({
   userId: z.string().uuid(),
   email: z.string().email(),
   roles: z.array(appRoleSchema),
+  primaryRole: appRoleSchema,
   profile: profileSchema,
+  learnerProfile: learnerProfileSchema.nullable().optional(),
 });
 
 export type CurrentUser = z.infer<typeof currentUserSchema>;
@@ -99,6 +110,32 @@ export const subscriptionStatuses = [
 ] as const;
 export const subscriptionStatusSchema = z.enum(subscriptionStatuses);
 export type SubscriptionStatus = z.infer<typeof subscriptionStatusSchema>;
+
+export const billingIntervals = ['monthly', 'termly', 'annual'] as const;
+export const billingIntervalSchema = z.enum(billingIntervals);
+export type BillingInterval = z.infer<typeof billingIntervalSchema>;
+
+export const createBillingPlanSchema = z.object({
+  code: z.string().min(2).max(50),
+  name: z.string().min(2).max(120),
+  description: z.string().max(1000).optional(),
+  interval: billingIntervalSchema,
+  amountMinor: z.number().int().nonnegative(),
+  currencyCode: z.string().min(3).max(3).default('NGN'),
+  paystackPlanCode: z.string().max(120).optional(),
+  isActive: z.boolean().default(true),
+});
+export type CreateBillingPlanDto = z.infer<typeof createBillingPlanSchema>;
+
+export const updateBillingPlanSchema = createBillingPlanSchema.partial();
+export type UpdateBillingPlanDto = z.infer<typeof updateBillingPlanSchema>;
+
+export const createSubscriptionSchema = z.object({
+  planId: z.string().uuid(),
+  accountOwnerUserId: z.string().uuid().optional(),
+  couponCode: z.string().max(50).optional(),
+});
+export type CreateSubscriptionDto = z.infer<typeof createSubscriptionSchema>;
 
 // ─── Phase 3: Submission / Quiz / Attendance enums ───────────────────────────
 

@@ -1,9 +1,19 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as crypto from 'crypto';
+import {
+  createBillingPlanSchema,
+  createSubscriptionSchema,
+  updateBillingPlanSchema,
+  type AppRole,
+  type CreateBillingPlanDto,
+  type CreateSubscriptionDto,
+  type UpdateBillingPlanDto,
+} from '@edvoura/contracts';
 
 import { ENVIRONMENT } from '../../common/config/environment.constants.js';
 import type { Environment } from '../../common/config/environment.js';
 import { DatabaseService } from '../../common/database/database.service.js';
+import { ApplicationError } from '../../common/errors/application-error.js';
 
 export interface PaystackEvent {
   event: string;
@@ -18,6 +28,292 @@ export class BillingService {
     @Inject(ENVIRONMENT) private readonly env: Environment,
     private readonly databaseService: DatabaseService,
   ) {}
+
+  async listPlans() {
+    return this.databaseService.db
+      .selectFrom('billing.plans')
+      .select([
+        'id',
+        'code',
+        'name',
+        'description',
+        'interval',
+        'amount_minor as amountMinor',
+        'currency_code as currencyCode',
+        'paystack_plan_code as paystackPlanCode',
+        'is_active as isActive',
+        'created_at as createdAt',
+        'updated_at as updatedAt',
+      ])
+      .where('is_active', '=', true)
+      .orderBy('amount_minor', 'asc')
+      .execute();
+  }
+
+  async createPlan(dto: CreateBillingPlanDto) {
+    const parsed = createBillingPlanSchema.parse(dto);
+
+    return this.databaseService.db
+      .insertInto('billing.plans')
+      .values({
+        code: parsed.code,
+        name: parsed.name,
+        description: parsed.description ?? null,
+        interval: parsed.interval,
+        amount_minor: parsed.amountMinor,
+        currency_code: parsed.currencyCode,
+        paystack_plan_code: parsed.paystackPlanCode ?? null,
+        is_active: parsed.isActive,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .returning([
+        'id',
+        'code',
+        'name',
+        'interval',
+        'amount_minor as amountMinor',
+        'currency_code as currencyCode',
+        'is_active as isActive',
+      ])
+      .executeTakeFirstOrThrow();
+  }
+
+  async updatePlan(planId: string, dto: UpdateBillingPlanDto) {
+    const parsed = updateBillingPlanSchema.parse(dto);
+
+    const updates: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (parsed.code !== undefined) updates['code'] = parsed.code;
+    if (parsed.name !== undefined) updates['name'] = parsed.name;
+    if (parsed.description !== undefined) updates['description'] = parsed.description ?? null;
+    if (parsed.interval !== undefined) updates['interval'] = parsed.interval;
+    if (parsed.amountMinor !== undefined) updates['amount_minor'] = parsed.amountMinor;
+    if (parsed.currencyCode !== undefined) updates['currency_code'] = parsed.currencyCode;
+    if (parsed.paystackPlanCode !== undefined) {
+      updates['paystack_plan_code'] = parsed.paystackPlanCode ?? null;
+    }
+    if (parsed.isActive !== undefined) updates['is_active'] = parsed.isActive;
+
+    const updated = await this.databaseService.db
+      .updateTable('billing.plans')
+      .set(updates)
+      .where('id', '=', planId)
+      .returning([
+        'id',
+        'code',
+        'name',
+        'description',
+        'interval',
+        'amount_minor as amountMinor',
+        'currency_code as currencyCode',
+        'paystack_plan_code as paystackPlanCode',
+        'is_active as isActive',
+        'updated_at as updatedAt',
+      ])
+      .executeTakeFirst();
+
+    if (!updated) {
+      throw new ApplicationError(404, 'plan_not_found', 'Billing plan not found.');
+    }
+
+    return updated;
+  }
+
+  async getBillingSummary(userId: string, roles: AppRole[]) {
+    const effectiveOwnerIds = await this.resolveAccountOwnerUserIds(userId, roles);
+
+    const activePlanRows = await this.databaseService.db
+      .selectFrom('billing.plans')
+      .select([
+        'id',
+        'code',
+        'name',
+        'description',
+        'interval',
+        'amount_minor as amountMinor',
+        'currency_code as currencyCode',
+      ])
+      .where('is_active', '=', true)
+      .orderBy('amount_minor', 'asc')
+      .execute();
+
+    const subscription = effectiveOwnerIds.length
+      ? await this.databaseService.db
+          .selectFrom('billing.subscriptions as s')
+          .leftJoin('billing.plans as p', 'p.id', 's.plan_id')
+          .select([
+            's.id',
+            's.account_owner_user_id as accountOwnerUserId',
+            's.plan_id as planId',
+            's.paystack_customer_code as paystackCustomerCode',
+            's.paystack_subscription_code as paystackSubscriptionCode',
+            's.status',
+            's.current_period_start as currentPeriodStart',
+            's.current_period_end as currentPeriodEnd',
+            's.cancel_at_period_end as cancelAtPeriodEnd',
+            's.created_at as createdAt',
+            's.updated_at as updatedAt',
+            'p.code as planCode',
+            'p.name as planName',
+            'p.interval as planInterval',
+            'p.amount_minor as planAmountMinor',
+            'p.currency_code as planCurrencyCode',
+          ])
+          .where('s.account_owner_user_id', 'in', effectiveOwnerIds)
+          .orderBy('s.updated_at', 'desc')
+          .executeTakeFirst()
+      : null;
+
+    const invoices = effectiveOwnerIds.length
+      ? await this.databaseService.db
+          .selectFrom('billing.invoices as i')
+          .innerJoin('billing.subscriptions as s', 's.id', 'i.subscription_id')
+          .select([
+            'i.id',
+            'i.subscription_id as subscriptionId',
+            'i.paystack_reference as paystackReference',
+            'i.status',
+            'i.amount_due_minor as amountDueMinor',
+            'i.amount_paid_minor as amountPaidMinor',
+            'i.currency_code as currencyCode',
+            'i.due_at as dueAt',
+            'i.paid_at as paidAt',
+            'i.created_at as createdAt',
+          ])
+          .where('s.account_owner_user_id', 'in', effectiveOwnerIds)
+          .orderBy('i.created_at', 'desc')
+          .limit(5)
+          .execute()
+      : [];
+
+    const entitlement =
+      subscription && ['active', 'trialing'].includes(subscription.status)
+        ? {
+            hasAccess: true,
+            reason: subscription.cancelAtPeriodEnd ? 'active_until_period_end' : 'active_subscription',
+          }
+        : {
+            hasAccess: false,
+            reason: subscription?.status === 'past_due' ? 'payment_required' : 'no_active_subscription',
+          };
+
+    return {
+      accountOwnerUserIds: effectiveOwnerIds,
+      plans: activePlanRows,
+      subscription,
+      invoices,
+      entitlement,
+    };
+  }
+
+  async createSubscription(actorUserId: string, roles: AppRole[], dto: CreateSubscriptionDto) {
+    const parsed = createSubscriptionSchema.parse(dto);
+    const allowedOwnerIds = await this.resolveAccountOwnerUserIds(actorUserId, roles);
+    const accountOwnerUserId =
+      parsed.accountOwnerUserId && allowedOwnerIds.includes(parsed.accountOwnerUserId)
+        ? parsed.accountOwnerUserId
+        : actorUserId;
+
+    if (!allowedOwnerIds.includes(accountOwnerUserId)) {
+      throw new ApplicationError(
+        403,
+        'billing_owner_forbidden',
+        'You cannot create a subscription for that account owner.',
+      );
+    }
+
+    const plan = await this.databaseService.db
+      .selectFrom('billing.plans')
+      .select([
+        'id',
+        'code',
+        'name',
+        'interval',
+        'amount_minor as amountMinor',
+        'currency_code as currencyCode',
+      ])
+      .where('id', '=', parsed.planId)
+      .where('is_active', '=', true)
+      .executeTakeFirst();
+
+    if (!plan) {
+      throw new ApplicationError(404, 'plan_not_found', 'Billing plan not found or inactive.');
+    }
+
+    const parentProfile = await this.databaseService.db
+      .selectFrom('parent_profiles')
+      .select('paystack_customer_code')
+      .where('user_id', '=', accountOwnerUserId)
+      .executeTakeFirst();
+
+    const currentTimestamp = new Date();
+    const periodEnd = new Date(currentTimestamp);
+    if (plan.interval === 'annual') {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else if (plan.interval === 'termly') {
+      periodEnd.setMonth(periodEnd.getMonth() + 4);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
+
+    const subscription = await this.databaseService.db
+      .insertInto('billing.subscriptions')
+      .values({
+        account_owner_user_id: accountOwnerUserId,
+        plan_id: plan.id,
+        paystack_customer_code: parentProfile?.paystack_customer_code ?? null,
+        paystack_subscription_code: null,
+        status: 'incomplete',
+        current_period_start: currentTimestamp.toISOString(),
+        current_period_end: periodEnd.toISOString(),
+        cancel_at_period_end: false,
+        created_at: currentTimestamp.toISOString(),
+        updated_at: currentTimestamp.toISOString(),
+      })
+      .returning([
+        'id',
+        'account_owner_user_id as accountOwnerUserId',
+        'plan_id as planId',
+        'status',
+        'current_period_start as currentPeriodStart',
+        'current_period_end as currentPeriodEnd',
+      ])
+      .executeTakeFirstOrThrow();
+
+    const invoice = await this.databaseService.db
+      .insertInto('billing.invoices')
+      .values({
+        subscription_id: subscription.id,
+        paystack_reference: null,
+        status: 'draft',
+        amount_due_minor: plan.amountMinor,
+        amount_paid_minor: 0,
+        currency_code: plan.currencyCode,
+        due_at: currentTimestamp.toISOString(),
+        paid_at: null,
+        created_at: currentTimestamp.toISOString(),
+        updated_at: currentTimestamp.toISOString(),
+      })
+      .returning([
+        'id',
+        'status',
+        'amount_due_minor as amountDueMinor',
+        'currency_code as currencyCode',
+        'due_at as dueAt',
+      ])
+      .executeTakeFirstOrThrow();
+
+    return {
+      subscription,
+      invoice,
+      plan,
+      couponCode: parsed.couponCode ?? null,
+      nextAction: 'complete_payment_with_paystack',
+    };
+  }
 
   // ─── Webhook signature verification ─────────────────────────────────────
 
@@ -227,5 +523,23 @@ export class BillingService {
       this.logger.error('Paystack customer creation failed', err);
       return null;
     }
+  }
+
+  private async resolveAccountOwnerUserIds(userId: string, roles: AppRole[]) {
+    if (roles.includes('student')) {
+      const parentRows = await this.databaseService.db
+        .selectFrom('parent_student_links')
+        .select('parent_user_id as parentUserId')
+        .where('student_user_id', '=', userId)
+        .where('is_active', '=', true)
+        .execute();
+
+      const parentIds = parentRows.map((row) => row.parentUserId);
+      if (parentIds.length > 0) {
+        return parentIds;
+      }
+    }
+
+    return [userId];
   }
 }

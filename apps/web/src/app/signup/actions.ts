@@ -37,13 +37,5 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
     return { error: error.message }
   }
 
-  // Redirect to the correct dashboard based on role
-  const dashboardPaths: Record<string, string> = {
-    student: '/dash/student',
-    parent: '/dash/parent',
-    tutor: '/dash/tutor',
-    admin: '/dash/admin',
-  }
-
-  redirect(dashboardPaths[role] || '/dash')
+  redirect('/dash')
 }

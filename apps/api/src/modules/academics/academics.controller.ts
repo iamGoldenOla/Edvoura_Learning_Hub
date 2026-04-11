@@ -11,19 +11,19 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import {
+  createAssignmentSchema,
   createClassSchema,
   createLessonSchema,
-  createAssignmentSchema,
   createQuizSchema,
   recordAttendanceSchema,
 } from '@edvoura/contracts';
 
+import type { AuthenticatedRequestUser } from '../../common/auth/authenticated-user.interface.js';
 import { CurrentUser } from '../../common/auth/current-user.decorator.js';
-import { SupabaseJwtGuard } from '../../common/auth/supabase-jwt.guard.js';
 import { Roles } from '../../common/auth/roles.decorator.js';
 import { RolesGuard } from '../../common/auth/roles.guard.js';
+import { SupabaseJwtGuard } from '../../common/auth/supabase-jwt.guard.js';
 import { ZodValidationPipe } from '../../common/validation/zod-validation.pipe.js';
-import type { AuthenticatedRequestUser } from '../../common/auth/authenticated-user.interface.js';
 import { AcademicsService } from './academics.service.js';
 import { LiveSessionService } from './live-session.service.js';
 
@@ -36,8 +36,6 @@ export class AcademicsController {
     private readonly academicsService: AcademicsService,
     private readonly liveSessionService: LiveSessionService,
   ) {}
-
-  // ─── Classes ─────────────────────────────────────────────────────────────
 
   @Post('classes')
   @HttpCode(HttpStatus.CREATED)
@@ -60,7 +58,12 @@ export class AcademicsController {
     return this.academicsService.listClasses({ userId: user.userId, role: roleOverride ?? 'admin' });
   }
 
-  // ─── Lessons ─────────────────────────────────────────────────────────────
+  @Get('student/dashboard')
+  @Roles('student')
+  @ApiOperation({ summary: 'Get the current student dashboard overview' })
+  async getStudentDashboard(@CurrentUser() user: AuthenticatedRequestUser) {
+    return this.academicsService.getStudentDashboard(user.userId);
+  }
 
   @Post('classes/:classId/lessons')
   @HttpCode(HttpStatus.CREATED)
@@ -86,8 +89,6 @@ export class AcademicsController {
     return this.liveSessionService.getSessionForLesson(lessonId);
   }
 
-  // ─── Assignments ──────────────────────────────────────────────────────────
-
   @Post('classes/:classId/assignments')
   @HttpCode(HttpStatus.CREATED)
   @Roles('tutor', 'admin', 'super_admin')
@@ -97,7 +98,11 @@ export class AcademicsController {
     @Param('classId') classId: string,
     @Body(new ZodValidationPipe(createAssignmentSchema)) body: unknown,
   ) {
-    return this.academicsService.createAssignment(classId, user.userId, createAssignmentSchema.parse(body));
+    return this.academicsService.createAssignment(
+      classId,
+      user.userId,
+      createAssignmentSchema.parse(body),
+    );
   }
 
   @Get('classes/:classId/assignments')
@@ -105,8 +110,6 @@ export class AcademicsController {
   async listAssignments(@Param('classId') classId: string) {
     return this.academicsService.listAssignments(classId);
   }
-
-  // ─── Quizzes ──────────────────────────────────────────────────────────────
 
   @Post('classes/:classId/quizzes')
   @HttpCode(HttpStatus.CREATED)
@@ -120,8 +123,6 @@ export class AcademicsController {
     return this.academicsService.createQuiz(classId, user.userId, createQuizSchema.parse(body));
   }
 
-  // ─── Attendance ───────────────────────────────────────────────────────────
-
   @Post('lessons/:lessonId/attendance')
   @HttpCode(HttpStatus.OK)
   @Roles('tutor', 'admin', 'super_admin')
@@ -131,7 +132,11 @@ export class AcademicsController {
     @Param('lessonId') lessonId: string,
     @Body(new ZodValidationPipe(recordAttendanceSchema)) body: unknown,
   ) {
-    return this.academicsService.recordAttendance(lessonId, user.userId, recordAttendanceSchema.parse(body));
+    return this.academicsService.recordAttendance(
+      lessonId,
+      user.userId,
+      recordAttendanceSchema.parse(body),
+    );
   }
 
   @Get('lessons/:lessonId/attendance')

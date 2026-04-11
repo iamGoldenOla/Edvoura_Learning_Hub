@@ -27,15 +27,5 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
 
   revalidatePath('/', 'layout')
 
-  // Read the user's role from metadata and redirect to the correct dashboard
-  const role = data.user?.user_metadata?.role || 'student'
-
-  const dashboardPaths: Record<string, string> = {
-    student: '/dash/student',
-    parent: '/dash/parent',
-    tutor: '/dash/tutor',
-    admin: '/dash/admin',
-  }
-
-  redirect(dashboardPaths[role] || '/dash')
+  redirect('/dash')
 }

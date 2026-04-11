@@ -1,90 +1,78 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
+import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 
-export default function LivePage() {
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+
+export default async function LivePage() {
+  const viewer = await requireAppViewer();
+  const dashboard = await getStudentDashboardData(viewer.accessToken);
+
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8">
-      
-      {/* Action Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <LayoutGrid className="text-edvoura-gold w-8 h-8" /> Live Dashboard
-          </h1>
-          <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for Live records and actions.</p>
-        </div>
-        <div className="mt-6 md:mt-0 flex gap-3">
-          <Button variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">Export Report</Button>
-          <Button variant="primary" className="bg-edvoura-gold text-edvoura-navy-dark hover:bg-yellow-400 font-bold">New Entry</Button>
-        </div>
-      </div>
+    <div className="space-y-8 max-w-[1320px]">
+      <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
+        <h1 className="text-4xl font-heading tracking-tight text-dark">Live Sessions</h1>
+        <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
+          Upcoming scheduled classes pulled from the backend. Join links appear when the session provider has already provisioned one.
+        </p>
+      </section>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><TrendingUp className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Volume</p>
-              <p className="text-2xl font-black text-slate-800">1,204</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><ShieldCheck className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Security Status</p>
-              <p className="text-2xl font-black text-slate-800">Nominal</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><Clock className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Last Sync</p>
-              <p className="text-xl font-bold text-slate-800">2 mins ago</p>
-            </div>
-          </CardContent>
-        </Card>
+        <Metric label="Upcoming" value={String(dashboard.stats.upcomingLessons)} />
+        <Metric label="Active Classes" value={String(dashboard.stats.activeClasses)} />
+        <Metric label="Attendance" value={dashboard.stats.attendanceRate ? `${Number(dashboard.stats.attendanceRate).toFixed(0)}%` : '--'} />
       </div>
 
-      {/* Data Table Mock */}
-      <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
-        <CardHeader className="bg-slate-50 border-b border-slate-100 p-6 flex flex-row justify-between items-center">
-          <CardTitle className="text-lg text-slate-800">Recent Live Activity</CardTitle>
-          <Button variant="ghost" className="text-xs h-8 text-edvoura-navy font-bold">View All</Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-left text-sm text-slate-600 border-collapse">
-            <thead className="bg-white border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-              <tr>
-                <th className="px-6 py-4">ID Reference</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Last Updated</th>
-                <th className="px-6 py-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {[1, 2, 3, 4].map((i) => (
-                <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">REF-{Math.floor(Math.random()*9000)+1000}</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">Active</span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">Today, 10:4{i} AM</td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="outline" className="h-7 text-[10px] text-slate-600">Review</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+      <section className="border-[4px] border-dark bg-off-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
+        <div className="space-y-4">
+          {dashboard.upcomingLessons.length > 0 ? (
+            dashboard.upcomingLessons.map((lesson) => (
+              <article key={lesson.id} className="border-[3px] border-dark rounded-2xl bg-white p-5">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                  <div>
+                    <p className="text-[11px] tracking-[0.25em] text-dark/40">{lesson.subjectName}</p>
+                    <h2 className="text-2xl font-black text-dark">{lesson.title}</h2>
+                    <p className="text-sm normal-case text-dark/70 font-semibold">{lesson.classTitle}</p>
+                  </div>
+                  <div className="text-sm font-black text-dark">{formatDateTime(lesson.scheduledStartAt)}</div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-3 text-[11px]">
+                  <span className="px-3 py-2 border-[2px] border-dark bg-off-white">
+                    Ends {formatDateTime(lesson.scheduledEndAt)}
+                  </span>
+                  <span className="px-3 py-2 border-[2px] border-dark bg-off-white">
+                    {lesson.provider.replace('_', ' ')}
+                  </span>
+                  <span className="px-3 py-2 border-[2px] border-dark bg-off-white">{lesson.status}</span>
+                  {lesson.joinUrl ? (
+                    <a
+                      href={lesson.joinUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-4 py-2 border-[2px] border-dark bg-yellow shadow-[3px_3px_0px_#060E1C]"
+                    >
+                      Join Session
+                    </a>
+                  ) : null}
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="border-[3px] border-dashed border-dark/30 rounded-2xl p-6 text-sm normal-case text-dark/60">
+              No live sessions are scheduled yet.
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-[4px] border-dark bg-white rounded-[24px] shadow-[6px_6px_0px_#060E1C] p-5">
+      <p className="text-[11px] tracking-[0.25em] text-dark/40">{label}</p>
+      <p className="mt-3 text-3xl font-black text-dark">{value}</p>
     </div>
   );
 }
