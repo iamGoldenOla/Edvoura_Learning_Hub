@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: workspaceRoot,
   },
+  allowedDevOrigins: ['localhost', '127.0.0.1', '192.168.203.147'],
   images: {
     remotePatterns: [
       {

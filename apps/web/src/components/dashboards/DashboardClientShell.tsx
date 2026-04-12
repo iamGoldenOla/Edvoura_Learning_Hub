@@ -76,7 +76,7 @@ export default function DashboardClientShell({
   return (
     <BandProvider initialBand={initialBand}>
       <div className="min-h-screen bg-white flex font-body text-dark selection:bg-yellow selection:text-dark overflow-hidden uppercase font-black">
-        <aside className="w-80 bg-navy border-r-[4px] border-dark sticky top-0 h-screen flex flex-col p-8 z-30 transition-all duration-500 shadow-[10px_0px_0px_#F5C518]">
+        <aside className="w-80 bg-navy border-r-[4px] border-dark sticky top-0 h-screen flex flex-col p-8 z-[60] pointer-events-auto transition-all duration-500 shadow-[10px_0px_0px_#F5C518]">
           <div className="flex items-center gap-4 mb-16 p-2 group cursor-pointer brutalist-3d bg-yellow border-[3px] border-dark shadow-[4px_4px_0px_#060E1C] rounded-xl">
             <div className="relative">
               <div className="w-12 h-12 bg-white border-[3px] border-dark rounded-xl flex items-center justify-center transform group-hover:rotate-6 transition-transform">
@@ -140,8 +140,8 @@ export default function DashboardClientShell({
           </div>
         </aside>
 
-        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-white pattern-dots !bg-opacity-5">
-          <header className="h-24 bg-white border-b-[4px] border-dark px-12 flex items-center justify-between z-20">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden bg-white pattern-dots !bg-opacity-5 relative z-10">
+          <header className="h-24 bg-white border-b-[4px] border-dark px-12 flex items-center justify-between z-[50] pointer-events-auto">
             <div className="flex items-center gap-12">
               <div className="flex items-center gap-4 bg-white border-[3px] border-dark px-6 py-2 shadow-[4px_4px_0px_#22C55E] rounded-md">
                 <Activity className="w-5 h-5 text-success animate-pulse" />
@@ -177,7 +177,7 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto px-16 py-12 relative custom-scrollbar">
+          <main className="flex-1 overflow-y-auto px-16 py-12 relative custom-scrollbar z-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}

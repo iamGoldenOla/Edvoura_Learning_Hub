@@ -6,7 +6,7 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-11)
+## Last Session Handoff (2026-04-12)
 
 ### Current Status: Phase 9.1 Plus Auth/Billing Dashboard Integration Pass
 
@@ -33,6 +33,10 @@ The project remains in the Phase 9.1 full-stack state, but this session moved th
   - Student home, student assignments, and student live sessions now use the backend student dashboard endpoint instead of nonexistent API routes and placeholder assumptions.
   - Login and signup actions now redirect through `/dash` so role routing remains centralized.
   - `apps/web/next.config.ts` now pins `turbopack.root`, and deprecated `src/middleware.ts` was migrated to `src/proxy.ts`.
+  - Hardened dashboard shell layering to keep the sidebar and header above content overlays, and added navbar auto-close on route change or escape.
+  - Added dev-only role guard fallback for student routes plus friendly fallback panels on student dashboard pages when the API is not yet ready.
+  - Added missing public env vars for Supabase and API base in `.env` and allowed additional dev origins for Next.js.
+  - Removed unused `.sixth` folder.
 
 #### Design System
 - Visual language: high-contrast white backgrounds, navy command surfaces, heavy borders, and hard 3D offset shadows.
@@ -63,6 +67,7 @@ The project remains in the Phase 9.1 full-stack state, but this session moved th
    rewards, badges, streaks, games metadata, and spelling bee remain planned.
 5. Verification:
    contracts and API builds pass, and the web app compiles successfully, but some local Next.js verification commands still hit environment-specific `spawn EPERM` restrictions under sandboxed runs.
+   Local cleanup of `apps/web/.next` can fail if a dev server is running; stop active Node dev processes before clearing cached files.
 
 ## Immediate Next Priorities
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -22,6 +23,7 @@ export default function Navbar() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const supabase = createClient();
+  const pathname = usePathname();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -40,6 +42,22 @@ export default function Navbar() {
       window.removeEventListener('scroll', handleScroll);
       subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setSignInOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileOpen(false);
+        setSignInOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleSignOut = async () => {
