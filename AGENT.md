@@ -37,6 +37,7 @@ The project remains in the Phase 9.1 full-stack state, but this session moved th
   - Added dev-only role guard fallback for student routes plus friendly fallback panels on student dashboard pages when the API is not yet ready.
   - Added missing public env vars for Supabase and API base in `.env` and allowed additional dev origins for Next.js.
   - Removed unused `.sixth` folder.
+  - Added dev-only auto-provisioning for student profiles/roles plus minimal demo data (class, lesson, assignment, progress) on first login.
 
 #### Design System
 - Visual language: high-contrast white backgrounds, navy command surfaces, heavy borders, and hard 3D offset shadows.
