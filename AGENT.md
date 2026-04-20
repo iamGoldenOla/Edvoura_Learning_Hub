@@ -6,83 +6,60 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-12)
+## Last Session Handoff (2026-04-20)
 
-### Current Status: Phase 9.1 Plus Auth/Billing Dashboard Integration Pass
+### Current Status: Vercel + Supabase Cutover Planning
 
-The project remains in the Phase 9.1 full-stack state, but this session moved the app beyond several frontend stubs by wiring role resolution, student dashboard data, and the first real billing and entitlement API surface.
+The repo still has its canonical architecture of `apps/web` plus the privileged NestJS backend in `apps/api`, but this session established the concrete cutover path for moving toward `Vercel + Supabase only`.
 
 ### What Exists Today
 
-#### Backend (`apps/api` + `apps/worker`)
-- Phase 1: Foundation. Auth, RBAC, core API skeleton, Supabase config, schema, and RLS foundation.
-- Phase 2: Onboarding and Identity. Parent/student/tutor/admin onboarding modules, Paystack billing webhook handling, notification service, and worker process.
-- Phase 3: Academic Core. Assignment submissions with late detection, quiz attempts with auto-scoring, lesson attendance, live session provisioning (Zoom plus Google Meet stub), progress snapshots, and Paystack customer creation.
-- Phase 4: Live Learning and Communication. Zoom OAuth caching, Resend email webhooks, proactive parent alerts, tutor reminders, and lesson reminder processing.
-- This session:
-  - `GET /v1/auth/me` now returns `primaryRole` plus student learner profile data when available.
-  - `GET /v1/academics/student/dashboard` now provides a unified student overview payload with enrollments, upcoming lessons, assignments, and progress snapshots.
-  - Billing now exposes plan listing, billing summary, plan create/update, and local subscription bootstrap endpoints under `/v1/billing`.
+#### Platform State
+- The canonical Supabase schema history remains in `supabase/migrations/`.
+- A single manual SQL artifact now exists at `supabase/cutover_all.sql`.
+- The active cutover guide now exists at `VERCEL_SUPABASE_CUTOVER.md`.
+- `apps/web` can be deployed to Vercel.
+- `apps/api` still owns billing, notifications, live-session orchestration, webhooks, and privileged mutations.
+- `apps/web` still depends on `NEXT_PUBLIC_API_URL` for those backend-owned workflows.
 
-#### Frontend (`apps/web` - Next.js)
-- Phase 7: Role Dashboards. Student, parent, tutor, and admin dashboards exist, with broad student route coverage and grade-band-aware navigation.
-- Phase 9: Marketing Website. Landing page, navbar/footer, login, and signup flows exist.
-- Phase 9.1: Inner Marketing Pages. About, Services, Pricing, Blog, Careers, and Contact exist.
-- This session:
-  - `/dash` and the shared dashboard layout now resolve role and learner context from backend `auth/me` instead of relying on Supabase metadata as the primary source of truth.
-  - Student home, student assignments, and student live sessions now use the backend student dashboard endpoint instead of nonexistent API routes and placeholder assumptions.
-  - Login and signup actions now redirect through `/dash` so role routing remains centralized.
-  - `apps/web/next.config.ts` now pins `turbopack.root`, and deprecated `src/middleware.ts` was migrated to `src/proxy.ts`.
-  - Hardened dashboard shell layering to keep the sidebar and header above content overlays, and added navbar auto-close on route change or escape.
-  - Added dev-only role guard fallback for student routes plus friendly fallback panels on student dashboard pages when the API is not yet ready.
-  - Added missing public env vars for Supabase and API base in `.env` and allowed additional dev origins for Next.js.
-  - Removed unused `.sixth` folder.
-  - Added dev-only auto-provisioning for student profiles/roles plus minimal demo data (class, lesson, assignment, progress) on first login.
-
-#### Design System
-- Visual language: high-contrast white backgrounds, navy command surfaces, heavy borders, and hard 3D offset shadows.
-- Grade-specific framing:
-  - Grades 1-3: playful, guided, high-encouragement presentation.
-  - Grades 4-6: mission-style layouts and clearer progress framing.
-  - Grades 7-12: stronger academic and performance-oriented presentation.
-- Shell: `DashboardClientShell` remains the common dashboard frame.
-- Utility classes: `brutalist-card`, `brutalist-3d`, `brutalist-header` in `globals.css`.
-
-### What Was Broken Before This Pass
-
-- Frontend dashboard routing depended too heavily on `user_metadata.role`.
-- Student dashboard pages were calling endpoints that did not exist.
-- Student home was still largely decorative and not tied to a coherent backend summary contract.
-- Billing had webhook/customer groundwork, but no usable frontend-facing entitlement summary or plan management surface.
-- Next.js was inferring the wrong workspace root for Turbopack.
+#### Current Supabase Footprint
+- Four storage buckets are created by migrations:
+  - `avatars`
+  - `assignment-assets`
+  - `student-work`
+  - `lesson-resources`
+- Only avatar object policies are currently defined in migrations.
+- Reference data and bucket creation are seeded by the migration history; `supabase/seed.sql` is currently empty.
 
 ### What Still Needs Work
 
-1. Complete Phase 5 Billing and Entitlements:
-   Paystack checkout/authorization flow, webhook reconciliation, family access gating, and invoice/payment lifecycle enforcement.
-2. Finish Dashboard Data Binding:
-   parent, tutor, and admin dashboards still need the same API-backed treatment now applied to the student dashboard.
-3. Harden Auth Onboarding:
-   signup still stores useful metadata, but domain-profile completion and role-linked onboarding should become more explicit and enforced.
-4. Phase 6 Engagement:
-   rewards, badges, streaks, games metadata, and spelling bee remain planned.
-5. Verification:
-   contracts and API builds pass, and the web app compiles successfully, but some local Next.js verification commands still hit environment-specific `spawn EPERM` restrictions under sandboxed runs.
-   Local cleanup of `apps/web/.next` can fail if a dev server is running; stop active Node dev processes before clearing cached files.
+1. Phase 0: Supabase Base Setup
+   Load the canonical SQL into the hosted Supabase project and verify buckets, schemas, and auth.
+2. Phase 1: Vercel Frontend Base
+   Deploy `apps/web` with only the required Supabase frontend env vars.
+3. Phase 2: RLS-Safe Direct Reads
+   Replace the simplest `apiClient` reads with direct Supabase access.
+4. Phase 3: Storage Hardening
+   Add missing policies for `assignment-assets`, `student-work`, and `lesson-resources`.
+5. Phase 4: Workflow Migration
+   Move billing, notifications, webhooks, live-session provisioning, and admin actions out of `apps/api`.
+6. Phase 5: API Removal
+   Remove the remaining `NEXT_PUBLIC_API_URL` dependency from the frontend.
 
 ## Immediate Next Priorities
 
-1. Connect billing subscription bootstrap to real Paystack checkout flow.
-2. Bind parent dashboard to live billing, children, and notification data.
-3. Bind tutor dashboard to real classes, grading queues, and schedule data.
-4. Bind admin dashboard to real user, tutor review, and financial summary data.
-5. Add stronger end-to-end verification around login, role routing, student dashboard load, and billing summary visibility.
+1. Run `supabase/cutover_all.sql` or the seven canonical migration files in the new Supabase project.
+2. Verify schemas and the four storage buckets exist in Supabase.
+3. Deploy `apps/web` to Vercel with Supabase env vars.
+4. Track completion by phase and do not begin a new phase until the current one is validated.
+5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 
 ## Working Rules
 
 - Read `README.md`, `PROJECT_RULES.md`, `PROJECT_STRUCTURE.md`, and `ARCHITECTURE_DECISIONS.md` before major changes.
 - Keep one canonical architecture. Do not introduce alternate API servers, duplicate auth flows, or overlapping service layers.
 - Update project memory files whenever architecture, schema, workflows, routing, roles, or deployment assumptions change.
+- During the `Vercel + Supabase only` transition, complete and validate one cutover phase before starting the next.
 - Prefer additive, well-documented migrations over implicit schema edits.
 - Keep business logic in TypeScript services. Use SQL for schema, integrity, RLS, views, helper functions, and narrow triggers.
 - Preserve role and relationship semantics. EDVOURA is not a generic LMS.
@@ -109,6 +86,7 @@ The project remains in the Phase 9.1 full-stack state, but this session moved th
 Update these files whenever relevant:
 
 - `README.md`: product summary and canonical architecture
+- `VERCEL_SUPABASE_CUTOVER.md`: active cutover sequence and deployment notes
 - `PROJECT_RULES.md`: engineering and governance rules
 - `PROJECT_STRUCTURE.md`: folder and ownership map
 - `IMPLEMENTATION_ROADMAP.md`: current build sequence

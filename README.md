@@ -65,6 +65,17 @@ EDVOURA has one canonical backend architecture:
 5. Business logic lives in TypeScript services, not scattered across multiple API layers or opaque database procedures.
 6. PostgreSQL enforces integrity, RLS, constraints, and a narrow set of security-definer helper functions.
 
+## Active Cutover
+
+The repository is currently being prepared for a phased `Vercel + Supabase only` transition.
+
+Current status:
+
+- `apps/web` is the Vercel deployment target
+- `supabase/cutover_all.sql` contains the ordered Supabase schema bootstrap SQL
+- `VERCEL_SUPABASE_CUTOVER.md` contains the phased cutover plan
+- `apps/api` still owns several privileged workflows and has not yet been removed from the runtime architecture
+
 ## Module Map
 
 The product is organized into bounded backend modules. Each module below lists its purpose, core entities, primary actions, dependencies, and build priority.

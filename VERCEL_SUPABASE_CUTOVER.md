@@ -1,0 +1,271 @@
+# Vercel + Supabase Cutover
+
+This repository is not yet a pure `Vercel + Supabase only` deployment. It still contains a privileged NestJS backend in `apps/api`.
+
+This document records:
+
+- the exact Supabase SQL history to apply
+- the single combined SQL file for manual SQL editor runs
+- the current storage buckets and policies
+- the frontend environment variables for Vercel
+- the backend features that still depend on `apps/api`
+
+## Current Reality
+
+Today:
+
+- `apps/web` can be deployed to Vercel
+- Supabase provides database, auth, and storage
+- `apps/api` still owns billing, notifications, live session provisioning, webhooks, and privileged workflows
+
+To become `Vercel + Supabase only`, those `apps/api` responsibilities must be moved into:
+
+- Next.js route handlers / server actions
+- Supabase Edge Functions
+- Supabase database functions, triggers, and RLS-safe direct reads
+
+## Supabase SQL Files To Run
+
+Run these in order:
+
+1. `supabase/migrations/20260409134500_base_extensions_and_types.sql`
+2. `supabase/migrations/20260409135500_foundation_tables.sql`
+3. `supabase/migrations/20260409140500_rls_and_access_policies.sql`
+4. `supabase/migrations/20260410100000_phase3_paystack_rename_and_submissions.sql`
+5. `supabase/migrations/20260410120000_phase4_notification_kinds_and_resend.sql`
+6. `supabase/migrations/20260414170000_phase5_dashboard_communications.sql`
+7. `supabase/migrations/20260415100000_phase6_learning_orchestration_events.sql`
+
+Notes:
+
+- `supabase/seed.sql` currently contains no required seed data.
+- Reference data and bucket creation already happen in the migrations above.
+- A combined SQL artifact is available at `supabase/cutover_all.sql`.
+
+## Single SQL File To Run
+
+If you want one file to paste into the Supabase SQL editor instead of running migrations one by one, use:
+
+- `supabase/cutover_all.sql`
+
+This file is a concatenation of the seven canonical migration files in order.
+
+## Storage Buckets
+
+Defined in `supabase/migrations/20260409135500_foundation_tables.sql`:
+
+- `avatars`
+  - private
+  - size limit: `5 MB`
+  - mime types: `image/png`, `image/jpeg`, `image/webp`
+- `assignment-assets`
+  - private
+  - size limit: `50 MB`
+  - mime types: `application/pdf`, `image/png`, `image/jpeg`, `video/mp4`
+- `student-work`
+  - private
+  - size limit: `50 MB`
+  - mime types: `application/pdf`, `image/png`, `image/jpeg`, `video/mp4`
+- `lesson-resources`
+  - private
+  - size limit: `50 MB`
+  - mime types: `application/pdf`, `image/png`, `image/jpeg`, `video/mp4`
+
+## Storage Policies
+
+Currently present in `supabase/migrations/20260409140500_rls_and_access_policies.sql`:
+
+- `storage_avatars_select_owner`
+- `storage_avatars_insert_owner`
+
+Current state:
+
+- avatar uploads are covered
+- bucket policies for `assignment-assets`, `student-work`, and `lesson-resources` are not yet defined in migrations
+
+That means those buckets exist, but their object-level access model still needs explicit policy work before production use.
+
+## Vercel Environment Variables For `apps/web`
+
+Required:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Currently also expected by the frontend:
+
+- `NEXT_PUBLIC_API_URL`
+
+This exists because `apps/web/src/lib/api-client.ts` still points dashboard and workflow requests to `apps/api`.
+
+## Frontend Areas Still Calling `apps/api`
+
+Examples already wired through `apiClient` or backend-only modules:
+
+- billing summary and billing actions
+- notifications listing and mark-read actions
+- live session provisioning and launch flows
+- admin operational actions
+- parent onboarding flows tied to billing
+- privileged dashboard mutations
+
+This means `apps/web` cannot yet run as a complete product on `Vercel + Supabase only` without replacing those backend calls.
+
+## Cutover Order
+
+Recommended order:
+
+1. Keep `apps/web` on Vercel and Supabase auth/storage working first.
+2. Replace simple read flows with direct Supabase reads where RLS is safe.
+3. Move webhook endpoints to Supabase Edge Functions or Next.js route handlers.
+4. Move notification creation and billing orchestration out of NestJS.
+5. Replace live session provider integrations with Vercel route handlers or Supabase Edge Functions.
+6. Remove `NEXT_PUBLIC_API_URL` dependency from the frontend.
+
+## Execution Phases
+
+### Phase 0: Supabase Base Setup
+
+Goal:
+
+- Create the Supabase project and load the canonical schema.
+
+Checklist:
+
+1. Create a new Supabase project.
+2. Run either:
+   - `supabase/cutover_all.sql`
+   - or the seven migration files in order
+3. Verify the following schemas exist:
+   - `public`
+   - `private`
+   - `billing`
+   - `audit`
+   - `analytics`
+4. Verify the four buckets exist:
+   - `avatars`
+   - `assignment-assets`
+   - `student-work`
+   - `lesson-resources`
+
+Exit criteria:
+
+- Schema is loaded
+- Buckets exist
+- Auth is enabled in Supabase
+
+### Phase 1: Vercel Frontend Base
+
+Goal:
+
+- Deploy `apps/web` to Vercel against Supabase auth and storage.
+
+Checklist:
+
+1. Import `apps/web` into Vercel.
+2. Set:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. Do not rely on `apps/api` deployment for this phase.
+4. Validate marketing pages and auth shell load.
+
+Exit criteria:
+
+- Vercel frontend builds
+- Supabase client initializes
+- Auth pages render
+
+### Phase 2: RLS-Safe Direct Reads
+
+Goal:
+
+- Replace simple frontend reads that do not need privileged backend orchestration.
+
+Candidate areas:
+
+- profile reads
+- learner context reads
+- notifications feed where policy-safe
+- dashboard communication feeds
+- avatar storage access
+
+Exit criteria:
+
+- Direct Supabase reads replace the simplest `apiClient` calls
+- `apps/web` depends less on `NEXT_PUBLIC_API_URL`
+
+### Phase 3: Storage Hardening
+
+Goal:
+
+- Add missing object policies for non-avatar buckets before production use.
+
+Buckets needing further policy work:
+
+- `assignment-assets`
+- `student-work`
+- `lesson-resources`
+
+Exit criteria:
+
+- Object access rules are explicit for each production bucket
+
+### Phase 4: Workflow Migration
+
+Goal:
+
+- Move privileged workflows out of NestJS.
+
+Move into:
+
+- Next.js route handlers / server actions
+- Supabase Edge Functions
+
+Target features:
+
+- billing
+- notifications delivery orchestration
+- webhook receivers
+- live session provider integration
+- admin actions
+
+Exit criteria:
+
+- Critical user flows no longer require `apps/api`
+
+### Phase 5: API Removal
+
+Goal:
+
+- Remove remaining `apps/api` dependency from `apps/web`.
+
+Checklist:
+
+1. Remove `NEXT_PUBLIC_API_URL` requirement.
+2. Remove remaining `apiClient` runtime dependency.
+3. Retest auth, dashboards, billing, notifications, and live sessions.
+
+Exit criteria:
+
+- Deployment is truly `Vercel + Supabase only`
+
+## Immediate Minimum Setup
+
+If you want the database and storage side ready now:
+
+1. Create a Supabase project.
+2. Apply the seven migration files in order.
+3. Verify the four buckets exist.
+4. Set the Vercel env vars for `apps/web`.
+5. Deploy `apps/web` only.
+
+## Remaining Refactor Scope
+
+Before the app is truly `Vercel + Supabase only`, these backend modules need migration or replacement:
+
+- `apps/api/src/modules/billing`
+- `apps/api/src/modules/notifications`
+- `apps/api/src/modules/academics/live-session.service.ts`
+- parts of `apps/api/src/modules/admin`
+- parts of `apps/api/src/modules/parents`
+- any frontend path that still depends on `apps/web/src/lib/api-client.ts`
