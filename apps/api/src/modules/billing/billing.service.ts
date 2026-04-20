@@ -20,6 +20,15 @@ export interface PaystackEvent {
   data: Record<string, unknown>;
 }
 
+type PaystackCustomerResponse = {
+  ok: boolean;
+  status: number;
+  json: () => Promise<{
+    status: boolean;
+    data: { customer_code: string };
+  }>;
+};
+
 @Injectable()
 export class BillingService {
   private readonly logger = new Logger(BillingService.name);
@@ -534,7 +543,7 @@ export class BillingService {
     }
 
     try {
-      const response = await fetch('https://api.paystack.co/customer', {
+      const response = (await fetch('https://api.paystack.co/customer', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.env.PAYSTACK_SECRET_KEY}`,
@@ -546,16 +555,13 @@ export class BillingService {
           last_name: fullName.split(' ').slice(1).join(' ') || undefined,
           metadata: metadata ?? {},
         }),
-      });
+      })) as PaystackCustomerResponse;
 
       if (!response.ok) {
         throw new Error(`Paystack customer API responded with ${response.status}`);
       }
 
-      const result = (await response.json()) as {
-        status: boolean;
-        data: { customer_code: string };
-      };
+      const result = await response.json();
 
       if (!result.status || !result.data?.customer_code) {
         throw new Error('Paystack customer creation returned unexpected response');
