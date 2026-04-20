@@ -22,6 +22,7 @@ type JsonHttpResponse<T> = {
   ok: boolean;
   status: number;
   json: () => Promise<T>;
+  text: () => Promise<string>;
 };
 
 export interface LiveSessionResult {
@@ -265,21 +266,21 @@ export class LiveSessionService {
       .setExpirationTime('1h')
       .sign(privateKey);
 
-    const response = await fetch(credentials.token_uri, {
+    const response = (await fetch(credentials.token_uri, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
         assertion: jwt,
       }),
-    });
+    })) as JsonHttpResponse<{ access_token: string; expires_in: number }>;
 
     if (!response.ok) {
       const errBody = await response.text();
       throw new Error(`Google OAuth failed: ${response.status} ${errBody}`);
     }
 
-    const data = (await response.json()) as { access_token: string; expires_in: number };
+    const data = await response.json();
     this.googleAccessToken = data.access_token;
     this.googleTokenExpiresAt = Date.now() + data.expires_in * 1000;
 
@@ -311,7 +312,7 @@ export class LiveSessionService {
       };
 
       const calendarId = 'primary';
-      const response = await fetch(
+      const response = (await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?conferenceDataVersion=1`,
         {
           method: 'POST',
@@ -321,20 +322,20 @@ export class LiveSessionService {
           },
           body: JSON.stringify(eventBody),
         },
-      );
+      )) as JsonHttpResponse<{
+        id: string;
+        hangoutLink?: string;
+        conferenceData?: {
+          entryPoints?: Array<{ entryPointType: string; uri: string; passcode?: string }>;
+        };
+      }>;
 
       if (!response.ok) {
         const errBody = await response.text();
         throw new Error(`Google Calendar API failed: ${response.status} ${errBody}`);
       }
 
-      const eventResponse = (await response.json()) as {
-        id: string;
-        hangoutLink?: string;
-        conferenceData?: {
-          entryPoints?: Array<{ entryPointType: string; uri: string; passcode?: string }>;
-        };
-      };
+      const eventResponse = await response.json();
 
       this.logger.log(`Google Meet created: ${eventResponse.id} for lesson ${lessonId}`);
 
