@@ -18,6 +18,12 @@ interface ZoomMeetingResponse {
   password: string;
 }
 
+type JsonHttpResponse<T> = {
+  ok: boolean;
+  status: number;
+  json: () => Promise<T>;
+};
+
 export interface LiveSessionResult {
   lessonId: string;
   provider: LiveClassProvider;
@@ -137,7 +143,7 @@ export class LiveSessionService {
     }
 
     this.logger.log('Fetching new Zoom access token...');
-    const tokenResponse = await fetch(
+    const tokenResponse = (await fetch(
       `https://zoom.us/oauth/token?grant_type=account_credentials&account_id=${ZOOM_ACCOUNT_ID}`,
       {
         method: 'POST',
@@ -146,13 +152,13 @@ export class LiveSessionService {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       },
-    );
+    )) as JsonHttpResponse<ZoomTokenResponse>;
 
     if (!tokenResponse.ok) {
       throw new Error(`Zoom OAuth failed: ${tokenResponse.status}`);
     }
 
-    const tokenData = (await tokenResponse.json()) as ZoomTokenResponse;
+    const tokenData = await tokenResponse.json();
     this.zoomAccessToken = tokenData.access_token;
     this.zoomTokenExpiresAt = Date.now() + tokenData.expires_in * 1000;
 
@@ -173,7 +179,7 @@ export class LiveSessionService {
       const endTime = new Date(scheduledEnd);
       const durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
 
-      const meetingResponse = await fetch('https://api.zoom.us/v2/users/me/meetings', {
+      const meetingResponse = (await fetch('https://api.zoom.us/v2/users/me/meetings', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -191,13 +197,13 @@ export class LiveSessionService {
             mute_upon_entry: true,
           },
         }),
-      });
+      })) as JsonHttpResponse<ZoomMeetingResponse>;
 
       if (!meetingResponse.ok) {
         throw new Error(`Zoom meeting creation failed: ${meetingResponse.status}`);
       }
 
-      const meeting = (await meetingResponse.json()) as ZoomMeetingResponse;
+      const meeting = await meetingResponse.json();
 
       this.logger.log(`Zoom meeting created: ${meeting.id} for lesson ${lessonId}`);
 
