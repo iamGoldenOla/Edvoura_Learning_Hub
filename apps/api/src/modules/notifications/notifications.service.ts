@@ -14,6 +14,12 @@ export interface CreateNotificationInput {
   data?: Record<string, unknown>;
 }
 
+type ResendEmailResponse = {
+  ok: boolean;
+  status: number;
+  json: () => Promise<{ id?: string }>;
+};
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
@@ -129,7 +135,7 @@ export class NotificationsService {
     if (!profile) return;
 
     try {
-      const response = await fetch('https://api.resend.com/emails', {
+      const response = (await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.env.RESEND_API_KEY}`,
@@ -141,13 +147,13 @@ export class NotificationsService {
           subject: title,
           text: body,
         }),
-      });
+      })) as ResendEmailResponse;
 
       if (!response.ok) {
         throw new Error(`Resend API error: ${response.status}`);
       }
 
-      const result = (await response.json()) as { id?: string };
+      const result = await response.json();
 
       await this.databaseService.db
         .updateTable('notification_deliveries')
