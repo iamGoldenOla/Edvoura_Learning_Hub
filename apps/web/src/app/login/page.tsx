@@ -2,10 +2,13 @@
 
 import { useActionState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { login } from './actions';
-import { Star, CheckCircle2, BookOpen, Users, Video } from 'lucide-react';
+import { CheckCircle2, BookOpen, Users, Video } from 'lucide-react';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') ?? '';
   const [state, formAction, isPending] = useActionState(login, null);
 
   return (
@@ -87,6 +90,7 @@ export default function LoginPage() {
           )}
 
           <form action={formAction} className="space-y-5">
+            <input type="hidden" name="next" value={next} />
             <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">Email address</label>
               <input
@@ -135,7 +139,7 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-grey">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-yellow font-semibold hover:text-yellow-dim transition-colors">
+            <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'} className="text-yellow font-semibold hover:text-yellow-dim transition-colors">
               Sign up free
             </Link>
           </p>

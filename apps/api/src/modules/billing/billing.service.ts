@@ -358,7 +358,12 @@ export class BillingService {
 
   private async handleSubscriptionCreate(data: Record<string, unknown>): Promise<void> {
     const subscriptionCode = data['subscription_code'] as string | undefined;
-    const customerCode = data['customer'] as { customer_code?: string } | undefined;
+    const customer = data['customer'] as
+      | { customer_code?: string }
+      | string
+      | undefined;
+    const customerCode =
+      typeof customer === 'string' ? customer : (customer?.customer_code ?? null);
     const status = data['status'] as string | undefined;
     const nextPaymentDate = data['next_payment_date'] as string | undefined;
 
@@ -367,28 +372,67 @@ export class BillingService {
       return;
     }
 
-    // Upsert subscription by paystack_subscription_code
-    await this.databaseService.db
-      .insertInto('billing.subscriptions')
-      .values({
-        account_owner_user_id: '00000000-0000-0000-0000-000000000000', // resolved below if customer identified
-        paystack_customer_code: customerCode?.customer_code ?? null,
-        paystack_subscription_code: subscriptionCode,
-        status: this.mapPaystackStatus(status ?? ''),
-        current_period_start: new Date().toISOString(),
-        current_period_end: nextPaymentDate ?? null,
-        cancel_at_period_end: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .onConflict((oc) =>
-        oc.column('paystack_subscription_code').doUpdateSet({
+    const now = new Date().toISOString();
+
+    const ownerProfile = customerCode
+      ? await this.databaseService.db
+          .selectFrom('parent_profiles')
+          .select('user_id as userId')
+          .where('paystack_customer_code', '=', customerCode)
+          .executeTakeFirst()
+      : null;
+
+    let existing = await this.databaseService.db
+      .selectFrom('billing.subscriptions')
+      .select(['id'])
+      .where('paystack_subscription_code', '=', subscriptionCode)
+      .executeTakeFirst();
+
+    if (!existing && customerCode) {
+      existing = await this.databaseService.db
+        .selectFrom('billing.subscriptions')
+        .select(['id'])
+        .where('paystack_customer_code', '=', customerCode)
+        .orderBy('updated_at', 'desc')
+        .executeTakeFirst();
+    }
+
+    if (existing) {
+      await this.databaseService.db
+        .updateTable('billing.subscriptions')
+        .set({
+          paystack_customer_code: customerCode,
+          paystack_subscription_code: subscriptionCode,
           status: this.mapPaystackStatus(status ?? ''),
           current_period_end: nextPaymentDate ?? null,
-          updated_at: new Date().toISOString(),
-        }),
-      )
-      .execute();
+          updated_at: now,
+        })
+        .where('id', '=', existing.id)
+        .execute();
+    } else {
+      if (!ownerProfile?.userId) {
+        this.logger.warn(
+          `subscription.create: could not resolve account owner for customer ${customerCode ?? 'unknown'}`,
+        );
+        return;
+      }
+
+      await this.databaseService.db
+        .insertInto('billing.subscriptions')
+        .values({
+          account_owner_user_id: ownerProfile.userId,
+          plan_id: null,
+          paystack_customer_code: customerCode,
+          paystack_subscription_code: subscriptionCode,
+          status: this.mapPaystackStatus(status ?? ''),
+          current_period_start: now,
+          current_period_end: nextPaymentDate ?? null,
+          cancel_at_period_end: false,
+          created_at: now,
+          updated_at: now,
+        })
+        .execute();
+    }
 
     this.logger.log(`Subscription created/updated: ${subscriptionCode}`);
   }

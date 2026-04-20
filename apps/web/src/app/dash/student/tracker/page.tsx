@@ -1,90 +1,132 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 
-export default function TrackerPage() {
+const toPercent = (value: string | null) => {
+  const numeric = Number.parseFloat(value ?? '0');
+  if (!Number.isFinite(numeric) || numeric <= 0) return '--';
+  return `${Math.round(numeric)}%`;
+};
+
+const safeWidth = (value: string | null) => {
+  const numeric = Number.parseFloat(value ?? '0');
+  if (!Number.isFinite(numeric)) return 8;
+  return Math.max(8, Math.min(100, Math.round(numeric)));
+};
+
+export default async function TrackerPage() {
+  const viewer = await requireAppViewer();
+  let dashboard;
+
+  try {
+    dashboard = await getStudentDashboardData(viewer.accessToken);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to load subject mastery.';
+    return (
+      <div className="max-w-3xl mx-auto bg-white border-[4px] border-dark rounded-[28px] p-10 shadow-[10px_10px_0px_#060E1C]">
+        <h1 className="text-3xl font-heading font-black text-dark mb-4">Subject mastery unavailable</h1>
+        <p className="text-sm text-dark/70 font-semibold normal-case mb-6">{message}</p>
+        <Link
+          href="/dash/student"
+          className="inline-flex items-center justify-center px-6 py-3 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C]"
+        >
+          Back to Dashboard
+        </Link>
+      </div>
+    );
+  }
+
+  const masteryEntries = dashboard.progress.slice(0, 8);
+  const weakTopics = masteryEntries.filter((entry) => Number.parseFloat(entry.averageScore ?? '0') < 55);
+
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8">
-      
-      {/* Action Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <LayoutGrid className="text-edvoura-gold w-8 h-8" /> Tracker Dashboard
-          </h1>
-          <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for Tracker records and actions.</p>
-        </div>
-        <div className="mt-6 md:mt-0 flex gap-3">
-          <Button variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">Export Report</Button>
-          <Button variant="primary" className="bg-edvoura-gold text-edvoura-navy-dark hover:bg-yellow-400 font-bold">New Entry</Button>
-        </div>
-      </div>
+    <div className="space-y-8 max-w-[1320px]">
+      <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
+        <h1 className="text-4xl font-heading tracking-tight text-dark">Subject Mastery</h1>
+        <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
+          Track mastery by subject, detect weak topics, and prioritize focused revision.
+        </p>
+      </section>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><TrendingUp className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Volume</p>
-              <p className="text-2xl font-black text-slate-800">1,204</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><ShieldCheck className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Security Status</p>
-              <p className="text-2xl font-black text-slate-800">Nominal</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><Clock className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Last Sync</p>
-              <p className="text-xl font-bold text-slate-800">2 mins ago</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <section className="border-[4px] border-dark bg-off-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6 xl:col-span-2">
+          <h2 className="text-2xl font-black text-dark">Mastery by Subject</h2>
+          <div className="mt-4 space-y-3">
+            {masteryEntries.length > 0 ? (
+              masteryEntries.map((entry) => (
+                <article key={entry.id} className="border-[3px] border-dark rounded-2xl bg-white p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-sm font-black text-dark">{entry.subjectName ?? 'General Studies'}</h3>
+                    <span className="text-sm font-black text-dark">{toPercent(entry.averageScore)}</span>
+                  </div>
+                  <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-slate-200">
+                    <div
+                      className="h-full rounded-full bg-slate-900"
+                      style={{ width: `${safeWidth(entry.averageScore)}%` }}
+                    />
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <span className="rounded-md border-[2px] border-dark bg-off-white px-2 py-1">
+                      Attendance {toPercent(entry.attendanceRate)}
+                    </span>
+                    <span className="rounded-md border-[2px] border-dark bg-off-white px-2 py-1">
+                      Tasks {toPercent(entry.assignmentCompletionRate)}
+                    </span>
+                  </div>
+                  {entry.masteryNotes ? (
+                    <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">{entry.masteryNotes}</p>
+                  ) : null}
+                </article>
+              ))
+            ) : (
+              <div className="border-[3px] border-dashed border-dark/30 rounded-2xl p-6 text-sm normal-case text-dark/60">
+                No mastery snapshot has been generated yet.
+              </div>
+            )}
+          </div>
+        </section>
 
-      {/* Data Table Mock */}
-      <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
-        <CardHeader className="bg-slate-50 border-b border-slate-100 p-6 flex flex-row justify-between items-center">
-          <CardTitle className="text-lg text-slate-800">Recent Tracker Activity</CardTitle>
-          <Button variant="ghost" className="text-xs h-8 text-edvoura-navy font-bold">View All</Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-left text-sm text-slate-600 border-collapse">
-            <thead className="bg-white border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-              <tr>
-                <th className="px-6 py-4">ID Reference</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Last Updated</th>
-                <th className="px-6 py-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {[1, 2, 3, 4].map((i) => (
-                <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">REF-{Math.floor(Math.random()*9000)+1000}</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">Active</span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">Today, 10:4{i} AM</td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="outline" className="h-7 text-[10px] text-slate-600">Review</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+        <section className="space-y-6">
+          <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
+            <h2 className="text-2xl font-black text-dark">Weak Topics</h2>
+            <div className="mt-4 space-y-2">
+              {weakTopics.length > 0 ? (
+                weakTopics.map((entry) => (
+                  <div key={entry.id} className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2">
+                    <p className="text-sm font-black text-dark">{entry.subjectName ?? 'General'}</p>
+                    <p className="text-xs text-dark/70 font-semibold">Confidence {toPercent(entry.averageScore)}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm normal-case text-dark/70 font-semibold">
+                  No weak-topic alert right now. Keep consistency.
+                </p>
+              )}
+            </div>
+          </section>
+
+          <section className="border-[4px] border-dark bg-off-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
+            <h2 className="text-2xl font-black text-dark">Focus Next</h2>
+            <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
+              Use the Test & Drill center for timed practice, then review notes for weaker topics.
+            </p>
+            <div className="mt-4 grid grid-cols-1 gap-2">
+              <Link
+                href="/dash/student/exam-prep"
+                className="inline-flex items-center justify-center px-4 py-2.5 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest"
+              >
+                Open Tests & Drills
+              </Link>
+              <Link
+                href="/dash/student/notes"
+                className="inline-flex items-center justify-center px-4 py-2.5 border-[3px] border-dark bg-white text-dark font-black uppercase text-xs tracking-widest"
+              >
+                Open Notes
+              </Link>
+            </div>
+          </section>
+        </section>
+      </div>
     </div>
   );
 }
+

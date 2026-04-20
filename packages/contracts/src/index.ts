@@ -172,6 +172,13 @@ export const onboardChildSchema = z.object({
 });
 export type OnboardChildDto = z.infer<typeof onboardChildSchema>;
 
+export const linkExistingChildSchema = z.object({
+  childEmail: z.string().email(),
+  relationship: guardianRelationshipSchema,
+  isPrimaryGuardian: z.boolean().default(false),
+});
+export type LinkExistingChildDto = z.infer<typeof linkExistingChildSchema>;
+
 // ─── Student onboarding DTOs ─────────────────────────────────────────────────
 
 export const completeStudentProfileSchema = z.object({
@@ -306,3 +313,74 @@ export const recordAttendanceSchema = z.object({
   students: z.array(attendanceRecordSchema).min(1),
 });
 export type RecordAttendanceDto = z.infer<typeof recordAttendanceSchema>;
+
+// Communications DTOs
+export const dashboardChatChannelSchema = z.enum([
+  'tutor-parent',
+  'tutor-student-7-12',
+  'parent-student-7-12',
+]);
+export type DashboardChatChannel = z.infer<typeof dashboardChatChannelSchema>;
+
+export const publishLiveContentSchema = z.object({
+  headline: z.string().min(2).max(200),
+  agenda: z.string().min(2).max(3000),
+  explanation: z.string().max(4000).optional().default(''),
+  classTask: z.string().min(2).max(4000),
+  homework: z.string().max(4000).optional().default(''),
+  resourceUrl: z.string().url().max(2000).optional().or(z.literal('')).default(''),
+});
+export type PublishLiveContentDto = z.infer<typeof publishLiveContentSchema>;
+
+export const postDashboardChatMessageSchema = z.object({
+  channelId: dashboardChatChannelSchema,
+  text: z.string().min(1).max(4000),
+});
+export type PostDashboardChatMessageDto = z.infer<typeof postDashboardChatMessageSchema>;
+
+export const listDashboardChatMessagesQuerySchema = z.object({
+  channelId: dashboardChatChannelSchema,
+  limit: z
+    .coerce
+    .number()
+    .int()
+    .min(1)
+    .max(200)
+    .optional()
+    .default(100),
+});
+export type ListDashboardChatMessagesQueryDto = z.infer<typeof listDashboardChatMessagesQuerySchema>;
+
+// Dashboard UI action logs
+export const recordDashboardUiActionSchema = z.object({
+  actionKey: z.string().min(2).max(120),
+  label: z.string().min(2).max(200),
+  scope: z.string().min(2).max(60),
+  nextPath: z.string().max(300).optional(),
+  metadata: z.record(z.unknown()).optional(),
+});
+export type RecordDashboardUiActionDto = z.infer<typeof recordDashboardUiActionSchema>;
+
+export const listDashboardUiActionsQuerySchema = z.object({
+  scope: z.string().max(60).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+});
+export type ListDashboardUiActionsQueryDto = z.infer<typeof listDashboardUiActionsQuerySchema>;
+
+export const runAdminOperationSchema = z.object({
+  actionKey: z.string().min(2).max(120),
+  context: z.record(z.unknown()).optional(),
+});
+export type RunAdminOperationDto = z.infer<typeof runAdminOperationSchema>;
+
+export const runTutorOperationSchema = z.object({
+  actionKey: z.string().min(2).max(120),
+  context: z.record(z.unknown()).optional(),
+});
+export type RunTutorOperationDto = z.infer<typeof runTutorOperationSchema>;
+
+export const runParentOperationSchema = z.object({
+  actionKey: z.string().min(2).max(120),
+  context: z.record(z.unknown()).optional(),
+});
+export type RunParentOperationDto = z.infer<typeof runParentOperationSchema>;

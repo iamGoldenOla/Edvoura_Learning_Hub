@@ -335,6 +335,41 @@ export interface NotificationDeliveriesTable {
 
 // ─── Billing (billing schema) ─────────────────────────────────────────────────
 
+export interface TutorLiveContentPostsTable {
+  id?: string;
+  tutor_user_id: string;
+  headline: string;
+  agenda: string;
+  explanation: string | null;
+  class_task: string;
+  homework: string | null;
+  resource_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DashboardChatMessagesTable {
+  id?: string;
+  channel_id: 'tutor-parent' | 'tutor-student-7-12' | 'parent-student-7-12';
+  sender_user_id: string;
+  sender_role: 'student' | 'parent' | 'tutor';
+  sender_name: string;
+  text: string;
+  created_at: string;
+}
+
+export interface LearningActivityEventsTable {
+  id?: string;
+  event_type: string;
+  actor_user_id: string | null;
+  class_id: string | null;
+  lesson_id: string | null;
+  assignment_id: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface BillingPlansTable {
   id?: string;
   code: string;
@@ -434,6 +469,9 @@ export interface Database {
   progress_snapshots: ProgressSnapshotsTable;
   notifications: NotificationsTable;
   notification_deliveries: NotificationDeliveriesTable;
+  tutor_live_content_posts: TutorLiveContentPostsTable;
+  dashboard_chat_messages: DashboardChatMessagesTable;
+  learning_activity_events: LearningActivityEventsTable;
   // private schema
   'private.lesson_live_sessions': LessonLiveSessionsTable;
   // billing schema — Kysely needs schema-qualified names

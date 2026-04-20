@@ -1,12 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
 const BAND_STORAGE_KEY = 'edvoura_learner_band';
+export type LearnerBand = '1-3' | '4-6' | '7-12';
 
 interface BandContextValue {
-  band: '1-3' | '4-6' | '7-12';
-  setBand: (newBand: '1-3' | '4-6' | '7-12') => void;
+  band: LearnerBand;
+  setBand: (newBand: LearnerBand) => void;
 }
 
 const BandContext = createContext<BandContextValue>({
@@ -18,19 +19,11 @@ export function BandProvider({
   initialBand,
   children,
 }: {
-  initialBand: '1-3' | '4-6' | '7-12';
+  initialBand: LearnerBand;
   children: React.ReactNode;
 }) {
-  // On first render, check localStorage for a saved band. Fall back to server-provided initialBand.
-  const [band, setBandState] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(BAND_STORAGE_KEY);
-      if (saved && ['1-3', '4-6', '7-12'].includes(saved)) {
-        return saved;
-      }
-    }
-    return initialBand;
-  });
+  // Use server-provided band for first render to keep SSR/CSR output consistent.
+  const [band, setBandState] = useState<LearnerBand>(initialBand);
 
   // Whenever the band changes, persist it to localStorage
   const setBand = useCallback((newBand: '1-3' | '4-6' | '7-12') => {

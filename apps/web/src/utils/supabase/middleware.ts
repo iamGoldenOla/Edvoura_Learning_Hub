@@ -28,21 +28,19 @@ export async function updateSession(request: NextRequest) {
   )
 
   // refreshing the auth token
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user: Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user'] = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Avoid breaking Next.js route fetches if auth backend is temporarily unavailable.
+    user = null
+  }
 
   // Protect /dash routes
   if (request.nextUrl.pathname.startsWith('/dash') && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
-  }
-
-  // Redirect logged in users away from auth pages
-  if ((request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dash' // or base on their role
     return NextResponse.redirect(url)
   }
 

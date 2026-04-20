@@ -89,6 +89,17 @@ export class AcademicsController {
     return this.liveSessionService.getSessionForLesson(lessonId);
   }
 
+  @Post('lessons/:lessonId/launch')
+  @HttpCode(HttpStatus.OK)
+  @Roles('tutor', 'admin', 'super_admin')
+  @ApiOperation({ summary: 'Launch lesson live session and notify student/parent/admin audiences' })
+  async launchLesson(
+    @CurrentUser() user: AuthenticatedRequestUser,
+    @Param('lessonId') lessonId: string,
+  ) {
+    return this.academicsService.launchLesson(lessonId, user.userId);
+  }
+
   @Post('classes/:classId/assignments')
   @HttpCode(HttpStatus.CREATED)
   @Roles('tutor', 'admin', 'super_admin')

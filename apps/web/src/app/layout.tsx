@@ -51,9 +51,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${syne.variable} ${dmSans.variable} ${geistMono.variable} h-full`}
+      data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body suppressHydrationWarning className="min-h-full flex flex-col antialiased">
+        {children}
+      </body>
     </html>
   );
 }

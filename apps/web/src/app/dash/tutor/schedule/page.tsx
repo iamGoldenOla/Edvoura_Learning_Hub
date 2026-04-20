@@ -1,11 +1,17 @@
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, Clock, Users, Video, ChevronLeft, ChevronRight, AlertCircle, Plus, CheckCircle2 } from 'lucide-react';
 
-export default function TutorSchedulePage() {
+export default async function TutorSchedulePage(props: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const searchParams = (await props.searchParams) ?? {};
   const scheduleDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const activeDay = 'Wed';
+  const dayParam = typeof searchParams.day === 'string' ? searchParams.day : null;
+  const activeDay = dayParam && scheduleDays.includes(dayParam) ? dayParam : 'Wed';
+  const action = typeof searchParams.action === 'string' ? searchParams.action : null;
 
   const todaySessions = [
     { id: 1, time: '10:00 AM', duration: '1h', title: 'Grade 7 Pre-Algebra', type: 'Group (12)', status: 'completed' },
@@ -26,14 +32,24 @@ export default function TutorSchedulePage() {
           <p className="mt-2 text-slate-600 text-sm">View, accept, and manage all your upcoming virtual sessions.</p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <Button variant="outline" className="border-slate-300 text-slate-700 bg-white shadow-sm flex-1 md:flex-none flex items-center gap-2">
-            <Clock className="w-4 h-4 text-slate-400" /> Sync to Google Calendar
-          </Button>
-          <Button variant="primary" className="bg-edvoura-navy hover:bg-slate-800 text-white flex-1 md:flex-none flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Open Time Slot
-          </Button>
+          <Link href="/dash/tutor/schedule?action=sync-calendar">
+            <Button variant="outline" className="border-slate-300 text-slate-700 bg-white shadow-sm flex-1 md:flex-none flex items-center gap-2">
+              <Clock className="w-4 h-4 text-slate-400" /> Sync to Google Calendar
+            </Button>
+          </Link>
+          <Link href="/dash/tutor/schedule?action=open-slot">
+            <Button variant="primary" className="bg-edvoura-navy hover:bg-slate-800 text-white flex-1 md:flex-none flex items-center gap-2">
+              <Plus className="w-4 h-4" /> Open Time Slot
+            </Button>
+          </Link>
         </div>
       </div>
+
+      {action ? (
+        <section className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+          Action Center: <strong>{action}</strong> request loaded.
+        </section>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -42,11 +58,14 @@ export default function TutorSchedulePage() {
           
           {/* Day Selector */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex justify-between items-center overflow-x-auto gap-4">
-            <Button variant="ghost" className="w-10 h-10 p-0 shrink-0 rounded-full text-slate-400 hover:text-edvoura-navy"><ChevronLeft className="w-5 h-5"/></Button>
+            <Link href="/dash/tutor/schedule?day=prev">
+              <Button variant="ghost" className="w-10 h-10 p-0 shrink-0 rounded-full text-slate-400 hover:text-edvoura-navy"><ChevronLeft className="w-5 h-5"/></Button>
+            </Link>
             <div className="flex gap-2 min-w-max flex-1 justify-center">
               {scheduleDays.map((day, i) => (
-                <button 
+                <Link
                   key={day}
+                  href={`/dash/tutor/schedule?day=${day}`}
                   className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all ${
                     day === activeDay 
                       ? 'bg-edvoura-navy text-white shadow-md scale-105' 
@@ -55,10 +74,12 @@ export default function TutorSchedulePage() {
                 >
                   <span className="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-80">{day}</span>
                   <span className="text-lg font-black">{12 + i}</span>
-                </button>
+                </Link>
               ))}
             </div>
-            <Button variant="ghost" className="w-10 h-10 p-0 shrink-0 rounded-full text-slate-400 hover:text-edvoura-navy"><ChevronRight className="w-5 h-5"/></Button>
+            <Link href="/dash/tutor/schedule?day=next">
+              <Button variant="ghost" className="w-10 h-10 p-0 shrink-0 rounded-full text-slate-400 hover:text-edvoura-navy"><ChevronRight className="w-5 h-5"/></Button>
+            </Link>
           </div>
 
           <h2 className="text-lg font-bold text-slate-800 pt-2">Wednesday, Oct 14th</h2>
@@ -97,19 +118,25 @@ export default function TutorSchedulePage() {
                   
                   <div className="w-full md:w-auto flex flex-col gap-2">
                     {session.status === 'next' && (
-                      <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full md:w-48 shadow-lg shadow-blue-200">
-                        Join Google Meet
-                      </Button>
+                      <Link href={`/dash/tutor/schedule?action=join&id=${session.id}`}>
+                        <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full md:w-48 shadow-lg shadow-blue-200">
+                          Join Google Meet
+                        </Button>
+                      </Link>
                     )}
                     {session.status === 'upcoming' && (
-                      <Button variant="outline" className="font-bold w-full md:w-48 border-slate-300 text-slate-700 hover:bg-slate-50">
-                        Prepare Materials
-                      </Button>
+                      <Link href={`/dash/tutor/lesson-notes?session=${session.id}`}>
+                        <Button variant="outline" className="font-bold w-full md:w-48 border-slate-300 text-slate-700 hover:bg-slate-50">
+                          Prepare Materials
+                        </Button>
+                      </Link>
                     )}
                     {session.status === 'completed' && (
-                      <Button variant="ghost" className="font-bold w-full md:w-48 text-edvoura-navy hover:bg-slate-100" disabled>
-                        Session Concluded
-                      </Button>
+                      <Link href={`/dash/tutor/schedule?action=view-summary&id=${session.id}`}>
+                        <Button variant="ghost" className="font-bold w-full md:w-48 text-edvoura-navy hover:bg-slate-100">
+                          View Session Summary
+                        </Button>
+                      </Link>
                     )}
                   </div>
                 </div>
@@ -131,7 +158,9 @@ export default function TutorSchedulePage() {
                 <AlertCircle className="w-4 h-4" /> Action Required
               </h3>
               <p className="text-amber-900 font-medium text-sm leading-relaxed mb-6">You have 2 private session requests waiting for your approval. If unaccepted within 4 hours, they will automatically bounce to another available tutor.</p>
-              <Button variant="outline" className="w-full border-amber-300 bg-white text-amber-900 font-bold hover:bg-amber-50">Review Requests (2)</Button>
+              <Link href="/dash/tutor/schedule?action=review-requests">
+                <Button variant="outline" className="w-full border-amber-300 bg-white text-amber-900 font-bold hover:bg-amber-50">Review Requests (2)</Button>
+              </Link>
             </CardContent>
           </Card>
 

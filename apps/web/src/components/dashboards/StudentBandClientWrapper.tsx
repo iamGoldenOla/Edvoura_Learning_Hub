@@ -1,28 +1,25 @@
 'use client';
 
-import { CalendarClock, CircleCheck, CreditCard, Rocket, ShieldAlert, Trophy } from 'lucide-react';
+import { useState } from 'react';
+import Link from 'next/link';
+import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video } from 'lucide-react';
 
 import { useBand } from './BandContext';
+import StudentLiveContentPanel from './StudentLiveContentPanel';
 import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
 
-const bandThemes = {
+const bandCopy = {
   '1-3': {
-    eyebrow: 'Adventure Park',
-    titleAccent: 'Playful Momentum',
-    subtitle: 'Small wins, clear routines, and visible encouragement for young learners.',
-    panelTone: 'bg-pink-50',
+    label: 'Explorer Mode',
+    subtitle: 'Simple daily learning steps.',
   },
   '4-6': {
-    eyebrow: 'Explorer Hub',
-    titleAccent: 'Mission Control',
-    subtitle: 'Balanced challenge, progress visibility, and class readiness for growing learners.',
-    panelTone: 'bg-blue-50',
+    label: 'Mission Mode',
+    subtitle: 'Focus on lessons, tasks, and steady progress.',
   },
   '7-12': {
-    eyebrow: 'Senior Cockpit',
-    titleAccent: 'Performance Grid',
-    subtitle: 'Academic focus, upcoming deadlines, and disciplined session readiness.',
-    panelTone: 'bg-yellow/10',
+    label: 'Performance Mode',
+    subtitle: 'Stay organized and exam-ready with clear priorities.',
   },
 } as const;
 
@@ -32,7 +29,8 @@ const formatPercent = (value: string | null) => {
 };
 
 const formatMoney = (amountMinor: number | null, currencyCode: string | null) => {
-  if (amountMinor === null || !currencyCode) return 'Pending';
+  if (amountMinor === null || !currencyCode) return 'Not set';
+
   return new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: currencyCode,
@@ -48,6 +46,33 @@ const formatDateTime = (value: string | null) => {
   });
 };
 
+const formatDate = (value: string | null) => {
+  if (!value) return 'No due date';
+  return new Date(value).toLocaleDateString([], {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const countdownText = (startAt: string) => {
+  const diffMs = new Date(startAt).getTime() - Date.now();
+
+  if (diffMs <= 0) return 'Live now';
+
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  if (minutes < 60) return `${minutes}m to start`;
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return `${hours}h ${remainingMinutes}m to start`;
+};
+
+const isPendingAssignment = (status: string | null) => {
+  const normalized = (status ?? '').toLowerCase();
+  return !normalized || normalized === 'draft' || normalized === 'submitted' || normalized === 'late';
+};
+
 export default function StudentBandClientWrapper({
   dashboard,
   billingSummary,
@@ -56,184 +81,194 @@ export default function StudentBandClientWrapper({
   billingSummary: BillingSummary;
 }) {
   const { band } = useBand();
-  const theme = bandThemes[band];
-  const pendingAssignments = dashboard.assignments.filter(
-    (assignment) =>
-      !assignment.submissionStatus ||
-      assignment.submissionStatus === 'draft' ||
-      assignment.submissionStatus === 'submitted' ||
-      assignment.submissionStatus === 'late',
-  );
-  const gradedAssignments = dashboard.assignments.filter(
-    (assignment) =>
-      assignment.submissionStatus === 'graded' || assignment.submissionStatus === 'returned',
+  const copy = bandCopy[band];
+
+  const nextLesson = [...dashboard.upcomingLessons].sort(
+    (left, right) => new Date(left.scheduledStartAt).getTime() - new Date(right.scheduledStartAt).getTime(),
+  )[0];
+
+  const pendingAssignments = dashboard.assignments
+    .filter((assignment) => isPendingAssignment(assignment.submissionStatus))
+    .sort((left, right) => {
+      if (!left.dueAt) return 1;
+      if (!right.dueAt) return -1;
+      return new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime();
+    })
+    .slice(0, 5);
+  const [uploadedSubmissions, setUploadedSubmissions] = useState<Record<string, string>>({});
+
+  const progressRows = dashboard.progress.slice(0, 4).map((entry) => ({
+    id: entry.id,
+    subject: entry.subjectName ?? 'General',
+    value: Number(entry.averageScore ?? 0),
+  }));
+
+  const planName = billingSummary.subscription?.planName ?? billingSummary.plans[0]?.name ?? 'Not set';
+  const planAmount = formatMoney(
+    billingSummary.subscription?.planAmountMinor ?? billingSummary.plans[0]?.amountMinor ?? null,
+    billingSummary.subscription?.planCurrencyCode ?? billingSummary.plans[0]?.currencyCode ?? null,
   );
 
   return (
-    <div className="space-y-10 max-w-[1520px] mx-auto pb-24">
-      <section className="border-[4px] border-dark bg-white shadow-[10px_10px_0px_#060E1C] rounded-[28px] overflow-hidden">
-        <div className={`p-10 md:p-14 border-b-[4px] border-dark ${theme.panelTone}`}>
-          <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-8">
-            <div className="space-y-4">
-              <span className="inline-flex items-center gap-3 px-4 py-2 text-[10px] tracking-[0.35em] border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C]">
-                {theme.eyebrow}
-              </span>
-              <div>
-                <h1 className="text-4xl md:text-6xl font-heading tracking-tight text-dark leading-[0.9]">
-                  {dashboard.profile.fullName ?? 'Student'} <span className="text-info">{theme.titleAccent}</span>
-                </h1>
-                <p className="mt-4 max-w-3xl text-sm md:text-base text-dark/70 font-bold normal-case">
-                  {theme.subtitle}
-                </p>
-              </div>
-            </div>
+    <div className="space-y-6 pb-10">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{copy.label}</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+          Hello {dashboard.profile.fullName ?? 'Student'}
+        </h1>
+        <p className="mt-2 text-sm text-slate-600">{copy.subtitle}</p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full xl:w-auto">
-              <StatCard label="Active Classes" value={String(dashboard.stats.activeClasses)} icon={Rocket} />
-              <StatCard label="Pending Tasks" value={String(dashboard.stats.pendingAssignments)} icon={ShieldAlert} />
-              <StatCard label="Upcoming Lessons" value={String(dashboard.stats.upcomingLessons)} icon={CalendarClock} />
-              <StatCard label="Average Score" value={formatPercent(dashboard.stats.averageScore)} icon={Trophy} />
-            </div>
-          </div>
+        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard label="Upcoming lessons" value={String(dashboard.stats.upcomingLessons)} icon={Clock3} />
+          <StatCard label="Pending tasks" value={String(dashboard.stats.pendingAssignments)} icon={CheckCircle2} />
+          <StatCard label="Average score" value={formatPercent(dashboard.stats.averageScore)} icon={TrendingUp} />
+          <StatCard label="Attendance" value={formatPercent(dashboard.stats.attendanceRate)} icon={Target} />
         </div>
+      </section>
 
-        <div className="p-10 md:p-14 grid grid-cols-1 xl:grid-cols-12 gap-8">
-          <div className="xl:col-span-8 space-y-8">
-            <Panel title="Learning Snapshot" icon={CircleCheck}>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <MetricBox label="Grade Level" value={dashboard.profile.gradeLevelName} />
-                <MetricBox label="Attendance Rate" value={formatPercent(dashboard.stats.attendanceRate)} />
-                <MetricBox
-                  label="Completion Rate"
-                  value={formatPercent(dashboard.stats.assignmentCompletionRate)}
-                />
-              </div>
-              <p className="mt-5 text-sm normal-case text-dark/70 font-semibold">
-                {dashboard.profile.academicGoalNotes ||
-                  'No academic goal note has been saved yet. Add one during onboarding or profile completion.'}
-              </p>
-            </Panel>
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="space-y-6 xl:col-span-8">
+          <Panel title="Live from tutor" icon={Video}>
+            <StudentLiveContentPanel />
+          </Panel>
 
-            <Panel title="Upcoming Live Lessons" icon={CalendarClock}>
-              <div className="space-y-4">
-                {dashboard.upcomingLessons.length > 0 ? (
-                  dashboard.upcomingLessons.map((lesson) => (
-                    <div
-                      key={lesson.id}
-                      className="border-[3px] border-dark rounded-2xl p-5 bg-off-white shadow-[4px_4px_0px_#060E1C]"
+          <Panel title="Next lesson" icon={Video}>
+            {nextLesson ? (
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">{nextLesson.title}</p>
+                <p className="text-sm text-slate-600">
+                  {nextLesson.subjectName} - {nextLesson.classTitle}
+                </p>
+                <p className="text-sm text-slate-600">{formatDateTime(nextLesson.scheduledStartAt)}</p>
+                <p className="text-xs font-medium text-slate-500">{countdownText(nextLesson.scheduledStartAt)}</p>
+                <div className="flex flex-wrap gap-2">
+                  {nextLesson.joinUrl ? (
+                    <a
+                      href={nextLesson.joinUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800"
                     >
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div>
-                          <p className="text-xs tracking-[0.25em] text-dark/40">{lesson.subjectName}</p>
-                          <h3 className="text-xl font-black text-dark">{lesson.title}</h3>
-                          <p className="text-sm normal-case text-dark/70 font-semibold">{lesson.classTitle}</p>
-                        </div>
-                        <div className="text-sm font-black text-dark">
-                          {formatDateTime(lesson.scheduledStartAt)}
-                        </div>
-                      </div>
-                      <div className="mt-4 flex flex-wrap gap-3">
-                        <span className="px-3 py-2 border-[2px] border-dark bg-white text-[11px]">
-                          {lesson.provider.replace('_', ' ')}
-                        </span>
-                        <span className="px-3 py-2 border-[2px] border-dark bg-white text-[11px]">
-                          Ends {formatDateTime(lesson.scheduledEndAt)}
-                        </span>
-                        {lesson.joinUrl ? (
-                          <a
-                            href={lesson.joinUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-4 py-2 border-[2px] border-dark bg-yellow text-[11px] shadow-[3px_3px_0px_#060E1C]"
-                          >
-                            Join Session
-                          </a>
-                        ) : null}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <EmptyState text="No upcoming lessons are scheduled yet." />
-                )}
-              </div>
-            </Panel>
-
-            <Panel title="Assignments" icon={CircleCheck}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <AssignmentColumn title="Needs Attention" items={pendingAssignments} />
-                <AssignmentColumn title="Graded Work" items={gradedAssignments} graded />
-              </div>
-            </Panel>
-          </div>
-
-          <div className="xl:col-span-4 space-y-8">
-            <Panel title="Subscription" icon={CreditCard}>
-              <div className="space-y-4">
-                <MetricBox
-                  label="Access"
-                  value={billingSummary.entitlement.hasAccess ? 'Enabled' : 'Blocked'}
-                />
-                <MetricBox
-                  label="Plan"
-                  value={billingSummary.subscription?.planName ?? billingSummary.plans[0]?.name ?? 'Not Set'}
-                />
-                <MetricBox
-                  label="Price"
-                  value={formatMoney(
-                    billingSummary.subscription?.planAmountMinor ?? billingSummary.plans[0]?.amountMinor ?? null,
-                    billingSummary.subscription?.planCurrencyCode ?? billingSummary.plans[0]?.currencyCode ?? null,
+                      Join lesson
+                    </a>
+                  ) : (
+                    <Link
+                      href="/dash/student/live"
+                      className="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800"
+                    >
+                      Open live room
+                    </Link>
                   )}
-                />
-                <MetricBox
-                  label="Cycle Ends"
-                  value={billingSummary.subscription?.currentPeriodEnd ? formatDateTime(billingSummary.subscription.currentPeriodEnd) : 'No active cycle'}
-                />
+                  <Link
+                    href="/dash/student/classes"
+                    className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                  >
+                    View schedule
+                  </Link>
+                </div>
               </div>
-            </Panel>
+            ) : (
+              <EmptyState text="No upcoming lesson is scheduled yet." />
+            )}
+          </Panel>
 
-            <Panel title="Enrolled Classes" icon={Rocket}>
-              <div className="space-y-4">
-                {dashboard.enrollments.length > 0 ? (
-                  dashboard.enrollments.map((enrollment) => (
-                    <div key={enrollment.id} className="border-[3px] border-dark rounded-2xl p-4 bg-white">
-                      <p className="text-[11px] tracking-[0.25em] text-dark/40">{enrollment.subjectName}</p>
-                      <h3 className="text-lg font-black text-dark">{enrollment.classTitle}</h3>
-                      <p className="text-sm normal-case text-dark/70 font-semibold">
-                        {enrollment.tutorName ? `Tutor: ${enrollment.tutorName}` : 'Tutor assignment pending'}
-                      </p>
+          <Panel title="Pending assignments" icon={BookOpen}>
+            <div className="space-y-3">
+              {pendingAssignments.length > 0 ? (
+                pendingAssignments.map((assignment) => (
+                  <article key={assignment.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                          {assignment.subjectName}
+                        </p>
+                        <h3 className="mt-1 text-sm font-semibold text-slate-900">{assignment.title}</h3>
+                        <p className="mt-1 text-xs text-slate-600">Due {formatDate(assignment.dueAt)}</p>
+                      </div>
+                      <span className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                        {assignment.submissionStatus ?? 'not started'}
+                      </span>
                     </div>
-                  ))
-                ) : (
-                  <EmptyState text="No active class enrollments yet." />
-                )}
-              </div>
-            </Panel>
 
-            <Panel title="Progress Feed" icon={Trophy}>
-              <div className="space-y-4">
-                {dashboard.progress.length > 0 ? (
-                  dashboard.progress.map((entry) => (
-                    <div key={entry.id} className="border-[3px] border-dark rounded-2xl p-4 bg-white">
-                      <div className="flex items-center justify-between gap-4">
-                        <h3 className="text-base font-black text-dark">{entry.subjectName ?? 'Overall Progress'}</h3>
-                        <span className="text-[11px] text-dark/50">{entry.snapshotDate}</span>
-                      </div>
-                      <div className="mt-3 grid grid-cols-3 gap-3 text-center">
-                        <MetricBox compact label="Score" value={formatPercent(entry.averageScore)} />
-                        <MetricBox compact label="Attendance" value={formatPercent(entry.attendanceRate)} />
-                        <MetricBox compact label="Tasks" value={formatPercent(entry.assignmentCompletionRate)} />
-                      </div>
-                      {entry.masteryNotes ? (
-                        <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">{entry.masteryNotes}</p>
+                    <div className="mt-3 rounded-md border border-slate-300 bg-white p-3">
+                      <p className="text-xs font-medium text-slate-700">Upload assignment submission</p>
+                      <input
+                        type="file"
+                        onChange={(event) => {
+                          const fileName = event.target.files?.[0]?.name ?? '';
+                          if (!fileName) return;
+                          setUploadedSubmissions((current) => ({ ...current, [assignment.id]: fileName }));
+                        }}
+                        className="mt-2 block w-full text-xs text-slate-700 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1"
+                      />
+                      {uploadedSubmissions[assignment.id] ? (
+                        <p className="mt-2 text-xs text-green-700">
+                          Uploaded: {uploadedSubmissions[assignment.id]}
+                        </p>
                       ) : null}
                     </div>
-                  ))
-                ) : (
-                  <EmptyState text="Progress snapshots will appear here once the worker has generated them." />
-                )}
-              </div>
-            </Panel>
-          </div>
+                  </article>
+                ))
+              ) : (
+                <EmptyState text="No pending assignments right now." />
+              )}
+            </div>
+            <Link
+              href="/dash/student/assignments"
+              className="mt-4 inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Open all assignments
+            </Link>
+          </Panel>
+        </div>
+
+        <div className="space-y-6 xl:col-span-4">
+          <Panel title="Subject progress" icon={TrendingUp}>
+            <div className="space-y-3">
+              {progressRows.length > 0 ? (
+                progressRows.map((row) => {
+                  const width = Math.max(6, Math.min(100, row.value || 0));
+
+                  return (
+                    <div key={row.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium text-slate-700">{row.subject}</span>
+                        <span className="text-xs font-semibold text-slate-700">{row.value.toFixed(0)}%</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                        <div className="h-full rounded-full bg-slate-700" style={{ width: `${width}%` }} />
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <EmptyState text="Progress data will show after your first graded work." />
+              )}
+            </div>
+          </Panel>
+
+          <Panel title="Quick actions" icon={CheckCircle2}>
+            <div className="grid grid-cols-1 gap-2">
+              <QuickLink href="/dash/student/live" label="Join class" />
+              <QuickLink href="/dash/student/assignments" label="Submit homework" />
+              <QuickLink href="/dash/student/exam-prep" label="Practice tests" />
+              <QuickLink href="/dash/student/notes" label="Study notes" />
+            </div>
+          </Panel>
+
+          <Panel title="Subscription" icon={Target}>
+            <div className="space-y-2 text-sm text-slate-700">
+              <p>
+                Access: <span className="font-semibold">{billingSummary.entitlement.hasAccess ? 'Enabled' : 'Blocked'}</span>
+              </p>
+              <p>
+                Plan: <span className="font-semibold">{planName}</span>
+              </p>
+              <p>
+                Price: <span className="font-semibold">{planAmount}</span>
+              </p>
+            </div>
+          </Panel>
         </div>
       </section>
     </div>
@@ -250,12 +285,10 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className="border-[4px] border-dark rounded-[26px] p-6 md:p-8 bg-white shadow-[8px_8px_0px_#060E1C]">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 border-[3px] border-dark bg-yellow rounded-2xl flex items-center justify-center">
-          <Icon className="w-6 h-6 text-dark" />
-        </div>
-        <h2 className="text-2xl font-black tracking-tight text-dark">{title}</h2>
+    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="mb-4 flex items-center gap-2">
+        <Icon className="h-4 w-4 text-slate-500" />
+        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
       </div>
       {children}
     </section>
@@ -272,78 +305,28 @@ function StatCard({
   icon: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="border-[3px] border-dark rounded-2xl bg-white p-4 shadow-[4px_4px_0px_#060E1C]">
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-[11px] tracking-[0.25em] text-dark/50">{label}</span>
-        <Icon className="w-5 h-5 text-info" />
+    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] font-medium text-slate-500">{label}</span>
+        <Icon className="h-4 w-4 text-slate-500" />
       </div>
-      <div className="mt-3 text-3xl font-black text-dark">{value}</div>
+      <p className="mt-2 text-lg font-semibold text-slate-900">{value}</p>
     </div>
   );
 }
 
-function MetricBox({
-  label,
-  value,
-  compact = false,
-}: {
-  label: string;
-  value: string;
-  compact?: boolean;
-}) {
+function QuickLink({ href, label }: { href: string; label: string }) {
   return (
-    <div className={`border-[3px] border-dark rounded-2xl bg-off-white ${compact ? 'p-3' : 'p-4'}`}>
-      <p className={`text-dark/50 ${compact ? 'text-[10px]' : 'text-[11px]'} tracking-[0.2em]`}>{label}</p>
-      <p className={`${compact ? 'text-lg' : 'text-2xl'} mt-2 font-black text-dark`}>{value}</p>
-    </div>
-  );
-}
-
-function AssignmentColumn({
-  title,
-  items,
-  graded = false,
-}: {
-  title: string;
-  items: StudentDashboardData['assignments'];
-  graded?: boolean;
-}) {
-  return (
-    <div className="border-[3px] border-dark rounded-2xl p-5 bg-off-white">
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <h3 className="text-lg font-black text-dark">{title}</h3>
-        <span className="text-[11px] tracking-[0.25em] text-dark/50">{items.length}</span>
-      </div>
-      <div className="space-y-3">
-        {items.length > 0 ? (
-          items.map((item) => (
-            <div key={item.id} className="border-[2px] border-dark rounded-2xl p-4 bg-white">
-              <p className="text-[11px] tracking-[0.2em] text-dark/40">{item.subjectName}</p>
-              <h4 className="text-base font-black text-dark">{item.title}</h4>
-              <p className="text-sm normal-case text-dark/70 font-semibold">{item.classTitle}</p>
-              <div className="mt-3 flex flex-wrap gap-3 text-[11px]">
-                <span className="px-3 py-1 border-[2px] border-dark bg-off-white">
-                  {item.dueAt ? `Due ${formatDateTime(item.dueAt)}` : 'No due date'}
-                </span>
-                <span className="px-3 py-1 border-[2px] border-dark bg-off-white">
-                  {item.submissionStatus ?? 'not started'}
-                </span>
-                {graded && item.score ? (
-                  <span className="px-3 py-1 border-[2px] border-dark bg-yellow">
-                    Score {Number(item.score).toFixed(0)}%
-                  </span>
-                ) : null}
-              </div>
-            </div>
-          ))
-        ) : (
-          <EmptyState text={graded ? 'No graded submissions yet.' : 'No pending assignments right now.'} />
-        )}
-      </div>
-    </div>
+    <Link
+      href={href}
+      className="inline-flex items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+    >
+      {label}
+      <span className="text-xs text-slate-500">Open</span>
+    </Link>
   );
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <div className="border-[3px] border-dashed border-dark/30 rounded-2xl p-6 text-sm normal-case text-dark/60">{text}</div>;
+  return <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">{text}</div>;
 }

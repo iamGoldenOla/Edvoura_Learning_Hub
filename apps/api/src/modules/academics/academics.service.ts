@@ -14,6 +14,7 @@ import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../common/database/database.service.js';
 import { ApplicationError } from '../../common/errors/application-error.js';
+import { LearningOrchestrationService } from './learning-orchestration.service.js';
 import { LiveSessionService } from './live-session.service.js';
 
 @Injectable()
@@ -21,6 +22,7 @@ export class AcademicsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly liveSessionService: LiveSessionService,
+    private readonly learningOrchestrationService: LearningOrchestrationService,
   ) {}
 
   async createClass(creatorUserId: string, dto: CreateClassDto) {
@@ -259,7 +261,7 @@ export class AcademicsService {
         title: parsed.title,
         description: parsed.description ?? null,
         provider: parsed.provider,
-        status: 'draft',
+        status: 'scheduled',
         scheduled_start_at: parsed.scheduledStartAt,
         scheduled_end_at: parsed.scheduledEndAt,
         actual_start_at: null,
@@ -279,6 +281,14 @@ export class AcademicsService {
       parsed.scheduledEndAt,
       parsed.title,
     );
+
+    await this.learningOrchestrationService.onLessonScheduled({
+      actorUserId: creatorUserId,
+      classId,
+      lessonId: lesson.id!,
+      lessonTitle: lesson.title,
+      startsAt: lesson.scheduled_start_at,
+    });
 
     return { ...lesson, liveSession: session };
   }
@@ -315,14 +325,14 @@ export class AcademicsService {
       throw new ApplicationError(404, 'class_not_found', 'Class not found.');
     }
 
-    return this.databaseService.db
+    const created = await this.databaseService.db
       .insertInto('assignments')
       .values({
         class_id: classId,
         lesson_id: parsed.lessonId ?? null,
         title: parsed.title,
         instructions: parsed.instructions ?? null,
-        status: 'draft',
+        status: 'published',
         due_at: parsed.dueAt ?? null,
         points_possible: String(parsed.pointsPossible),
         created_by_user_id: creatorUserId,
@@ -331,6 +341,16 @@ export class AcademicsService {
       })
       .returning(['id', 'title', 'status', 'due_at', 'points_possible'])
       .executeTakeFirstOrThrow();
+
+    await this.learningOrchestrationService.onAssignmentPublished({
+      actorUserId: creatorUserId,
+      classId,
+      assignmentId: created.id!,
+      assignmentTitle: created.title,
+      dueAt: created.due_at,
+    });
+
+    return created;
   }
 
   async listAssignments(classId: string) {
@@ -446,5 +466,64 @@ export class AcademicsService {
       .where('la.lesson_id', '=', lessonId)
       .orderBy('p.full_name', 'asc')
       .execute();
+  }
+
+  async launchLesson(lessonId: string, launcherUserId: string) {
+    const lesson = await this.databaseService.db
+      .selectFrom('lessons')
+      .select([
+        'id',
+        'class_id as classId',
+        'title',
+        'provider',
+        'scheduled_start_at as scheduledStartAt',
+        'scheduled_end_at as scheduledEndAt',
+      ])
+      .where('id', '=', lessonId)
+      .executeTakeFirst();
+
+    if (!lesson?.id) {
+      throw new ApplicationError(404, 'lesson_not_found', 'Lesson not found.');
+    }
+
+    let session = await this.liveSessionService.getSessionForLesson(lesson.id);
+    if (!session) {
+      session = await this.liveSessionService.provisionSession(
+        lesson.id,
+        lesson.provider,
+        lesson.scheduledStartAt,
+        lesson.scheduledEndAt,
+        lesson.title,
+      );
+    }
+
+    const now = new Date().toISOString();
+    await this.databaseService.db
+      .updateTable('lessons')
+      .set({
+        status: 'live',
+        actual_start_at: now,
+        updated_at: now,
+      })
+      .where('id', '=', lesson.id)
+      .execute();
+
+    await this.learningOrchestrationService.onLessonLaunched({
+      actorUserId: launcherUserId,
+      classId: lesson.classId,
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+      joinUrl: session.joinUrl,
+      launchedAt: now,
+    });
+
+    return {
+      lessonId: lesson.id,
+      classId: lesson.classId,
+      title: lesson.title,
+      status: 'live',
+      launchedAt: now,
+      session,
+    };
   }
 }

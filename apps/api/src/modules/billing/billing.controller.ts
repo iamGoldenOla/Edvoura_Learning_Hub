@@ -50,14 +50,14 @@ export class BillingController {
 
   @Post('plans')
   @HttpCode(HttpStatus.CREATED)
-  @Roles('admin', 'super_admin')
+  @Roles('super_admin')
   @ApiOperation({ summary: 'Create a billing plan' })
   createPlan(@Body(new ZodValidationPipe(createBillingPlanSchema)) body: unknown) {
     return this.billingService.createPlan(createBillingPlanSchema.parse(body));
   }
 
   @Patch('plans/:planId')
-  @Roles('admin', 'super_admin')
+  @Roles('super_admin')
   @ApiOperation({ summary: 'Update a billing plan' })
   updatePlan(
     @Param('planId') planId: string,

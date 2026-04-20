@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/apps/api/src/main.js",
-    "start:dev": "node --env-file=../../.env --loader ts-node/esm src/main.ts",
+    "start:dev": "pnpm run build && node --env-file=../../.env dist/apps/api/src/main.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "test:e2e": "vitest run test/**/*.e2e-spec.ts"

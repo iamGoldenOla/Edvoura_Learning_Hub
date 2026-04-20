@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { completeParentProfileSchema, onboardChildSchema } from '@edvoura/contracts';
+import { completeParentProfileSchema, linkExistingChildSchema, onboardChildSchema } from '@edvoura/contracts';
 
 import { CurrentUser } from '../../common/auth/current-user.decorator.js';
 import { SupabaseJwtGuard } from '../../common/auth/supabase-jwt.guard.js';
@@ -48,6 +48,17 @@ export class ParentsController {
     @Body(new ZodValidationPipe(onboardChildSchema)) body: unknown,
   ) {
     return this.parentsService.onboardChild(user.userId, onboardChildSchema.parse(body));
+  }
+
+  @Post('me/children/link')
+  @HttpCode(HttpStatus.CREATED)
+  @Roles('parent')
+  @ApiOperation({ summary: 'Link an existing student account to this parent using child email' })
+  async linkExistingChild(
+    @CurrentUser() user: AuthenticatedRequestUser,
+    @Body(new ZodValidationPipe(linkExistingChildSchema)) body: unknown,
+  ) {
+    return this.parentsService.linkExistingChild(user.userId, linkExistingChildSchema.parse(body));
   }
 
   @Get('me/children')

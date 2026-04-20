@@ -1,12 +1,11 @@
 import { Controller, Post, Req, Res, Headers, Inject, Logger } from '@nestjs/common';
-import type { RawBodyRequest } from '@nestjs/common';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { Webhook } from 'svix';
 import { ENVIRONMENT } from '../../common/config/environment.constants.js';
 import type { Environment } from '../../common/config/environment.js';
 import { DatabaseService } from '../../common/database/database.service.js';
 
-@Controller('v1/notifications/webhooks/resend')
+@Controller('notifications/webhooks/resend')
 export class ResendWebhookController {
   private readonly logger = new Logger(ResendWebhookController.name);
 

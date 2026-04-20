@@ -1,88 +1,77 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldCheck, UserCheck, UserX } from 'lucide-react';
 
-export default function TutorsPage() {
+import AdminTutorQueueActions from '@/components/dashboards/AdminTutorQueueActions';
+import { apiClient } from '@/lib/api-client';
+import { requireAdminAccess } from '../_lib/role-guard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+type PendingTutor = {
+  userId: string;
+  fullName: string | null;
+  email: string;
+  expertiseSummary: string | null;
+  approvalStatus: string;
+};
+
+export default async function AdminTutorsApprovalsPage() {
+  const { viewer } = await requireAdminAccess();
+  const queue = await apiClient
+    .get<PendingTutor[]>('/admin/tutors/pending', { token: viewer.accessToken, cache: 'no-store' })
+    .catch(() => []);
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8">
-      
-      {/* Action Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <LayoutGrid className="text-edvoura-gold w-8 h-8" /> Tutors Dashboard
-          </h1>
-          <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for Tutors records and actions.</p>
-        </div>
-        <div className="mt-6 md:mt-0 flex gap-3">
-          <Button variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">Export Report</Button>
-          <Button variant="primary" className="bg-edvoura-gold text-edvoura-navy-dark hover:bg-yellow-400 font-bold">New Entry</Button>
-        </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6">
+        <h1 className="text-2xl font-bold text-slate-900">Tutors and Approvals</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Tutor approval workflow, quality assurance, and teaching compliance controls.
+        </p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><TrendingUp className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Volume</p>
-              <p className="text-2xl font-black text-slate-800">1,204</p>
-            </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-5">
+            <ShieldCheck className="h-5 w-5 text-emerald-600" />
+            <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">Approved Tutors</p>
+            <p className="text-2xl font-bold text-slate-900">146</p>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><ShieldCheck className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Security Status</p>
-              <p className="text-2xl font-black text-slate-800">Nominal</p>
-            </div>
+        <Card>
+          <CardContent className="p-5">
+            <UserCheck className="h-5 w-5 text-blue-600" />
+            <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">Pending Approvals</p>
+            <p className="text-2xl font-bold text-slate-900">5</p>
           </CardContent>
         </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><Clock className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Last Sync</p>
-              <p className="text-xl font-bold text-slate-800">2 mins ago</p>
-            </div>
+        <Card>
+          <CardContent className="p-5">
+            <UserX className="h-5 w-5 text-rose-600" />
+            <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">Suspended</p>
+            <p className="text-2xl font-bold text-slate-900">2</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Data Table Mock */}
-      <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
-        <CardHeader className="bg-slate-50 border-b border-slate-100 p-6 flex flex-row justify-between items-center">
-          <CardTitle className="text-lg text-slate-800">Recent Tutors Activity</CardTitle>
-          <Button variant="ghost" className="text-xs h-8 text-edvoura-navy font-bold">View All</Button>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Tutor Moderation Queue</CardTitle>
+          <Link href="/dash/admin/tutors?view=full-queue" className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-transparent px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
+            View Full Queue
+          </Link>
         </CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-left text-sm text-slate-600 border-collapse">
-            <thead className="bg-white border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-              <tr>
-                <th className="px-6 py-4">ID Reference</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Last Updated</th>
-                <th className="px-6 py-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {[1, 2, 3, 4].map((i) => (
-                <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">REF-{Math.floor(Math.random()*9000)+1000}</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">Active</span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">Today, 10:4{i} AM</td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="outline" className="h-7 text-[10px] text-slate-600">Review</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <CardContent className="space-y-3">
+          {queue.length === 0 ? (
+            <p className="text-sm text-slate-500">No pending tutor applications.</p>
+          ) : null}
+          {queue.map((item) => (
+            <div key={item.userId} className="flex items-center justify-between rounded-lg border border-slate-200 p-3 text-sm">
+              <div>
+                <p className="font-semibold text-slate-900">{item.fullName || item.email}</p>
+                <p className="text-slate-600">{item.expertiseSummary || 'Tutor application pending review'}</p>
+              </div>
+              <AdminTutorQueueActions userId={item.userId} fullName={item.fullName || item.email} />
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>

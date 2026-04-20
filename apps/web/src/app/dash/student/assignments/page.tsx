@@ -1,4 +1,6 @@
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
+import StudentAssignmentUploadCard from '@/components/dashboards/StudentAssignmentUploadCard';
+import Link from 'next/link';
 
 const formatDate = (value: string | null) => {
   if (!value) return 'No due date';
@@ -18,18 +20,18 @@ export default async function StudentAssignmentsPage() {
         <h1 className="text-3xl font-heading font-black text-dark mb-4">Assignments unavailable</h1>
         <p className="text-sm text-dark/70 font-semibold normal-case mb-6">{message}</p>
         <div className="flex flex-wrap gap-4">
-          <a
+          <Link
             href="/dash/student"
             className="inline-flex items-center justify-center px-6 py-3 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C]"
           >
             Back to Overview
-          </a>
-          <a
+          </Link>
+          <Link
             href="/"
             className="inline-flex items-center justify-center px-6 py-3 border-[3px] border-dark bg-white text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C]"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -83,27 +85,18 @@ function AssignmentBucket({
       <div className="space-y-4">
         {items.length > 0 ? (
           items.map((item) => (
-            <article key={item.id} className="border-[3px] border-dark rounded-2xl bg-white p-5">
-              <p className="text-[11px] tracking-[0.25em] text-dark/40">{item.subjectName}</p>
-              <h3 className="text-xl font-black text-dark">{item.title}</h3>
-              <p className="text-sm normal-case text-dark/70 font-semibold">{item.classTitle}</p>
-              <div className="mt-4 flex flex-wrap gap-3 text-[11px]">
-                <span className="px-3 py-2 border-[2px] border-dark bg-off-white">
-                  {formatDate(item.dueAt)}
-                </span>
-                <span className="px-3 py-2 border-[2px] border-dark bg-off-white">
-                  {item.submissionStatus ?? 'not started'}
-                </span>
-                {graded && item.score ? (
-                  <span className="px-3 py-2 border-[2px] border-dark bg-yellow">
-                    Score {Number(item.score).toFixed(0)}%
-                  </span>
-                ) : null}
-              </div>
-              {graded && item.feedbackText ? (
-                <p className="mt-4 text-sm normal-case text-dark/70 font-semibold">{item.feedbackText}</p>
-              ) : null}
-            </article>
+            <StudentAssignmentUploadCard
+              key={item.id}
+              id={item.id}
+              subjectName={item.subjectName}
+              title={item.title}
+              classTitle={item.classTitle}
+              dueLabel={formatDate(item.dueAt)}
+              statusLabel={item.submissionStatus ?? 'not started'}
+              scoreLabel={graded && item.score ? `Score ${Number(item.score).toFixed(0)}%` : undefined}
+              feedbackText={graded ? item.feedbackText : null}
+              allowUpload={!graded}
+            />
           ))
         ) : (
           <div className="border-[3px] border-dashed border-dark/30 rounded-2xl p-6 text-sm normal-case text-dark/60">

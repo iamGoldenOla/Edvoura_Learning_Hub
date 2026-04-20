@@ -1,7 +1,9 @@
 import {
   completeParentProfileSchema,
+  linkExistingChildSchema,
   onboardChildSchema,
   type CompleteParentProfileDto,
+  type LinkExistingChildDto,
   type OnboardChildDto,
 } from '@edvoura/contracts';
 import { Injectable, Logger } from '@nestjs/common';
@@ -173,22 +175,136 @@ export class ParentsService {
 
     // Link parent to student
     await this.databaseService.db
-      .insertInto('parent_student_links')
-      .values({
-        parent_user_id: parentUserId,
-        student_user_id: studentUserId,
-        relationship: parsed.relationship,
-        is_primary_guardian: parsed.isPrimaryGuardian,
-        can_view_billing: true,
-        can_view_progress: true,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .onConflict((oc) => oc.columns(['parent_user_id', 'student_user_id']).doNothing())
-      .execute();
+      .transaction()
+      .execute(async (trx) => {
+        const existingLink = await trx
+          .selectFrom('parent_student_links')
+          .select('id')
+          .where('parent_user_id', '=', parentUserId)
+          .where('student_user_id', '=', studentUserId)
+          .executeTakeFirst();
+
+        if (existingLink?.id) {
+          await trx
+            .updateTable('parent_student_links')
+            .set({
+              relationship: parsed.relationship,
+              is_primary_guardian: parsed.isPrimaryGuardian,
+              can_view_billing: true,
+              can_view_progress: true,
+              is_active: true,
+              updated_at: new Date().toISOString(),
+            })
+            .where('id', '=', existingLink.id)
+            .execute();
+          return;
+        }
+
+        await trx
+          .insertInto('parent_student_links')
+          .values({
+            parent_user_id: parentUserId,
+            student_user_id: studentUserId,
+            relationship: parsed.relationship,
+            is_primary_guardian: parsed.isPrimaryGuardian,
+            can_view_billing: true,
+            can_view_progress: true,
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .execute();
+      });
 
     return { studentUserId };
+  }
+
+  async linkExistingChild(parentUserId: string, dto: LinkExistingChildDto): Promise<{ studentUserId: string }> {
+    const parsed = linkExistingChildSchema.parse(dto);
+    const normalizedEmail = parsed.childEmail.trim().toLowerCase();
+
+    const parentProfile = await this.databaseService.db
+      .selectFrom('parent_profiles')
+      .select('user_id')
+      .where('user_id', '=', parentUserId)
+      .executeTakeFirst();
+
+    if (!parentProfile) {
+      throw new ApplicationError(
+        400,
+        'parent_profile_incomplete',
+        'Complete your parent profile before linking a child account.',
+      );
+    }
+
+    const childProfile = await this.databaseService.db
+      .selectFrom('profiles as p')
+      .leftJoin('student_profiles as sp', 'sp.user_id', 'p.id')
+      .select(['p.id as userId', 'sp.user_id as studentProfileUserId'])
+      .where('p.email', '=', normalizedEmail)
+      .executeTakeFirst();
+
+    if (!childProfile?.userId) {
+      throw new ApplicationError(404, 'child_not_found', 'No account found for that child email.');
+    }
+
+    if (childProfile.userId === parentUserId) {
+      throw new ApplicationError(
+        400,
+        'cannot_link_self',
+        'Use a separate parent account email, then link the child by the child email.',
+      );
+    }
+
+    if (!childProfile.studentProfileUserId) {
+      throw new ApplicationError(
+        400,
+        'child_not_student',
+        'The provided email belongs to an account that is not a student profile.',
+      );
+    }
+
+    await this.databaseService.db.transaction().execute(async (trx) => {
+      const existingLink = await trx
+        .selectFrom('parent_student_links')
+        .select('id')
+        .where('parent_user_id', '=', parentUserId)
+        .where('student_user_id', '=', childProfile.userId)
+        .executeTakeFirst();
+
+      if (existingLink?.id) {
+        await trx
+          .updateTable('parent_student_links')
+          .set({
+            relationship: parsed.relationship,
+            is_primary_guardian: parsed.isPrimaryGuardian,
+            can_view_billing: true,
+            can_view_progress: true,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          })
+          .where('id', '=', existingLink.id)
+          .execute();
+        return;
+      }
+
+      await trx
+        .insertInto('parent_student_links')
+        .values({
+          parent_user_id: parentUserId,
+          student_user_id: childProfile.userId,
+          relationship: parsed.relationship,
+          is_primary_guardian: parsed.isPrimaryGuardian,
+          can_view_billing: true,
+          can_view_progress: true,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .execute();
+    });
+
+    return { studentUserId: childProfile.userId };
   }
 
   async listChildren(parentUserId: string) {

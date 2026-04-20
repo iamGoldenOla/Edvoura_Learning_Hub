@@ -1,6 +1,6 @@
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
 
 export default function ContentPage() {
@@ -16,8 +16,12 @@ export default function ContentPage() {
           <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for Content records and actions.</p>
         </div>
         <div className="mt-6 md:mt-0 flex gap-3">
-          <Button variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">Export Report</Button>
-          <Button variant="primary" className="bg-edvoura-gold text-edvoura-navy-dark hover:bg-yellow-400 font-bold">New Entry</Button>
+          <Link href="/dash/admin/content?export=report" className="inline-flex items-center justify-center rounded-md border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-700">
+            Export Report
+          </Link>
+          <Link href="/dash/admin/content?action=new-entry" className="inline-flex items-center justify-center rounded-md bg-edvoura-gold px-4 py-2 text-sm font-bold text-edvoura-navy-dark transition-colors hover:bg-yellow-400">
+            New Entry
+          </Link>
         </div>
       </div>
 
@@ -56,7 +60,9 @@ export default function ContentPage() {
       <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
         <CardHeader className="bg-slate-50 border-b border-slate-100 p-6 flex flex-row justify-between items-center">
           <CardTitle className="text-lg text-slate-800">Recent Content Activity</CardTitle>
-          <Button variant="ghost" className="text-xs h-8 text-edvoura-navy font-bold">View All</Button>
+          <Link href="/dash/admin/content?view=all" className="inline-flex h-8 items-center justify-center rounded-md bg-transparent px-4 py-2 text-xs font-bold text-edvoura-navy transition-colors hover:bg-slate-100">
+            View All
+          </Link>
         </CardHeader>
         <CardContent className="p-0">
           <table className="w-full text-left text-sm text-slate-600 border-collapse">
@@ -71,13 +77,15 @@ export default function ContentPage() {
             <tbody className="divide-y divide-slate-50">
               {[1, 2, 3, 4].map((i) => (
                 <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">REF-{Math.floor(Math.random()*9000)+1000}</td>
+                  <td className="px-6 py-4 font-medium text-slate-800">REF-300{i}</td>
                   <td className="px-6 py-4">
                     <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">Active</span>
                   </td>
                   <td className="px-6 py-4 text-slate-500">Today, 10:4{i} AM</td>
                   <td className="px-6 py-4 text-right">
-                    <Button variant="outline" className="h-7 text-[10px] text-slate-600">Review</Button>
+                    <Link href={`/dash/admin/content?action=review&id=REF-300${i}`} className="inline-flex h-7 items-center justify-center rounded-md border border-slate-300 bg-transparent px-4 py-2 text-[10px] font-medium text-slate-600 transition-colors hover:bg-slate-100">
+                      Review
+                    </Link>
                   </td>
                 </tr>
               ))}

@@ -1,90 +1,142 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
+import { AlertTriangle, BarChart3, CheckCircle2, Trophy, Users } from 'lucide-react';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
 
-export default function RosterPage() {
+const learners = [
+  { id: 'st-1', name: 'Aisha Bello', className: 'JSS3 Mathematics', attendance: '92%', avg: '81%', status: 'Active' },
+  { id: 'st-2', name: 'Daniel Okon', className: 'JSS3 Mathematics', attendance: '64%', avg: '58%', status: 'Needs support' },
+  { id: 'st-3', name: 'Mariam Yusuf', className: 'Grade 4 Basic Science', attendance: '88%', avg: '76%', status: 'Active' },
+  { id: 'st-4', name: 'Ruth Ade', className: 'Grade 4 Basic Science', attendance: '70%', avg: '61%', status: 'Watch list' },
+];
+
+const weakEngagement = [
+  'Daniel Okon - missed 2 recent sessions',
+  'Ruth Ade - no assignment in 5 days',
+  'Kehinde T. - streak dropped from 7 to 1',
+];
+
+const leaderboard = [
+  { rank: 1, name: 'Aisha Bello', points: 420 },
+  { rank: 2, name: 'Mariam Yusuf', points: 390 },
+  { rank: 3, name: 'Tobi O.', points: 365 },
+];
+
+export default async function TutorRosterPage(props: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const searchParams = (await props.searchParams) ?? {};
+  const action = typeof searchParams.action === 'string' ? searchParams.action : null;
+
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8">
-      
-      {/* Action Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <LayoutGrid className="text-edvoura-gold w-8 h-8" /> Roster Dashboard
-          </h1>
-          <p className="mt-2 text-slate-300 text-sm">Secure enterprise-grade overview for Roster records and actions.</p>
-        </div>
-        <div className="mt-6 md:mt-0 flex gap-3">
-          <Button variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">Export Report</Button>
-          <Button variant="primary" className="bg-edvoura-gold text-edvoura-navy-dark hover:bg-yellow-400 font-bold">New Entry</Button>
-        </div>
-      </div>
+    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 className="text-3xl font-bold text-edvoura-navy">Students</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Student list, attendance marking, performance tracking, and engagement monitoring.
+        </p>
+      </section>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><TrendingUp className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Volume</p>
-              <p className="text-2xl font-black text-slate-800">1,204</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><ShieldCheck className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Security Status</p>
-              <p className="text-2xl font-black text-slate-800">Nominal</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-2xl shadow-sm border-slate-200">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><Clock className="w-6 h-6"/></div>
-            <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Last Sync</p>
-              <p className="text-xl font-bold text-slate-800">2 mins ago</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {action ? (
+        <section className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
+          Action Center: <strong>{action}</strong> mode is active.
+        </section>
+      ) : null}
 
-      {/* Data Table Mock */}
-      <Card className="rounded-2xl shadow-sm border-slate-200 overflow-hidden">
-        <CardHeader className="bg-slate-50 border-b border-slate-100 p-6 flex flex-row justify-between items-center">
-          <CardTitle className="text-lg text-slate-800">Recent Roster Activity</CardTitle>
-          <Button variant="ghost" className="text-xs h-8 text-edvoura-navy font-bold">View All</Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-left text-sm text-slate-600 border-collapse">
-            <thead className="bg-white border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-              <tr>
-                <th className="px-6 py-4">ID Reference</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Last Updated</th>
-                <th className="px-6 py-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {[1, 2, 3, 4].map((i) => (
-                <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-800">REF-{Math.floor(Math.random()*9000)+1000}</td>
-                  <td className="px-6 py-4">
-                    <span className="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">Active</span>
-                  </td>
-                  <td className="px-6 py-4 text-slate-500">Today, 10:4{i} AM</td>
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="outline" className="h-7 text-[10px] text-slate-600">Review</Button>
-                  </td>
-                </tr>
+      <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
+        <Stat title="Active Students" value="48" icon={Users} />
+        <Stat title="Attendance Marked Today" value="34" icon={CheckCircle2} />
+        <Stat title="Weak Engagement Flags" value="3" icon={AlertTriangle} />
+        <Stat title="Leaderboard Updated" value="Today" icon={Trophy} />
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Student List</CardTitle>
+              <Link href="/dash/tutor/roster?action=attendance">
+                <Button variant="outline" className="border-slate-300 bg-white text-xs">
+                  Mark Attendance
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {learners.map((learner) => (
+                <div key={learner.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-5 md:items-center">
+                    <p className="text-sm font-semibold text-slate-900">{learner.name}</p>
+                    <p className="text-xs text-slate-600">{learner.className}</p>
+                    <p className="text-xs text-slate-600">Attendance: {learner.attendance}</p>
+                    <p className="text-xs text-slate-600">Avg: {learner.avg}</p>
+                    <p className="text-xs font-semibold text-slate-700">{learner.status}</p>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6 xl:col-span-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                Weak Engagement Students
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {weakEngagement.map((item) => (
+                <div key={item} className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-slate-600" />
+                Class Leaderboard
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {leaderboard.map((item) => (
+                <div key={item.rank} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <span className="text-sm font-semibold text-slate-900">
+                    #{item.rank} {item.name}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-700">{item.points} pts</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
+  );
+}
+
+function Stat({
+  title,
+  value,
+  icon: Icon,
+}: {
+  title: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center justify-between p-4">
+        <div>
+          <p className="text-xs font-medium text-slate-500">{title}</p>
+          <p className="mt-1 text-xl font-semibold text-slate-900">{value}</p>
+        </div>
+        <Icon className="h-5 w-5 text-slate-500" />
+      </CardContent>
+    </Card>
   );
 }

@@ -141,7 +141,37 @@ export async function getAppViewer(): Promise<AppViewer | null> {
       currentUser,
     };
   } catch {
-    return null;
+    const roleFromMetadata =
+      typeof session.user.user_metadata?.role === 'string' ? session.user.user_metadata.role : null;
+
+    const fallbackRole =
+      roleFromMetadata === 'student' ||
+      roleFromMetadata === 'parent' ||
+      roleFromMetadata === 'tutor' ||
+      roleFromMetadata === 'admin' ||
+      roleFromMetadata === 'super_admin'
+        ? roleFromMetadata
+        : 'student';
+
+    return {
+      accessToken: session.access_token,
+      currentUser: {
+        userId: session.user.id,
+        email: session.user.email ?? 'unknown@local.test',
+        roles: [fallbackRole],
+        primaryRole: fallbackRole,
+        profile: {
+          id: session.user.id,
+          email: session.user.email ?? 'unknown@local.test',
+          fullName:
+            typeof session.user.user_metadata?.full_name === 'string'
+              ? session.user.user_metadata.full_name
+              : null,
+          avatarPath: null,
+        },
+        learnerProfile: null,
+      },
+    };
   }
 }
 

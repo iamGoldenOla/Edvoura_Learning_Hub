@@ -17,11 +17,14 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule.register(env),
     new FastifyAdapter(),
+    { rawBody: true },
   );
 
   await app.register(cors, {
     origin: env.allowedOrigins,
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'Accept'],
   });
 
   await app.register(helmet);

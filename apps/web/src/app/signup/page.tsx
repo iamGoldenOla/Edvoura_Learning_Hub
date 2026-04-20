@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useActionState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { signup } from './actions';
 import {
   GraduationCap, Users, BookOpen, Settings,
   ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff,
-  Sprout, Building2, Trophy, Video
+  Video
 } from 'lucide-react';
 
 const roles = [
@@ -17,18 +18,31 @@ const roles = [
   { id: 'admin', label: 'Admin', desc: 'Platform administration', icon: Settings, disabled: true },
 ];
 
-const gradeBands = [
-  { id: '1-3', name: 'Explorer', grades: 'Grade 1–3', ages: 'Ages 6–9', icon: Sprout },
-  { id: '4-6', name: 'Builder', grades: 'Grade 4–6', ages: 'Ages 9–12', icon: Building2 },
-  { id: '7-12', name: 'Achiever', grades: 'Grade 7–12', ages: 'Ages 12–18', icon: Trophy },
-];
+const studentGrades = Array.from({ length: 12 }, (_, i) => i + 1);
+
+type ParentChildDraft = {
+  fullName: string;
+  grade: string;
+  email: string;
+};
+
+const createEmptyParentChild = (): ParentChildDraft => ({
+  fullName: '',
+  grade: '',
+  email: '',
+});
 
 export default function SignupPage() {
+  const searchParams = useSearchParams();
+  const next = searchParams.get('next') ?? '';
   const [step, setStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState('');
-  const [selectedBand, setSelectedBand] = useState('');
+  const [selectedGrade, setSelectedGrade] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '' });
+  const [parentChildrenCount, setParentChildrenCount] = useState(1);
+  const [parentChildren, setParentChildren] = useState<ParentChildDraft[]>([createEmptyParentChild()]);
+  const [existingChildLinks, setExistingChildLinks] = useState<string[]>(['']);
   const [state, formAction, isPending] = useActionState(signup, null);
 
   const canProceedStep1 = selectedRole !== '' && selectedRole !== 'admin';
@@ -49,6 +63,16 @@ export default function SignupPage() {
   const strengthColors = ['bg-error', 'bg-warning', 'bg-yellow', 'bg-success'];
   const strengthLabels = ['Weak', 'Fair', 'Good', 'Strong'];
   const strength = passwordStrength();
+
+  const updateParentChildrenCount = (nextCount: number) => {
+    const safeCount = Math.min(4, Math.max(1, nextCount));
+    setParentChildrenCount(safeCount);
+    setParentChildren((previous) => {
+      if (previous.length === safeCount) return previous;
+      if (previous.length > safeCount) return previous.slice(0, safeCount);
+      return [...previous, ...Array.from({ length: safeCount - previous.length }, () => createEmptyParentChild())];
+    });
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -261,7 +285,7 @@ export default function SignupPage() {
 
               <h1 className="font-heading font-extrabold text-navy text-2xl mb-2">Personalise your experience</h1>
               <p className="text-grey text-sm mb-8">
-                {selectedRole === 'student' && 'Select your grade band to get the right dashboard.'}
+                {selectedRole === 'student' && 'Select your class grade to tailor your student dashboard automatically.'}
                 {selectedRole === 'parent' && 'Tell us about your children.'}
                 {selectedRole === 'tutor' && 'Tell us about your teaching experience.'}
               </p>
@@ -272,36 +296,34 @@ export default function SignupPage() {
                 <input type="hidden" name="fullName" value={formData.fullName} />
                 <input type="hidden" name="email" value={formData.email} />
                 <input type="hidden" name="password" value={formData.password} />
-                <input type="hidden" name="learnerBand" value={selectedBand} />
+                <input type="hidden" name="learnerBand" value="" />
+                <input type="hidden" name="selectedGrade" value={selectedGrade} />
+                <input type="hidden" name="parentChildrenJson" value={JSON.stringify(parentChildren)} />
+                <input type="hidden" name="parentExistingChildEmailsJson" value={JSON.stringify(existingChildLinks)} />
+                <input type="hidden" name="childName" value={parentChildren[0]?.fullName ?? ''} />
+                <input type="hidden" name="childGrade" value={parentChildren[0]?.grade ?? ''} />
+                <input type="hidden" name="redirectTo" value={next} />
 
-                {/* Student: Grade band selector */}
+                {/* Student: Grade selector */}
                 {selectedRole === 'student' && (
-                  <div className="space-y-4 mb-8">
-                    {gradeBands.map((band) => (
-                      <button
-                        key={band.id}
-                        type="button"
-                        onClick={() => setSelectedBand(band.id)}
-                        className={`w-full p-5 rounded-2xl border-2 text-left transition-all duration-200 flex items-center gap-5 ${
-                          selectedBand === band.id
-                            ? 'border-yellow bg-yellow/5 shadow-md'
-                            : 'border-grey-light hover:border-navy-light bg-white'
-                        }`}
-                      >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          selectedBand === band.id ? 'bg-yellow/15' : 'bg-off-white'
-                        }`}>
-                          <band.icon className={`w-6 h-6 ${selectedBand === band.id ? 'text-yellow' : 'text-navy'}`} />
-                        </div>
-                        <div>
-                          <p className="font-heading font-bold text-navy">{band.name}</p>
-                          <p className="text-grey text-xs mt-0.5">{band.grades} • {band.ages}</p>
-                        </div>
-                        {selectedBand === band.id && (
-                          <CheckCircle2 className="w-5 h-5 text-yellow ml-auto" />
-                        )}
-                      </button>
-                    ))}
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold text-navy mb-1.5">Student Grade</label>
+                    <select
+                      name="grade"
+                      value={selectedGrade}
+                      onChange={(event) => setSelectedGrade(event.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20"
+                    >
+                      <option value="">Select grade</option>
+                      {studentGrades.map((grade) => (
+                        <option key={grade} value={String(grade)}>
+                          Grade {grade}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="mt-2 text-xs text-grey">
+                      Grades 1-3 = Explorer, 4-6 = Builder, 7-12 = Achiever.
+                    </p>
                   </div>
                 )}
 
@@ -310,25 +332,122 @@ export default function SignupPage() {
                   <div className="space-y-5 mb-8">
                     <div>
                       <label className="block text-sm font-semibold text-navy mb-1.5">Number of children</label>
-                      <select name="childrenCount" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20">
+                      <select
+                        name="childrenCount"
+                        value={String(parentChildrenCount)}
+                        onChange={(event) => updateParentChildrenCount(Number.parseInt(event.target.value, 10) || 1)}
+                        className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20"
+                      >
                         <option value="1">1 child</option>
                         <option value="2">2 children</option>
                         <option value="3">3 children</option>
-                        <option value="4">4+ children</option>
+                        <option value="4">4 children</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-navy mb-1.5">Child&apos;s name</label>
-                      <input name="childName" type="text" placeholder="Enter child's name" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-navy mb-1.5">Child&apos;s grade</label>
-                      <select name="childGrade" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20">
-                        <option value="">Select grade</option>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <option key={i + 1} value={i + 1}>Grade {i + 1}</option>
-                        ))}
-                      </select>
+                    {parentChildren.map((child, index) => (
+                      <div key={`child-${index}`} className="rounded-xl border border-grey-light p-4 bg-off-white/60 space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-grey">Child {index + 1}</p>
+                        <div>
+                          <label className="block text-sm font-semibold text-navy mb-1.5">Child&apos;s name</label>
+                          <input
+                            type="text"
+                            value={child.fullName}
+                            onChange={(event) =>
+                              setParentChildren((previous) =>
+                                previous.map((entry, entryIndex) =>
+                                  entryIndex === index ? { ...entry, fullName: event.target.value } : entry,
+                                ),
+                              )
+                            }
+                            placeholder="Enter child's name"
+                            className="w-full px-4 py-3 rounded-xl border border-grey-light bg-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-navy mb-1.5">Child&apos;s grade</label>
+                          <select
+                            value={child.grade}
+                            onChange={(event) =>
+                              setParentChildren((previous) =>
+                                previous.map((entry, entryIndex) =>
+                                  entryIndex === index ? { ...entry, grade: event.target.value } : entry,
+                                ),
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-grey-light bg-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20"
+                          >
+                            <option value="">Select grade</option>
+                            {Array.from({ length: 12 }, (_, i) => (
+                              <option key={i + 1} value={String(i + 1)}>
+                                Grade {i + 1}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-navy mb-1.5">
+                            Child&apos;s existing account email (optional)
+                          </label>
+                          <input
+                            type="email"
+                            value={child.email}
+                            onChange={(event) =>
+                              setParentChildren((previous) =>
+                                previous.map((entry, entryIndex) =>
+                                  entryIndex === index ? { ...entry, email: event.target.value } : entry,
+                                ),
+                              )
+                            }
+                            placeholder="child@example.com"
+                            className="w-full px-4 py-3 rounded-xl border border-grey-light bg-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="rounded-xl border border-grey-light p-4 bg-off-white/40 space-y-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-grey">
+                        Link Existing Child Account (Optional)
+                      </p>
+                      <p className="text-xs text-grey">
+                        If your child already has a student account, add their email here so your parent account can link on first login.
+                      </p>
+                      {existingChildLinks.map((email, index) => (
+                        <input
+                          key={`existing-child-${index}`}
+                          type="email"
+                          value={email}
+                          onChange={(event) =>
+                            setExistingChildLinks((prev) =>
+                              prev.map((entry, entryIndex) =>
+                                entryIndex === index ? event.target.value : entry,
+                              ),
+                            )
+                          }
+                          placeholder={`Existing child email ${index + 1}`}
+                          className="w-full px-4 py-3 rounded-xl border border-grey-light bg-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
+                        />
+                      ))}
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExistingChildLinks((prev) => (prev.length >= 4 ? prev : [...prev, '']))
+                          }
+                          className="rounded-lg border border-grey-light px-3 py-2 text-xs font-semibold text-navy hover:bg-white"
+                        >
+                          Add Another Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExistingChildLinks((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev))
+                          }
+                          className="rounded-lg border border-grey-light px-3 py-2 text-xs font-semibold text-grey hover:bg-white"
+                        >
+                          Remove Last
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -364,10 +483,10 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
-                  disabled={isPending || (selectedRole === 'student' && !selectedBand)}
+                  disabled={isPending || (selectedRole === 'student' && !selectedGrade)}
                   className="w-full bg-yellow hover:bg-yellow-light text-navy font-heading font-bold py-3.5 rounded-xl transition-colors text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isPending ? 'Creating account...' : 'Go to Dashboard →'}
+                  {isPending ? 'Saving account...' : 'Save and Go to Dashboard ->'}
                 </button>
               </form>
             </div>
@@ -375,7 +494,7 @@ export default function SignupPage() {
 
           <p className="mt-8 text-center text-sm text-grey">
             Already have an account?{' '}
-            <Link href="/login" className="text-yellow font-semibold hover:text-yellow-dim transition-colors">
+            <Link href={next ? `/login?next=${encodeURIComponent(next)}` : '/login'} className="text-yellow font-semibold hover:text-yellow-dim transition-colors">
               Sign in
             </Link>
           </p>

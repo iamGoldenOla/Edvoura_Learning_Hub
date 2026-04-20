@@ -14,6 +14,7 @@ import {
   assignRoleSchema,
   approveTutorSchema,
   rejectTutorSchema,
+  runAdminOperationSchema,
   type AppRole,
 } from '@edvoura/contracts';
 
@@ -35,6 +36,7 @@ export class AdminController {
 
   @Post('users/:userId/roles')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('super_admin')
   @ApiOperation({ summary: 'Assign a role to a user' })
   async assignRole(
     @CurrentUser() admin: AuthenticatedRequestUser,
@@ -46,6 +48,7 @@ export class AdminController {
 
   @Delete('users/:userId/roles/:role')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @Roles('super_admin')
   @ApiOperation({ summary: 'Revoke a role from a user' })
   async revokeRole(
     @Param('userId') userId: string,
@@ -55,9 +58,20 @@ export class AdminController {
   }
 
   @Get('users/:userId/roles')
+  @Roles('super_admin')
   @ApiOperation({ summary: 'List all role assignments for a user' })
   async listUserRoles(@Param('userId') userId: string) {
     return this.adminService.listUserRoles(userId);
+  }
+
+  @Post('operations/run')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Run an admin dashboard operation' })
+  async runOperation(
+    @CurrentUser() admin: AuthenticatedRequestUser,
+    @Body(new ZodValidationPipe(runAdminOperationSchema)) body: unknown,
+  ) {
+    return this.adminService.runOperation(admin.userId, runAdminOperationSchema.parse(body));
   }
 
   @Get('tutors/pending')

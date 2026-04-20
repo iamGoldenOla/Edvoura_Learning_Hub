@@ -1,0 +1,82 @@
+'use client';
+
+import { useActionState, useState } from 'react';
+
+import { superAdminSignIn, superAdminSignUp, type FormState } from './actions';
+
+export default function SuperAdminAuthPage() {
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [signInState, signInAction, signInPending] = useActionState<FormState, FormData>(
+    superAdminSignIn,
+    null,
+  );
+  const [signUpState, signUpAction, signUpPending] = useActionState<FormState, FormData>(
+    superAdminSignUp,
+    null,
+  );
+
+  const pending = mode === 'signin' ? signInPending : signUpPending;
+  const state = mode === 'signin' ? signInState : signUpState;
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
+      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Secure Access</p>
+        <h1 className="mt-2 text-2xl font-bold text-slate-900">Super Admin Portal</h1>
+        <p className="mt-1 text-sm text-slate-600">Use this page only for super admin access.</p>
+
+        <div className="mt-5 grid grid-cols-2 rounded-lg border border-slate-200 p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setMode('signin')}
+            className={`rounded-md px-3 py-2 font-semibold ${mode === 'signin' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('signup')}
+            className={`rounded-md px-3 py-2 font-semibold ${mode === 'signup' ? 'bg-slate-900 text-white' : 'text-slate-600'}`}
+          >
+            Sign Up
+          </button>
+        </div>
+
+        {state?.error ? (
+          <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {state.error}
+          </div>
+        ) : null}
+
+        <form action={mode === 'signin' ? signInAction : signUpAction} className="mt-4 space-y-4">
+          {mode === 'signup' ? (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Full name</label>
+              <input
+                name="fullName"
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
+          ) : null}
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
+            <input name="email" type="email" required className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
+            <input name="password" type="password" required className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {pending ? 'Please wait...' : mode === 'signin' ? 'Sign In to /me' : 'Create Super Admin Account'}
+          </button>
+        </form>
+
+      </div>
+    </div>
+  );
+}
