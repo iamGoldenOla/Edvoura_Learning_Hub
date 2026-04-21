@@ -22,10 +22,11 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const supabase = createClient();
   const pathname = usePathname();
 
   useEffect(() => {
+    const supabase = createClient();
+
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -61,6 +62,7 @@ export default function Navbar() {
   }, []);
 
   const handleSignOut = async () => {
+    const supabase = createClient();
     await supabase.auth.signOut();
     window.location.href = '/';
   };
