@@ -1,7 +1,8 @@
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
-import { Mail, Phone, MapPin, Clock, Send, MessageSquare, ArrowRight, Globe, HelpCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, Globe, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
+import { siteContact } from '@/lib/site';
 
 export default function ContactPage() {
   return (
@@ -45,8 +46,9 @@ export default function ContactPage() {
                       <Mail className="w-7 h-7 text-navy" />
                     </div>
                     <div>
-                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Email</p>
-                      <p className="text-xl text-white font-bold">hello@edvoura.com</p>
+                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">General Email</p>
+                      <p className="text-xl text-white font-bold">{siteContact.email.info}</p>
+                      <p className="mt-1 text-sm text-white/70 font-bold">Support: {siteContact.email.support}</p>
                     </div>
                   </div>
                   
@@ -56,17 +58,34 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Support Line</p>
-                      <p className="text-xl text-white font-bold">+1 (555) EDVOURA</p>
+                      <p className="text-xl text-white font-bold">{siteContact.phone.support}</p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
                     <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
-                      <Clock className="w-7 h-7 text-navy" />
+                      <MessageSquare className="w-7 h-7 text-navy" />
                     </div>
                     <div>
-                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Operating Hours</p>
-                      <p className="text-xl text-white font-bold">24/7 Global Support</p>
+                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">WhatsApp</p>
+                      <a
+                        href={`https://wa.me/${siteContact.phone.whatsappIntl}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xl text-white font-bold hover:text-yellow transition-colors"
+                      >
+                        {siteContact.phone.whatsapp}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
+                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
+                      <MapPin className="w-7 h-7 text-navy" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Address</p>
+                      <p className="text-xl text-white font-bold">{siteContact.address}</p>
                     </div>
                   </div>
                 </div>

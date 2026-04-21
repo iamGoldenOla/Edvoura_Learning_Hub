@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { siteContact } from '@/lib/site';
 
 const platformLinks = [
   { label: 'Home', href: '/' },
@@ -60,6 +61,11 @@ export default function Footer() {
             <p className="text-grey text-[12px] leading-relaxed max-w-[200px] font-medium opacity-50">
               A premium global learning ecosystem empowering the next generation of leaders.
             </p>
+            <div className="mt-6 space-y-2 text-[12px] font-semibold text-grey-light/80">
+              <p>{siteContact.email.info}</p>
+              <p>{siteContact.phone.support}</p>
+              <p>{siteContact.address}</p>
+            </div>
           </div>
 
           {/* Platform */}
@@ -111,7 +117,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Edvoura Learning Hub. All rights reserved.
           </p>
           <p className="text-xs text-grey">
-            edvouralearninghub.com
+            {siteContact.domain}
           </p>
         </div>
       </div>

@@ -3,6 +3,7 @@ import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
 import { ArrowRight, MapPin, Briefcase, Clock, FileText, CheckCircle2, Star, UserCheck, ShieldCheck, PenTool, Sparkles, Send, Upload } from 'lucide-react';
 import Image from 'next/image';
+import { siteContact } from '@/lib/site';
 
 // TODO: Replace with Supabase query → job_listings
 const openPositions = [
@@ -139,7 +140,7 @@ export default function CareersPage() {
                         </div>
                         <div>
                            <label className="block text-sm font-black text-navy uppercase mb-3">Email Address</label>
-                           <input type="email" placeholder="sarah@tutor.com" className="w-full bg-off-white border-4 border-navy rounded-xl px-6 py-4 font-bold px-4 focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all" />
+                           <input type="email" placeholder={siteContact.email.careers} className="w-full bg-off-white border-4 border-navy rounded-xl px-6 py-4 font-bold px-4 focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all" />
                         </div>
                      </div>
                      <div>
@@ -211,7 +212,7 @@ export default function CareersPage() {
           <div className="text-center mt-20 p-10 bg-white border-4 border-navy rounded-[2rem] shadow-[10px_10px_0px_#0A1628]">
              <p className="text-navy text-xl font-bold mb-6">Don&apos;t see your role? Reach out to our talent acquisition team.</p>
              <Link href="/contact" className="text-navy font-black text-lg underline decoration-4 underline-offset-8 decoration-yellow hover:text-info transition-colors">
-               talent@edvouralearninghub.com
+               {siteContact.email.careers}
              </Link>
           </div>
         </div>
