@@ -9,7 +9,7 @@ export type FormState = { error: string } | null;
 export async function login(prevState: FormState, formData: FormData): Promise<FormState> {
   const supabase = await createClient()
 
-  const email = formData.get('email') as string
+  const email = ((formData.get('email') as string | null) ?? '').trim().toLowerCase()
   const password = formData.get('password') as string
   const next = formData.get('next') as string | null
 

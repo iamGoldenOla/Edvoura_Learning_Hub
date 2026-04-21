@@ -7,7 +7,7 @@ import { type FormState } from '../login/actions'
 export async function signup(prevState: FormState, formData: FormData): Promise<FormState> {
   const supabase = await createClient()
 
-  const email = formData.get('email') as string
+  const email = ((formData.get('email') as string | null) ?? '').trim().toLowerCase()
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
   const role = formData.get('role') as string
@@ -97,6 +97,7 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
   }
 
   let error: { message: string } | null = null
+  let hasSession = false
   try {
     const result = await supabase.auth.signUp({
       email,
@@ -119,6 +120,7 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
       },
     })
     error = result.error
+    hasSession = Boolean(result.data.session)
   } catch {
     return {
       error:
@@ -128,6 +130,10 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
 
   if (error) {
     return { error: error.message }
+  }
+
+  if (!hasSession) {
+    redirect('/login?signup=check-email')
   }
 
   if (redirectTo && redirectTo.startsWith('/')) {

@@ -9,6 +9,7 @@ import { CheckCircle2, BookOpen, Users, Video } from 'lucide-react';
 function LoginPageContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next') ?? '';
+  const signupState = searchParams.get('signup');
   const [state, formAction, isPending] = useActionState(login, null);
 
   return (
@@ -86,6 +87,12 @@ function LoginPageContent() {
           {state?.error && (
             <div className="mb-6 p-4 bg-error/10 border border-error/20 text-error text-sm rounded-xl">
               {state.error}
+            </div>
+          )}
+
+          {signupState === 'check-email' && (
+            <div className="mb-6 rounded-xl border border-success/20 bg-success/10 p-4 text-sm text-success">
+              Your account was created. Check your email, confirm your address, then sign in.
             </div>
           )}
 
