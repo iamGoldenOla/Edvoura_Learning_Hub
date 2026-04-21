@@ -111,7 +111,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Right Cluster (Nav + CTAs) */}
-          <div className="hidden xl:flex items-center gap-10">
+          <div className="hidden lg:flex items-center gap-10">
             {/* Nav Links */}
             <div className="flex items-center gap-6">
               {navLinks.map((link) => (
