@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useActionState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -32,7 +32,7 @@ const createEmptyParentChild = (): ParentChildDraft => ({
   email: '',
 });
 
-export default function SignupPage() {
+function SignupPageContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next') ?? '';
   const [step, setStep] = useState(1);
@@ -501,5 +501,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <SignupPageContent />
+    </Suspense>
   );
 }

@@ -1,12 +1,12 @@
 'use client';
 
-import { useActionState } from 'react';
+import { Suspense, useActionState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { login } from './actions';
 import { CheckCircle2, BookOpen, Users, Video } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get('next') ?? '';
   const [state, formAction, isPending] = useActionState(login, null);
@@ -146,5 +146,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
