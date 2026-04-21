@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
+
+import { createClient } from '@/utils/supabase/client';
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -28,12 +29,16 @@ export default function Navbar() {
     const supabase = createClient();
 
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
     };
     checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
@@ -71,90 +76,83 @@ export default function Navbar() {
     <>
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-dark/98 border-b border-yellow/10 shadow-lg'
-            : 'bg-navy/95 backdrop-blur-xl'
+          scrolled ? 'bg-dark/98 border-b border-yellow/10 shadow-lg' : 'bg-navy/95 backdrop-blur-xl'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-8 h-[72px] flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-4 group perspective-[1000px]">
-            {/* The Animated Badge Icon */}
-            <div className="relative w-12 h-12 flex-shrink-0 kinetic-logo">
-              <div className="absolute inset-0 bg-yellow rounded-xl rotate-12 group-hover:rotate-[30deg] transition-transform duration-500 shadow-[4px_4px_0px_rgba(0,0,0,0.2)]" />
-              <div className="absolute inset-0 bg-navy border-2 border-yellow rounded-xl flex items-center justify-center -rotate-6 group-hover:rotate-0 transition-transform duration-500 shadow-xl">
-                <span className="text-yellow font-heading font-black text-2xl">E</span>
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 md:px-6 xl:px-8">
+          <Link href="/" className="flex min-w-0 items-center gap-3 group perspective-[1000px]">
+            <div className="kinetic-logo relative h-10 w-10 flex-shrink-0 xl:h-11 xl:w-11">
+              <div className="absolute inset-0 rotate-12 rounded-xl bg-yellow shadow-[4px_4px_0px_rgba(0,0,0,0.2)] transition-transform duration-500 group-hover:rotate-[30deg]" />
+              <div className="absolute inset-0 -rotate-6 rounded-xl border-2 border-yellow bg-navy shadow-xl transition-transform duration-500 group-hover:rotate-0 flex items-center justify-center">
+                <span className="font-heading text-xl font-black text-yellow xl:text-2xl">E</span>
               </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-success border-2 border-navy rounded-full animate-pulse shadow-lg" />
+              <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-navy bg-success shadow-lg animate-pulse" />
             </div>
 
-            {/* The Brand & Slogan Cluster */}
-            <div className="flex flex-col -space-y-1.5 pt-1">
+            <div className="flex min-w-0 flex-col -space-y-1 pt-1">
               <div className="flex items-center gap-2">
-                <span className="premium-shimmer-text font-heading font-black text-3xl md:text-4xl tracking-tighter uppercase leading-none text-white">
+                <span className="premium-shimmer-text font-heading text-[2rem] font-black leading-none tracking-[-0.06em] uppercase text-white xl:text-[2.35rem]">
                   EDVOURA
                 </span>
-                <div className="hidden sm:block h-[2px] w-8 bg-yellow/50 mt-1" />
+                <div className="hidden h-[2px] w-6 bg-yellow/50 lg:block xl:w-8" />
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-white font-heading font-black text-[10px] md:text-[11px] tracking-[0.3em] uppercase leading-none mt-1 shadow-sm">
-                  LEARNING <span className="text-yellow">HUB</span><span className="text-yellow">.</span>
+              <div className="flex items-center gap-2 xl:gap-3">
+                <span className="mt-1 font-heading text-[9px] font-black leading-none tracking-[0.24em] uppercase text-white shadow-sm xl:text-[10px]">
+                  LEARNING <span className="text-yellow">HUB</span>
+                  <span className="text-yellow">.</span>
                 </span>
-                {/* Floating Slogan Badge */}
-                <div className="luxury-badge px-3 py-1 rounded-full overflow-hidden whitespace-nowrap bg-yellow border border-navy/20">
-                   <span className="text-[8px] font-black uppercase tracking-[0.1em] text-navy leading-none">
-                     Where Learners&apos; Dreams Come True
-                   </span>
+                <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 2xl:block">
+                  <span className="text-[8px] font-black leading-none tracking-[0.1em] text-navy uppercase">
+                    Where Learners&apos; Dreams Come True
+                  </span>
                 </div>
               </div>
             </div>
           </Link>
 
-          {/* Desktop Right Cluster (Nav + CTAs) */}
-          <div className="hidden lg:flex items-center gap-10">
-            {/* Nav Links */}
-            <div className="flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+            <div className="flex items-center gap-4 xl:gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-xs font-bold uppercase tracking-widest text-white/70 hover:text-yellow transition-colors duration-200"
+                  className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs"
                 >
                   {link.label}
                 </Link>
               ))}
             </div>
 
-            {/* CTAs */}
-            <div className="flex items-center gap-4 border-l border-white/10 pl-6 shrink-0 relative">
+            <div className="relative flex shrink-0 items-center gap-3 border-l border-white/10 pl-4 xl:gap-4 xl:pl-6">
               {user ? (
                 <>
                   <Link
                     href="/dash"
-                    className="text-[10px] font-black uppercase tracking-widest text-white hover:text-yellow transition-colors px-3 py-2 whitespace-nowrap"
+                    className="whitespace-nowrap px-3 py-2 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:text-yellow"
                   >
                     Dashboard
                   </Link>
                   <button
                     onClick={handleSignOut}
-                    className="text-[10px] font-heading font-black text-white border-2 border-white/20 hover:border-yellow hover:text-yellow px-4 py-2.5 rounded-lg transition-all uppercase tracking-widest whitespace-nowrap"
+                    className="rounded-lg border-2 border-white/20 px-4 py-2 text-[10px] font-heading font-black uppercase tracking-widest text-white transition-all hover:border-yellow hover:text-yellow"
                   >
                     Sign Out
                   </button>
                 </>
               ) : (
-                <div className="flex items-center gap-4">
-                  {/* Premium Sign In Dropdown */}
-                  <div className="relative group">
+                <div className="flex items-center gap-2 xl:gap-4">
+                  <div className="group relative">
                     <button
                       onClick={() => setSignInOpen(!signInOpen)}
-                      className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all px-3 py-2 whitespace-nowrap rounded-lg border-2 ${
-                        signInOpen ? 'bg-white/5 border-yellow text-yellow' : 'bg-transparent border-transparent text-white hover:text-yellow'
+                      className={`flex items-center gap-2 rounded-lg border-2 px-2.5 py-2 text-[10px] font-black uppercase tracking-widest transition-all xl:px-3 ${
+                        signInOpen
+                          ? 'bg-white/5 border-yellow text-yellow'
+                          : 'bg-transparent border-transparent text-white hover:text-yellow'
                       }`}
                     >
                       Sign In
                       <svg
-                        className={`w-3 h-3 transition-transform duration-300 ${signInOpen ? 'rotate-180' : ''}`}
+                        className={`h-3 w-3 transition-transform duration-300 ${signInOpen ? 'rotate-180' : ''}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -163,14 +161,10 @@ export default function Navbar() {
                       </svg>
                     </button>
 
-                    {/* Dropdown Menu */}
                     {signInOpen && (
                       <>
-                        <div 
-                          className="fixed inset-0 z-10" 
-                          onClick={() => setSignInOpen(false)}
-                        />
-                        <div className="absolute top-full right-0 mt-3 w-64 bg-navy border-2 border-white/10 rounded-2xl p-3 shadow-[12px_12px_0px_#000] z-20 reveal-luxury animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="fixed inset-0 z-10" onClick={() => setSignInOpen(false)} />
+                        <div className="reveal-luxury absolute right-0 top-full z-20 mt-3 w-64 rounded-2xl border-2 border-white/10 bg-navy p-3 shadow-[12px_12px_0px_#000] animate-in fade-in slide-in-from-top-2 duration-200">
                           <div className="flex flex-col gap-1">
                             {[
                               { label: 'Student Portal', role: 'student', icon: '🎓', desc: 'Learning & Dashboard' },
@@ -181,16 +175,16 @@ export default function Navbar() {
                                 key={item.role}
                                 href={`/login?role=${item.role}`}
                                 onClick={() => setSignInOpen(false)}
-                                className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-all group/item"
+                                className="group/item flex items-center gap-4 rounded-xl p-3 transition-all hover:bg-white/5"
                               >
-                                <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center text-lg group-hover/item:bg-yellow group-hover/item:text-navy group-hover/item:scale-110 transition-all duration-300">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-lg transition-all duration-300 group-hover/item:scale-110 group-hover/item:bg-yellow group-hover/item:text-navy">
                                   {item.icon}
                                 </div>
                                 <div className="flex flex-col">
-                                  <span className="text-[11px] font-black uppercase tracking-widest text-white group-hover/item:text-yellow transition-colors">
+                                  <span className="text-[11px] font-black uppercase tracking-widest text-white transition-colors group-hover/item:text-yellow">
                                     {item.label}
                                   </span>
-                                  <span className="text-[9px] font-bold text-grey opacity-50 uppercase tracking-tighter">
+                                  <span className="text-[9px] font-bold uppercase tracking-tighter text-grey opacity-50">
                                     {item.desc}
                                   </span>
                                 </div>
@@ -204,7 +198,7 @@ export default function Navbar() {
 
                   <Link
                     href="/signup"
-                    className="text-[10px] font-heading font-black text-navy bg-yellow hover:bg-yellow-light px-5 py-3 rounded-lg transition-all shadow-[4px_4px_0px_rgba(0,0,0,0.5)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 active:scale-95 duration-200 uppercase tracking-widest whitespace-nowrap"
+                    className="whitespace-nowrap rounded-lg bg-yellow px-4 py-2.5 text-[10px] font-heading font-black uppercase tracking-[0.16em] text-navy transition-all duration-200 hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-light hover:shadow-none active:scale-95 xl:px-5 xl:py-3 shadow-[4px_4px_0px_rgba(0,0,0,0.5)]"
                   >
                     Get Started
                   </Link>
@@ -213,26 +207,24 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden text-white hover:text-yellow transition-colors"
+            className="text-white transition-colors hover:text-yellow lg:hidden"
             aria-label="Open menu"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="h-6 w-6" />
           </button>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-[100] bg-navy flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-navy">
           <button
             onClick={() => setMobileOpen(false)}
-            className="absolute top-6 right-6 text-white hover:text-yellow transition-colors"
+            className="absolute top-6 right-6 text-white transition-colors hover:text-yellow"
             aria-label="Close menu"
           >
-            <X className="w-7 h-7" />
+            <X className="h-7 w-7" />
           </button>
 
           <div className="flex flex-col items-center gap-6">
@@ -241,18 +233,18 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="text-2xl font-heading font-bold text-white hover:text-yellow transition-colors animate-fade-up"
+                className="animate-fade-up font-heading text-2xl font-bold text-white transition-colors hover:text-yellow"
                 style={{ animationDelay: `${i * 0.08}s` }}
               >
                 {link.label}
               </Link>
             ))}
 
-            <div className="flex flex-col items-center gap-4 mt-8 pt-8 border-t border-navy-light w-full max-w-xs">
+            <div className="mt-8 flex w-full max-w-xs flex-col items-center gap-4 border-t border-navy-light pt-8">
               {!user ? (
                 <>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-grey opacity-50 mb-2">Portal Selection</p>
-                  <div className="grid grid-cols-1 gap-2 w-full">
+                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-grey opacity-50">Portal Selection</p>
+                  <div className="grid w-full grid-cols-1 gap-2">
                     {[
                       { label: 'Student Portal', role: 'student', icon: '🎓' },
                       { label: 'Tutor Portal', role: 'tutor', icon: '👨‍🏫' },
@@ -262,7 +254,7 @@ export default function Navbar() {
                         key={item.role}
                         href={`/login?role=${item.role}`}
                         onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-yellow transition-all"
+                        className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/5 p-4 transition-all hover:border-yellow"
                       >
                         <span className="text-xl">{item.icon}</span>
                         <span className="text-xs font-black uppercase tracking-widest text-white">{item.label}</span>
@@ -272,7 +264,7 @@ export default function Navbar() {
                   <Link
                     href="/signup"
                     onClick={() => setMobileOpen(false)}
-                    className="bg-yellow text-navy font-heading font-black px-8 py-4 rounded-xl text-center w-full hover:bg-yellow-light transition-all shadow-[4px_4px_0px_#000] mt-4 uppercase tracking-widest"
+                    className="mt-4 w-full rounded-xl bg-yellow px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-navy transition-all hover:bg-yellow-light shadow-[4px_4px_0px_#000]"
                   >
                     Get Started →
                   </Link>
@@ -283,7 +275,7 @@ export default function Navbar() {
                     handleSignOut();
                     setMobileOpen(false);
                   }}
-                  className="bg-white/5 border-2 border-white/10 text-white font-heading font-black px-8 py-4 rounded-xl text-center w-full hover:border-yellow hover:text-yellow transition-colors uppercase tracking-widest"
+                  className="w-full rounded-xl border-2 border-white/10 bg-white/5 px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-white transition-colors hover:border-yellow hover:text-yellow"
                 >
                   Sign Out
                 </button>
