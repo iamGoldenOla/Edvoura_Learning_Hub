@@ -70,10 +70,11 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 
 ## Immediate Next Priorities
 
-1. Remove the orphaned `api-client.ts` file and `NEXT_PUBLIC_API_URL` from `.env.local` / `.env.example`.
-2. Add `SUPABASE_SERVICE_ROLE_KEY` to Vercel environment variables for webhook and admin server action support.
+1. Add `SUPABASE_SERVICE_ROLE_KEY` to Vercel environment variables for webhook and admin server action support.
+2. Delete the `apps/api` folder entirely, as `apps/web` is now 100% decoupled and the legacy backend is no longer used.
 3. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
-4. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
+4. Implement Live Session management (e.g., Zoom/Google Meet integration) directly within `apps/web` or via Supabase Edge Functions.
+5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 
 ## Working Rules
 

@@ -309,10 +309,10 @@ Checklist:
 1. ✅ Remove `apiClient` runtime dependency from all dashboard components.
 2. ✅ All profile, billing, admin, parent, chat, and live content flows use direct Supabase.
 3. ✅ Build passes with zero `apiClient` imports.
-4. ⬜ Remove `NEXT_PUBLIC_API_URL` from `.env.local` / `.env.example`.
-5. ⬜ Delete `api-client.ts` file.
+4. ✅ Remove `NEXT_PUBLIC_API_URL` from `.env.local` / `.env.example`.
+5. ✅ Delete `api-client.ts` file.
 
-Exit criteria: Deployment is truly `Vercel + Supabase only`
+Exit criteria: ✅ MET — Deployment is truly `Vercel + Supabase only`
 
 ## Immediate Minimum Setup
 
@@ -326,11 +326,7 @@ If you want the database and storage side ready now:
 
 ## Remaining Refactor Scope
 
-Before the app is truly `Vercel + Supabase only`, these backend modules need migration or replacement:
+Before the app is fully functional with live sessions:
 
-- `apps/api/src/modules/billing`
-- `apps/api/src/modules/notifications`
-- `apps/api/src/modules/academics/live-session.service.ts`
-- parts of `apps/api/src/modules/admin`
-- parts of `apps/api/src/modules/parents`
-- any frontend path that still depends on `apps/web/src/lib/api-client.ts`
+- We need to implement a mechanism for live session integration directly from `apps/web` (or via Supabase Edge Functions), bypassing the old `academics/live-session.service.ts` from `apps/api`.
+- The `apps/api` folder can now be deleted completely from the repository, as the frontend no longer depends on it and all essential workflows (billing webhooks, notification webhooks, tutor approvals) have been migrated to Next.js route handlers and server actions.
