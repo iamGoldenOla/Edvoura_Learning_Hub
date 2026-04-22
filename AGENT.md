@@ -63,15 +63,15 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 5. Phase 3: Storage Hardening
    Add missing policies for `assignment-assets`, `student-work`, and `lesson-resources`.
 6. Phase 4: Workflow Migration
-   Move billing, notifications, webhooks, live-session provisioning, and admin actions out of `apps/api`.
+   Move billing, notifications, webhooks, live-session provisioning, and admin actions out of `apps/api`. (Webhooks, Admin actions, Billing summary reads completed).
 7. Phase 5: API Removal
-   Remove the remaining `NEXT_PUBLIC_API_URL` dependency from the frontend.
+   Remove the remaining `NEXT_PUBLIC_API_URL` dependency from the frontend by porting remaining frontend mutations to Next.js Server Actions.
 
 ## Immediate Next Priorities
 
-1. Phase 4 of Cutover (Workflow Migration): Move billing, notifications, and webhooks out of NestJS and into Supabase Edge Functions or Next.js route handlers.
-2. Replace remaining live session provider integrations (like automated Meet/Zoom provisioning hooks) if necessary via edge functions.
-3. Phase 5 of Cutover (API Removal): Completely remove `NEXT_PUBLIC_API_URL` dependency from the frontend.
+1. Phase 4 of Cutover (Workflow Migration): Complete migration of billing (checkout subscriptions) and parent onboarding flows out of NestJS into Next.js server actions.
+2. Phase 5 of Cutover (API Removal): Replace remaining `apiClient.post` mutations across the dashboard with Next.js Server Actions. Completely remove `NEXT_PUBLIC_API_URL` dependency from the frontend.
+3. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
 4. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
 5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 

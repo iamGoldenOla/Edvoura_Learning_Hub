@@ -624,13 +624,109 @@ export async function getStudentDashboardData(accessToken: string) {
   }
 }
 
+async function getDirectBillingSummaryFromSupabase(
+  supabase: SupabaseServerClient,
+  sessionUser: SessionUserLike
+): Promise<BillingSummary> {
+  const { data: rolesData } = await supabase.from('user_roles').select('role').eq('user_id', sessionUser.id);
+  const roles = (rolesData ?? []).map((r) => r.role);
+
+  let ownerIds = [sessionUser.id];
+  if (roles.includes('student')) {
+    const { data: parentLinks } = await supabase
+      .from('parent_child_links')
+      .select('parent_user_id')
+      .eq('child_user_id', sessionUser.id);
+    if (parentLinks && parentLinks.length > 0) {
+      ownerIds = parentLinks.map((l) => l.parent_user_id);
+    }
+  }
+
+  const { data: plansData } = await supabase.schema('billing').from('plans')
+    .select('id, code, name, interval, amount_minor, currency_code')
+    .eq('is_active', true)
+    .order('amount_minor', { ascending: true });
+
+  let subscriptionData = null;
+  if (ownerIds.length > 0) {
+    const { data: sub } = await supabase.schema('billing').from('subscriptions')
+      .select('id, plan_id, status, current_period_end, cancel_at_period_end')
+      .in('account_owner_user_id', ownerIds)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    subscriptionData = sub;
+  }
+
+  const activePlanRows = plansData ?? [];
+  let planDetails = null;
+
+  if (subscriptionData?.plan_id) {
+    planDetails = activePlanRows.find(p => p.id === subscriptionData.plan_id) ?? null;
+  }
+
+  let invoicesData: any[] = [];
+  if (subscriptionData) {
+    const { data: invs } = await supabase.schema('billing').from('invoices')
+      .select('id, status, amount_due_minor, amount_paid_minor, due_at')
+      .eq('subscription_id', subscriptionData.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    invoicesData = invs ?? [];
+  }
+
+  const subscription = subscriptionData ? {
+    id: subscriptionData.id,
+    status: subscriptionData.status,
+    currentPeriodEnd: subscriptionData.current_period_end,
+    planName: planDetails?.name ?? null,
+    planAmountMinor: planDetails?.amount_minor ?? null,
+    planCurrencyCode: planDetails?.currency_code ?? null,
+  } : null;
+
+  const entitlement =
+    subscription && ['active', 'trialing'].includes(subscription.status)
+      ? {
+          hasAccess: true,
+          reason: subscriptionData?.cancel_at_period_end ? 'active_until_period_end' : 'active_subscription',
+        }
+      : {
+          hasAccess: false,
+          reason: subscription?.status === 'past_due' ? 'payment_required' : 'no_active_subscription',
+        };
+
+  return {
+    entitlement,
+    subscription,
+    plans: activePlanRows.map((p) => ({
+      id: p.id,
+      name: p.name,
+      interval: p.interval,
+      amountMinor: p.amount_minor,
+      currencyCode: p.currency_code,
+    })),
+    invoices: invoicesData.map((i) => ({
+      id: i.id,
+      status: i.status,
+      amountDueMinor: i.amount_due_minor,
+      amountPaidMinor: i.amount_paid_minor,
+      dueAt: i.due_at,
+    })),
+  };
+}
+
 export async function getBillingSummary(accessToken: string) {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    return buildFallbackBillingSummary();
+  }
+
   try {
-    return await apiClient.get<BillingSummary>('/billing/me/summary', {
-      token: accessToken,
-      cache: 'no-store',
-    });
-  } catch {
+    return await getDirectBillingSummaryFromSupabase(supabase, session.user);
+  } catch (error) {
+    console.error('Failed to get direct billing summary:', error);
     return buildFallbackBillingSummary();
   }
 }

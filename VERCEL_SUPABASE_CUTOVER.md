@@ -284,12 +284,11 @@ Move into:
 - Supabase Edge Functions
 
 Target features:
-
-- billing
-- notifications delivery orchestration
-- webhook receivers
+- billing (Summary read + webhooks moved to Next.js route handlers)
+- notifications delivery orchestration (Resend webhooks moved to Next.js route handlers)
+- webhook receivers (✅ Done: Paystack and Resend webhooks migrated to Next.js route handlers)
 - live session provider integration
-- admin actions
+- admin actions (✅ Done: Tutor queue approvals moved to Next.js server actions)
 
 Exit criteria:
 

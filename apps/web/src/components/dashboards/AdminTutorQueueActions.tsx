@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { apiClient } from '@/lib/api-client';
 import { emitDashboardToast } from '@/lib/dashboard-toast';
+import { approveTutor, rejectTutor } from '@/app/dash/admin/actions';
 
 export default function AdminTutorQueueActions({
   userId,
@@ -19,16 +19,10 @@ export default function AdminTutorQueueActions({
   const run = async (type: 'approve' | 'reject') => {
     try {
       if (type === 'approve') {
-        await apiClient.post(`/admin/tutors/${userId}/approve`, { notes: 'Approved from admin queue' });
+        await approveTutor(userId);
       } else {
-        await apiClient.post(`/admin/tutors/${userId}/reject`, { reason: 'Rejected from admin queue' });
+        await rejectTutor(userId);
       }
-      await apiClient.post('/platform/ui-actions', {
-        actionKey: `admin.tutor.${type}`,
-        label: `${type === 'approve' ? 'Approve' : 'Reject'} tutor`,
-        scope: 'admin',
-        metadata: { userId, fullName },
-      });
       emitDashboardToast({
         title: `Tutor ${type === 'approve' ? 'approved' : 'rejected'}`,
         description: fullName,
