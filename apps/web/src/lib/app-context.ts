@@ -410,7 +410,7 @@ async function getDirectStudentDashboardFromSupabase(
       resources: relatedFiles.map((file) => ({
         id: file.id,
         fileName: file.object_path.split('/').pop() ?? file.object_path,
-        downloadUrl: null,
+        downloadUrl: null as string | null,
       })),
     };
   });
