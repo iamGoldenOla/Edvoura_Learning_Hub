@@ -143,10 +143,18 @@ export default async function TutorDashboard() {
       </section>
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard title="Today's Teaching Schedule" value="2" description="Sessions ready to launch" icon={<CalendarClock className="h-4 w-4" />} />
-        <MetricCard title="Student List" value="48" description="Across active classes" icon={<Users className="h-4 w-4" />} />
-        <MetricCard title="Grading and Feedback" value="12" description="Submissions in queue" icon={<ClipboardCheck className="h-4 w-4" />} />
-        <MetricCard title="Invoice and Payment" value="NGN 125,000" description="Current cycle estimate" icon={<DollarSign className="h-4 w-4" />} />
+        <Link href="/dash/tutor/schedule" className="block">
+          <MetricCard title="Today's Teaching Schedule" value="2" description="Sessions ready to launch" icon={<CalendarClock className="h-4 w-4" />} />
+        </Link>
+        <Link href="/dash/tutor/roster" className="block">
+          <MetricCard title="Student List" value="48" description="Across active classes" icon={<Users className="h-4 w-4" />} />
+        </Link>
+        <Link href="/dash/tutor/grading" className="block">
+          <MetricCard title="Grading and Feedback" value="12" description="Submissions in queue" icon={<ClipboardCheck className="h-4 w-4" />} />
+        </Link>
+        <Link href="/dash/tutor/earnings" className="block">
+          <MetricCard title="Invoice and Payment" value="NGN 125,000" description="Current cycle estimate" icon={<DollarSign className="h-4 w-4" />} />
+        </Link>
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">

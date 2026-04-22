@@ -36,6 +36,7 @@ Run these in order:
 6. `supabase/migrations/20260414170000_phase5_dashboard_communications.sql`
 7. `supabase/migrations/20260415100000_phase6_learning_orchestration_events.sql`
 8. `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`
+9. `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql`
 
 Notes:
 
@@ -220,7 +221,7 @@ What this phase connects:
 
 Current limitation:
 
-- Bucket-backed assignment files and Google Meet provisioning are not part of this phase yet.
+- Google Meet provisioning is not part of this phase yet.
 
 Exit criteria:
 
@@ -234,15 +235,23 @@ Goal:
 
 - Add missing object policies for non-avatar buckets before production use.
 
-Buckets needing further policy work:
+What Phase 8 adds:
 
-- `assignment-assets`
-- `student-work`
-- `lesson-resources`
+- `storage_assignment_assets_select_authorized`
+- `storage_assignment_assets_insert_tutor`
+- `storage_student_work_select_authorized`
+- `storage_student_work_insert_authorized`
+- `public.attach_assignment_asset(...)`
+- `public.attach_submission_file(...)`
+
+What still remains after Phase 8:
+
+- lesson resource library uploads in `lesson-resources`
+- richer submission file listing and download surfaces on tutor pages
 
 Exit criteria:
 
-- Object access rules are explicit for each production bucket
+- Object access rules are explicit for each production bucket used by live dashboards
 
 ### Phase 4: Workflow Migration
 

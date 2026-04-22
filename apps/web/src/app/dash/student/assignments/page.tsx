@@ -96,6 +96,7 @@ function AssignmentBucket({
               scoreLabel={graded && item.score ? `Score ${Number(item.score).toFixed(0)}%` : undefined}
               feedbackText={graded ? item.feedbackText : null}
               allowUpload={!graded}
+              resources={item.resources}
             />
           ))
         ) : (

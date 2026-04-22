@@ -22,6 +22,7 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 - `apps/api` still owns billing, notifications, live-session orchestration, webhooks, and privileged mutations.
 - `apps/web` still depends on `NEXT_PUBLIC_API_URL` for those backend-owned workflows.
 - A new migration now exists at `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`.
+- A follow-up storage migration now exists at `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql`.
 
 #### Current Supabase Footprint
 - Four storage buckets are created by migrations:
@@ -41,6 +42,7 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
   - `public.submit_student_assignment(...)`
   - `public.grade_student_submission(...)`
   - `public.classes.grade_level_id`
+- Storage-backed assignment assets and student submission files are now being wired through Supabase buckets and attachment RPCs.
 - This is the first real shared dashboard loop:
   - tutor publishes assignment
   - matching students are enrolled into the grade-specific class
@@ -73,9 +75,11 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
    - student sees assignment
    - student submits work
    - tutor grades submission
-3. After the assignment loop is stable, move storage-backed assignment uploads into `student-work` and `assignment-assets`.
-4. Track completion by phase and do not begin a new phase until the current one is validated.
-5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
+3. Apply `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql` to the hosted Supabase project.
+4. Validate assignment asset uploads and student submission uploads end to end.
+5. After that, move general lesson-resource uploads into `lesson-resources`.
+6. Track completion by phase and do not begin a new phase until the current one is validated.
+7. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 
 ## Working Rules
 

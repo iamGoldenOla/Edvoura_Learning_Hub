@@ -88,6 +88,11 @@ export type StudentDashboardData = {
     submissionStatus: string | null;
     score: string | null;
     feedbackText: string | null;
+    resources: Array<{
+      id: string;
+      fileName: string;
+      downloadUrl: string | null;
+    }>;
   }>;
   progress: Array<{
     id: string;
@@ -313,6 +318,13 @@ async function getDirectStudentDashboardFromSupabase(
   const normalizedAssignmentsData = assignmentsData ?? [];
   const assignmentIds = normalizedAssignmentsData.map((item) => item.id);
 
+  const { data: assignmentFilesData = [] } = assignmentIds.length
+    ? await supabase
+        .from('assignment_files')
+        .select('id, assignment_id, bucket_id, object_path')
+        .in('assignment_id', assignmentIds)
+    : { data: [] as Array<{ id: string; assignment_id: string; bucket_id: string; object_path: string }> };
+
   const { data: submissionsData = [] } = assignmentIds.length
     ? await supabase
         .from('assignment_submissions')
@@ -362,6 +374,7 @@ async function getDirectStudentDashboardFromSupabase(
   const normalizedGrades = gradesData ?? [];
   const normalizedLessons = lessonsData ?? [];
   const normalizedProgress = progressData ?? [];
+  const normalizedAssignmentFiles = assignmentFilesData ?? [];
   const progressSubjectIds = [...new Set(normalizedProgress.map((item) => item.subject_id).filter(Boolean))];
   const { data: progressSubjectsData = [] } = progressSubjectIds.length
     ? await supabase.from('subjects').select('id, name').in('id', progressSubjectIds)
@@ -371,11 +384,19 @@ async function getDirectStudentDashboardFromSupabase(
   const progressSubjectById = new Map(normalizedProgressSubjects.map((item) => [item.id, item.name]));
   const submissionByAssignmentId = new Map(normalizedSubmissions.map((item) => [item.assignment_id, item]));
   const gradeBySubmissionId = new Map(normalizedGrades.map((item) => [item.submission_id, item]));
+  const assignmentFilesByAssignmentId = new Map<string, Array<{ id: string; assignment_id: string; bucket_id: string; object_path: string }>>();
+
+  normalizedAssignmentFiles.forEach((file) => {
+    const current = assignmentFilesByAssignmentId.get(file.assignment_id) ?? [];
+    current.push(file);
+    assignmentFilesByAssignmentId.set(file.assignment_id, current);
+  });
 
   const assignments = normalizedAssignmentsData.map((item) => {
     const relatedClass = classById.get(item.class_id);
     const relatedSubmission = submissionByAssignmentId.get(item.id);
     const relatedGrade = relatedSubmission ? gradeBySubmissionId.get(relatedSubmission.id) : null;
+    const relatedFiles = assignmentFilesByAssignmentId.get(item.id) ?? [];
 
     return {
       id: item.id,
@@ -386,8 +407,27 @@ async function getDirectStudentDashboardFromSupabase(
       submissionStatus: relatedSubmission?.status ?? null,
       score: relatedGrade?.score != null ? String(relatedGrade.score) : null,
       feedbackText: relatedGrade?.feedback_text ?? null,
+      resources: relatedFiles.map((file) => ({
+        id: file.id,
+        fileName: file.object_path.split('/').pop() ?? file.object_path,
+        downloadUrl: null,
+      })),
     };
   });
+
+  await Promise.all(
+    assignments.flatMap((assignment) =>
+      assignment.resources.map(async (resource) => {
+        const file = normalizedAssignmentFiles.find((entry) => entry.id === resource.id);
+        if (!file) {
+          return;
+        }
+
+        const { data } = await supabase.storage.from(file.bucket_id).createSignedUrl(file.object_path, 3600);
+        resource.downloadUrl = data?.signedUrl ?? null;
+      }),
+    ),
+  );
 
   const gradedAssignments = assignments.filter(
     (assignment) =>

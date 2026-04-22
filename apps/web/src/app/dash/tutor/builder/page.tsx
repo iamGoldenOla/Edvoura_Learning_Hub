@@ -43,6 +43,10 @@ type AssignmentCard = {
   className: string;
   due: string;
   status: string;
+  resources: Array<{
+    id: string;
+    fileName: string;
+  }>;
 };
 
 const formatDueLabel = (value: string | null) => {
@@ -80,6 +84,8 @@ export default function TutorBuilderPage() {
   const [assignmentGradeCode, setAssignmentGradeCode] = useState('');
   const [assignmentDueAt, setAssignmentDueAt] = useState('');
   const [assignmentInstructions, setAssignmentInstructions] = useState('');
+  const [assignmentResourceName, setAssignmentResourceName] = useState('');
+  const [assignmentResourceFile, setAssignmentResourceFile] = useState<File | null>(null);
 
   const loadBuilderData = async () => {
     const supabase = createClient();
@@ -113,6 +119,21 @@ export default function TutorBuilderPage() {
     setGradeLevels(gradeRows ?? []);
 
     const subjectById = new Map((subjectRows ?? []).map((entry) => [entry.id, entry.name]));
+    const assignmentIds = ((assignmentRows ?? []) as AssignmentRow[]).map((entry) => entry.id);
+    const { data: assignmentFilesRows } = assignmentIds.length
+      ? await supabase
+          .from('assignment_files')
+          .select('id, assignment_id, object_path')
+          .in('assignment_id', assignmentIds)
+      : { data: [] as Array<{ id: string; assignment_id: string; object_path: string }> };
+
+    const filesByAssignmentId = new Map<string, Array<{ id: string; fileName: string }>>();
+    (assignmentFilesRows ?? []).forEach((file) => {
+      const current = filesByAssignmentId.get(file.assignment_id) ?? [];
+      current.push({ id: file.id, fileName: file.object_path.split('/').pop() ?? file.object_path });
+      filesByAssignmentId.set(file.assignment_id, current);
+    });
+
     const normalizedAssignments = ((assignmentRows ?? []) as AssignmentRow[]).map((entry) => {
       const relatedClass = getRelatedClass(entry);
 
@@ -124,6 +145,7 @@ export default function TutorBuilderPage() {
           (relatedClass?.subject_id ? subjectById.get(relatedClass.subject_id) ?? 'Untitled class' : 'Untitled class'),
         due: formatDueLabel(entry.due_at),
         status: entry.status,
+        resources: filesByAssignmentId.get(entry.id) ?? [],
       };
     });
 
@@ -198,6 +220,14 @@ export default function TutorBuilderPage() {
         />
       </section>
 
+      {activeTool !== 'assignment' ? (
+        <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          {activeTool === 'quiz' && 'Quiz and test creation is the next dashboard phase after assignment storage is validated.'}
+          {activeTool === 'resources' && 'General lesson resource library wiring is next after assignment asset uploads are confirmed live.'}
+          {activeTool === 'spelling-bee' && 'Spelling bee tooling remains planned after the core classroom and storage phases.'}
+        </section>
+      ) : null}
+
       <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
         <Stat title="Active Assignments" value={builderStats.assignments} />
         <Stat title="Quiz/Test" value={builderStats.quizzes} />
@@ -269,7 +299,17 @@ export default function TutorBuilderPage() {
                     />
 
                     <div className="rounded-md border border-slate-300 bg-white p-3 text-xs text-slate-600">
-                      Storage buckets are already provisioned, but assignment file upload is still the next phase. This form currently publishes the assignment, auto-creates the class if needed, and enrolls matching students for the selected grade.
+                      <p className="font-medium text-slate-700">Attach assignment resource (optional)</p>
+                      <input
+                        type="file"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          setAssignmentResourceFile(file);
+                          setAssignmentResourceName(file?.name ?? '');
+                        }}
+                        className="mt-2 block w-full text-xs text-slate-700 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1"
+                      />
+                      {assignmentResourceName ? <p className="mt-2">Selected: {assignmentResourceName}</p> : null}
                     </div>
 
                     <Button
@@ -304,9 +344,38 @@ export default function TutorBuilderPage() {
 
                         const created = Array.isArray(data) ? data[0] : null;
 
+                        if (created?.assignment_id && assignmentResourceFile) {
+                          const safeName = `${Date.now()}-${assignmentResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+                          const objectPath = `assignments/${created.assignment_id}/${safeName}`;
+                          const upload = await supabase.storage
+                            .from('assignment-assets')
+                            .upload(objectPath, assignmentResourceFile, {
+                              cacheControl: '3600',
+                              upsert: false,
+                            });
+
+                          if (upload.error) {
+                            setFeedback(upload.error.message);
+                            return;
+                          }
+
+                          const attach = await supabase.rpc('attach_assignment_asset', {
+                            target_assignment_id: created.assignment_id,
+                            object_path: objectPath,
+                            bucket_id: 'assignment-assets',
+                          });
+
+                          if (attach.error) {
+                            setFeedback(attach.error.message);
+                            return;
+                          }
+                        }
+
                         setAssignmentTitle('');
                         setAssignmentInstructions('');
                         setAssignmentDueAt('');
+                        setAssignmentResourceName('');
+                        setAssignmentResourceFile(null);
                         setShowAssignmentForm(false);
                         setFeedback(
                           created
@@ -335,6 +404,16 @@ export default function TutorBuilderPage() {
                       <span>{item.due}</span>
                       <span className="rounded-full bg-white px-2 py-1 uppercase tracking-[0.12em]">{item.status}</span>
                     </div>
+                    {item.resources.length > 0 ? (
+                      <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+                        <p className="text-xs font-semibold text-slate-700">Attached resources</p>
+                        {item.resources.map((resource) => (
+                          <div key={resource.id} className="text-xs text-slate-600">
+                            {resource.fileName}
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 ))
               ) : (
@@ -411,6 +490,9 @@ function ToolCard({
         <Icon className="h-5 w-5 text-slate-600" />
       </div>
       <p className="mt-1 text-xs text-slate-600">{subtitle}</p>
+      <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+        {active ? 'Selected' : 'Open'}
+      </p>
     </button>
   );
 }
