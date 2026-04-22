@@ -199,14 +199,14 @@ export default function TutorBuilderPage() {
         />
         <ToolCard
           title="Quiz/Test Creation"
-          subtitle="Still in the next wiring phase"
+          subtitle="Coming in next update"
           icon={Target}
           active={activeTool === 'quiz'}
           onClick={() => setActiveTool('quiz')}
         />
         <ToolCard
           title="Upload Lesson Resources"
-          subtitle="Bucket wiring lands in the storage phase"
+          subtitle="Coming in next update"
           icon={FileUp}
           active={activeTool === 'resources'}
           onClick={() => setActiveTool('resources')}
@@ -222,8 +222,8 @@ export default function TutorBuilderPage() {
 
       {activeTool !== 'assignment' ? (
         <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          {activeTool === 'quiz' && 'Quiz and test creation is the next dashboard phase after assignment storage is validated.'}
-          {activeTool === 'resources' && 'General lesson resource library wiring is next after assignment asset uploads are confirmed live.'}
+          {activeTool === 'quiz' && 'Assignment uploads are now fully live! Quiz and test creation will be enabled in the next update.'}
+          {activeTool === 'resources' && 'Assignment uploads are now fully live! General lesson resource libraries will be enabled in the next update.'}
           {activeTool === 'spelling-bee' && 'Spelling bee tooling remains planned after the core classroom and storage phases.'}
         </section>
       ) : null}

@@ -366,12 +366,12 @@ function TutorSidebarNav() {
     { href: '/dash/tutor/schedule', label: "Today's Classes", icon: CalendarClock },
     { href: '/dash/tutor/roster', label: 'Students', icon: Users },
     { href: '/dash/tutor/lesson-notes', label: 'Lesson Notes & Plans', icon: ScrollText },
-    { href: '/dash/tutor/builder', label: 'Assignments', icon: NotebookPen },
-    { href: '/dash/tutor/builder', label: 'Quizzes & Challenges', icon: Star },
+    { href: '/dash/tutor/builder?tool=assignment', label: 'Assignments', icon: NotebookPen },
+    { href: '/dash/tutor/builder?tool=quiz', label: 'Quizzes & Challenges', icon: Star },
     { href: '/dash/tutor/grading', label: 'Grading Queue', icon: ClipboardCheck },
     { href: '/dash/tutor/roster', label: 'Engagement Insights', icon: TrendingUp },
     { href: '/dash/tutor/messages', label: 'Messages', icon: MessageCircle },
-    { href: '/dash/tutor/builder', label: 'Resources', icon: BookOpen },
+    { href: '/dash/tutor/builder?tool=resources', label: 'Resources', icon: BookOpen },
     { href: '/dash/tutor/earnings', label: 'Invoice and Payment', icon: DollarSign },
     { href: '/dash/profile', label: 'Profile and Availability', icon: Settings2 },
   ];
@@ -381,7 +381,10 @@ function TutorSidebarNav() {
     { href: '/dash/tutor/roster', label: 'Attendance and Performance', icon: BookCheck },
   ];
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    const basePath = href.split('?')[0];
+    return pathname === basePath || pathname.startsWith(`${basePath}/`);
+  };
 
   return (
     <div className="space-y-1.5">
