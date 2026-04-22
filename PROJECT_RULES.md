@@ -6,9 +6,8 @@ This file defines the non-negotiable engineering, architecture, schema, security
 
 ## Architecture Rules
 
-- Use one canonical backend architecture.
-- `apps/api` is the single privileged backend and BFF surface.
-- Do not add a second backend, parallel API layer, or duplicate workflow engine.
+- The `apps/web` application is the single frontend for all users (Admin, Parent, Student, Tutor) and handles all data via Supabase.
+- Webhooks and privileged actions are processed via Next.js Route Handlers and Server Actions using the Supabase Service Role Key.
 - Keep business logic in TypeScript modules and services.
 - Keep database logic narrow and explicit: constraints, indexes, views, helper functions, triggers, and RLS only.
 - Avoid feature sprawl inside one module. Add module boundaries before complexity accumulates.

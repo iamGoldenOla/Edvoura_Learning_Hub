@@ -59,9 +59,9 @@ EDVOURA uses a strong opinionated stack, not a menu of alternatives:
 EDVOURA has one canonical backend architecture:
 
 1. Supabase is the backend core for Auth, PostgreSQL, Storage, Realtime, Queues, and Cron.
-2. `apps/api` is the single privileged backend service and BFF surface for the frontend.
-3. The frontend may query a small allowlist of RLS-safe tables and views directly through Supabase.
-4. All complex mutations, cross-aggregate workflows, billing, webhooks, admin operations, and integrations go through `apps/api`.
+2. The `apps/web` application is the single frontend for all users (Admin, Parent, Student, Tutor) and talks directly to Supabase and uses Next.js server actions.
+3. `apps/web` uses `@supabase/ssr` to implement direct data reads on the server for performance.
+4. All complex mutations, cross-aggregate workflows, billing, webhooks, admin operations, and integrations are handled via Next.js Route Handlers or Server Actions using the Supabase Service Role key.
 5. Business logic lives in TypeScript services, not scattered across multiple API layers or opaque database procedures.
 6. PostgreSQL enforces integrity, RLS, constraints, and a narrow set of security-definer helper functions.
 
@@ -74,7 +74,7 @@ Current status:
 - `apps/web` is the Vercel deployment target
 - `supabase/cutover_all.sql` contains the ordered Supabase schema bootstrap SQL
 - `VERCEL_SUPABASE_CUTOVER.md` contains the phased cutover plan
-- `apps/api` still owns several privileged workflows and has not yet been removed from the runtime architecture
+- The application is a pure `Vercel + Supabase only` deployment. All dashboard data is read directly using Supabase clients, and mutations are handled via Next.js server actions and route handlers.
 
 ## Module Map
 

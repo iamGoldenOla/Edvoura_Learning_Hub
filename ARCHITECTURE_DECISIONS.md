@@ -16,20 +16,20 @@ Consequences:
 - Strict typing is mandatory.
 - Shared package contracts are first-class.
 
-## ADR-002: NestJS with Fastify for the Canonical Backend App
+## ADR-002: Next.js Server Actions & Route Handlers for the Backend
 
 Decision:
 
-- Use NestJS with the Fastify adapter for `apps/api`.
+- Use Next.js Server Actions and Route Handlers instead of a standalone `apps/api` service.
 
 Why:
 
-- EDVOURA needs explicit modules, dependency boundaries, guards, interceptors, testing support, and long-term maintainability.
-- Fastify keeps the HTTP layer efficient without sacrificing the Nest module system.
+- EDVOURA's architecture has been streamlined to a pure Vercel + Supabase deployment.
+- Using Next.js Server Actions and Route Handlers with the Supabase Service Role Key reduces complexity and deployment overhead.
 
 Consequences:
 
-- The codebase will favor explicit module boundaries over lightweight ad hoc routing.
+- The codebase relies on Next.js native server-side capabilities for mutations and webhooks.
 
 ## ADR-003: Supabase Is the Backend Core
 
@@ -61,11 +61,11 @@ Consequences:
 
 - Do not introduce a second schema authority such as Prisma migrations.
 
-## ADR-005: One Canonical Privileged API Surface
+## ADR-005: Next.js as the Single Canonical Surface
 
 Decision:
 
-- `apps/api` is the single privileged backend and frontend-facing BFF.
+- `apps/web` (Next.js) handles both the frontend UI and the privileged backend workflows (via server actions).
 
 Why:
 
@@ -73,8 +73,8 @@ Why:
 
 Consequences:
 
-- Frontend direct database access is limited to an allowlist of RLS-safe reads.
-- All complex writes and integrations go through the API.
+- Frontend direct database access is allowed for RLS-safe reads.
+- All complex writes and integrations are processed securely on the Next.js server side.
 
 ## ADR-006: Roles Plus Relationships for Authorization
 
@@ -151,21 +151,21 @@ Consequences:
 
 - File paths and access rules must be modeled intentionally.
 
-## ADR-011: Next.js on Vercel, Cloud Run Backend Runtime
+## ADR-011: Next.js on Vercel
 
 Decision:
 
-- Deploy the Next.js frontend (`apps/web`) to Vercel and the backend API and worker containers to Google Cloud Run.
+- Deploy the Next.js application (`apps/web`) entirely to Vercel, combining both frontend delivery and backend execution.
 
 Why:
 
 - Next.js App Router provides server components, streaming, and optimal Vercel integration for the marketing and dashboard frontend.
-- This separates frontend delivery concerns from backend runtime reliability while keeping the operating model compact.
+- It simplifies infrastructure by consolidating the frontend and backend into a single deployment.
 
 Consequences:
 
-- The backend is not optimized around Vercel serverless constraints.
-- Webhooks and workers remain in a stable container runtime.
+- The backend is optimized around Vercel serverless constraints.
+- Webhooks and privileged actions execute within Next.js Route Handlers and Server Actions.
 - Frontend uses App Router with `src/app/` directory convention.
 
 ## ADR-012: Product Analytics Are Curated Mirrors, Not the Source of Truth

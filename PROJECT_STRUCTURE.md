@@ -9,7 +9,6 @@ This repository uses a monorepo workspace layout managed by pnpm. It supports ba
 ```text
 .
 |-- apps/
-|   |-- api/                  # Canonical privileged backend service (NestJS + Fastify)
 |   |-- web/                  # Frontend web application (Next.js)
 |   `-- worker/               # Background job processor (NestJS application context)
 |-- packages/
@@ -36,17 +35,6 @@ This repository uses a monorepo workspace layout managed by pnpm. It supports ba
 `-- tsconfig.base.json
 ```
 
-## `apps/api`
-
-Purpose:
-
-- Owns authentication verification, authorization decisions, domain orchestration, integrations, webhooks, and privileged mutations.
-
-Sub-areas:
-
-- `src/common`: reusable infrastructure such as config, auth guards, database clients, error handling, logging, and validation
-- `src/modules`: domain modules grouped by bounded responsibility (parents, students, tutors, admin, academics, submissions, quiz-attempts, billing, notifications)
-- `test`: API-specific tests
 
 ## `apps/web`
 
