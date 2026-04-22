@@ -70,11 +70,10 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 
 ## Immediate Next Priorities
 
-1. Add `SUPABASE_SERVICE_ROLE_KEY` to Vercel environment variables for webhook and admin server action support.
-2. Delete the `apps/api` folder entirely, as `apps/web` is now 100% decoupled and the legacy backend is no longer used.
-3. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
-4. Implement Live Session management (e.g., Zoom/Google Meet integration) directly within `apps/web` or via Supabase Edge Functions.
-5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
+1. Run full end-to-end regression testing on the Vercel + Supabase deployment.
+2. Complete `Phase 0` through `Phase 5` of the cutover on the hosted Supabase instance (applying all schema migrations and verifying buckets).
+3. Validate student assignment submissions, grading, and direct Live Session creation via the new UI workflows.
+4. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 
 ## Working Rules
 
@@ -90,10 +89,9 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 
 - Backend-first. Do not jump into UI-heavy work before the backend contract exists.
 - Supabase is the platform core. Respect its strengths instead of fighting it with duplicate infrastructure.
-- `apps/api` is the single privileged backend surface.
-- Frontend direct Supabase access is allowed only for a small, explicit allowlist of RLS-safe reads.
-- All privileged mutations, third-party integrations, and webhook handling go through the API.
-- Keep modules cohesive and explicit. If code does not have a clear module home, stop and decide before adding it.
+- Next.js is the single privileged backend and frontend surface.
+- Frontend direct Supabase access is allowed for RLS-safe reads.
+- All privileged mutations, third-party integrations, and webhook handling go through Next.js Server Actions and Route Handlers.
 
 ## Auth and RBAC Expectations
 

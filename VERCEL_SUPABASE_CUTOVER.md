@@ -324,9 +324,12 @@ If you want the database and storage side ready now:
 4. Set the Vercel env vars for `apps/web`.
 5. Deploy `apps/web` only.
 
-## Remaining Refactor Scope
+## Final Status
 
-Before the app is fully functional with live sessions:
+🎉 **CUTOVER COMPLETE** 🎉
 
-- We need to implement a mechanism for live session integration directly from `apps/web` (or via Supabase Edge Functions), bypassing the old `academics/live-session.service.ts` from `apps/api`.
-- The `apps/api` folder can now be deleted completely from the repository, as the frontend no longer depends on it and all essential workflows (billing webhooks, notification webhooks, tutor approvals) have been migrated to Next.js route handlers and server actions.
+The Edvoura Learning Hub is now a pure `Vercel + Supabase only` deployment!
+- The Next.js `apps/web` application is the single canonical entry point.
+- The `apps/api` legacy backend is completely removed.
+- Live Session integration is achieved natively via a Bring-Your-Own-Link approach through Supabase RPCs.
+- Webhooks (Resend, Paystack) and admin workflows are fully handled by Next.js Server Actions and Route Handlers using the Supabase Service Role Key.
