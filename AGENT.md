@@ -6,11 +6,11 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-20)
+## Last Session Handoff (2026-04-21)
 
-### Current Status: Vercel + Supabase Cutover Planning
+### Current Status: Vercel + Supabase Direct Classroom Loop In Progress
 
-The repo still has its canonical architecture of `apps/web` plus the privileged NestJS backend in `apps/api`, but this session established the concrete cutover path for moving toward `Vercel + Supabase only`.
+The repo still has its canonical architecture of `apps/web` plus the privileged NestJS backend in `apps/api`, but the web dashboard now has an active cutover branch of work that starts replacing mock/API-dependent classroom flows with direct Supabase data.
 
 ### What Exists Today
 
@@ -21,6 +21,7 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 - `apps/web` can be deployed to Vercel.
 - `apps/api` still owns billing, notifications, live-session orchestration, webhooks, and privileged mutations.
 - `apps/web` still depends on `NEXT_PUBLIC_API_URL` for those backend-owned workflows.
+- A new migration now exists at `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`.
 
 #### Current Supabase Footprint
 - Four storage buckets are created by migrations:
@@ -31,6 +32,22 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 - Only avatar object policies are currently defined in migrations.
 - Reference data and bucket creation are seeded by the migration history; `supabase/seed.sql` is currently empty.
 
+#### Direct Classroom Loop Status
+- `apps/web/src/lib/app-context.ts` now has a direct Supabase fallback that builds student dashboard data from `profiles`, `student_profiles`, `classes`, `class_enrollments`, `assignments`, `assignment_submissions`, `submission_grades`, `lessons`, and `progress_snapshots`.
+- Tutor builder, roster, grading, and student assignment upload pages are now wired to Supabase rather than local mock state.
+- The new migration adds:
+  - `public.sync_current_user_membership()`
+  - `public.create_tutor_assignment(...)`
+  - `public.submit_student_assignment(...)`
+  - `public.grade_student_submission(...)`
+  - `public.classes.grade_level_id`
+- This is the first real shared dashboard loop:
+  - tutor publishes assignment
+  - matching students are enrolled into the grade-specific class
+  - student sees the assignment
+  - student submits work
+  - tutor sees and grades the submission
+
 ### What Still Needs Work
 
 1. Phase 0: Supabase Base Setup
@@ -39,18 +56,24 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
    Deploy `apps/web` with only the required Supabase frontend env vars.
 3. Phase 2: RLS-Safe Direct Reads
    Replace the simplest `apiClient` reads with direct Supabase access.
-4. Phase 3: Storage Hardening
+4. Phase 2A: Direct Classroom Loop
+   Finish validating the new tutor-student assignment flow and apply the new migration to hosted Supabase.
+5. Phase 3: Storage Hardening
    Add missing policies for `assignment-assets`, `student-work`, and `lesson-resources`.
-5. Phase 4: Workflow Migration
+6. Phase 4: Workflow Migration
    Move billing, notifications, webhooks, live-session provisioning, and admin actions out of `apps/api`.
-6. Phase 5: API Removal
+7. Phase 5: API Removal
    Remove the remaining `NEXT_PUBLIC_API_URL` dependency from the frontend.
 
 ## Immediate Next Priorities
 
-1. Run `supabase/cutover_all.sql` or the seven canonical migration files in the new Supabase project.
-2. Verify schemas and the four storage buckets exist in Supabase.
-3. Deploy `apps/web` to Vercel with Supabase env vars.
+1. Apply `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql` to the hosted Supabase project.
+2. Validate the real classroom loop end to end on Vercel:
+   - tutor creates assignment
+   - student sees assignment
+   - student submits work
+   - tutor grades submission
+3. After the assignment loop is stable, move storage-backed assignment uploads into `student-work` and `assignment-assets`.
 4. Track completion by phase and do not begin a new phase until the current one is validated.
 5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 

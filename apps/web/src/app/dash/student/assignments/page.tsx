@@ -54,7 +54,7 @@ export default async function StudentAssignmentsPage() {
       <div className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
         <h1 className="text-4xl font-heading tracking-tight text-dark">Assignments Workspace</h1>
         <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
-          Real assignment data from the API, grouped by what still needs attention and what has already been graded.
+          Live Supabase assignment data, grouped by what still needs attention and what has already been graded.
         </p>
       </div>
 

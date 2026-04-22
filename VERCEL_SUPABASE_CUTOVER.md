@@ -35,6 +35,7 @@ Run these in order:
 5. `supabase/migrations/20260410120000_phase4_notification_kinds_and_resend.sql`
 6. `supabase/migrations/20260414170000_phase5_dashboard_communications.sql`
 7. `supabase/migrations/20260415100000_phase6_learning_orchestration_events.sql`
+8. `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`
 
 Notes:
 
@@ -193,6 +194,39 @@ Exit criteria:
 
 - Direct Supabase reads replace the simplest `apiClient` calls
 - `apps/web` depends less on `NEXT_PUBLIC_API_URL`
+
+### Phase 2A: Direct Classroom Loop
+
+Goal:
+
+- Make the core tutor-to-student assignment flow work without `apps/api`.
+
+Scope introduced by `20260421130000_phase7_direct_dashboard_assignment_flow.sql`:
+
+- `public.sync_current_user_membership()`
+- `public.create_tutor_assignment(...)`
+- `public.submit_student_assignment(...)`
+- `public.grade_student_submission(...)`
+- `public.classes.grade_level_id`
+
+What this phase connects:
+
+1. Tutor publishes an assignment for a specific subject and grade.
+2. Supabase auto-creates or reuses the matching class.
+3. Matching students are enrolled into that class.
+4. Student dashboards read the assignment directly from Supabase.
+5. Students submit work directly to Supabase.
+6. Tutor grading queue reads and grades those submissions directly from Supabase.
+
+Current limitation:
+
+- Bucket-backed assignment files and Google Meet provisioning are not part of this phase yet.
+
+Exit criteria:
+
+- Tutor-created assignments appear on matching student dashboards
+- Student submissions appear in the tutor grading queue
+- Tutor grading is reflected back on the student side
 
 ### Phase 3: Storage Hardening
 

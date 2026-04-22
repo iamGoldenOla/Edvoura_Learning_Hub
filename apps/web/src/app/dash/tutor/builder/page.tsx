@@ -1,202 +1,157 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FileUp, NotebookPen, Pencil, Star, Target, Trash2 } from 'lucide-react';
+import { FileUp, NotebookPen, Star, Target } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/utils/supabase/client';
 
-type Assignment = {
+type SubjectOption = {
+  id: string;
+  name: string;
+};
+
+type GradeOption = {
+  id: string;
+  code: string;
+  display_name: string;
+};
+
+type AssignmentRow = {
+  id: string;
+  title: string;
+  due_at: string | null;
+  status: string;
+  classes:
+    | {
+        title: string;
+        subject_id: string;
+      }
+    | Array<{
+        title: string;
+        subject_id: string;
+      }>
+    | null;
+};
+
+type AssignmentCard = {
   id: string;
   title: string;
   className: string;
   due: string;
+  status: string;
 };
 
-type Quiz = {
-  id: string;
-  title: string;
-  className: string;
-  items: number;
+const formatDueLabel = (value: string | null) => {
+  if (!value) {
+    return 'No due date';
+  }
+
+  return new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 };
 
-const baseAssignments: Assignment[] = [
-  { id: 'as-1', title: 'Fractions Worksheet', className: 'JSS3 Mathematics', due: 'Due in 1 day' },
-  { id: 'as-2', title: 'Forces Practical Notes', className: 'Grade 4 Science', due: 'Due in 2 days' },
-];
+const getRelatedClass = (entry: AssignmentRow) => {
+  if (!entry.classes) {
+    return null;
+  }
 
-const baseQuizzes: Quiz[] = [
-  { id: 'q-1', title: 'Algebra Timed Quiz', className: 'JSS3 Mathematics', items: 15 },
-  { id: 'q-2', title: 'Science Concept Check', className: 'Grade 4 Science', items: 10 },
-];
+  return Array.isArray(entry.classes) ? entry.classes[0] ?? null : entry.classes;
+};
 
 export default function TutorBuilderPage() {
   const searchParams = useSearchParams();
   const preselectTool = searchParams.get('tool');
-  const preselectAction = searchParams.get('action');
 
-  const [assignments, setAssignments] = useState<Assignment[]>(baseAssignments);
-  const [quizzes, setQuizzes] = useState<Quiz[]>(baseQuizzes);
-  const [activeTool, setActiveTool] = useState<string>(preselectTool ?? 'assignment');
+  const [activeTool, setActiveTool] = useState(preselectTool ?? 'assignment');
   const [feedback, setFeedback] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSavingAssignment, setIsSavingAssignment] = useState(false);
 
-  const [showAssignmentForm, setShowAssignmentForm] = useState<boolean>(
-    preselectTool === 'assignment' && preselectAction === 'new',
-  );
+  const [subjects, setSubjects] = useState<SubjectOption[]>([]);
+  const [gradeLevels, setGradeLevels] = useState<GradeOption[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentCard[]>([]);
+
+  const [showAssignmentForm, setShowAssignmentForm] = useState(true);
   const [assignmentTitle, setAssignmentTitle] = useState('');
-  const [assignmentClass, setAssignmentClass] = useState('');
-  const [assignmentDue, setAssignmentDue] = useState('');
-  const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
-  const [assignmentResourceName, setAssignmentResourceName] = useState('');
-  const [selectedByAssignment, setSelectedByAssignment] = useState<Record<string, string>>({});
-  const [uploadedByAssignment, setUploadedByAssignment] = useState<Record<string, string>>({});
+  const [assignmentSubject, setAssignmentSubject] = useState('');
+  const [assignmentGradeCode, setAssignmentGradeCode] = useState('');
+  const [assignmentDueAt, setAssignmentDueAt] = useState('');
+  const [assignmentInstructions, setAssignmentInstructions] = useState('');
 
-  const [showQuizForm, setShowQuizForm] = useState<boolean>(
-    preselectTool === 'quiz' && preselectAction === 'new',
-  );
-  const [quizTitle, setQuizTitle] = useState('');
-  const [quizClass, setQuizClass] = useState('');
-  const [quizItems, setQuizItems] = useState('');
-  const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
+  const loadBuilderData = async () => {
+    const supabase = createClient();
+    setIsLoading(true);
 
-  const createAssignment = () => {
-    const safeTitle = assignmentTitle.trim();
-    const safeClass = assignmentClass.trim();
-    const safeDue = assignmentDue.trim();
-
-    if (!safeTitle || !safeClass || !safeDue) {
-      setFeedback('Please fill assignment title, class, and due date.');
+    const membership = await supabase.rpc('sync_current_user_membership');
+    if (membership.error && !/function .*sync_current_user_membership/i.test(membership.error.message)) {
+      setFeedback(membership.error.message);
+      setIsLoading(false);
       return;
     }
 
-    if (editingAssignmentId) {
-      setAssignments((current) =>
-        current.map((item) =>
-          item.id === editingAssignmentId
-            ? { ...item, title: safeTitle, className: safeClass, due: safeDue }
-            : item,
-        ),
-      );
-    } else {
-      setAssignments((current) => [
-        { id: `as-${Date.now()}`, title: safeTitle, className: safeClass, due: safeDue },
-        ...current,
+    const [{ data: subjectRows, error: subjectsError }, { data: gradeRows, error: gradesError }, { data: assignmentRows, error: assignmentsError }] =
+      await Promise.all([
+        supabase.from('subjects').select('id, name').eq('is_active', true).order('name'),
+        supabase.from('grade_levels').select('id, code, display_name').order('numeric_level'),
+        supabase
+          .from('assignments')
+          .select('id, title, due_at, status, classes!inner(title, subject_id)')
+          .neq('status', 'archived')
+          .order('created_at', { ascending: false }),
       ]);
-    }
-    setAssignmentTitle('');
-    setAssignmentClass('');
-    setAssignmentDue('');
-    setEditingAssignmentId(null);
-    setAssignmentResourceName('');
-    setShowAssignmentForm(false);
-    setFeedback(
-      editingAssignmentId
-        ? 'Assignment updated successfully.'
-        : assignmentResourceName
-        ? `Assignment created successfully with resource: ${assignmentResourceName}.`
-        : 'Assignment created successfully.',
-    );
-  };
 
-  const createQuiz = () => {
-    const safeTitle = quizTitle.trim();
-    const safeClass = quizClass.trim();
-    const safeItems = Number(quizItems);
-
-    if (!safeTitle || !safeClass || !Number.isFinite(safeItems) || safeItems <= 0) {
-      setFeedback('Please fill quiz title, class, and a valid number of questions.');
+    if (subjectsError || gradesError || assignmentsError) {
+      setFeedback(subjectsError?.message ?? gradesError?.message ?? assignmentsError?.message ?? 'Unable to load builder data.');
+      setIsLoading(false);
       return;
     }
 
-    if (editingQuizId) {
-      setQuizzes((current) =>
-        current.map((item) =>
-          item.id === editingQuizId ? { ...item, title: safeTitle, className: safeClass, items: safeItems } : item,
-        ),
-      );
-    } else {
-      setQuizzes((current) => [
-        { id: `q-${Date.now()}`, title: safeTitle, className: safeClass, items: safeItems },
-        ...current,
-      ]);
-    }
-    setQuizTitle('');
-    setQuizClass('');
-    setQuizItems('');
-    setEditingQuizId(null);
-    setShowQuizForm(false);
-    setFeedback(editingQuizId ? 'Quiz/Test updated successfully.' : 'Quiz/Test created successfully.');
-  };
+    setSubjects(subjectRows ?? []);
+    setGradeLevels(gradeRows ?? []);
 
-  const selectTool = (tool: string) => {
-    setActiveTool(tool);
-    setFeedback(`${tool} workspace selected.`);
-  };
+    const subjectById = new Map((subjectRows ?? []).map((entry) => [entry.id, entry.name]));
+    const normalizedAssignments = ((assignmentRows ?? []) as AssignmentRow[]).map((entry) => {
+      const relatedClass = getRelatedClass(entry);
 
-  const startEditAssignment = (item: Assignment) => {
-    setAssignmentTitle(item.title);
-    setAssignmentClass(item.className);
-    setAssignmentDue(item.due);
-    setEditingAssignmentId(item.id);
-    setShowAssignmentForm(true);
-    setActiveTool('assignment');
-    setFeedback(`Editing assignment: ${item.title}`);
-  };
-
-  const deleteAssignment = (assignmentId: string) => {
-    setAssignments((current) => current.filter((item) => item.id !== assignmentId));
-    setSelectedByAssignment((current) => {
-      const copy = { ...current };
-      delete copy[assignmentId];
-      return copy;
+      return {
+        id: entry.id,
+        title: entry.title,
+        className:
+          relatedClass?.title ??
+          (relatedClass?.subject_id ? subjectById.get(relatedClass.subject_id) ?? 'Untitled class' : 'Untitled class'),
+        due: formatDueLabel(entry.due_at),
+        status: entry.status,
+      };
     });
-    setUploadedByAssignment((current) => {
-      const copy = { ...current };
-      delete copy[assignmentId];
-      return copy;
-    });
-    if (editingAssignmentId === assignmentId) {
-      setEditingAssignmentId(null);
-      setShowAssignmentForm(false);
-      setAssignmentTitle('');
-      setAssignmentClass('');
-      setAssignmentDue('');
+
+    setAssignments(normalizedAssignments);
+
+    if (!assignmentSubject && subjectRows?.[0]?.name) {
+      setAssignmentSubject(subjectRows[0].name);
     }
-    setFeedback('Assignment deleted.');
+
+    if (!assignmentGradeCode && gradeRows?.[0]?.code) {
+      setAssignmentGradeCode(gradeRows[0].code);
+    }
+
+    setIsLoading(false);
   };
 
-  const startEditQuiz = (item: Quiz) => {
-    setQuizTitle(item.title);
-    setQuizClass(item.className);
-    setQuizItems(String(item.items));
-    setEditingQuizId(item.id);
-    setShowQuizForm(true);
-    setActiveTool('quiz');
-    setFeedback(`Editing quiz: ${item.title}`);
-  };
-
-  const deleteQuiz = (quizId: string) => {
-    setQuizzes((current) => current.filter((item) => item.id !== quizId));
-    if (editingQuizId === quizId) {
-      setEditingQuizId(null);
-      setShowQuizForm(false);
-      setQuizTitle('');
-      setQuizClass('');
-      setQuizItems('');
-    }
-    setFeedback('Quiz/Test deleted.');
-  };
+  useEffect(() => {
+    void loadBuilderData();
+  }, []);
 
   const builderStats = useMemo(
     () => ({
       assignments: String(assignments.length),
-      quizzes: String(quizzes.length),
-      resources: String(Math.max(6, assignments.length + 2)),
-      gamification: 'Active',
+      quizzes: 'Pending phase',
+      resources: 'Storage next',
+      gamification: 'Planned',
     }),
-    [assignments.length, quizzes.length],
+    [assignments.length],
   );
 
   return (
@@ -204,7 +159,7 @@ export default function TutorBuilderPage() {
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-3xl font-bold text-edvoura-navy">Assignments, Quizzes and Resources</h1>
         <p className="mt-2 text-sm text-slate-600">
-          Create assignment tasks, build quizzes/tests, upload lesson resources, and run class challenges.
+          This phase connects tutor assignment creation directly to student dashboards through Supabase.
         </p>
       </section>
 
@@ -213,16 +168,40 @@ export default function TutorBuilderPage() {
       ) : null}
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <ToolCard title="Assignment Creation" subtitle="Create and publish assignment" icon={NotebookPen} active={activeTool === 'assignment'} onClick={() => selectTool('assignment')} />
-        <ToolCard title="Quiz/Test Creation" subtitle="Build quiz and set timing" icon={Target} active={activeTool === 'quiz'} onClick={() => selectTool('quiz')} />
-        <ToolCard title="Upload Lesson Resources" subtitle="Notes, slides, links, worksheets" icon={FileUp} active={activeTool === 'resources'} onClick={() => selectTool('resources')} />
-        <ToolCard title="Spelling Bee Setup" subtitle="Set rounds and monitor participants" icon={Star} active={activeTool === 'spelling-bee'} onClick={() => selectTool('spelling-bee')} />
+        <ToolCard
+          title="Assignment Creation"
+          subtitle="Publishes directly to enrolled students"
+          icon={NotebookPen}
+          active={activeTool === 'assignment'}
+          onClick={() => setActiveTool('assignment')}
+        />
+        <ToolCard
+          title="Quiz/Test Creation"
+          subtitle="Still in the next wiring phase"
+          icon={Target}
+          active={activeTool === 'quiz'}
+          onClick={() => setActiveTool('quiz')}
+        />
+        <ToolCard
+          title="Upload Lesson Resources"
+          subtitle="Bucket wiring lands in the storage phase"
+          icon={FileUp}
+          active={activeTool === 'resources'}
+          onClick={() => setActiveTool('resources')}
+        />
+        <ToolCard
+          title="Spelling Bee Setup"
+          subtitle="Planned after the core classroom loop"
+          icon={Star}
+          active={activeTool === 'spelling-bee'}
+          onClick={() => setActiveTool('spelling-bee')}
+        />
       </section>
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
         <Stat title="Active Assignments" value={builderStats.assignments} />
-        <Stat title="Active Quizzes" value={builderStats.quizzes} />
-        <Stat title="Resource Packs" value={builderStats.resources} />
+        <Stat title="Quiz/Test" value={builderStats.quizzes} />
+        <Stat title="Resource Uploads" value={builderStats.resources} />
         <Stat title="Gamification" value={builderStats.gamification} />
       </section>
 
@@ -230,17 +209,15 @@ export default function TutorBuilderPage() {
         <div className="space-y-6 xl:col-span-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Active Assignments</CardTitle>
-              <Button variant="primary" className="text-xs" onClick={() => setShowAssignmentForm((v) => !v)}>
+              <CardTitle>Live Assignment Builder</CardTitle>
+              <Button variant="primary" className="text-xs" onClick={() => setShowAssignmentForm((value) => !value)}>
                 {showAssignmentForm ? 'Close Form' : 'New Assignment'}
               </Button>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               {showAssignmentForm ? (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {editingAssignmentId ? 'Edit Assignment' : 'Create Assignment'}
-                  </h3>
+                  <h3 className="text-sm font-semibold text-slate-900">Create Assignment</h3>
                   <div className="mt-3 space-y-3">
                     <input
                       value={assignmentTitle}
@@ -248,191 +225,123 @@ export default function TutorBuilderPage() {
                       placeholder="Assignment title"
                       className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                     />
-                    <input
-                      value={assignmentClass}
-                      onChange={(event) => setAssignmentClass(event.target.value)}
-                      placeholder="Class name"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <input
-                      value={assignmentDue}
-                      onChange={(event) => setAssignmentDue(event.target.value)}
-                      placeholder="Due label (e.g., Due in 3 days)"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <div className="rounded-md border border-slate-300 bg-white p-3">
-                      <p className="text-xs font-medium text-slate-600">Attach assignment resource (optional)</p>
-                      <input
-                        type="file"
-                        onChange={(event) => setAssignmentResourceName(event.target.files?.[0]?.name ?? '')}
-                        className="mt-2 block w-full text-xs text-slate-700 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1"
-                      />
-                      {assignmentResourceName ? (
-                        <p className="mt-2 text-xs text-slate-600">Selected: {assignmentResourceName}</p>
-                      ) : null}
-                      <div className="mt-2">
-                        <Button
-                          variant="outline"
-                          className="border-slate-300 bg-white text-xs"
-                          onClick={() => {
-                            if (!assignmentResourceName) {
-                              setFeedback('Select a file before uploading.');
-                              return;
-                            }
-                            setFeedback(`Resource "${assignmentResourceName}" uploaded.`);
-                          }}
-                        >
-                          Upload Selected Resource
-                        </Button>
-                        {assignmentResourceName ? (
-                          <Button
-                            variant="outline"
-                            className="ml-2 border-slate-300 bg-white text-xs"
-                            onClick={() => {
-                              setAssignmentResourceName('');
-                              setFeedback('Selected resource removed.');
-                            }}
-                          >
-                            Remove Selected
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                    <Button variant="primary" className="text-xs" onClick={createAssignment}>
-                      {editingAssignmentId ? 'Update Assignment' : 'Save Assignment'}
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
 
-              {assignments.map((item) => (
-                <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                    <div className="flex gap-1">
-                      <Button variant="outline" className="h-7 border-slate-300 bg-white px-2 text-xs" onClick={() => startEditAssignment(item)}>
-                        <Pencil className="mr-1 h-3.5 w-3.5" />
-                        Edit
-                      </Button>
-                      <Button variant="outline" className="h-7 border-rose-300 bg-white px-2 text-xs text-rose-700" onClick={() => deleteAssignment(item.id)}>
-                        <Trash2 className="mr-1 h-3.5 w-3.5" />
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-600">{item.className}</p>
-                  <p className="mt-1 text-xs text-slate-600">{item.due}</p>
-                  <div className="mt-3 rounded-md border border-slate-300 bg-white p-3">
-                    <p className="text-xs font-medium text-slate-700">Upload assignment file/resource</p>
-                    <input
-                      type="file"
-                      onChange={(event) => {
-                        const fileName = event.target.files?.[0]?.name ?? '';
-                        if (!fileName) return;
-                        setSelectedByAssignment((current) => ({ ...current, [item.id]: fileName }));
-                      }}
-                      className="mt-2 block w-full text-xs text-slate-700 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1"
-                    />
-                    <div className="mt-2">
-                      <Button
-                        variant="outline"
-                        className="border-slate-300 bg-white text-xs"
-                        onClick={() => {
-                          const selected = selectedByAssignment[item.id];
-                          if (!selected) {
-                            setFeedback(`Select a file for ${item.title} before uploading.`);
-                            return;
-                          }
-                          setUploadedByAssignment((current) => ({ ...current, [item.id]: selected }));
-                          setFeedback(`Uploaded "${selected}" for ${item.title}.`);
-                        }}
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <select
+                        value={assignmentSubject}
+                        onChange={(event) => setAssignmentSubject(event.target.value)}
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                       >
-                        Upload Resource
-                      </Button>
-                    </div>
-                    {uploadedByAssignment[item.id] ? (
-                      <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-600">
-                        <p>Current upload: {uploadedByAssignment[item.id]}</p>
-                        <Button
-                          variant="outline"
-                          className="h-7 border-rose-300 bg-white px-2 text-xs text-rose-700"
-                          onClick={() => {
-                            setUploadedByAssignment((current) => {
-                              const copy = { ...current };
-                              delete copy[item.id];
-                              return copy;
-                            });
-                            setFeedback(`Upload removed for ${item.title}.`);
-                          }}
-                        >
-                          Delete Upload
-                        </Button>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+                        <option value="">Select subject</option>
+                        {subjects.map((subject) => (
+                          <option key={subject.id} value={subject.name}>
+                            {subject.name}
+                          </option>
+                        ))}
+                      </select>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Quiz/Test Builder</CardTitle>
-              <Button variant="outline" className="border-slate-300 bg-white text-xs" onClick={() => setShowQuizForm((v) => !v)}>
-                {showQuizForm ? 'Close Form' : 'Create Quiz/Test'}
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {showQuizForm ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {editingQuizId ? 'Edit Quiz/Test' : 'Create Quiz/Test'}
-                  </h3>
-                  <div className="mt-3 space-y-3">
+                      <select
+                        value={assignmentGradeCode}
+                        onChange={(event) => setAssignmentGradeCode(event.target.value)}
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                      >
+                        <option value="">Select grade</option>
+                        {gradeLevels.map((grade) => (
+                          <option key={grade.id} value={grade.code}>
+                            {grade.display_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <input
-                      value={quizTitle}
-                      onChange={(event) => setQuizTitle(event.target.value)}
-                      placeholder="Quiz/Test title"
+                      type="datetime-local"
+                      value={assignmentDueAt}
+                      onChange={(event) => setAssignmentDueAt(event.target.value)}
                       className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                     />
-                    <input
-                      value={quizClass}
-                      onChange={(event) => setQuizClass(event.target.value)}
-                      placeholder="Class name"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+
+                    <textarea
+                      value={assignmentInstructions}
+                      onChange={(event) => setAssignmentInstructions(event.target.value)}
+                      placeholder="Instructions for students"
+                      className="min-h-28 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                     />
-                    <input
-                      value={quizItems}
-                      onChange={(event) => setQuizItems(event.target.value)}
-                      placeholder="Number of questions"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <Button variant="primary" className="text-xs" onClick={createQuiz}>
-                      {editingQuizId ? 'Update Quiz/Test' : 'Save Quiz/Test'}
+
+                    <div className="rounded-md border border-slate-300 bg-white p-3 text-xs text-slate-600">
+                      Storage buckets are already provisioned, but assignment file upload is still the next phase. This form currently publishes the assignment, auto-creates the class if needed, and enrolls matching students for the selected grade.
+                    </div>
+
+                    <Button
+                      variant="primary"
+                      className="text-xs"
+                      disabled={isSavingAssignment || isLoading}
+                      onClick={async () => {
+                        const safeTitle = assignmentTitle.trim();
+
+                        if (!safeTitle || !assignmentSubject || !assignmentGradeCode) {
+                          setFeedback('Assignment title, subject, and grade are required.');
+                          return;
+                        }
+
+                        setIsSavingAssignment(true);
+                        const supabase = createClient();
+                        const { data, error } = await supabase.rpc('create_tutor_assignment', {
+                          assignment_title: safeTitle,
+                          subject_name: assignmentSubject,
+                          grade_level_code: assignmentGradeCode,
+                          assignment_instructions: assignmentInstructions.trim() || null,
+                          due_at: assignmentDueAt ? new Date(assignmentDueAt).toISOString() : null,
+                          points_possible: 100,
+                        });
+
+                        setIsSavingAssignment(false);
+
+                        if (error) {
+                          setFeedback(error.message);
+                          return;
+                        }
+
+                        const created = Array.isArray(data) ? data[0] : null;
+
+                        setAssignmentTitle('');
+                        setAssignmentInstructions('');
+                        setAssignmentDueAt('');
+                        setShowAssignmentForm(false);
+                        setFeedback(
+                          created
+                            ? `Assignment published and shared with ${created.enrolled_students ?? 0} enrolled students.`
+                            : 'Assignment published successfully.',
+                        );
+                        await loadBuilderData();
+                      }}
+                    >
+                      {isSavingAssignment ? 'Publishing...' : 'Publish Assignment'}
                     </Button>
                   </div>
                 </div>
               ) : null}
 
-              {quizzes.map((item) => (
-                <div key={item.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="flex items-start justify-between gap-2">
+              {isLoading ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                  Loading live assignment data...
+                </div>
+              ) : assignments.length > 0 ? (
+                assignments.map((item) => (
+                  <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                     <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                    <div className="flex gap-1">
-                      <Button variant="outline" className="h-7 border-slate-300 bg-white px-2 text-xs" onClick={() => startEditQuiz(item)}>
-                        <Pencil className="mr-1 h-3.5 w-3.5" />
-                        Edit
-                      </Button>
-                      <Button variant="outline" className="h-7 border-rose-300 bg-white px-2 text-xs text-rose-700" onClick={() => deleteQuiz(item.id)}>
-                        <Trash2 className="mr-1 h-3.5 w-3.5" />
-                        Delete
-                      </Button>
+                    <p className="text-xs text-slate-600">{item.className}</p>
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
+                      <span>{item.due}</span>
+                      <span className="rounded-full bg-white px-2 py-1 uppercase tracking-[0.12em]">{item.status}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600">{item.className}</p>
-                  <p className="mt-1 text-xs text-slate-600">{item.items} questions</p>
+                ))
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-600">
+                  No live assignments yet. Publish one above and it will appear here, in the grading queue, and on matching student dashboards.
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
         </div>
@@ -440,50 +349,34 @@ export default function TutorBuilderPage() {
         <div className="space-y-6 xl:col-span-4">
           <Card>
             <CardHeader>
-              <CardTitle>Gamification Control</CardTitle>
+              <CardTitle>What This Phase Connects</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <button
-                type="button"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
-                onClick={() => setFeedback('Challenge task assignment panel opened.')}
-              >
-                Assign Challenge Tasks
-              </button>
-              <button
-                type="button"
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
-                onClick={() => setFeedback('Badges and rewards trigger panel opened.')}
-              >
-                Trigger Badges/Rewards
-              </button>
-              <Link href="/dash/tutor/roster" className="block rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                View Streak Performance
-              </Link>
-              <Link href="/dash/tutor/roster" className="block rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                View Class Leaderboard
-              </Link>
+            <CardContent className="space-y-2 text-sm text-slate-600">
+              <p>
+                Tutor assignment publish {'->'} class creation {'->'} student enrollment {'->'} student assignment
+                feed {'->'} tutor grading queue.
+              </p>
+              <p>
+                Quizzes, lesson resource uploads, bucket-backed student work, and Google Meet links remain in the next
+                phase.
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Spelling Bee Monitoring</CardTitle>
+              <CardTitle>Related Pages</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                Active cohort: Grade 4 Bee Squad
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                Next round: Friday 16:00
-              </div>
-              <Button
-                variant="outline"
-                className="w-full border-slate-300 bg-white text-xs"
-                onClick={() => setFeedback('Spelling bee participation monitor opened.')}
-              >
-                Monitor Participation
-              </Button>
+            <CardContent className="space-y-2">
+              <Link href="/dash/tutor/roster" className="block rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                View enrolled students
+              </Link>
+              <Link href="/dash/tutor/grading" className="block rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                Open grading queue
+              </Link>
+              <Link href="/dash/student/assignments" className="block rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                Check student assignments page
+              </Link>
             </CardContent>
           </Card>
         </div>
