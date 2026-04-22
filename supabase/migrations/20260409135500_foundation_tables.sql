@@ -478,181 +478,181 @@ end;
 $$;
 
 drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
+create or replace trigger on_auth_user_created
 after insert on auth.users
 for each row
 execute procedure public.handle_new_auth_user();
 
-create trigger set_profiles_updated_at
+create or replace trigger set_profiles_updated_at
 before update on public.profiles
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_grade_bands_updated_at
+create or replace trigger set_grade_bands_updated_at
 before update on public.grade_bands
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_grade_levels_updated_at
+create or replace trigger set_grade_levels_updated_at
 before update on public.grade_levels
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_subjects_updated_at
+create or replace trigger set_subjects_updated_at
 before update on public.subjects
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_parent_profiles_updated_at
+create or replace trigger set_parent_profiles_updated_at
 before update on public.parent_profiles
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_student_profiles_updated_at
+create or replace trigger set_student_profiles_updated_at
 before update on public.student_profiles
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_tutor_profiles_updated_at
+create or replace trigger set_tutor_profiles_updated_at
 before update on public.tutor_profiles
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_admin_profiles_updated_at
+create or replace trigger set_admin_profiles_updated_at
 before update on public.admin_profiles
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_parent_student_links_updated_at
+create or replace trigger set_parent_student_links_updated_at
 before update on public.parent_student_links
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_classes_updated_at
+create or replace trigger set_classes_updated_at
 before update on public.classes
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_class_enrollments_updated_at
+create or replace trigger set_class_enrollments_updated_at
 before update on public.class_enrollments
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_lessons_updated_at
+create or replace trigger set_lessons_updated_at
 before update on public.lessons
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_lesson_live_sessions_updated_at
+create or replace trigger set_lesson_live_sessions_updated_at
 before update on private.lesson_live_sessions
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_lesson_attendance_updated_at
+create or replace trigger set_lesson_attendance_updated_at
 before update on public.lesson_attendance
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_assignments_updated_at
+create or replace trigger set_assignments_updated_at
 before update on public.assignments
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_assignment_submissions_updated_at
+create or replace trigger set_assignment_submissions_updated_at
 before update on public.assignment_submissions
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_submission_grades_updated_at
+create or replace trigger set_submission_grades_updated_at
 before update on public.submission_grades
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_quizzes_updated_at
+create or replace trigger set_quizzes_updated_at
 before update on public.quizzes
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_quiz_questions_updated_at
+create or replace trigger set_quiz_questions_updated_at
 before update on public.quiz_questions
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_quiz_attempts_updated_at
+create or replace trigger set_quiz_attempts_updated_at
 before update on public.quiz_attempts
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_quiz_responses_updated_at
+create or replace trigger set_quiz_responses_updated_at
 before update on public.quiz_responses
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_notifications_updated_at
+create or replace trigger set_notifications_updated_at
 before update on public.notifications
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_notification_deliveries_updated_at
+create or replace trigger set_notification_deliveries_updated_at
 before update on public.notification_deliveries
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_plans_updated_at
+create or replace trigger set_billing_plans_updated_at
 before update on billing.plans
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_subscriptions_updated_at
+create or replace trigger set_billing_subscriptions_updated_at
 before update on billing.subscriptions
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_invoices_updated_at
+create or replace trigger set_billing_invoices_updated_at
 before update on billing.invoices
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_payments_updated_at
+create or replace trigger set_billing_payments_updated_at
 before update on billing.payments
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_coupons_updated_at
+create or replace trigger set_billing_coupons_updated_at
 before update on billing.coupons
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_referrals_updated_at
+create or replace trigger set_billing_referrals_updated_at
 before update on billing.referrals
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_tutor_payout_accounts_updated_at
+create or replace trigger set_billing_tutor_payout_accounts_updated_at
 before update on billing.tutor_payout_accounts
 for each row
 execute procedure private.touch_updated_at();
 
-create trigger set_billing_tutor_payouts_updated_at
+create or replace trigger set_billing_tutor_payouts_updated_at
 before update on billing.tutor_payouts
 for each row
 execute procedure private.touch_updated_at();
 
-create index idx_user_roles_user_id on public.user_roles (user_id);
-create index idx_parent_student_links_parent on public.parent_student_links (parent_user_id);
-create index idx_parent_student_links_student on public.parent_student_links (student_user_id);
-create index idx_classes_primary_tutor on public.classes (primary_tutor_user_id);
-create index idx_class_enrollments_student on public.class_enrollments (student_user_id);
-create index idx_lessons_class_id on public.lessons (class_id);
-create index idx_lessons_tutor_user_id on public.lessons (tutor_user_id);
-create index idx_assignments_class_id on public.assignments (class_id);
-create index idx_assignment_submissions_student_user_id on public.assignment_submissions (student_user_id);
-create index idx_quizzes_class_id on public.quizzes (class_id);
-create index idx_quiz_attempts_student_user_id on public.quiz_attempts (student_user_id);
-create index idx_notifications_recipient_user_id on public.notifications (recipient_user_id, status, created_at desc);
-create index idx_billing_subscriptions_account_owner on billing.subscriptions (account_owner_user_id);
-create index idx_audit_logs_actor_user_id on audit.audit_logs (actor_user_id, created_at desc);
-create index idx_domain_events_event_name on analytics.domain_events (event_name, occurred_at desc);
+create index if not exists idx_user_roles_user_id on public.user_roles (user_id);
+create index if not exists idx_parent_student_links_parent on public.parent_student_links (parent_user_id);
+create index if not exists idx_parent_student_links_student on public.parent_student_links (student_user_id);
+create index if not exists idx_classes_primary_tutor on public.classes (primary_tutor_user_id);
+create index if not exists idx_class_enrollments_student on public.class_enrollments (student_user_id);
+create index if not exists idx_lessons_class_id on public.lessons (class_id);
+create index if not exists idx_lessons_tutor_user_id on public.lessons (tutor_user_id);
+create index if not exists idx_assignments_class_id on public.assignments (class_id);
+create index if not exists idx_assignment_submissions_student_user_id on public.assignment_submissions (student_user_id);
+create index if not exists idx_quizzes_class_id on public.quizzes (class_id);
+create index if not exists idx_quiz_attempts_student_user_id on public.quiz_attempts (student_user_id);
+create index if not exists idx_notifications_recipient_user_id on public.notifications (recipient_user_id, status, created_at desc);
+create index if not exists idx_billing_subscriptions_account_owner on billing.subscriptions (account_owner_user_id);
+create index if not exists idx_audit_logs_actor_user_id on audit.audit_logs (actor_user_id, created_at desc);
+create index if not exists idx_domain_events_event_name on analytics.domain_events (event_name, occurred_at desc);
 
 insert into public.grade_bands (code, name, min_grade, max_grade, sort_order)
 values
