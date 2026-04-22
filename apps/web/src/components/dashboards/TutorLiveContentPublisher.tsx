@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { apiClient } from '@/lib/api-client';
+import { createClient } from '@/utils/supabase/client';
 
 type LiveContent = {
   headline: string;
@@ -16,6 +16,7 @@ type LiveContent = {
 };
 
 export default function TutorLiveContentPublisher() {
+  const supabase = useMemo(() => createClient(), []);
   const [headline, setHeadline] = useState('Today we are learning fractions with visual models.');
   const [agenda, setAgenda] = useState('1) Starter drill 2) Worked examples 3) Guided practice 4) Exit ticket');
   const [explanation, setExplanation] = useState('Focus on finding common denominators before adding fractions.');
@@ -28,34 +29,31 @@ export default function TutorLiveContentPublisher() {
   useEffect(() => {
     const loadCurrent = async () => {
       try {
-        const current = await apiClient.get<LiveContent | null>('/communications/live-content/current');
-        if (!current) return;
-        setHeadline(current.headline ?? '');
-        setAgenda(current.agenda ?? '');
-        setExplanation(current.explanation ?? '');
-        setClassTask(current.classTask ?? '');
-        setHomework(current.homework ?? '');
-        setResourceUrl(current.resourceUrl ?? '');
+        const { data } = await supabase
+          .from('live_content')
+          .select('headline, agenda, explanation, class_task, homework, resource_url, updated_at')
+          .eq('is_current', true)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!data) return;
+        setHeadline(data.headline ?? '');
+        setAgenda(data.agenda ?? '');
+        setExplanation(data.explanation ?? '');
+        setClassTask(data.class_task ?? '');
+        setHomework(data.homework ?? '');
+        setResourceUrl(data.resource_url ?? '');
       } catch {
-        // Keep default draft if API is unavailable.
+        // Keep default draft if unavailable
       }
     };
 
     void loadCurrent();
-  }, []);
+  }, [supabase]);
 
   const publish = async () => {
-    const payload: LiveContent = {
-      headline: headline.trim(),
-      agenda: agenda.trim(),
-      explanation: explanation.trim(),
-      classTask: classTask.trim(),
-      homework: homework.trim(),
-      resourceUrl: resourceUrl.trim(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    if (!payload.headline || !payload.agenda || !payload.classTask) {
+    if (!headline.trim() || !agenda.trim() || !classTask.trim()) {
       setFeedback('Please fill at least headline, agenda, and class task before publishing.');
       return;
     }
@@ -63,7 +61,26 @@ export default function TutorLiveContentPublisher() {
     setIsSaving(true);
     setFeedback('');
     try {
-      await apiClient.post('/communications/live-content', payload);
+      // Mark all existing as not current
+      await supabase
+        .from('live_content')
+        .update({ is_current: false })
+        .eq('is_current', true);
+
+      // Insert new current content
+      const { error } = await supabase.from('live_content').insert({
+        headline: headline.trim(),
+        agenda: agenda.trim(),
+        explanation: explanation.trim(),
+        class_task: classTask.trim(),
+        homework: homework.trim(),
+        resource_url: resourceUrl.trim() || null,
+        is_current: true,
+        updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+      });
+
+      if (error) throw error;
       setFeedback('Live teaching content published to student dashboard.');
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Failed to publish live content.');
@@ -76,7 +93,11 @@ export default function TutorLiveContentPublisher() {
     setIsSaving(true);
     setFeedback('');
     try {
-      await apiClient.delete('/communications/live-content/current');
+      await supabase
+        .from('live_content')
+        .update({ is_current: false })
+        .eq('is_current', true);
+
       setFeedback('Live teaching content cleared.');
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Failed to clear live content.');

@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient } from '@/lib/api-client';
-import type { AppViewer } from '@/lib/app-context';
+import { createClient } from '@/utils/supabase/server';
 
 type ActionItem = {
   id: string;
@@ -11,21 +10,38 @@ type ActionItem = {
 };
 
 export default async function RecentUiActionsPanel({
-  viewer,
   scope,
   title = 'Recent Action Log',
 }: {
-  viewer: AppViewer;
+  viewer?: unknown;
   scope?: string;
   title?: string;
 }) {
-  const actions = await apiClient
-    .get<ActionItem[]>('/platform/ui-actions', {
-      token: viewer.accessToken,
-      params: scope ? { scope, limit: '10' } : { limit: '10' },
-      cache: 'no-store',
-    })
-    .catch(() => []);
+  let actions: ActionItem[] = [];
+
+  try {
+    const supabase = await createClient();
+    let query = supabase.schema('audit').from('audit_logs')
+      .select('id, action_key, label, scope, created_at')
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (scope) {
+      query = query.eq('scope', scope);
+    }
+
+    const { data } = await query;
+
+    actions = (data ?? []).map(item => ({
+      id: item.id,
+      actionKey: item.action_key,
+      label: item.label,
+      scope: item.scope,
+      createdAt: item.created_at,
+    }));
+  } catch {
+    actions = [];
+  }
 
   return (
     <Card>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { useEffect, useMemo, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 
 type LiveContent = {
   headline: string;
@@ -17,13 +17,33 @@ const formatTime = (iso: string) =>
   new Date(iso).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 
 export default function StudentLiveContentPanel() {
+  const supabase = useMemo(() => createClient(), []);
   const [content, setContent] = useState<LiveContent | null>(null);
 
   useEffect(() => {
     const readContent = async () => {
       try {
-        const latest = await apiClient.get<LiveContent | null>('/communications/live-content/current');
-        setContent(latest);
+        const { data } = await supabase
+          .from('live_content')
+          .select('headline, agenda, explanation, class_task, homework, resource_url, updated_at')
+          .eq('is_current', true)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data) {
+          setContent({
+            headline: data.headline,
+            agenda: data.agenda,
+            explanation: data.explanation,
+            classTask: data.class_task,
+            homework: data.homework,
+            resourceUrl: data.resource_url ?? '',
+            updatedAt: data.updated_at,
+          });
+        } else {
+          setContent(null);
+        }
       } catch {
         setContent(null);
       }
@@ -37,7 +57,7 @@ export default function StudentLiveContentPanel() {
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [supabase]);
 
   if (!content) {
     return (

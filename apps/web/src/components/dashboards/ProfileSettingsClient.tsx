@@ -6,7 +6,7 @@ import type { CurrentUser } from '@edvoura/contracts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient } from '@/lib/api-client';
+import { saveTutorProfileAction, saveStudentProfileAction } from '@/app/dash/profile/actions';
 import { createClient } from '@/utils/supabase/client';
 
 type TutorProfileContext = {
@@ -184,7 +184,7 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   };
 
   const saveTutorProfile = async () => {
-    await apiClient.patch<void>('/tutors/me/profile', {
+    await saveTutorProfileAction({
       fullName: tutorForm.fullName.trim(),
       phoneNumber: tutorForm.phoneNumber.trim() || undefined,
       headline: tutorForm.headline.trim() || undefined,
@@ -196,7 +196,7 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   };
 
   const saveStudentProfile = async () => {
-    await apiClient.patch<void>('/students/me/profile', {
+    await saveStudentProfileAction({
       gradeLevelCode: studentForm.gradeLevelCode,
       schoolName: studentForm.schoolName.trim() || undefined,
       academicGoalNotes: studentForm.academicGoalNotes.trim() || undefined,

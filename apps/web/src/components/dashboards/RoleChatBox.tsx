@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { apiClient } from '@/lib/api-client';
+import { createClient } from '@/utils/supabase/client';
 
 type ChatChannel = {
   id: string;
@@ -32,6 +32,7 @@ export default function RoleChatBox({
   senderName: string;
   title: string;
 }) {
+  const supabase = useMemo(() => createClient(), []);
   const [activeChannelId, setActiveChannelId] = useState<string>(channels[0]?.id ?? '');
   const [draft, setDraft] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -50,10 +51,24 @@ export default function RoleChatBox({
 
     const fetchMessages = async () => {
       try {
-        const next = await apiClient.get<ChatMessage[]>('/communications/messages', {
-          params: { channelId: activeChannel.id, limit: '100' },
-        });
-        setMessages(next);
+        const { data, error } = await supabase
+          .from('chat_messages')
+          .select('id, channel_id, sender_role, sender_name, text, created_at')
+          .eq('channel_id', activeChannel.id)
+          .order('created_at', { ascending: true })
+          .limit(100);
+
+        if (error) throw error;
+
+        const mapped: ChatMessage[] = (data ?? []).map(m => ({
+          id: m.id,
+          channelId: m.channel_id,
+          senderRole: m.sender_role,
+          senderName: m.sender_name,
+          text: m.text,
+          createdAt: m.created_at,
+        }));
+        setMessages(mapped);
         setErrorMessage('');
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Unable to load messages.');
@@ -66,7 +81,7 @@ export default function RoleChatBox({
     }, 3000);
 
     return () => clearInterval(timer);
-  }, [activeChannel?.id]);
+  }, [activeChannel?.id, supabase]);
 
   const sendMessage = async () => {
     const text = draft.trim();
@@ -75,11 +90,31 @@ export default function RoleChatBox({
     setIsSending(true);
     setErrorMessage('');
     try {
-      const created = await apiClient.post<ChatMessage>('/communications/messages', {
-        channelId: activeChannel.id,
-        text,
-      });
-      setMessages((current) => [...current, created]);
+      const { data: created, error } = await supabase
+        .from('chat_messages')
+        .insert({
+          channel_id: activeChannel.id,
+          sender_role: senderRole,
+          sender_name: senderName,
+          text,
+          created_at: new Date().toISOString(),
+        })
+        .select('id, channel_id, sender_role, sender_name, text, created_at')
+        .single();
+
+      if (error) throw error;
+
+      if (created) {
+        const mapped: ChatMessage = {
+          id: created.id,
+          channelId: created.channel_id,
+          senderRole: created.sender_role,
+          senderName: created.sender_name,
+          text: created.text,
+          createdAt: created.created_at,
+        };
+        setMessages((current) => [...current, mapped]);
+      }
       setDraft('');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to send message.');

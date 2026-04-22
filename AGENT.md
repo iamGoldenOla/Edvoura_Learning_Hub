@@ -6,9 +6,9 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-21)
+## Last Session Handoff (2026-04-22)
 
-### Current Status: Vercel + Supabase Direct Classroom Loop In Progress
+### Current Status: Pure Vercel + Supabase Deployment Achieved
 
 The repo still has its canonical architecture of `apps/web` plus the privileged NestJS backend in `apps/api`, but the web dashboard now has an active cutover branch of work that starts replacing mock/API-dependent classroom flows with direct Supabase data.
 
@@ -19,8 +19,9 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 - A single manual SQL artifact now exists at `supabase/cutover_all.sql`.
 - The active cutover guide now exists at `VERCEL_SUPABASE_CUTOVER.md`.
 - `apps/web` can be deployed to Vercel.
-- `apps/api` still owns billing, notifications, live-session orchestration, webhooks, and privileged mutations.
-- `apps/web` still depends on `NEXT_PUBLIC_API_URL` for those backend-owned workflows.
+- `apps/api` code remains in the repo but is no longer required by `apps/web`.
+- `apps/web` no longer depends on `NEXT_PUBLIC_API_URL` — all frontend flows use direct Supabase access or Next.js Server Actions/Route Handlers.
+- `api-client.ts` is now orphaned — zero imports reference it.
 - A new migration now exists at `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`.
 - A follow-up storage migration now exists at `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql`.
 
@@ -69,11 +70,10 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 
 ## Immediate Next Priorities
 
-1. Phase 4 of Cutover (Workflow Migration): Complete migration of billing (checkout subscriptions) and parent onboarding flows out of NestJS into Next.js server actions.
-2. Phase 5 of Cutover (API Removal): Replace remaining `apiClient.post` mutations across the dashboard with Next.js Server Actions. Completely remove `NEXT_PUBLIC_API_URL` dependency from the frontend.
+1. Remove the orphaned `api-client.ts` file and `NEXT_PUBLIC_API_URL` from `.env.local` / `.env.example`.
+2. Add `SUPABASE_SERVICE_ROLE_KEY` to Vercel environment variables for webhook and admin server action support.
 3. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
-4. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
-5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
+4. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 
 ## Working Rules
 

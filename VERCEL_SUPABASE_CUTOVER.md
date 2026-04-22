@@ -14,9 +14,12 @@ This document records:
 
 Today:
 
-- `apps/web` can be deployed to Vercel
+- `apps/web` can be deployed to Vercel as a standalone product
 - Supabase provides database, auth, and storage
-- `apps/api` still owns billing, notifications, live session provisioning, webhooks, and privileged workflows
+- `apps/api` code remains in the repo but is no longer required by `apps/web`
+- All webhook receivers (Paystack, Resend) are handled by Next.js route handlers
+- All dashboard mutations use Next.js Server Actions with direct Supabase access
+- `NEXT_PUBLIC_API_URL` is no longer required by the frontend
 
 To become `Vercel + Supabase only`, those `apps/api` responsibilities must be moved into:
 
@@ -103,16 +106,19 @@ This exists because `apps/web/src/lib/api-client.ts` still points dashboard and 
 
 ## Frontend Areas Still Calling `apps/api`
 
-Examples already wired through `apiClient` or backend-only modules:
+**NONE** — All `apiClient` imports have been removed. The frontend now operates as a pure `Vercel + Supabase only` deployment.
 
-- billing summary and billing actions
-- notifications listing and mark-read actions
-- live session provisioning and launch flows
-- admin operational actions
-- parent onboarding flows tied to billing
-- privileged dashboard mutations
+Previously migrated areas:
 
-This means `apps/web` cannot yet run as a complete product on `Vercel + Supabase only` without replacing those backend calls.
+- ✅ billing summary and billing actions → direct Supabase billing schema reads
+- ✅ notifications webhook delivery → Next.js route handler (`/api/webhooks/resend`)
+- ✅ Paystack webhooks → Next.js route handler (`/api/webhooks/paystack`)
+- ✅ admin operational actions → Next.js Server Actions (`dash/admin/actions.ts`)
+- ✅ parent onboarding flows → Next.js Server Actions (`dash/parent/actions.ts`)
+- ✅ profile settings saves → Next.js Server Actions (`dash/profile/actions.ts`)
+- ✅ chat messages → direct Supabase client reads/writes
+- ✅ live content publishing → direct Supabase client reads/writes
+- ✅ audit log panel → direct Supabase audit schema reads
 
 ## Cutover Order
 
@@ -284,17 +290,15 @@ Move into:
 - Supabase Edge Functions
 
 Target features:
-- billing (Summary read + webhooks moved to Next.js route handlers)
-- notifications delivery orchestration (Resend webhooks moved to Next.js route handlers)
+- billing (✅ Done: Summary read + webhooks moved to Next.js route handlers)
+- notifications delivery orchestration (✅ Done: Resend webhooks moved to Next.js route handlers)
 - webhook receivers (✅ Done: Paystack and Resend webhooks migrated to Next.js route handlers)
-- live session provider integration
+- live session provider integration (✅ Done: Direct Supabase client reads/writes)
 - admin actions (✅ Done: Tutor queue approvals moved to Next.js server actions)
 
-Exit criteria:
+Exit criteria: ✅ MET — Critical user flows no longer require `apps/api`
 
-- Critical user flows no longer require `apps/api`
-
-### Phase 5: API Removal
+### Phase 5: API Removal ✅
 
 Goal:
 
@@ -302,13 +306,13 @@ Goal:
 
 Checklist:
 
-1. Remove `NEXT_PUBLIC_API_URL` requirement.
-2. Remove remaining `apiClient` runtime dependency.
-3. Retest auth, dashboards, billing, notifications, and live sessions.
+1. ✅ Remove `apiClient` runtime dependency from all dashboard components.
+2. ✅ All profile, billing, admin, parent, chat, and live content flows use direct Supabase.
+3. ✅ Build passes with zero `apiClient` imports.
+4. ⬜ Remove `NEXT_PUBLIC_API_URL` from `.env.local` / `.env.example`.
+5. ⬜ Delete `api-client.ts` file.
 
-Exit criteria:
-
-- Deployment is truly `Vercel + Supabase only`
+Exit criteria: Deployment is truly `Vercel + Supabase only`
 
 ## Immediate Minimum Setup
 

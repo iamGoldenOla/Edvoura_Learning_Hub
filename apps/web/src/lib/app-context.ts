@@ -1,7 +1,6 @@
 import type { AppRole, CurrentUser, GradeBandCode } from '@edvoura/contracts';
 import { redirect } from 'next/navigation';
 
-import { apiClient } from '@/lib/api-client';
 import { createClient } from '@/utils/supabase/server';
 
 export type AppViewer = {
@@ -571,10 +570,7 @@ export async function getAppViewer(): Promise<AppViewer | null> {
   }
 
   try {
-    const currentUser = await apiClient.get<CurrentUser>('/auth/me', {
-      token: session.access_token,
-      cache: 'no-store',
-    });
+    const currentUser = await buildDirectCurrentUser(supabase, session.user);
 
     return {
       accessToken: session.access_token,
@@ -601,26 +597,19 @@ export async function requireAppViewer() {
 }
 
 export async function getStudentDashboardData(accessToken: string) {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
+    return buildFallbackStudentDashboard(null);
+  }
+
   try {
-    return await apiClient.get<StudentDashboardData>('/academics/student/dashboard', {
-      token: accessToken,
-      cache: 'no-store',
-    });
+    return await getDirectStudentDashboardFromSupabase(supabase, session.user);
   } catch {
-    const supabase = await createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.user) {
-      return buildFallbackStudentDashboard(null);
-    }
-
-    try {
-      return await getDirectStudentDashboardFromSupabase(supabase, session.user);
-    } catch {
-      return buildFallbackStudentDashboard(session.user);
-    }
+    return buildFallbackStudentDashboard(session.user);
   }
 }
 

@@ -6,7 +6,7 @@ import { PlusCircle, UserPlus, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient } from '@/lib/api-client';
+import { addChildAction, linkExistingChildAction } from '@/app/dash/parent/actions';
 
 type ParentChild = {
   userId: string;
@@ -95,7 +95,7 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
       }
 
       for (const payload of payloads) {
-        await apiClient.post('/parents/me/children', payload);
+        await addChildAction(payload);
       }
 
       setStatusMessage(
@@ -115,7 +115,7 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
     setLinkMessage('');
     setIsLinking(true);
     try {
-      await apiClient.post('/parents/me/children/link', {
+      await linkExistingChildAction({
         childEmail: linkForm.childEmail.trim(),
         relationship: linkForm.relationship,
         isPrimaryGuardian: linkForm.isPrimaryGuardian,

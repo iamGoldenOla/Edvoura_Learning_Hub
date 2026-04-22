@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { ShieldCheck, UserCheck, UserX } from 'lucide-react';
 
 import AdminTutorQueueActions from '@/components/dashboards/AdminTutorQueueActions';
-import { apiClient } from '@/lib/api-client';
 import { requireAdminAccess } from '../_lib/role-guard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/utils/supabase/server';
 
 type PendingTutor = {
   userId: string;
@@ -16,9 +16,38 @@ type PendingTutor = {
 
 export default async function AdminTutorsApprovalsPage() {
   const { viewer } = await requireAdminAccess();
-  const queue = await apiClient
-    .get<PendingTutor[]>('/admin/tutors/pending', { token: viewer.accessToken, cache: 'no-store' })
-    .catch(() => []);
+  const supabase = await createClient();
+
+  let queue: PendingTutor[] = [];
+  try {
+    const { data: pendingTutors } = await supabase
+      .from('tutor_profiles')
+      .select('user_id, expertise_summary, approval_status')
+      .in('approval_status', ['pending', 'submitted']);
+
+    const normalizedTutors = pendingTutors ?? [];
+    const userIds = normalizedTutors.map(t => t.user_id);
+
+    const { data: profilesData } = userIds.length
+      ? await supabase.from('profiles').select('id, full_name, email').in('id', userIds)
+      : { data: [] as Array<{ id: string; full_name: string | null; email: string }> };
+
+    const profileById = new Map((profilesData ?? []).map(p => [p.id, p]));
+
+    queue = normalizedTutors.map(t => {
+      const profile = profileById.get(t.user_id);
+      return {
+        userId: t.user_id,
+        fullName: profile?.full_name ?? null,
+        email: profile?.email ?? 'unknown@edvoura.com',
+        expertiseSummary: t.expertise_summary,
+        approvalStatus: t.approval_status,
+      };
+    });
+  } catch {
+    queue = [];
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -40,7 +69,7 @@ export default async function AdminTutorsApprovalsPage() {
           <CardContent className="p-5">
             <UserCheck className="h-5 w-5 text-blue-600" />
             <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">Pending Approvals</p>
-            <p className="text-2xl font-bold text-slate-900">5</p>
+            <p className="text-2xl font-bold text-slate-900">{queue.length}</p>
           </CardContent>
         </Card>
         <Card>
