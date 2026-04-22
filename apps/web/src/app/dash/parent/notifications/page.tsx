@@ -1,8 +1,8 @@
 import { Bell, CheckCircle2, Clock } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiClient } from '@/lib/api-client';
 import { requireAppViewer } from '@/lib/app-context';
+import { createClient } from '@/utils/supabase/server';
 
 type NotificationItem = {
   id: string;
@@ -17,13 +17,31 @@ const formatWhen = (iso: string) =>
   new Date(iso).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 
 export default async function ParentNotificationsPage() {
-  const viewer = await requireAppViewer();
-  const notifications = await apiClient
-    .get<NotificationItem[]>('/notifications/me', {
-      token: viewer.accessToken,
-      cache: 'no-store',
-    })
-    .catch(() => []);
+  await requireAppViewer();
+
+  let notifications: NotificationItem[] = [];
+  try {
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      const { data } = await supabase
+        .from('notifications')
+        .select('id, kind, title, body, status, created_at')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      notifications = (data ?? []).map((n) => ({
+        id: n.id,
+        kind: n.kind,
+        title: n.title,
+        body: n.body,
+        status: n.status as 'unread' | 'read' | 'archived',
+        createdAt: n.created_at,
+      }));
+    }
+  } catch {
+    notifications = [];
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">

@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { Activity, BookOpenCheck, CreditCard, Gift, LifeBuoy, ShieldCheck, Users } from 'lucide-react';
+import { Activity, BookOpenCheck, CreditCard, Gift, LifeBuoy, ShieldCheck, UserPlus, Users } from 'lucide-react';
 
 import RecentUiActionsPanel from '@/components/dashboards/RecentUiActionsPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { requireAdminAccess } from './_lib/role-guard';
+import { getAdminDashboardData } from '@/lib/app-context';
 
 const sectionCards = [
   {
@@ -44,12 +45,29 @@ const sectionCards = [
   },
 ];
 
+const formatDate = (iso: string) => {
+  try {
+    return new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return '--';
+  }
+};
+
 export default async function AdminDashboard() {
   const { isSuperAdmin, viewer } = await requireAdminAccess();
+  const dashboard = await getAdminDashboardData();
+
   const title = isSuperAdmin ? 'Super Admin Dashboard' : 'Admin Dashboard';
   const subtitle = isSuperAdmin
     ? 'Full business, learning, and engagement control center across student, tutor, and parent systems.'
     : 'Operational control center for day-to-day platform, learning, and support workflows.';
+
+  const statCards = [
+    { label: 'Students', value: dashboard.totalStudents.toLocaleString() },
+    { label: 'Tutors', value: dashboard.totalTutors.toLocaleString() },
+    { label: 'Parents', value: dashboard.totalParents.toLocaleString() },
+    { label: 'Active Classes', value: dashboard.totalClasses.toLocaleString() },
+  ];
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -78,12 +96,7 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[
-          ['Active Students', '1,248'],
-          ['Active Tutors', '146'],
-          ['Parents', '902'],
-          ['Open Support Tickets', '23'],
-        ].map(([label, value]) => (
+        {statCards.map(({ label, value }) => (
           <Card key={label}>
             <CardContent className="p-5">
               <p className="text-xs uppercase tracking-wider text-slate-500">{label}</p>
@@ -92,6 +105,30 @@ export default async function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      {dashboard.pendingTutorApprovals > 0 && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">
+                    {dashboard.pendingTutorApprovals} tutor{dashboard.pendingTutorApprovals > 1 ? 's' : ''} pending approval
+                  </p>
+                  <p className="text-xs text-amber-700">Review and approve tutor applications</p>
+                </div>
+              </div>
+              <Link
+                href="/dash/admin/tutors"
+                className="inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+              >
+                Review Now
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {sectionCards.map((item) => (
@@ -114,6 +151,45 @@ export default async function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      {dashboard.recentSignups.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <UserPlus className="h-5 w-5 text-blue-600" />
+              Recent Signups
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Role</th>
+                    <th className="px-4 py-3">Joined</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {dashboard.recentSignups.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium text-slate-900">{u.fullName ?? '--'}</td>
+                      <td className="px-4 py-3 text-slate-600">{u.email}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 capitalize">
+                          {u.role.replace('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-slate-500">{formatDate(u.createdAt)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <RecentUiActionsPanel
         viewer={viewer}

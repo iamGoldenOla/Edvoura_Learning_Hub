@@ -37,6 +37,7 @@ Run these in order:
 7. `supabase/migrations/20260415100000_phase6_learning_orchestration_events.sql`
 8. `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`
 9. `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql`
+10. `supabase/migrations/20260422113000_phase9_direct_live_sessions.sql`
 
 Notes:
 
@@ -252,6 +253,24 @@ What still remains after Phase 8:
 Exit criteria:
 
 - Object access rules are explicit for each production bucket used by live dashboards
+
+### Phase 3A: Direct Live Sessions
+
+Goal:
+
+- Make the live session scheduling and listing flow work without `apps/api`.
+
+Scope introduced by `20260422113000_phase9_direct_live_sessions.sql`:
+
+- `public.create_tutor_live_slot(...)`
+- `public.list_tutor_live_schedule()`
+- `public.list_student_live_lessons()`
+
+Exit criteria:
+
+- Tutor can schedule live sessions directly via Supabase RPC
+- Students can see upcoming live sessions directly from Supabase
+- Google Meet links travel through Supabase
 
 ### Phase 4: Workflow Migration
 

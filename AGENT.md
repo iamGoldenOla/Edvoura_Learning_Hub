@@ -69,17 +69,11 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 
 ## Immediate Next Priorities
 
-1. Apply `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql` to the hosted Supabase project.
-2. Validate the real classroom loop end to end on Vercel:
-   - tutor creates assignment
-   - student sees assignment
-   - student submits work
-   - tutor grades submission
-3. Apply `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql` to the hosted Supabase project.
-4. Validate assignment asset uploads and student submission uploads end to end.
-5. After that, move general lesson-resource uploads into `lesson-resources`.
-6. Track completion by phase and do not begin a new phase until the current one is validated.
-7. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
+1. Phase 4 of Cutover (Workflow Migration): Move billing, notifications, and webhooks out of NestJS and into Supabase Edge Functions or Next.js route handlers.
+2. Replace remaining live session provider integrations (like automated Meet/Zoom provisioning hooks) if necessary via edge functions.
+3. Phase 5 of Cutover (API Removal): Completely remove `NEXT_PUBLIC_API_URL` dependency from the frontend.
+4. Validate the application works end-to-end as a pure `Vercel + Supabase only` deployment.
+5. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 
 ## Working Rules
 

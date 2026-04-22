@@ -1,16 +1,5 @@
 import { CalendarClock, Layers, Rocket, Video } from 'lucide-react';
-
-import { apiClient } from '@/lib/api-client';
-import { createClient } from '@/utils/supabase/server';
-
-type Enrollment = {
-  id: string;
-  title: string;
-  subject: string;
-  status: string;
-  startsOn: string | null;
-  endsOn: string | null;
-};
+import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 
 const formatDate = (value: string | null) => {
   if (!value) return 'TBD';
@@ -18,14 +7,16 @@ const formatDate = (value: string | null) => {
 };
 
 export default async function StudentClassesPage() {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const viewer = await requireAppViewer();
+  const dashboard = await getStudentDashboardData(viewer.accessToken);
 
-  const enrollments = await apiClient
-    .get<Enrollment[]>('/classes/my-enrollments', { token: session?.access_token, cache: 'no-store' })
-    .catch(() => []);
+  const enrollments = dashboard.enrollments.map((e) => ({
+    id: e.id,
+    title: e.classTitle,
+    subject: e.subjectName,
+    status: 'active',
+    tutorName: e.tutorName,
+  }));
 
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto pb-20">
@@ -69,16 +60,13 @@ export default async function StudentClassesPage() {
                       <h2 className="text-xl font-black text-dark leading-tight [overflow-wrap:anywhere]">
                         {course.title}
                       </h2>
-                      <p className="text-sm font-semibold normal-case text-dark/70">Status: {course.status}</p>
+                      <p className="text-sm font-semibold normal-case text-dark/70">
+                        Tutor: {course.tutorName ?? 'Assigned tutor'}
+                      </p>
                     </div>
                     <div className="w-11 h-11 rounded-xl border-[3px] border-dark bg-yellow flex items-center justify-center shrink-0">
                       <Rocket className="w-5 h-5 text-dark" />
                     </div>
-                  </div>
-
-                  <div className="mt-5 grid grid-cols-2 gap-3">
-                    <MetaPill label="Start" value={formatDate(course.startsOn)} />
-                    <MetaPill label="End" value={formatDate(course.endsOn)} />
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-3">
@@ -130,15 +118,6 @@ function StatTile({
         <Icon className="w-5 h-5 text-info shrink-0" />
       </div>
       <p className="mt-2 text-2xl md:text-3xl font-black text-dark leading-tight [overflow-wrap:anywhere]">{value}</p>
-    </div>
-  );
-}
-
-function MetaPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="border-[2px] border-dark rounded-xl bg-white p-3">
-      <p className="text-[10px] tracking-[0.12em] text-dark/50">{label}</p>
-      <p className="mt-1 text-sm font-black text-dark leading-tight [overflow-wrap:anywhere]">{value}</p>
     </div>
   );
 }

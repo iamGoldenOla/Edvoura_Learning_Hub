@@ -634,3 +634,400 @@ export async function getBillingSummary(accessToken: string) {
     return buildFallbackBillingSummary();
   }
 }
+
+/* ─────────────────────────────────────────────
+   Tutor Dashboard — Direct Supabase
+   ───────────────────────────────────────────── */
+
+export type TutorDashboardData = {
+  tutorName: string;
+  timezone: string;
+  classes: Array<{
+    id: string;
+    title: string;
+    subjectName: string;
+    studentCount: number;
+  }>;
+  todayLessons: Array<{
+    id: string;
+    title: string;
+    classTitle: string;
+    subjectName: string;
+    scheduledStartAt: string;
+    scheduledEndAt: string;
+    status: string;
+    studentCount: number;
+  }>;
+  gradingQueue: Array<{
+    id: string;
+    studentName: string;
+    assignmentTitle: string;
+    submittedAt: string;
+    status: string;
+  }>;
+  totalStudents: number;
+  totalAssignments: number;
+  pendingGrading: number;
+};
+
+export async function getTutorDashboardData(): Promise<TutorDashboardData> {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const userId = session?.user?.id;
+  const fallback: TutorDashboardData = {
+    tutorName: session?.user?.user_metadata?.full_name as string ?? 'Tutor',
+    timezone: 'UTC',
+    classes: [],
+    todayLessons: [],
+    gradingQueue: [],
+    totalStudents: 0,
+    totalAssignments: 0,
+    pendingGrading: 0,
+  };
+
+  if (!userId) return fallback;
+
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', userId)
+      .single();
+
+    const tutorName = profile?.full_name ?? fallback.tutorName;
+
+    const { data: tutorProfile } = await supabase
+      .from('tutor_profiles')
+      .select('timezone')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const timezone = tutorProfile?.timezone ?? 'UTC';
+
+    // Get classes where this tutor is primary
+    const { data: classesData = [] } = await supabase
+      .from('classes')
+      .select('id, title, subject_id')
+      .eq('primary_tutor_user_id', userId);
+
+    const normalizedClasses = classesData ?? [];
+    const classIds = normalizedClasses.map((c) => c.id);
+    const subjectIds = [...new Set(normalizedClasses.map((c) => c.subject_id).filter(Boolean))];
+
+    const { data: subjectsData = [] } = subjectIds.length
+      ? await supabase.from('subjects').select('id, name').in('id', subjectIds)
+      : { data: [] as Array<{ id: string; name: string }> };
+
+    const subjectById = new Map((subjectsData ?? []).map((s) => [s.id, s.name]));
+
+    // Enrollment count per class
+    const { data: enrollmentsData = [] } = classIds.length
+      ? await supabase
+          .from('class_enrollments')
+          .select('class_id, student_user_id')
+          .in('class_id', classIds)
+          .eq('status', 'active')
+      : { data: [] as Array<{ class_id: string; student_user_id: string }> };
+
+    const normalizedEnrollments = enrollmentsData ?? [];
+    const enrollmentCountByClass = new Map<string, number>();
+    normalizedEnrollments.forEach((e) => {
+      enrollmentCountByClass.set(e.class_id, (enrollmentCountByClass.get(e.class_id) ?? 0) + 1);
+    });
+
+    const uniqueStudentIds = new Set(normalizedEnrollments.map((e) => e.student_user_id));
+
+    const classes = normalizedClasses.map((c) => ({
+      id: c.id,
+      title: c.title,
+      subjectName: subjectById.get(c.subject_id) ?? 'General',
+      studentCount: enrollmentCountByClass.get(c.id) ?? 0,
+    }));
+
+    // Today's lessons
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const { data: lessonsData = [] } = classIds.length
+      ? await supabase
+          .from('lessons')
+          .select('id, class_id, title, scheduled_start_at, scheduled_end_at, status')
+          .in('class_id', classIds)
+          .gte('scheduled_start_at', todayStart.toISOString())
+          .lte('scheduled_start_at', todayEnd.toISOString())
+          .order('scheduled_start_at', { ascending: true })
+      : { data: [] as Array<{ id: string; class_id: string; title: string; scheduled_start_at: string; scheduled_end_at: string; status: string }> };
+
+    const normalizedLessons = lessonsData ?? [];
+    const classById = new Map(normalizedClasses.map((c) => [c.id, c]));
+
+    const todayLessons = normalizedLessons.map((l) => {
+      const relatedClass = classById.get(l.class_id);
+      return {
+        id: l.id,
+        title: l.title,
+        classTitle: relatedClass?.title ?? 'Untitled',
+        subjectName: relatedClass ? subjectById.get(relatedClass.subject_id) ?? 'General' : 'General',
+        scheduledStartAt: l.scheduled_start_at,
+        scheduledEndAt: l.scheduled_end_at,
+        status: l.status,
+        studentCount: enrollmentCountByClass.get(l.class_id) ?? 0,
+      };
+    });
+
+    // Grading queue: ungraded submissions
+    const { data: assignmentsData = [] } = classIds.length
+      ? await supabase
+          .from('assignments')
+          .select('id, class_id, title')
+          .in('class_id', classIds)
+      : { data: [] as Array<{ id: string; class_id: string; title: string }> };
+
+    const normalizedAssignments = assignmentsData ?? [];
+    const assignmentIds = normalizedAssignments.map((a) => a.id);
+    const assignmentById = new Map(normalizedAssignments.map((a) => [a.id, a]));
+
+    const { data: submissionsData = [] } = assignmentIds.length
+      ? await supabase
+          .from('assignment_submissions')
+          .select('id, assignment_id, student_user_id, status, created_at')
+          .in('assignment_id', assignmentIds)
+          .in('status', ['submitted', 'late'])
+          .order('created_at', { ascending: false })
+          .limit(20)
+      : { data: [] as Array<{ id: string; assignment_id: string; student_user_id: string; status: string; created_at: string }> };
+
+    const normalizedSubmissions = submissionsData ?? [];
+
+    // Get student names for submissions
+    const studentIdsForGrading = [...new Set(normalizedSubmissions.map((s) => s.student_user_id))];
+    const { data: studentProfilesData = [] } = studentIdsForGrading.length
+      ? await supabase.from('profiles').select('id, full_name').in('id', studentIdsForGrading)
+      : { data: [] as Array<{ id: string; full_name: string | null }> };
+
+    const studentNameById = new Map((studentProfilesData ?? []).map((p) => [p.id, p.full_name ?? 'Student']));
+
+    const gradingQueue = normalizedSubmissions.map((s) => {
+      const assignment = assignmentById.get(s.assignment_id);
+      return {
+        id: s.id,
+        studentName: studentNameById.get(s.student_user_id) ?? 'Student',
+        assignmentTitle: assignment?.title ?? 'Untitled',
+        submittedAt: s.created_at,
+        status: s.status,
+      };
+    });
+
+    return {
+      tutorName,
+      timezone,
+      classes,
+      todayLessons,
+      gradingQueue,
+      totalStudents: uniqueStudentIds.size,
+      totalAssignments: normalizedAssignments.length,
+      pendingGrading: normalizedSubmissions.length,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Parent Dashboard — Direct Supabase
+   ───────────────────────────────────────────── */
+
+export type ParentChild = {
+  userId: string;
+  fullName: string | null;
+  relationship: string;
+  gradeLevelCode: string;
+  gradeLevelName: string;
+  gradeBandCode: string;
+  gradeBandName: string;
+  schoolName: string | null;
+};
+
+export type ParentDashboardData = {
+  parentName: string;
+  children: ParentChild[];
+};
+
+export async function getParentDashboardData(): Promise<ParentDashboardData> {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const userId = session?.user?.id;
+  const fallback: ParentDashboardData = {
+    parentName: session?.user?.user_metadata?.full_name as string ?? 'Parent',
+    children: [],
+  };
+
+  if (!userId) return fallback;
+
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', userId)
+      .single();
+
+    const parentName = profile?.full_name ?? fallback.parentName;
+
+    const { data: linksData = [] } = await supabase
+      .from('parent_child_links')
+      .select('child_user_id, relationship')
+      .eq('parent_user_id', userId);
+
+    const normalizedLinks = linksData ?? [];
+
+    if (normalizedLinks.length === 0) {
+      return { parentName, children: [] };
+    }
+
+    const childIds = normalizedLinks.map((l) => l.child_user_id);
+
+    const [{ data: childProfilesData = [] }, { data: studentProfilesData = [] }] = await Promise.all([
+      supabase.from('profiles').select('id, full_name').in('id', childIds),
+      supabase.from('student_profiles').select('user_id, grade_level_id, learner_band_id, school_name').in('user_id', childIds),
+    ]);
+
+    const normalizedChildProfiles = childProfilesData ?? [];
+    const normalizedStudentProfiles = studentProfilesData ?? [];
+
+    const childProfileById = new Map(normalizedChildProfiles.map((p) => [p.id, p]));
+    const studentProfileByUserId = new Map(normalizedStudentProfiles.map((p) => [p.user_id, p]));
+
+    const gradeLevelIds = [...new Set(normalizedStudentProfiles.map((p) => p.grade_level_id).filter(Boolean))];
+    const bandIds = [...new Set(normalizedStudentProfiles.map((p) => p.learner_band_id).filter(Boolean))];
+
+    const [{ data: gradeLevelsData = [] }, { data: bandsData = [] }] = await Promise.all([
+      gradeLevelIds.length
+        ? supabase.from('grade_levels').select('id, code, display_name').in('id', gradeLevelIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; code: string; display_name: string }> }),
+      bandIds.length
+        ? supabase.from('grade_bands').select('id, code, name').in('id', bandIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; code: string; name: string }> }),
+    ]);
+
+    const gradeLevelById = new Map((gradeLevelsData ?? []).map((g) => [g.id, g]));
+    const bandById = new Map((bandsData ?? []).map((b) => [b.id, b]));
+
+    const relationshipByChildId = new Map(normalizedLinks.map((l) => [l.child_user_id, l.relationship]));
+
+    const children: ParentChild[] = childIds.map((childId) => {
+      const childProfile = childProfileById.get(childId);
+      const studentProfile = studentProfileByUserId.get(childId);
+      const gradeLevel = studentProfile ? gradeLevelById.get(studentProfile.grade_level_id) : null;
+      const band = studentProfile ? bandById.get(studentProfile.learner_band_id) : null;
+
+      return {
+        userId: childId,
+        fullName: childProfile?.full_name ?? null,
+        relationship: relationshipByChildId.get(childId) ?? 'child',
+        gradeLevelCode: gradeLevel?.code ?? 'pending',
+        gradeLevelName: gradeLevel?.display_name ?? 'Grade pending',
+        gradeBandCode: band?.code ?? 'grades_7_12',
+        gradeBandName: band?.name ?? 'Pending',
+        schoolName: studentProfile?.school_name ?? null,
+      };
+    });
+
+    return { parentName, children };
+  } catch {
+    return fallback;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   Admin Dashboard — Direct Supabase
+   ───────────────────────────────────────────── */
+
+export type AdminDashboardData = {
+  totalStudents: number;
+  totalTutors: number;
+  totalParents: number;
+  totalClasses: number;
+  pendingTutorApprovals: number;
+  activeSubscriptions: number;
+  recentSignups: Array<{
+    id: string;
+    fullName: string | null;
+    email: string;
+    role: string;
+    createdAt: string;
+  }>;
+};
+
+export async function getAdminDashboardData(): Promise<AdminDashboardData> {
+  const supabase = await createClient();
+
+  const fallback: AdminDashboardData = {
+    totalStudents: 0,
+    totalTutors: 0,
+    totalParents: 0,
+    totalClasses: 0,
+    pendingTutorApprovals: 0,
+    activeSubscriptions: 0,
+    recentSignups: [],
+  };
+
+  try {
+    const [
+      { count: studentCount },
+      { count: tutorCount },
+      { count: parentCount },
+      { count: classCount },
+      { count: pendingTutorCount },
+    ] = await Promise.all([
+      supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
+      supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'tutor'),
+      supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'parent'),
+      supabase.from('classes').select('*', { count: 'exact', head: true }),
+      supabase.from('tutor_profiles').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending'),
+    ]);
+
+    // Recent signups
+    const { data: recentProfilesData = [] } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, created_at')
+      .order('created_at', { ascending: false })
+      .limit(8);
+
+    const normalizedProfiles = recentProfilesData ?? [];
+    const profileIds = normalizedProfiles.map((p) => p.id);
+
+    const { data: rolesData = [] } = profileIds.length
+      ? await supabase.from('user_roles').select('user_id, role').in('user_id', profileIds)
+      : { data: [] as Array<{ user_id: string; role: string }> };
+
+    const roleByUserId = new Map((rolesData ?? []).map((r) => [r.user_id, r.role]));
+
+    const recentSignups = normalizedProfiles.map((p) => ({
+      id: p.id,
+      fullName: p.full_name,
+      email: p.email,
+      role: roleByUserId.get(p.id) ?? 'student',
+      createdAt: p.created_at,
+    }));
+
+    return {
+      totalStudents: studentCount ?? 0,
+      totalTutors: tutorCount ?? 0,
+      totalParents: parentCount ?? 0,
+      totalClasses: classCount ?? 0,
+      pendingTutorApprovals: pendingTutorCount ?? 0,
+      activeSubscriptions: 0,
+      recentSignups,
+    };
+  } catch {
+    return fallback;
+  }
+}

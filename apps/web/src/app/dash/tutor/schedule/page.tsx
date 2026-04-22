@@ -32,7 +32,7 @@ export default async function TutorSchedulePage(props: {
   const errorParam = typeof searchParams.error === 'string' ? searchParams.error : null;
 
   const supabase = await createClient();
-  const [{ data: classes = [] }, { data: scheduleRows = [] }] = await Promise.all([
+  const [{ data: classesData = [] }, { data: scheduleRows = [] }] = await Promise.all([
     supabase
       .from('classes')
       .select('id, title, grade_level_id, subject_id')
@@ -41,8 +41,9 @@ export default async function TutorSchedulePage(props: {
     supabase.rpc('list_tutor_live_schedule'),
   ]);
 
-  const gradeLevelIds = [...new Set((classes ?? []).map((item) => item.grade_level_id).filter(Boolean))];
-  const subjectIds = [...new Set((classes ?? []).map((item) => item.subject_id).filter(Boolean))];
+  const classes = classesData ?? [];
+  const gradeLevelIds = [...new Set(classes.map((item) => item.grade_level_id).filter(Boolean))];
+  const subjectIds = [...new Set(classes.map((item) => item.subject_id).filter(Boolean))];
 
   const [{ data: gradeLevels = [] }, { data: subjects = [] }] = await Promise.all([
     gradeLevelIds.length
