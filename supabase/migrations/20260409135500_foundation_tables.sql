@@ -1,4 +1,4 @@
-create table public.profiles (
+create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email extensions.citext not null unique,
   full_name text,
@@ -9,7 +9,7 @@ create table public.profiles (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.user_roles (
+create table if not exists public.user_roles (
   id uuid primary key default extensions.gen_random_uuid(),
   user_id uuid not null references public.profiles (id) on delete cascade,
   role public.app_role not null,
@@ -19,7 +19,7 @@ create table public.user_roles (
   unique (user_id, role)
 );
 
-create table public.grade_bands (
+create table if not exists public.grade_bands (
   id uuid primary key default extensions.gen_random_uuid(),
   code text not null unique,
   name text not null,
@@ -30,7 +30,7 @@ create table public.grade_bands (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.grade_levels (
+create table if not exists public.grade_levels (
   id uuid primary key default extensions.gen_random_uuid(),
   code text not null unique,
   display_name text not null,
@@ -40,7 +40,7 @@ create table public.grade_levels (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.subjects (
+create table if not exists public.subjects (
   id uuid primary key default extensions.gen_random_uuid(),
   slug text not null unique,
   name text not null unique,
@@ -50,14 +50,14 @@ create table public.subjects (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.parent_profiles (
+create table if not exists public.parent_profiles (
   user_id uuid primary key references public.profiles (id) on delete cascade,
   preferred_contact_method text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.student_profiles (
+create table if not exists public.student_profiles (
   user_id uuid primary key references public.profiles (id) on delete cascade,
   grade_level_id uuid not null references public.grade_levels (id),
   learner_band_id uuid not null references public.grade_bands (id),
@@ -67,7 +67,7 @@ create table public.student_profiles (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.tutor_profiles (
+create table if not exists public.tutor_profiles (
   user_id uuid primary key references public.profiles (id) on delete cascade,
   approval_status public.tutor_approval_status not null default 'pending',
   headline text,
@@ -80,7 +80,7 @@ create table public.tutor_profiles (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.admin_profiles (
+create table if not exists public.admin_profiles (
   user_id uuid primary key references public.profiles (id) on delete cascade,
   title text,
   notes text,
@@ -88,7 +88,7 @@ create table public.admin_profiles (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.parent_student_links (
+create table if not exists public.parent_student_links (
   id uuid primary key default extensions.gen_random_uuid(),
   parent_user_id uuid not null references public.parent_profiles (user_id) on delete cascade,
   student_user_id uuid not null references public.student_profiles (user_id) on delete cascade,
@@ -102,7 +102,7 @@ create table public.parent_student_links (
   unique (parent_user_id, student_user_id)
 );
 
-create table public.classes (
+create table if not exists public.classes (
   id uuid primary key default extensions.gen_random_uuid(),
   subject_id uuid not null references public.subjects (id),
   grade_band_id uuid not null references public.grade_bands (id),
@@ -118,7 +118,7 @@ create table public.classes (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.class_enrollments (
+create table if not exists public.class_enrollments (
   id uuid primary key default extensions.gen_random_uuid(),
   class_id uuid not null references public.classes (id) on delete cascade,
   student_user_id uuid not null references public.student_profiles (user_id) on delete cascade,
@@ -129,7 +129,7 @@ create table public.class_enrollments (
   unique (class_id, student_user_id)
 );
 
-create table public.lessons (
+create table if not exists public.lessons (
   id uuid primary key default extensions.gen_random_uuid(),
   class_id uuid not null references public.classes (id) on delete cascade,
   tutor_user_id uuid references public.tutor_profiles (user_id),
@@ -148,7 +148,7 @@ create table public.lessons (
   check (scheduled_end_at > scheduled_start_at)
 );
 
-create table private.lesson_live_sessions (
+create table if not exists private.lesson_live_sessions (
   lesson_id uuid primary key references public.lessons (id) on delete cascade,
   provider public.live_class_provider not null,
   external_meeting_id text,
@@ -160,7 +160,7 @@ create table private.lesson_live_sessions (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.lesson_attendance (
+create table if not exists public.lesson_attendance (
   id uuid primary key default extensions.gen_random_uuid(),
   lesson_id uuid not null references public.lessons (id) on delete cascade,
   student_user_id uuid not null references public.student_profiles (user_id) on delete cascade,
@@ -173,7 +173,7 @@ create table public.lesson_attendance (
   unique (lesson_id, student_user_id)
 );
 
-create table public.assignments (
+create table if not exists public.assignments (
   id uuid primary key default extensions.gen_random_uuid(),
   class_id uuid not null references public.classes (id) on delete cascade,
   lesson_id uuid references public.lessons (id) on delete set null,
@@ -187,7 +187,7 @@ create table public.assignments (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.assignment_files (
+create table if not exists public.assignment_files (
   id uuid primary key default extensions.gen_random_uuid(),
   assignment_id uuid not null references public.assignments (id) on delete cascade,
   bucket_id text not null,
@@ -196,7 +196,7 @@ create table public.assignment_files (
   created_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.assignment_submissions (
+create table if not exists public.assignment_submissions (
   id uuid primary key default extensions.gen_random_uuid(),
   assignment_id uuid not null references public.assignments (id) on delete cascade,
   student_user_id uuid not null references public.student_profiles (user_id) on delete cascade,
@@ -209,7 +209,7 @@ create table public.assignment_submissions (
   unique (assignment_id, student_user_id)
 );
 
-create table public.submission_files (
+create table if not exists public.submission_files (
   id uuid primary key default extensions.gen_random_uuid(),
   submission_id uuid not null references public.assignment_submissions (id) on delete cascade,
   bucket_id text not null,
@@ -218,7 +218,7 @@ create table public.submission_files (
   created_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.submission_grades (
+create table if not exists public.submission_grades (
   id uuid primary key default extensions.gen_random_uuid(),
   submission_id uuid not null unique references public.assignment_submissions (id) on delete cascade,
   grader_user_id uuid not null references public.profiles (id),
@@ -230,7 +230,7 @@ create table public.submission_grades (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.quizzes (
+create table if not exists public.quizzes (
   id uuid primary key default extensions.gen_random_uuid(),
   class_id uuid not null references public.classes (id) on delete cascade,
   lesson_id uuid references public.lessons (id) on delete set null,
@@ -245,7 +245,7 @@ create table public.quizzes (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.quiz_questions (
+create table if not exists public.quiz_questions (
   id uuid primary key default extensions.gen_random_uuid(),
   quiz_id uuid not null references public.quizzes (id) on delete cascade,
   position integer not null,
@@ -259,7 +259,7 @@ create table public.quiz_questions (
   unique (quiz_id, position)
 );
 
-create table public.quiz_attempts (
+create table if not exists public.quiz_attempts (
   id uuid primary key default extensions.gen_random_uuid(),
   quiz_id uuid not null references public.quizzes (id) on delete cascade,
   student_user_id uuid not null references public.student_profiles (user_id) on delete cascade,
@@ -272,7 +272,7 @@ create table public.quiz_attempts (
   unique (quiz_id, student_user_id)
 );
 
-create table public.quiz_responses (
+create table if not exists public.quiz_responses (
   id uuid primary key default extensions.gen_random_uuid(),
   attempt_id uuid not null references public.quiz_attempts (id) on delete cascade,
   question_id uuid not null references public.quiz_questions (id) on delete cascade,
@@ -284,7 +284,7 @@ create table public.quiz_responses (
   unique (attempt_id, question_id)
 );
 
-create table public.progress_snapshots (
+create table if not exists public.progress_snapshots (
   id uuid primary key default extensions.gen_random_uuid(),
   student_user_id uuid not null references public.student_profiles (user_id) on delete cascade,
   subject_id uuid references public.subjects (id) on delete set null,
@@ -296,7 +296,7 @@ create table public.progress_snapshots (
   created_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.notifications (
+create table if not exists public.notifications (
   id uuid primary key default extensions.gen_random_uuid(),
   recipient_user_id uuid not null references public.profiles (id) on delete cascade,
   actor_user_id uuid references public.profiles (id) on delete set null,
@@ -310,7 +310,7 @@ create table public.notifications (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table public.notification_deliveries (
+create table if not exists public.notification_deliveries (
   id uuid primary key default extensions.gen_random_uuid(),
   notification_id uuid not null references public.notifications (id) on delete cascade,
   channel public.notification_channel not null,
@@ -324,7 +324,7 @@ create table public.notification_deliveries (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.plans (
+create table if not exists billing.plans (
   id uuid primary key default extensions.gen_random_uuid(),
   code text not null unique,
   name text not null,
@@ -338,7 +338,7 @@ create table billing.plans (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.subscriptions (
+create table if not exists billing.subscriptions (
   id uuid primary key default extensions.gen_random_uuid(),
   account_owner_user_id uuid not null references public.profiles (id) on delete cascade,
   plan_id uuid references billing.plans (id),
@@ -352,7 +352,7 @@ create table billing.subscriptions (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.invoices (
+create table if not exists billing.invoices (
   id uuid primary key default extensions.gen_random_uuid(),
   subscription_id uuid references billing.subscriptions (id) on delete set null,
   stripe_invoice_id text unique,
@@ -366,7 +366,7 @@ create table billing.invoices (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.payments (
+create table if not exists billing.payments (
   id uuid primary key default extensions.gen_random_uuid(),
   invoice_id uuid references billing.invoices (id) on delete set null,
   stripe_payment_intent_id text unique,
@@ -379,7 +379,7 @@ create table billing.payments (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.coupons (
+create table if not exists billing.coupons (
   id uuid primary key default extensions.gen_random_uuid(),
   code text not null unique,
   percent_off numeric(5, 2),
@@ -391,7 +391,7 @@ create table billing.coupons (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.referrals (
+create table if not exists billing.referrals (
   id uuid primary key default extensions.gen_random_uuid(),
   referrer_user_id uuid not null references public.profiles (id) on delete cascade,
   referred_user_id uuid references public.profiles (id) on delete set null,
@@ -401,7 +401,7 @@ create table billing.referrals (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.tutor_payout_accounts (
+create table if not exists billing.tutor_payout_accounts (
   id uuid primary key default extensions.gen_random_uuid(),
   tutor_user_id uuid not null unique references public.tutor_profiles (user_id) on delete cascade,
   stripe_connected_account_id text unique,
@@ -410,7 +410,7 @@ create table billing.tutor_payout_accounts (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table billing.tutor_payouts (
+create table if not exists billing.tutor_payouts (
   id uuid primary key default extensions.gen_random_uuid(),
   tutor_user_id uuid not null references public.tutor_profiles (user_id) on delete cascade,
   period_start date not null,
@@ -423,7 +423,7 @@ create table billing.tutor_payouts (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
-create table audit.audit_logs (
+create table if not exists audit.audit_logs (
   id uuid primary key default extensions.gen_random_uuid(),
   actor_user_id uuid references public.profiles (id) on delete set null,
   action text not null,
@@ -436,7 +436,7 @@ create table audit.audit_logs (
   created_at timestamptz not null default timezone('utc', now())
 );
 
-create table analytics.domain_events (
+create table if not exists analytics.domain_events (
   id uuid primary key default extensions.gen_random_uuid(),
   event_name text not null,
   actor_user_id uuid references public.profiles (id) on delete set null,

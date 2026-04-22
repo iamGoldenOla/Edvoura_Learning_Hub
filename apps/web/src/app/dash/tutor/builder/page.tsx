@@ -8,6 +8,7 @@ import { FileUp, NotebookPen, Star, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/utils/supabase/client';
+import { createQuizOrResource } from './actions';
 
 type SubjectOption = {
   id: string;
@@ -79,13 +80,15 @@ export default function TutorBuilderPage() {
   const [assignments, setAssignments] = useState<AssignmentCard[]>([]);
 
   const [showAssignmentForm, setShowAssignmentForm] = useState(true);
-  const [assignmentTitle, setAssignmentTitle] = useState('');
-  const [assignmentSubject, setAssignmentSubject] = useState('');
-  const [assignmentGradeCode, setAssignmentGradeCode] = useState('');
-  const [assignmentDueAt, setAssignmentDueAt] = useState('');
-  const [assignmentInstructions, setAssignmentInstructions] = useState('');
-  const [assignmentResourceName, setAssignmentResourceName] = useState('');
-  const [assignmentResourceFile, setAssignmentResourceFile] = useState<File | null>(null);
+  const [formTitle, setFormTitle] = useState('');
+  const [formSubject, setFormSubject] = useState('');
+  const [formGradeCode, setFormGradeCode] = useState('');
+  const [formDueAt, setFormDueAt] = useState('');
+  const [formInstructions, setFormInstructions] = useState('');
+  const [formResourceName, setFormResourceName] = useState('');
+  const [formResourceFile, setFormResourceFile] = useState<File | null>(null);
+  
+  const [userId, setUserId] = useState('');
 
   const loadBuilderData = async () => {
     const supabase = createClient();
@@ -96,6 +99,10 @@ export default function TutorBuilderPage() {
       setFeedback(membership.error.message);
       setIsLoading(false);
       return;
+    }
+    
+    if (membership.data?.user_id) {
+      setUserId(membership.data.user_id);
     }
 
     const [{ data: subjectRows, error: subjectsError }, { data: gradeRows, error: gradesError }, { data: assignmentRows, error: assignmentsError }] =
@@ -151,12 +158,12 @@ export default function TutorBuilderPage() {
 
     setAssignments(normalizedAssignments);
 
-    if (!assignmentSubject && subjectRows?.[0]?.name) {
-      setAssignmentSubject(subjectRows[0].name);
+    if (!formSubject && subjectRows?.[0]?.name) {
+      setFormSubject(subjectRows[0].name);
     }
 
-    if (!assignmentGradeCode && gradeRows?.[0]?.code) {
-      setAssignmentGradeCode(gradeRows[0].code);
+    if (!formGradeCode && gradeRows?.[0]?.code) {
+      setFormGradeCode(gradeRows[0].code);
     }
 
     setIsLoading(false);
@@ -206,7 +213,7 @@ export default function TutorBuilderPage() {
         />
         <ToolCard
           title="Upload Lesson Resources"
-          subtitle="Coming in next update"
+          subtitle="Share general files with class"
           icon={FileUp}
           active={activeTool === 'resources'}
           onClick={() => setActiveTool('resources')}
@@ -220,13 +227,7 @@ export default function TutorBuilderPage() {
         />
       </section>
 
-      {activeTool !== 'assignment' ? (
-        <section className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-          {activeTool === 'quiz' && 'Assignment uploads are now fully live! Quiz and test creation will be enabled in the next update.'}
-          {activeTool === 'resources' && 'Assignment uploads are now fully live! General lesson resource libraries will be enabled in the next update.'}
-          {activeTool === 'spelling-bee' && 'Spelling bee tooling remains planned after the core classroom and storage phases.'}
-        </section>
-      ) : null}
+      {/* Forms for the different tools */}
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
         <Stat title="Active Assignments" value={builderStats.assignments} />
@@ -239,27 +240,34 @@ export default function TutorBuilderPage() {
         <div className="space-y-6 xl:col-span-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Live Assignment Builder</CardTitle>
+              <CardTitle>
+                {activeTool === 'assignment' && 'Live Assignment Builder'}
+                {activeTool === 'quiz' && 'Quiz & Test Builder'}
+                {activeTool === 'resources' && 'Lesson Resource Library'}
+                {activeTool === 'spelling-bee' && 'Spelling Bee Challenge Setup'}
+              </CardTitle>
               <Button variant="primary" className="text-xs" onClick={() => setShowAssignmentForm((value) => !value)}>
-                {showAssignmentForm ? 'Close Form' : 'New Assignment'}
+                {showAssignmentForm ? 'Close Form' : `New ${activeTool === 'assignment' ? 'Assignment' : activeTool === 'quiz' ? 'Quiz' : activeTool === 'resources' ? 'Resource' : 'Challenge'}`}
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {showAssignmentForm ? (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">Create Assignment</h3>
+                  <h3 className="text-sm font-semibold text-slate-900">
+                    Create {activeTool === 'assignment' ? 'Assignment' : activeTool === 'quiz' ? 'Quiz' : activeTool === 'resources' ? 'Resource' : 'Spelling Bee Challenge'}
+                  </h3>
                   <div className="mt-3 space-y-3">
                     <input
-                      value={assignmentTitle}
-                      onChange={(event) => setAssignmentTitle(event.target.value)}
-                      placeholder="Assignment title"
+                      value={formTitle}
+                      onChange={(event) => setFormTitle(event.target.value)}
+                      placeholder={activeTool === 'quiz' ? "Quiz title" : activeTool === 'resources' ? "Resource bundle name" : "Assignment title"}
                       className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                     />
 
                     <div className="grid gap-3 md:grid-cols-2">
                       <select
-                        value={assignmentSubject}
-                        onChange={(event) => setAssignmentSubject(event.target.value)}
+                        value={formSubject}
+                        onChange={(event) => setFormSubject(event.target.value)}
                         className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                       >
                         <option value="">Select subject</option>
@@ -271,8 +279,8 @@ export default function TutorBuilderPage() {
                       </select>
 
                       <select
-                        value={assignmentGradeCode}
-                        onChange={(event) => setAssignmentGradeCode(event.target.value)}
+                        value={formGradeCode}
+                        onChange={(event) => setFormGradeCode(event.target.value)}
                         className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                       >
                         <option value="">Select grade</option>
@@ -284,32 +292,43 @@ export default function TutorBuilderPage() {
                       </select>
                     </div>
 
-                    <input
-                      type="datetime-local"
-                      value={assignmentDueAt}
-                      onChange={(event) => setAssignmentDueAt(event.target.value)}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
+                    {activeTool === 'assignment' && (
+                      <input
+                        type="datetime-local"
+                        value={formDueAt}
+                        onChange={(event) => setFormDueAt(event.target.value)}
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                      />
+                    )}
+
+                    {activeTool === 'quiz' && (
+                      <input
+                        type="number"
+                        placeholder="Time limit (minutes, optional)"
+                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
+                        onChange={(e) => setFormDueAt(e.target.value)} // Reusing formDueAt for time limit
+                      />
+                    )}
 
                     <textarea
-                      value={assignmentInstructions}
-                      onChange={(event) => setAssignmentInstructions(event.target.value)}
-                      placeholder="Instructions for students"
+                      value={formInstructions}
+                      onChange={(event) => setFormInstructions(event.target.value)}
+                      placeholder={activeTool === 'resources' ? "Resource description" : "Instructions for students"}
                       className="min-h-28 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
                     />
 
                     <div className="rounded-md border border-slate-300 bg-white p-3 text-xs text-slate-600">
-                      <p className="font-medium text-slate-700">Attach assignment resource (optional)</p>
+                      <p className="font-medium text-slate-700">Attach {activeTool === 'assignment' ? 'assignment' : 'lesson'} resource (optional)</p>
                       <input
                         type="file"
                         onChange={(event) => {
                           const file = event.target.files?.[0] ?? null;
-                          setAssignmentResourceFile(file);
-                          setAssignmentResourceName(file?.name ?? '');
+                          setFormResourceFile(file);
+                          setFormResourceName(file?.name ?? '');
                         }}
                         className="mt-2 block w-full text-xs text-slate-700 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1"
                       />
-                      {assignmentResourceName ? <p className="mt-2">Selected: {assignmentResourceName}</p> : null}
+                      {formResourceName ? <p className="mt-2">Selected: {formResourceName}</p> : null}
                     </div>
 
                     <Button
@@ -317,75 +336,110 @@ export default function TutorBuilderPage() {
                       className="text-xs"
                       disabled={isSavingAssignment || isLoading}
                       onClick={async () => {
-                        const safeTitle = assignmentTitle.trim();
+                        const safeTitle = formTitle.trim();
 
-                        if (!safeTitle || !assignmentSubject || !assignmentGradeCode) {
-                          setFeedback('Assignment title, subject, and grade are required.');
+                        if (!safeTitle || !formSubject || !formGradeCode) {
+                          setFeedback('Title, subject, and grade are required.');
                           return;
                         }
 
                         setIsSavingAssignment(true);
-                        const supabase = createClient();
-                        const { data, error } = await supabase.rpc('create_tutor_assignment', {
-                          assignment_title: safeTitle,
-                          subject_name: assignmentSubject,
-                          grade_level_code: assignmentGradeCode,
-                          assignment_instructions: assignmentInstructions.trim() || null,
-                          due_at: assignmentDueAt ? new Date(assignmentDueAt).toISOString() : null,
-                          points_possible: 100,
-                        });
-
-                        setIsSavingAssignment(false);
-
-                        if (error) {
-                          setFeedback(error.message);
-                          return;
-                        }
-
-                        const created = Array.isArray(data) ? data[0] : null;
-
-                        if (created?.assignment_id && assignmentResourceFile) {
-                          const safeName = `${Date.now()}-${assignmentResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
-                          const objectPath = `assignments/${created.assignment_id}/${safeName}`;
-                          const upload = await supabase.storage
-                            .from('assignment-assets')
-                            .upload(objectPath, assignmentResourceFile, {
-                              cacheControl: '3600',
-                              upsert: false,
+                        
+                        try {
+                          if (activeTool !== 'assignment') {
+                            const formData = new FormData();
+                            formData.append('type', activeTool);
+                            formData.append('title', safeTitle);
+                            formData.append('subjectName', formSubject);
+                            formData.append('gradeCode', formGradeCode);
+                            formData.append('tutorId', userId);
+                            if (activeTool === 'quiz') {
+                              formData.append('timeLimit', formDueAt); // Reused field
+                              formData.append('instructions', formInstructions.trim());
+                            } else {
+                              formData.append('description', formInstructions.trim());
+                            }
+                            
+                            await createQuizOrResource(formData);
+                            
+                            setFormTitle('');
+                            setFormInstructions('');
+                            setFormDueAt('');
+                            setFormResourceName('');
+                            setFormResourceFile(null);
+                            setShowAssignmentForm(false);
+                            setFeedback(`${activeTool} published successfully.`);
+                            await loadBuilderData();
+                          } else {
+                            // Legacy assignment logic
+                            const supabase = createClient();
+                            const { data, error } = await supabase.rpc('create_tutor_assignment', {
+                              assignment_title: safeTitle,
+                              subject_name: formSubject,
+                              grade_level_code: formGradeCode,
+                              assignment_instructions: formInstructions.trim() || null,
+                              due_at: formDueAt ? new Date(formDueAt).toISOString() : null,
+                              points_possible: 100,
                             });
 
-                          if (upload.error) {
-                            setFeedback(upload.error.message);
-                            return;
-                          }
+                            if (error) {
+                              setFeedback(error.message);
+                              setIsSavingAssignment(false);
+                              return;
+                            }
 
-                          const attach = await supabase.rpc('attach_assignment_asset', {
-                            target_assignment_id: created.assignment_id,
-                            object_path: objectPath,
-                            bucket_id: 'assignment-assets',
-                          });
+                            const created = Array.isArray(data) ? data[0] : null;
 
-                          if (attach.error) {
-                            setFeedback(attach.error.message);
-                            return;
+                            if (created?.assignment_id && formResourceFile) {
+                              const safeName = `${Date.now()}-${formResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+                              const objectPath = `assignments/${created.assignment_id}/${safeName}`;
+                              const upload = await supabase.storage
+                                .from('assignment-assets')
+                                .upload(objectPath, formResourceFile, {
+                                  cacheControl: '3600',
+                                  upsert: false,
+                                });
+
+                              if (upload.error) {
+                                setFeedback(upload.error.message);
+                                setIsSavingAssignment(false);
+                                return;
+                              }
+
+                              const attach = await supabase.rpc('attach_assignment_asset', {
+                                target_assignment_id: created.assignment_id,
+                                object_path: objectPath,
+                                bucket_id: 'assignment-assets',
+                              });
+
+                              if (attach.error) {
+                                setFeedback(attach.error.message);
+                                setIsSavingAssignment(false);
+                                return;
+                              }
+                            }
+
+                            setFormTitle('');
+                            setFormInstructions('');
+                            setFormDueAt('');
+                            setFormResourceName('');
+                            setFormResourceFile(null);
+                            setShowAssignmentForm(false);
+                            setFeedback(
+                              created
+                                ? `Assignment published and shared with ${created.enrolled_students ?? 0} enrolled students.`
+                                : 'Assignment published successfully.',
+                            );
+                            await loadBuilderData();
                           }
+                        } catch (err: any) {
+                          setFeedback(err.message || 'An error occurred during publishing.');
+                        } finally {
+                          setIsSavingAssignment(false);
                         }
-
-                        setAssignmentTitle('');
-                        setAssignmentInstructions('');
-                        setAssignmentDueAt('');
-                        setAssignmentResourceName('');
-                        setAssignmentResourceFile(null);
-                        setShowAssignmentForm(false);
-                        setFeedback(
-                          created
-                            ? `Assignment published and shared with ${created.enrolled_students ?? 0} enrolled students.`
-                            : 'Assignment published successfully.',
-                        );
-                        await loadBuilderData();
                       }}
                     >
-                      {isSavingAssignment ? 'Publishing...' : 'Publish Assignment'}
+                      {isSavingAssignment ? 'Publishing...' : `Publish ${activeTool === 'assignment' ? 'Assignment' : activeTool === 'quiz' ? 'Quiz' : activeTool === 'resources' ? 'Resource' : 'Challenge'}`}
                     </Button>
                   </div>
                 </div>
