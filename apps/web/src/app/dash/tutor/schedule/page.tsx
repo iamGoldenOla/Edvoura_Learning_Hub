@@ -1,203 +1,292 @@
-import React from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Calendar as CalendarIcon, Clock, ExternalLink, Plus, Video } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, Clock, Users, Video, ChevronLeft, ChevronRight, AlertCircle, Plus, CheckCircle2 } from 'lucide-react';
+import { createTutorLiveSlot } from '@/app/dash/tutor/schedule/actions';
+import { requireAppViewer } from '@/lib/app-context';
+import { createClient } from '@/utils/supabase/server';
+
+type TutorLiveScheduleRow = {
+  id: string;
+  title: string;
+  class_title: string;
+  subject_name: string;
+  grade_level_name: string;
+  scheduled_start_at: string;
+  scheduled_end_at: string;
+  status: string;
+  provider: string;
+  join_url: string | null;
+  host_url: string | null;
+};
+
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
 
 export default async function TutorSchedulePage(props: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const viewer = await requireAppViewer();
   const searchParams = (await props.searchParams) ?? {};
-  const scheduleDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const dayParam = typeof searchParams.day === 'string' ? searchParams.day : null;
-  const activeDay = dayParam && scheduleDays.includes(dayParam) ? dayParam : 'Wed';
-  const action = typeof searchParams.action === 'string' ? searchParams.action : null;
+  const created = searchParams.created === '1';
+  const errorParam = typeof searchParams.error === 'string' ? searchParams.error : null;
 
-  const todaySessions = [
-    { id: 1, time: '10:00 AM', duration: '1h', title: 'Grade 7 Pre-Algebra', type: 'Group (12)', status: 'completed' },
-    { id: 2, time: '02:00 PM', duration: '45m', title: 'JSS3 Basic Science', type: 'Group (8)', status: 'next' },
-    { id: 3, time: '04:30 PM', duration: '1h', title: 'WAEC Physics Prep', type: 'Private (1)', status: 'upcoming' },
-    { id: 4, time: '06:00 PM', duration: '1.5h', title: 'Coding Bootcamp - Python', type: 'Group (24)', status: 'upcoming' }
-  ];
+  const supabase = await createClient();
+  const [{ data: classes = [] }, { data: scheduleRows = [] }] = await Promise.all([
+    supabase
+      .from('classes')
+      .select('id, title, grade_level_id, subject_id')
+      .eq('primary_tutor_user_id', viewer.currentUser.userId)
+      .order('title', { ascending: true }),
+    supabase.rpc('list_tutor_live_schedule'),
+  ]);
+
+  const gradeLevelIds = [...new Set((classes ?? []).map((item) => item.grade_level_id).filter(Boolean))];
+  const subjectIds = [...new Set((classes ?? []).map((item) => item.subject_id).filter(Boolean))];
+
+  const [{ data: gradeLevels = [] }, { data: subjects = [] }] = await Promise.all([
+    gradeLevelIds.length
+      ? supabase.from('grade_levels').select('id, display_name').in('id', gradeLevelIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; display_name: string }> }),
+    subjectIds.length
+      ? supabase.from('subjects').select('id, name').in('id', subjectIds)
+      : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
+  ]);
+
+  const gradeById = new Map((gradeLevels ?? []).map((item) => [item.id, item.display_name]));
+  const subjectById = new Map((subjects ?? []).map((item) => [item.id, item.name]));
+  const typedSchedule = (scheduleRows ?? []) as TutorLiveScheduleRow[];
+  const upcomingSessions = typedSchedule.filter((session) => new Date(session.scheduled_end_at) >= new Date());
 
   return (
     <div className="p-8 max-w-[1400px] mx-auto animate-in slide-in-from-bottom-4 duration-500 space-y-8">
-      
-      {/* Header Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-slate-200 pb-6">
         <div>
           <h1 className="text-3xl font-bold text-edvoura-navy flex items-center gap-3">
             <CalendarIcon className="w-8 h-8 text-edvoura-gold" /> Master Schedule
           </h1>
-          <p className="mt-2 text-slate-600 text-sm">View, accept, and manage all your upcoming virtual sessions.</p>
+          <p className="mt-2 text-slate-600 text-sm">
+            Publish real lesson slots directly from Supabase and attach Google Meet join links for students.
+          </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
           <Link href="/dash/tutor/schedule?action=sync-calendar">
             <Button variant="outline" className="border-slate-300 text-slate-700 bg-white shadow-sm flex-1 md:flex-none flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" /> Sync to Google Calendar
+              <Clock className="w-4 h-4 text-slate-400" /> Google Calendar sync
             </Button>
           </Link>
-          <Link href="/dash/tutor/schedule?action=open-slot">
-            <Button variant="primary" className="bg-edvoura-navy hover:bg-slate-800 text-white flex-1 md:flex-none flex items-center gap-2">
+          <a href="#scheduler" className="flex-1 md:flex-none">
+            <Button variant="primary" className="bg-edvoura-navy hover:bg-slate-800 text-white w-full flex items-center gap-2">
               <Plus className="w-4 h-4" /> Open Time Slot
             </Button>
-          </Link>
+          </a>
         </div>
       </div>
 
-      {action ? (
-        <section className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">
-          Action Center: <strong>{action}</strong> request loaded.
+      {created ? (
+        <section className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">
+          Live lesson created successfully. Students enrolled in the selected class can now see it on their live dashboard.
         </section>
       ) : null}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Main Schedule Pane (Left) */}
-        <div className="lg:col-span-2 space-y-6">
-          
-          {/* Day Selector */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex justify-between items-center overflow-x-auto gap-4">
-            <Link href="/dash/tutor/schedule?day=prev">
-              <Button variant="ghost" className="w-10 h-10 p-0 shrink-0 rounded-full text-slate-400 hover:text-edvoura-navy"><ChevronLeft className="w-5 h-5"/></Button>
-            </Link>
-            <div className="flex gap-2 min-w-max flex-1 justify-center">
-              {scheduleDays.map((day, i) => (
-                <Link
-                  key={day}
-                  href={`/dash/tutor/schedule?day=${day}`}
-                  className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all ${
-                    day === activeDay 
-                      ? 'bg-edvoura-navy text-white shadow-md scale-105' 
-                      : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100'
-                  }`}
-                >
-                  <span className="text-[10px] uppercase font-bold tracking-wider mb-1 opacity-80">{day}</span>
-                  <span className="text-lg font-black">{12 + i}</span>
-                </Link>
-              ))}
+      {errorParam ? (
+        <section className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+          {decodeURIComponent(errorParam)}
+        </section>
+      ) : null}
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-8 items-start">
+        <section className="space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-edvoura-navy">Upcoming live sessions</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  Sessions published here flow straight to student live dashboards and lesson timelines.
+                </p>
+              </div>
+              <div className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700">
+                {upcomingSessions.length} scheduled
+              </div>
             </div>
-            <Link href="/dash/tutor/schedule?day=next">
-              <Button variant="ghost" className="w-10 h-10 p-0 shrink-0 rounded-full text-slate-400 hover:text-edvoura-navy"><ChevronRight className="w-5 h-5"/></Button>
-            </Link>
-          </div>
 
-          <h2 className="text-lg font-bold text-slate-800 pt-2">Wednesday, Oct 14th</h2>
-
-          {/* Time Blocks */}
-          <div className="space-y-4">
-            {todaySessions.map((session) => (
-              <div 
-                key={session.id} 
-                className={`bg-white rounded-2xl border flex flex-col sm:flex-row transition-all shadow-sm
-                  ${session.status === 'next' ? 'border-edvoura-gold ring-4 ring-yellow-50 scale-[1.01]' : 'border-slate-200 hover:border-edvoura-navy'}
-                  ${session.status === 'completed' ? 'opacity-60 grayscale' : ''}
-                `}
-              >
-                
-                {/* Time Strip */}
-                <div className={`p-6 sm:w-48 flex sm:flex-col justify-between sm:justify-center items-center sm:items-start border-b sm:border-b-0 sm:border-r border-slate-100 rounded-t-2xl sm:rounded-bl-2xl sm:rounded-tr-none ${session.status === 'next' ? 'bg-amber-50/50' : session.status === 'completed' ? 'bg-slate-50' : ''}`}>
-                  <h3 className="text-xl font-bold text-edvoura-navy">{session.time}</h3>
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1 flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {session.duration}
-                  </span>
-                </div>
-
-                {/* Content Block */}
-                <div className="p-6 flex-1 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                  <div>
-                    <div className="flex items-center gap-3 mb-2">
-                       {session.status === 'completed' && <span className="bg-green-100 text-green-700 text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider">Done</span>}
-                       {session.status === 'next' && <span className="bg-edvoura-gold text-edvoura-navy-dark text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider animate-pulse flex items-center gap-1"><Video className="w-3 h-3"/> Happening Now</span>}
+            <div className="space-y-4">
+              {upcomingSessions.length > 0 ? (
+                upcomingSessions.map((session) => (
+                  <article key={session.id} className="rounded-2xl border border-slate-200 p-5 bg-slate-50/60">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-400">
+                          {session.subject_name} · {session.grade_level_name}
+                        </p>
+                        <h3 className="text-xl font-black text-slate-900 mt-1">{session.title}</h3>
+                        <p className="text-sm text-slate-600 mt-1">{session.class_title}</p>
+                      </div>
+                      <div className="text-sm font-bold text-slate-700">
+                        {formatDateTime(session.scheduled_start_at)}
+                      </div>
                     </div>
-                    <h4 className="text-lg font-bold text-slate-800">{session.title}</h4>
-                    <p className="text-sm font-medium text-slate-500 mt-1 flex items-center gap-2">
-                      <Users className="w-4 h-4 text-slate-400" /> {session.type}
-                    </p>
+
+                    <div className="mt-4 flex flex-wrap gap-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
+                      <span className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-600">
+                        Ends {formatDateTime(session.scheduled_end_at)}
+                      </span>
+                      <span className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-600">
+                        {session.provider.replace('_', ' ')}
+                      </span>
+                      <span className="px-3 py-2 border border-slate-200 rounded-lg bg-white text-slate-600">
+                        {session.status}
+                      </span>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {session.join_url ? (
+                        <a href={session.join_url} target="_blank" rel="noreferrer">
+                          <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
+                            <Video className="w-4 h-4" /> Join Google Meet
+                          </Button>
+                        </a>
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                          No student join link attached yet. Add one in the scheduler form.
+                        </div>
+                      )}
+
+                      {session.host_url ? (
+                        <a href={session.host_url} target="_blank" rel="noreferrer">
+                          <Button variant="outline" className="border-slate-300 bg-white text-slate-700 flex items-center gap-2">
+                            <ExternalLink className="w-4 h-4" /> Open host link
+                          </Button>
+                        </a>
+                      ) : null}
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-sm text-slate-600">
+                  No live sessions published yet. Use the scheduler to create the first tutor slot with an optional Google Meet URL.
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section id="scheduler" className="space-y-6">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
+            <h2 className="text-xl font-bold text-edvoura-navy">Open a live teaching slot</h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Pick one of your classes, choose the lesson window, and paste the Google Meet join URL students should use.
+            </p>
+
+            {classes.length > 0 ? (
+              <form action={createTutorLiveSlot} className="mt-6 space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="classId" className="text-sm font-semibold text-slate-700">
+                    Class
+                  </label>
+                  <select
+                    id="classId"
+                    name="classId"
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                    defaultValue={classes[0]?.id}
+                  >
+                    {classes.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.title} · {subjectById.get(item.subject_id) ?? 'Subject pending'} ·{' '}
+                        {gradeById.get(item.grade_level_id) ?? 'Grade pending'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="title" className="text-sm font-semibold text-slate-700">
+                    Session title
+                  </label>
+                  <input
+                    id="title"
+                    name="title"
+                    type="text"
+                    placeholder="e.g. Fractions revision workshop"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="scheduledStartAt" className="text-sm font-semibold text-slate-700">
+                      Start time
+                    </label>
+                    <input
+                      id="scheduledStartAt"
+                      name="scheduledStartAt"
+                      type="datetime-local"
+                      required
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                    />
                   </div>
-                  
-                  <div className="w-full md:w-auto flex flex-col gap-2">
-                    {session.status === 'next' && (
-                      <Link href={`/dash/tutor/schedule?action=join&id=${session.id}`}>
-                        <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-full md:w-48 shadow-lg shadow-blue-200">
-                          Join Google Meet
-                        </Button>
-                      </Link>
-                    )}
-                    {session.status === 'upcoming' && (
-                      <Link href={`/dash/tutor/lesson-notes?session=${session.id}`}>
-                        <Button variant="outline" className="font-bold w-full md:w-48 border-slate-300 text-slate-700 hover:bg-slate-50">
-                          Prepare Materials
-                        </Button>
-                      </Link>
-                    )}
-                    {session.status === 'completed' && (
-                      <Link href={`/dash/tutor/schedule?action=view-summary&id=${session.id}`}>
-                        <Button variant="ghost" className="font-bold w-full md:w-48 text-edvoura-navy hover:bg-slate-100">
-                          View Session Summary
-                        </Button>
-                      </Link>
-                    )}
+                  <div className="space-y-2">
+                    <label htmlFor="scheduledEndAt" className="text-sm font-semibold text-slate-700">
+                      End time
+                    </label>
+                    <input
+                      id="scheduledEndAt"
+                      name="scheduledEndAt"
+                      type="datetime-local"
+                      required
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                    />
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <label htmlFor="joinUrl" className="text-sm font-semibold text-slate-700">
+                    Student Google Meet URL
+                  </label>
+                  <input
+                    id="joinUrl"
+                    name="joinUrl"
+                    type="url"
+                    placeholder="https://meet.google.com/..."
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="hostUrl" className="text-sm font-semibold text-slate-700">
+                    Tutor host URL
+                  </label>
+                  <input
+                    id="hostUrl"
+                    name="hostUrl"
+                    type="url"
+                    placeholder="Optional alternate host link"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                  />
+                </div>
+
+                <Button type="submit" variant="primary" className="w-full bg-edvoura-navy hover:bg-slate-800 text-white">
+                  Publish live session
+                </Button>
+              </form>
+            ) : (
+              <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">
+                No tutor classes are connected yet. Create a class through the assignment builder first, then return here to publish live sessions for enrolled students.
               </div>
-            ))}
+            )}
           </div>
 
-        </div>
-
-        {/* Analytics Pillar */}
-        <div className="space-y-6">
-          <Card className="rounded-2xl shadow-sm border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-100 relative overflow-hidden">
-             {/* Decorative */}
-             <div className="absolute right-[-20%] bottom-[-20%] opacity-10"><Clock className="w-48 h-48 text-amber-600" /></div>
-            
-            <CardContent className="p-6 relative z-10">
-              <h3 className="text-xs uppercase tracking-widest font-black text-amber-800 mb-4 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4" /> Action Required
-              </h3>
-              <p className="text-amber-900 font-medium text-sm leading-relaxed mb-6">You have 2 private session requests waiting for your approval. If unaccepted within 4 hours, they will automatically bounce to another available tutor.</p>
-              <Link href="/dash/tutor/schedule?action=review-requests">
-                <Button variant="outline" className="w-full border-amber-300 bg-white text-amber-900 font-bold hover:bg-amber-50">Review Requests (2)</Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl shadow-sm border-slate-200">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-sm uppercase tracking-wider font-bold text-slate-500">Weekly Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-blue-100 text-blue-600 flex items-center justify-center"><Video className="w-4 h-4" /></div>
-                    <span className="text-sm font-bold text-slate-700">Total Hours</span>
-                  </div>
-                  <span className="text-lg font-black text-slate-800">14.5</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-green-100 text-green-600 flex items-center justify-center"><Users className="w-4 h-4" /></div>
-                    <span className="text-sm font-bold text-slate-700">Students Taught</span>
-                  </div>
-                  <span className="text-lg font-black text-slate-800">62</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded bg-purple-100 text-purple-600 flex items-center justify-center"><CheckCircle2 className="w-4 h-4" /></div>
-                    <span className="text-sm font-bold text-slate-700">Session Rating</span>
-                  </div>
-                  <span className="text-lg font-black text-slate-800">4.9<span className="text-xs text-slate-400">/5</span></span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
+            <h3 className="text-sm uppercase tracking-[0.18em] font-black text-amber-900">Phase focus</h3>
+            <ul className="mt-4 space-y-2 text-sm text-amber-900">
+              <li>Tutor creates a live slot from a real class.</li>
+              <li>Student sees the same lesson on the live dashboard.</li>
+              <li>Google Meet links travel through Supabase, not the old API.</li>
+            </ul>
+          </div>
+        </section>
       </div>
-
     </div>
   );
 }

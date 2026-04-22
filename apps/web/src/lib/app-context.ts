@@ -112,6 +112,17 @@ type SessionUserLike = {
 };
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+type StudentLiveLessonRow = {
+  id: string;
+  title: string;
+  class_title: string;
+  subject_name: string;
+  scheduled_start_at: string;
+  scheduled_end_at: string;
+  join_url: string | null;
+  provider: string;
+  status: string;
+};
 
 const validRoles: AppRole[] = ['student', 'parent', 'tutor', 'admin', 'super_admin'];
 
@@ -364,6 +375,8 @@ async function getDirectStudentDashboardFromSupabase(
         }>,
       };
 
+  const { data: liveLessonRows = [] } = await supabase.rpc('list_student_live_lessons');
+
   const { data: progressData = [] } = await supabase
     .from('progress_snapshots')
     .select('id, subject_id, snapshot_date, average_score, attendance_rate, assignment_completion_rate, mastery_notes')
@@ -373,6 +386,7 @@ async function getDirectStudentDashboardFromSupabase(
 
   const normalizedGrades = gradesData ?? [];
   const normalizedLessons = lessonsData ?? [];
+  const normalizedLiveLessonRows = (liveLessonRows ?? []) as StudentLiveLessonRow[];
   const normalizedProgress = progressData ?? [];
   const normalizedAssignmentFiles = assignmentFilesData ?? [];
   const progressSubjectIds = [...new Set(normalizedProgress.map((item) => item.subject_id).filter(Boolean))];
@@ -391,6 +405,8 @@ async function getDirectStudentDashboardFromSupabase(
     current.push(file);
     assignmentFilesByAssignmentId.set(file.assignment_id, current);
   });
+
+  const liveLessonById = new Map(normalizedLiveLessonRows.map((lesson) => [lesson.id, lesson]));
 
   const assignments = normalizedAssignmentsData.map((item) => {
     const relatedClass = classById.get(item.class_id);
@@ -492,16 +508,19 @@ async function getDirectStudentDashboardFromSupabase(
     }),
     upcomingLessons: normalizedLessons.map((lesson) => {
       const relatedClass = classById.get(lesson.class_id);
+      const liveLesson = liveLessonById.get(lesson.id);
 
       return {
         id: lesson.id,
-        title: lesson.title,
-        subjectName: relatedClass ? subjectById.get(relatedClass.subject_id) ?? 'General Studies' : 'General Studies',
-        classTitle: relatedClass?.title ?? 'Untitled class',
+        title: liveLesson?.title ?? lesson.title,
+        subjectName:
+          liveLesson?.subject_name ??
+          (relatedClass ? subjectById.get(relatedClass.subject_id) ?? 'General Studies' : 'General Studies'),
+        classTitle: liveLesson?.class_title ?? relatedClass?.title ?? 'Untitled class',
         scheduledStartAt: lesson.scheduled_start_at,
         scheduledEndAt: lesson.scheduled_end_at,
-        joinUrl: null,
-        provider: lesson.provider,
+        joinUrl: liveLesson?.join_url ?? null,
+        provider: liveLesson?.provider ?? lesson.provider,
         status: lesson.status,
       };
     }),

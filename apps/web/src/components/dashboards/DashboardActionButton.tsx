@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { apiClient } from '@/lib/api-client';
 import { emitDashboardToast } from '@/lib/dashboard-toast';
 
 type Props = {
@@ -36,16 +35,9 @@ export default function DashboardActionButton({
     setBusy(true);
 
     try {
-      await apiClient.post('/platform/ui-actions', {
-        actionKey,
-        label,
-        scope,
-        nextPath,
-        metadata,
-      });
       emitDashboardToast({
         title: 'Action completed',
-        description: `${label} is now active.`,
+        description: metadata?.note && typeof metadata.note === 'string' ? metadata.note : `${label} is now active.`,
         type: 'success',
       });
       if (nextPath) {
@@ -69,4 +61,3 @@ export default function DashboardActionButton({
     </Button>
   );
 }
-
