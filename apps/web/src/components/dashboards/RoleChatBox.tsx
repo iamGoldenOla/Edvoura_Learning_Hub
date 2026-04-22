@@ -52,7 +52,7 @@ export default function RoleChatBox({
     const fetchMessages = async () => {
       try {
         const { data, error } = await supabase
-          .from('chat_messages')
+          .from('dashboard_chat_messages')
           .select('id, channel_id, sender_role, sender_name, text, created_at')
           .eq('channel_id', activeChannel.id)
           .order('created_at', { ascending: true })
@@ -90,14 +90,17 @@ export default function RoleChatBox({
     setIsSending(true);
     setErrorMessage('');
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { data: created, error } = await supabase
-        .from('chat_messages')
+        .from('dashboard_chat_messages')
         .insert({
           channel_id: activeChannel.id,
+          sender_user_id: user.id,
           sender_role: senderRole,
           sender_name: senderName,
           text,
-          created_at: new Date().toISOString(),
         })
         .select('id, channel_id, sender_role, sender_name, text, created_at')
         .single();

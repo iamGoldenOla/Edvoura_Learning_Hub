@@ -3,9 +3,8 @@ import { createClient } from '@/utils/supabase/server';
 
 type ActionItem = {
   id: string;
-  actionKey: string;
-  label: string;
-  scope: string;
+  action: string;
+  entityTable: string;
   createdAt: string;
 };
 
@@ -22,21 +21,20 @@ export default async function RecentUiActionsPanel({
   try {
     const supabase = await createClient();
     let query = supabase.schema('audit').from('audit_logs')
-      .select('id, action_key, label, scope, created_at')
+      .select('id, action, entity_table, created_at')
       .order('created_at', { ascending: false })
       .limit(10);
 
     if (scope) {
-      query = query.eq('scope', scope);
+      query = query.eq('entity_table', scope);
     }
 
     const { data } = await query;
 
     actions = (data ?? []).map(item => ({
       id: item.id,
-      actionKey: item.action_key,
-      label: item.label,
-      scope: item.scope,
+      action: item.action,
+      entityTable: item.entity_table,
       createdAt: item.created_at,
     }));
   } catch {
@@ -54,8 +52,8 @@ export default async function RecentUiActionsPanel({
         ) : (
           actions.map((item) => (
             <div key={item.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-sm font-semibold text-slate-900">{item.label}</p>
-              <p className="text-xs text-slate-600">{item.actionKey}</p>
+              <p className="text-sm font-semibold text-slate-900">{item.action}</p>
+              <p className="text-xs text-slate-600">{item.entityTable}</p>
               <p className="text-[11px] text-slate-500">
                 {new Date(item.createdAt).toLocaleString()}
               </p>
@@ -66,4 +64,3 @@ export default async function RecentUiActionsPanel({
     </Card>
   );
 }
-

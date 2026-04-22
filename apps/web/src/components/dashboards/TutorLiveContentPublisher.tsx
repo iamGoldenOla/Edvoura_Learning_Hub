@@ -30,9 +30,9 @@ export default function TutorLiveContentPublisher() {
     const loadCurrent = async () => {
       try {
         const { data } = await supabase
-          .from('live_content')
+          .from('tutor_live_content_posts')
           .select('headline, agenda, explanation, class_task, homework, resource_url, updated_at')
-          .eq('is_current', true)
+          .eq('is_active', true)
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -61,23 +61,27 @@ export default function TutorLiveContentPublisher() {
     setIsSaving(true);
     setFeedback('');
     try {
-      // Mark all existing as not current
-      await supabase
-        .from('live_content')
-        .update({ is_current: false })
-        .eq('is_current', true);
+      // Get the current user to set tutor_user_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
 
-      // Insert new current content
-      const { error } = await supabase.from('live_content').insert({
+      // Mark all existing as not active
+      await supabase
+        .from('tutor_live_content_posts')
+        .update({ is_active: false })
+        .eq('is_active', true)
+        .eq('tutor_user_id', user.id);
+
+      // Insert new active content
+      const { error } = await supabase.from('tutor_live_content_posts').insert({
+        tutor_user_id: user.id,
         headline: headline.trim(),
         agenda: agenda.trim(),
-        explanation: explanation.trim(),
+        explanation: explanation.trim() || null,
         class_task: classTask.trim(),
-        homework: homework.trim(),
+        homework: homework.trim() || null,
         resource_url: resourceUrl.trim() || null,
-        is_current: true,
-        updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
+        is_active: true,
       });
 
       if (error) throw error;
@@ -93,10 +97,14 @@ export default function TutorLiveContentPublisher() {
     setIsSaving(true);
     setFeedback('');
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       await supabase
-        .from('live_content')
-        .update({ is_current: false })
-        .eq('is_current', true);
+        .from('tutor_live_content_posts')
+        .update({ is_active: false })
+        .eq('is_active', true)
+        .eq('tutor_user_id', user.id);
 
       setFeedback('Live teaching content cleared.');
     } catch (error) {

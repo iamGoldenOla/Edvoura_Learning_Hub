@@ -22,10 +22,10 @@ export async function approveTutor(targetUserId: string) {
   }).eq('user_id', targetUserId);
 
   await supabaseAdmin.schema('audit').from('audit_logs').insert({
-    action_key: 'admin.tutor.approve',
-    label: 'Approve tutor',
-    scope: 'admin',
-    user_id: user.id,
+    action: 'admin.tutor.approve',
+    entity_table: 'tutor_profiles',
+    entity_id: targetUserId,
+    actor_user_id: user.id,
     metadata: { targetUserId }
   });
 }
@@ -49,10 +49,10 @@ export async function rejectTutor(targetUserId: string) {
   }).eq('user_id', targetUserId);
 
   await supabaseAdmin.schema('audit').from('audit_logs').insert({
-    action_key: 'admin.tutor.reject',
-    label: 'Reject tutor',
-    scope: 'admin',
-    user_id: user.id,
+    action: 'admin.tutor.reject',
+    entity_table: 'tutor_profiles',
+    entity_id: targetUserId,
+    actor_user_id: user.id,
     metadata: { targetUserId }
   });
 }

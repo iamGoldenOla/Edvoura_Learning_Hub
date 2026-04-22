@@ -20,6 +20,7 @@ export async function saveTutorProfileAction(form: {
   // Update profiles table
   await supabase.from('profiles').update({
     full_name: form.fullName.trim(),
+    timezone: form.timezone?.trim() || 'Africa/Lagos',
     updated_at: now,
   }).eq('id', user.id);
 
@@ -30,7 +31,6 @@ export async function saveTutorProfileAction(form: {
     bio: form.bio?.trim() || null,
     expertise_summary: form.expertiseSummary?.trim() || null,
     availability_notes: form.availabilityNotes?.trim() || null,
-    timezone: form.timezone?.trim() || 'Africa/Lagos',
     updated_at: now,
   }, { onConflict: 'user_id' });
 

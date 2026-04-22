@@ -37,6 +37,8 @@ type StudentDashboardResponse = {
 
 export default async function ProfileDashboard() {
   const viewer = await requireAppViewer();
+  if (!viewer) return null;
+
   const supabase = await createClient();
 
   let tutorProfile: TutorProfileResponse | null = null;
@@ -47,13 +49,13 @@ export default async function ProfileDashboard() {
   if (viewer.currentUser.primaryRole === 'tutor') {
     const { data: tp } = await supabase
       .from('tutor_profiles')
-      .select('headline, bio, expertise_summary, availability_notes, timezone')
+      .select('headline, bio, expertise_summary, availability_notes')
       .eq('user_id', viewer.currentUser.userId)
       .maybeSingle();
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, phone_number')
+      .select('full_name, phone_number, timezone')
       .eq('id', viewer.currentUser.userId)
       .single();
 
@@ -61,7 +63,7 @@ export default async function ProfileDashboard() {
       tutorProfile = {
         fullName: profile?.full_name ?? null,
         phoneNumber: profile?.phone_number ?? null,
-        timezone: tp.timezone ?? 'Africa/Lagos',
+        timezone: profile?.timezone ?? 'Africa/Lagos',
         headline: tp.headline,
         bio: tp.bio,
         expertiseSummary: tp.expertise_summary,

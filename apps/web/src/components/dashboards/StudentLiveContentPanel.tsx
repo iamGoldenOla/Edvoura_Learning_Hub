@@ -24,9 +24,9 @@ export default function StudentLiveContentPanel() {
     const readContent = async () => {
       try {
         const { data } = await supabase
-          .from('live_content')
+          .from('tutor_live_content_posts')
           .select('headline, agenda, explanation, class_task, homework, resource_url, updated_at')
-          .eq('is_current', true)
+          .eq('is_active', true)
           .order('updated_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -35,9 +35,9 @@ export default function StudentLiveContentPanel() {
           setContent({
             headline: data.headline,
             agenda: data.agenda,
-            explanation: data.explanation,
+            explanation: data.explanation ?? '',
             classTask: data.class_task,
-            homework: data.homework,
+            homework: data.homework ?? '',
             resourceUrl: data.resource_url ?? '',
             updatedAt: data.updated_at,
           });
