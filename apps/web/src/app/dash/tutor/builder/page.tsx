@@ -363,6 +363,7 @@ export default function TutorBuilderPage() {
                             const result = await createQuizOrResource(formData);
                             
                             if (result.success && result.id && formResourceFile) {
+                              setFeedback("Publishing record... now uploading file...");
                               const supabase = createClient();
                               const safeName = `${Date.now()}-${formResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
                               const objectPath = `assignments/${result.id}/${safeName}`;
@@ -371,12 +372,22 @@ export default function TutorBuilderPage() {
                                 .from('assignment-assets')
                                 .upload(objectPath, formResourceFile);
 
-                              if (!upload.error) {
-                                await supabase.rpc('attach_assignment_asset', {
+                              if (upload.error) {
+                                console.error("Upload error:", upload.error);
+                                setFeedback(`Record created, but file upload failed: ${upload.error.message}`);
+                              } else {
+                                const attach = await supabase.rpc('attach_assignment_asset', {
                                   target_assignment_id: result.id,
                                   object_path: objectPath,
                                   bucket_id: 'assignment-assets',
                                 });
+
+                                if (attach.error) {
+                                  console.error("Attach error:", attach.error);
+                                  setFeedback(`File uploaded, but failed to link to assignment: ${attach.error.message}`);
+                                } else {
+                                  setFeedback("Everything published and attached successfully!");
+                                }
                               }
                             }
 
@@ -386,7 +397,9 @@ export default function TutorBuilderPage() {
                             setFormResourceName('');
                             setFormResourceFile(null);
                             setShowAssignmentForm(false);
-                            setFeedback(`${activeTool} published successfully.`);
+                            if (!feedback.includes('failed')) {
+                              setFeedback(`${activeTool} published successfully.`);
+                            }
                             await loadBuilderData();
                           } else {
                             // Legacy assignment logic
