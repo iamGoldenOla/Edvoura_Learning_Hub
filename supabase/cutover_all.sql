@@ -2294,7 +2294,8 @@ begin
     scheduled_start_at,
     scheduled_end_at,
     provider,
-    status
+    status,
+    created_by_user_id
   )
   values (
     p_class_id,
@@ -2302,7 +2303,8 @@ begin
     p_scheduled_start_at,
     p_scheduled_end_at,
     p_provider,
-    'scheduled'
+    'scheduled',
+    auth.uid()
   )
   returning id into v_lesson_id;
 
