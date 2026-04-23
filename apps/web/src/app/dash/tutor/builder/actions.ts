@@ -161,3 +161,15 @@ export async function createQuizOrResource(formData: FormData) {
   revalidatePath('/dash/tutor/builder');
   return { success: true };
 }
+
+export async function deleteAssignment(assignmentId: string) {
+  const { error } = await supabaseAdmin
+    .from('assignments')
+    .update({ status: 'archived' })
+    .eq('id', assignmentId);
+
+  if (error) throw new Error(error.message);
+  
+  revalidatePath('/dash/tutor/builder');
+  return { success: true };
+}

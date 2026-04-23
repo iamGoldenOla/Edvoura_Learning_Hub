@@ -147,9 +147,9 @@ export default function StudentBandClientWrapper({
                       href={nextLesson.joinUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800"
+                      className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 shadow-sm animate-pulse"
                     >
-                      Join lesson
+                      Join Live Lesson Now
                     </a>
                   ) : (
                     <Link

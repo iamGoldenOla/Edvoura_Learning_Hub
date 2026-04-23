@@ -8,7 +8,8 @@ import { FileUp, NotebookPen, Star, Target } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/utils/supabase/client';
-import { createQuizOrResource } from './actions';
+import { createQuizOrResource, deleteAssignment } from './actions';
+import { Trash2, Edit3 } from 'lucide-react';
 
 type SubjectOption = {
   id: string;
@@ -483,7 +484,40 @@ export default function TutorBuilderPage() {
               ) : assignments.length > 0 ? (
                 assignments.map((item) => (
                   <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          className="h-8 w-8 p-0"
+                          onClick={() => {
+                            setFormTitle(item.title);
+                            // We don't have all details here, but we can fill what we have
+                            setShowAssignmentForm(true);
+                            setFeedback(`Editing "${item.title}". Update the fields and publish again.`);
+                          }}
+                        >
+                          <Edit3 className="h-4 w-4 text-slate-500" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          className="h-8 w-8 p-0 hover:bg-red-50"
+                          onClick={async () => {
+                            if (confirm('Are you sure you want to delete this assignment?')) {
+                              try {
+                                await deleteAssignment(item.id);
+                                setFeedback('Assignment deleted.');
+                                await loadBuilderData();
+                              } catch (err: any) {
+                                setFeedback(err.message);
+                              }
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </div>
                     <p className="text-xs text-slate-600">{item.className}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-600">
                       <span>{item.due}</span>

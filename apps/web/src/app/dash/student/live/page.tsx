@@ -75,9 +75,9 @@ export default async function LivePage() {
                       href={lesson.joinUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-4 py-2 border-[2px] border-dark bg-yellow shadow-[3px_3px_0px_#060E1C]"
+                      className="px-6 py-3 border-[3px] border-dark bg-yellow font-black uppercase text-[12px] tracking-widest shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all animate-bounce"
                     >
-                      Join Session
+                      Join Session Now
                     </a>
                   ) : null}
                 </div>
