@@ -86,6 +86,7 @@ export type StudentDashboardData = {
     subjectName: string;
     submissionStatus: string | null;
     score: string | null;
+    instructions: string | null;
     feedbackText: string | null;
     resources: Array<{
       id: string;
@@ -319,11 +320,11 @@ async function getDirectStudentDashboardFromSupabase(
   const { data: assignmentsData = [] } = classIds.length
     ? await supabase
         .from('assignments')
-        .select('id, class_id, title, due_at')
+        .select('id, class_id, title, due_at, instructions')
         .in('class_id', classIds)
         .neq('status', 'archived')
         .order('created_at', { ascending: false })
-    : { data: [] as Array<{ id: string; class_id: string; title: string; due_at: string | null }> };
+    : { data: [] as Array<{ id: string; class_id: string; title: string; due_at: string | null; instructions: string | null }> };
 
   const normalizedAssignmentsData = assignmentsData ?? [];
   const assignmentIds = normalizedAssignmentsData.map((item) => item.id);
@@ -419,6 +420,7 @@ async function getDirectStudentDashboardFromSupabase(
       dueAt: item.due_at,
       classTitle: relatedClass?.title ?? 'Untitled class',
       subjectName: relatedClass ? subjectById.get(relatedClass.subject_id) ?? 'General Studies' : 'General Studies',
+      instructions: item.instructions,
       submissionStatus: relatedSubmission?.status ?? null,
       score: relatedGrade?.score != null ? String(relatedGrade.score) : null,
       feedbackText: relatedGrade?.feedback_text ?? null,

@@ -94,6 +94,7 @@ function AssignmentBucket({
               dueLabel={formatDate(item.dueAt)}
               statusLabel={item.submissionStatus ?? 'not started'}
               scoreLabel={graded && item.score ? `Score ${Number(item.score).toFixed(0)}%` : undefined}
+              instructions={item.instructions}
               feedbackText={graded ? item.feedbackText : null}
               allowUpload={!graded}
               resources={item.resources}

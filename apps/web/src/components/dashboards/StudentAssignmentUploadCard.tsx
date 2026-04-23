@@ -12,6 +12,7 @@ type AssignmentCardProps = {
   dueLabel: string;
   statusLabel: string;
   scoreLabel?: string;
+  instructions?: string | null;
   feedbackText?: string | null;
   allowUpload?: boolean;
   resources?: Array<{
@@ -41,6 +42,13 @@ export default function StudentAssignmentUploadCard(props: AssignmentCardProps) 
           <span className="px-3 py-2 border-[2px] border-dark bg-yellow">{props.scoreLabel}</span>
         ) : null}
       </div>
+
+      {props.instructions ? (
+        <div className="mt-4 border-l-4 border-yellow bg-slate-50 p-4">
+          <p className="text-sm font-bold text-dark uppercase tracking-wider text-[10px] mb-1">Tutor Instructions</p>
+          <p className="text-sm normal-case text-dark/80 whitespace-pre-wrap">{props.instructions}</p>
+        </div>
+      ) : null}
 
       {props.allowUpload ? (
         <div className="mt-4 rounded-xl border-[2px] border-dark bg-off-white p-3">
