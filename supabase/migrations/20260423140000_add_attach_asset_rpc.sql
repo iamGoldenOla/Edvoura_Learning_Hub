@@ -1,4 +1,5 @@
 -- Add RPC to attach assets to assignments
+drop function if exists public.attach_assignment_asset(uuid, text, text);
 create or replace function public.attach_assignment_asset(
   target_assignment_id uuid,
   object_path text,
