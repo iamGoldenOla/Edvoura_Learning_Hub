@@ -10,7 +10,7 @@ export default async function LibraryPage() {
   const { data: enrollments } = await supabase
     .from('class_enrollments')
     .select('class_id')
-    .eq('student_user_id', viewer.userId)
+    .eq('student_user_id', viewer.currentUser.userId)
     .eq('status', 'active');
 
   const classIds = enrollments?.map(e => e.class_id) || [];
