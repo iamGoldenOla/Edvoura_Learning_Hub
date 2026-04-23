@@ -2424,7 +2424,7 @@ as $$
 $$;
 
 grant execute on function public.list_student_live_lessons() to authenticated;
--- Fix recursive RLS policies
+-- Fix recursive RLS policies (v2 - resolved ambiguous column names)
 -- 1. Classes
 drop policy if exists "classes_select_authorized" on public.classes;
 create policy "classes_select_authorized" on public.classes
@@ -2435,12 +2435,12 @@ using (
   or private.current_user_is_admin()
   or exists (
     select 1 from public.class_enrollments ce
-    where ce.class_id = id and ce.student_user_id = auth.uid()
+    where ce.class_id = public.classes.id and ce.student_user_id = auth.uid()
   )
   or exists (
     select 1 from public.class_enrollments ce
     join public.parent_student_links psl on psl.student_user_id = ce.student_user_id
-    where ce.class_id = id and psl.parent_user_id = auth.uid() and psl.is_active = true
+    where ce.class_id = public.classes.id and psl.parent_user_id = auth.uid() and psl.is_active = true
   )
 );
 
@@ -2454,14 +2454,14 @@ using (
   or private.current_user_is_admin()
   or exists (
     select 1 from public.classes c
-    where c.id = class_id and (
+    where c.id = public.lessons.class_id and (
       c.primary_tutor_user_id = auth.uid()
       or c.created_by_user_id = auth.uid()
     )
   )
   or exists (
     select 1 from public.class_enrollments ce
-    where ce.class_id = class_id and ce.student_user_id = auth.uid()
+    where ce.class_id = public.lessons.class_id and ce.student_user_id = auth.uid()
   )
 );
 
@@ -2474,13 +2474,13 @@ using (
   or private.current_user_is_admin()
   or exists (
     select 1 from public.classes c
-    where c.id = class_id and (
+    where c.id = public.assignments.class_id and (
       c.primary_tutor_user_id = auth.uid()
       or c.created_by_user_id = auth.uid()
     )
   )
   or exists (
     select 1 from public.class_enrollments ce
-    where ce.class_id = class_id and ce.student_user_id = auth.uid()
+    where ce.class_id = public.assignments.class_id and ce.student_user_id = auth.uid()
   )
 );
