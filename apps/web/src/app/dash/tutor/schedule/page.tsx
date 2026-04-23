@@ -243,13 +243,13 @@ export default async function TutorSchedulePage(props: {
 
                 <div className="space-y-2">
                   <label htmlFor="joinUrl" className="text-sm font-semibold text-slate-700">
-                    Student Google Meet URL
+                    Student Google Meet URL <span className="text-slate-400 font-normal">(Optional)</span>
                   </label>
                   <input
                     id="joinUrl"
                     name="joinUrl"
                     type="url"
-                    placeholder="https://meet.google.com/..."
+                    placeholder="Leave blank to auto-generate via Edvoura Bot"
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
                   />
                 </div>

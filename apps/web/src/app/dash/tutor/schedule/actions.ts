@@ -26,13 +26,34 @@ export async function createTutorLiveSlot(formData: FormData) {
     redirect('/dash/tutor/schedule?error=missing-fields');
   }
 
+  let finalJoinUrl = joinUrl || null;
+  let finalHostUrl = hostUrl || null;
+
+  if (!finalJoinUrl) {
+    try {
+      const { createGoogleMeetSession } = await import('@/lib/google-calendar');
+      const meetUrls = await createGoogleMeetSession({
+        title: title || 'Live Session',
+        startTime: new Date(scheduledStartAt).toISOString(),
+        endTime: new Date(scheduledEndAt).toISOString(),
+      });
+      finalJoinUrl = meetUrls.joinUrl;
+      finalHostUrl = meetUrls.hostUrl;
+    } catch (err: any) {
+      console.error('Failed to auto-generate Google Meet link:', err);
+      // Fallback: we still proceed but without a meet link if it fails?
+      // Or we can return an error to the user to either set up credentials or paste manually.
+      // redirect(`/dash/tutor/schedule?error=${encodeURIComponent(err.message || 'Failed to auto-generate Google Meet link')}`);
+    }
+  }
+
   const { error } = await supabase.rpc('create_tutor_live_slot', {
     p_class_id: classId,
     p_title: title || 'Live Session',
     p_scheduled_start_at: new Date(scheduledStartAt).toISOString(),
     p_scheduled_end_at: new Date(scheduledEndAt).toISOString(),
-    p_join_url: joinUrl || null,
-    p_host_url: hostUrl || null,
+    p_join_url: finalJoinUrl,
+    p_host_url: finalHostUrl,
     p_provider: 'google_meet',
   });
 
