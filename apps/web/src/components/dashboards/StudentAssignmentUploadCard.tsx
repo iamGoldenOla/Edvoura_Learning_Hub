@@ -143,9 +143,14 @@ export default function StudentAssignmentUploadCard(props: AssignmentCardProps) 
       ) : null}
 
       {props.resources && props.resources.length > 0 ? (
-        <div className="mt-4 rounded-xl border-[2px] border-dark bg-off-white p-3">
-          <p className="text-xs font-semibold text-dark/70">Assignment resources</p>
-          <div className="mt-2 space-y-2">
+        <div className="mt-4 rounded-xl border-[3px] border-yellow bg-yellow/5 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="p-1.5 rounded-lg bg-yellow text-dark">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            </div>
+            <p className="text-sm font-black text-dark uppercase tracking-tight">Study Materials</p>
+          </div>
+          <div className="space-y-2">
             {props.resources.map((resource) =>
               resource.downloadUrl ? (
                 <a
@@ -153,13 +158,14 @@ export default function StudentAssignmentUploadCard(props: AssignmentCardProps) 
                   href={resource.downloadUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="block rounded-lg border-[2px] border-dark bg-white px-3 py-2 text-xs font-semibold text-dark"
+                  className="flex items-center justify-between gap-4 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#060E1C] transition-all"
                 >
-                  {resource.fileName}
+                  <span className="truncate">{resource.fileName}</span>
+                  <span className="shrink-0 text-[10px] bg-dark text-white px-2 py-1 rounded-md uppercase">View PDF</span>
                 </a>
               ) : (
-                <div key={resource.id} className="rounded-lg border-[2px] border-dark bg-white px-3 py-2 text-xs font-semibold text-dark/70">
-                  {resource.fileName}
+                <div key={resource.id} className="rounded-xl border-[3px] border-dark/20 bg-white/50 px-4 py-3 text-sm font-bold text-dark/40 italic">
+                  {resource.fileName} (Preparing...)
                 </div>
               ),
             )}
