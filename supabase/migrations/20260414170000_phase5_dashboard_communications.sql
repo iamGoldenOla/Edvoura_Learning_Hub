@@ -31,21 +31,21 @@ create index if not exists dashboard_chat_messages_channel_created_idx
 alter table public.tutor_live_content_posts enable row level security;
 alter table public.dashboard_chat_messages enable row level security;
 
-create policy "tutor_live_content_posts_select_authenticated"
-on public.tutor_live_content_posts
+drop policy if exists "tutor_live_content_posts_select_authenticated" on public.tutor_live_content_posts;
+create policy "tutor_live_content_posts_select_authenticated" on public.tutor_live_content_posts
 for select
 using (auth.uid() is not null);
 
-create policy "tutor_live_content_posts_insert_tutor_only"
-on public.tutor_live_content_posts
+drop policy if exists "tutor_live_content_posts_insert_tutor_only" on public.tutor_live_content_posts;
+create policy "tutor_live_content_posts_insert_tutor_only" on public.tutor_live_content_posts
 for insert
 with check (
   auth.uid() = tutor_user_id
   and private.current_user_has_role('tutor'::public.app_role)
 );
 
-create policy "tutor_live_content_posts_update_owner_tutor_only"
-on public.tutor_live_content_posts
+drop policy if exists "tutor_live_content_posts_update_owner_tutor_only" on public.tutor_live_content_posts;
+create policy "tutor_live_content_posts_update_owner_tutor_only" on public.tutor_live_content_posts
 for update
 using (
   auth.uid() = tutor_user_id
@@ -56,8 +56,8 @@ with check (
   and private.current_user_has_role('tutor'::public.app_role)
 );
 
-create policy "dashboard_chat_messages_select_channel_role_members"
-on public.dashboard_chat_messages
+drop policy if exists "dashboard_chat_messages_select_channel_role_members" on public.dashboard_chat_messages;
+create policy "dashboard_chat_messages_select_channel_role_members" on public.dashboard_chat_messages
 for select
 using (
   auth.uid() is not null
@@ -68,8 +68,8 @@ using (
   )
 );
 
-create policy "dashboard_chat_messages_insert_sender_only"
-on public.dashboard_chat_messages
+drop policy if exists "dashboard_chat_messages_insert_sender_only" on public.dashboard_chat_messages;
+create policy "dashboard_chat_messages_insert_sender_only" on public.dashboard_chat_messages
 for insert
 with check (
   auth.uid() = sender_user_id

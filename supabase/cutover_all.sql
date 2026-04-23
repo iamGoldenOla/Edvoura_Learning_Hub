@@ -1217,8 +1217,8 @@ alter table billing.referrals enable row level security;
 alter table billing.tutor_payout_accounts enable row level security;
 alter table billing.tutor_payouts enable row level security;
 
-create policy "profiles_select_self_admin_or_linked_student"
-on public.profiles
+drop policy if exists "profiles_select_self_admin_or_linked_student" on public.profiles;
+create policy "profiles_select_self_admin_or_linked_student" on public.profiles
 for select
 using (
   id = auth.uid()
@@ -1226,81 +1226,81 @@ using (
   or private.can_access_student(id)
 );
 
-create policy "profiles_update_self"
-on public.profiles
+drop policy if exists "profiles_update_self" on public.profiles;
+create policy "profiles_update_self" on public.profiles
 for update
 using (id = auth.uid())
 with check (id = auth.uid());
 
-create policy "user_roles_select_self_or_admin"
-on public.user_roles
+drop policy if exists "user_roles_select_self_or_admin" on public.user_roles;
+create policy "user_roles_select_self_or_admin" on public.user_roles
 for select
 using (
   user_id = auth.uid()
   or private.current_user_is_admin()
 );
 
-create policy "grade_bands_select_authenticated"
-on public.grade_bands
+drop policy if exists "grade_bands_select_authenticated" on public.grade_bands;
+create policy "grade_bands_select_authenticated" on public.grade_bands
 for select
 using (auth.uid() is not null);
 
-create policy "grade_levels_select_authenticated"
-on public.grade_levels
+drop policy if exists "grade_levels_select_authenticated" on public.grade_levels;
+create policy "grade_levels_select_authenticated" on public.grade_levels
 for select
 using (auth.uid() is not null);
 
-create policy "subjects_select_authenticated"
-on public.subjects
+drop policy if exists "subjects_select_authenticated" on public.subjects;
+create policy "subjects_select_authenticated" on public.subjects
 for select
 using (auth.uid() is not null);
 
-create policy "parent_profiles_select_self_or_admin"
-on public.parent_profiles
+drop policy if exists "parent_profiles_select_self_or_admin" on public.parent_profiles;
+create policy "parent_profiles_select_self_or_admin" on public.parent_profiles
 for select
 using (
   user_id = auth.uid()
   or private.current_user_is_admin()
 );
 
-create policy "parent_profiles_update_self"
-on public.parent_profiles
+drop policy if exists "parent_profiles_update_self" on public.parent_profiles;
+create policy "parent_profiles_update_self" on public.parent_profiles
 for update
 using (user_id = auth.uid())
 with check (user_id = auth.uid());
 
-create policy "student_profiles_select_authorized"
-on public.student_profiles
+drop policy if exists "student_profiles_select_authorized" on public.student_profiles;
+create policy "student_profiles_select_authorized" on public.student_profiles
 for select
 using (
   private.can_access_student(user_id)
   or private.current_user_is_admin()
 );
 
-create policy "tutor_profiles_select_self_or_admin"
-on public.tutor_profiles
+drop policy if exists "tutor_profiles_select_self_or_admin" on public.tutor_profiles;
+create policy "tutor_profiles_select_self_or_admin" on public.tutor_profiles
 for select
 using (
   user_id = auth.uid()
   or private.current_user_is_admin()
 );
 
-create policy "tutor_profiles_update_self"
-on public.tutor_profiles
+drop policy if exists "tutor_profiles_update_self" on public.tutor_profiles;
+create policy "tutor_profiles_update_self" on public.tutor_profiles
 for update
 using (user_id = auth.uid())
 with check (user_id = auth.uid());
 
-create policy "admin_profiles_select_self_or_admin"
-on public.admin_profiles
+drop policy if exists "admin_profiles_select_self_or_admin" on public.admin_profiles;
+create policy "admin_profiles_select_self_or_admin" on public.admin_profiles
 for select
 using (
   user_id = auth.uid()
   or private.current_user_is_admin()
 );
 
-create policy "parent_student_links_select_authorized"
-on public.parent_student_links
+drop policy if exists "parent_student_links_select_authorized" on public.parent_student_links;
+create policy "parent_student_links_select_authorized" on public.parent_student_links
 for select
 using (
   parent_user_id = auth.uid()
@@ -1308,13 +1308,13 @@ using (
   or private.current_user_is_admin()
 );
 
-create policy "classes_select_authorized"
-on public.classes
+drop policy if exists "classes_select_authorized" on public.classes;
+create policy "classes_select_authorized" on public.classes
 for select
 using (private.can_access_class(id));
 
-create policy "class_enrollments_select_authorized"
-on public.class_enrollments
+drop policy if exists "class_enrollments_select_authorized" on public.class_enrollments;
+create policy "class_enrollments_select_authorized" on public.class_enrollments
 for select
 using (
   student_user_id = auth.uid()
@@ -1322,13 +1322,13 @@ using (
   or private.current_user_is_admin()
 );
 
-create policy "lessons_select_authorized"
-on public.lessons
+drop policy if exists "lessons_select_authorized" on public.lessons;
+create policy "lessons_select_authorized" on public.lessons
 for select
 using (private.can_access_lesson(id));
 
-create policy "lesson_attendance_select_authorized"
-on public.lesson_attendance
+drop policy if exists "lesson_attendance_select_authorized" on public.lesson_attendance;
+create policy "lesson_attendance_select_authorized" on public.lesson_attendance
 for select
 using (
   student_user_id = auth.uid()
@@ -1343,66 +1343,66 @@ using (
   )
 );
 
-create policy "assignments_select_authorized"
-on public.assignments
+drop policy if exists "assignments_select_authorized" on public.assignments;
+create policy "assignments_select_authorized" on public.assignments
 for select
 using (private.can_access_assignment(id));
 
-create policy "assignment_files_select_authorized"
-on public.assignment_files
+drop policy if exists "assignment_files_select_authorized" on public.assignment_files;
+create policy "assignment_files_select_authorized" on public.assignment_files
 for select
 using (private.can_access_assignment(assignment_id));
 
-create policy "assignment_submissions_select_authorized"
-on public.assignment_submissions
+drop policy if exists "assignment_submissions_select_authorized" on public.assignment_submissions;
+create policy "assignment_submissions_select_authorized" on public.assignment_submissions
 for select
 using (private.can_access_submission(id));
 
-create policy "submission_files_select_authorized"
-on public.submission_files
+drop policy if exists "submission_files_select_authorized" on public.submission_files;
+create policy "submission_files_select_authorized" on public.submission_files
 for select
 using (private.can_access_submission(submission_id));
 
-create policy "submission_grades_select_authorized"
-on public.submission_grades
+drop policy if exists "submission_grades_select_authorized" on public.submission_grades;
+create policy "submission_grades_select_authorized" on public.submission_grades
 for select
 using (private.can_access_submission(submission_id));
 
-create policy "quizzes_select_authorized"
-on public.quizzes
+drop policy if exists "quizzes_select_authorized" on public.quizzes;
+create policy "quizzes_select_authorized" on public.quizzes
 for select
 using (private.can_access_quiz(id));
 
-create policy "quiz_questions_select_authorized"
-on public.quiz_questions
+drop policy if exists "quiz_questions_select_authorized" on public.quiz_questions;
+create policy "quiz_questions_select_authorized" on public.quiz_questions
 for select
 using (private.can_access_quiz(quiz_id));
 
-create policy "quiz_attempts_select_authorized"
-on public.quiz_attempts
+drop policy if exists "quiz_attempts_select_authorized" on public.quiz_attempts;
+create policy "quiz_attempts_select_authorized" on public.quiz_attempts
 for select
 using (private.can_access_quiz_attempt(id));
 
-create policy "quiz_responses_select_authorized"
-on public.quiz_responses
+drop policy if exists "quiz_responses_select_authorized" on public.quiz_responses;
+create policy "quiz_responses_select_authorized" on public.quiz_responses
 for select
 using (private.can_access_quiz_attempt(attempt_id));
 
-create policy "progress_snapshots_select_authorized"
-on public.progress_snapshots
+drop policy if exists "progress_snapshots_select_authorized" on public.progress_snapshots;
+create policy "progress_snapshots_select_authorized" on public.progress_snapshots
 for select
 using (
   private.can_access_student(student_user_id)
   or private.current_user_is_admin()
 );
 
-create policy "notifications_select_recipient"
-on public.notifications
+drop policy if exists "notifications_select_recipient" on public.notifications;
+create policy "notifications_select_recipient" on public.notifications
 for select
 using (recipient_user_id = auth.uid());
 
-create policy "notification_deliveries_select_recipient"
-on public.notification_deliveries
+drop policy if exists "notification_deliveries_select_recipient" on public.notification_deliveries;
+create policy "notification_deliveries_select_recipient" on public.notification_deliveries
 for select
 using (
   exists (
@@ -1413,18 +1413,18 @@ using (
   )
 );
 
-create policy "billing_plans_select_active_authenticated"
-on billing.plans
+drop policy if exists "billing_plans_select_active_authenticated" on billing.plans;
+create policy "billing_plans_select_active_authenticated" on billing.plans
 for select
 using (is_active = true and auth.uid() is not null);
 
-create policy "billing_subscriptions_select_owner_or_admin"
-on billing.subscriptions
+drop policy if exists "billing_subscriptions_select_owner_or_admin" on billing.subscriptions;
+create policy "billing_subscriptions_select_owner_or_admin" on billing.subscriptions
 for select
 using (private.can_access_billing_account(account_owner_user_id));
 
-create policy "billing_invoices_select_owner_or_admin"
-on billing.invoices
+drop policy if exists "billing_invoices_select_owner_or_admin" on billing.invoices;
+create policy "billing_invoices_select_owner_or_admin" on billing.invoices
 for select
 using (
   private.current_user_is_admin()
@@ -1436,8 +1436,8 @@ using (
   )
 );
 
-create policy "billing_payments_select_owner_or_admin"
-on billing.payments
+drop policy if exists "billing_payments_select_owner_or_admin" on billing.payments;
+create policy "billing_payments_select_owner_or_admin" on billing.payments
 for select
 using (
   private.current_user_is_admin()
@@ -1451,13 +1451,13 @@ using (
   )
 );
 
-create policy "billing_coupons_select_authenticated"
-on billing.coupons
+drop policy if exists "billing_coupons_select_authenticated" on billing.coupons;
+create policy "billing_coupons_select_authenticated" on billing.coupons
 for select
 using (is_active = true and auth.uid() is not null);
 
-create policy "billing_referrals_select_owner_or_admin"
-on billing.referrals
+drop policy if exists "billing_referrals_select_owner_or_admin" on billing.referrals;
+create policy "billing_referrals_select_owner_or_admin" on billing.referrals
 for select
 using (
   referrer_user_id = auth.uid()
@@ -1465,24 +1465,24 @@ using (
   or private.current_user_is_admin()
 );
 
-create policy "billing_tutor_payout_accounts_select_owner_or_admin"
-on billing.tutor_payout_accounts
+drop policy if exists "billing_tutor_payout_accounts_select_owner_or_admin" on billing.tutor_payout_accounts;
+create policy "billing_tutor_payout_accounts_select_owner_or_admin" on billing.tutor_payout_accounts
 for select
 using (
   tutor_user_id = auth.uid()
   or private.current_user_is_admin()
 );
 
-create policy "billing_tutor_payouts_select_owner_or_admin"
-on billing.tutor_payouts
+drop policy if exists "billing_tutor_payouts_select_owner_or_admin" on billing.tutor_payouts;
+create policy "billing_tutor_payouts_select_owner_or_admin" on billing.tutor_payouts
 for select
 using (
   tutor_user_id = auth.uid()
   or private.current_user_is_admin()
 );
 
-create policy "storage_avatars_select_owner"
-on storage.objects
+drop policy if exists "storage_avatars_select_owner" on storage.objects;
+create policy "storage_avatars_select_owner" on storage.objects
 for select
 to authenticated
 using (
@@ -1490,8 +1490,8 @@ using (
   and ((storage.foldername(name))[1] = auth.uid()::text or private.current_user_is_admin())
 );
 
-create policy "storage_avatars_insert_owner"
-on storage.objects
+drop policy if exists "storage_avatars_insert_owner" on storage.objects;
+create policy "storage_avatars_insert_owner" on storage.objects
 for insert
 to authenticated
 with check (
@@ -1502,22 +1502,52 @@ with check (
 -- The Kysely types already reference paystack_* names. This migration aligns the DB columns.
 
 -- billing.plans: stripe_price_id → paystack_plan_code
-alter table billing.plans rename column stripe_price_id to paystack_plan_code;
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'billing' and table_name = 'plans' and column_name = 'stripe_price_id') then
+    alter table billing.plans rename column stripe_price_id to paystack_plan_code;
+  end if;
+end $$;
 
 -- billing.subscriptions: stripe_customer_id → paystack_customer_code
-alter table billing.subscriptions rename column stripe_customer_id to paystack_customer_code;
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'billing' and table_name = 'subscriptions' and column_name = 'stripe_customer_id') then
+    alter table billing.subscriptions rename column stripe_customer_id to paystack_customer_code;
+  end if;
+end $$;
 
 -- billing.subscriptions: stripe_subscription_id → paystack_subscription_code
-alter table billing.subscriptions rename column stripe_subscription_id to paystack_subscription_code;
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'billing' and table_name = 'subscriptions' and column_name = 'stripe_subscription_id') then
+    alter table billing.subscriptions rename column stripe_subscription_id to paystack_subscription_code;
+  end if;
+end $$;
 
 -- billing.invoices: stripe_invoice_id → paystack_reference
-alter table billing.invoices rename column stripe_invoice_id to paystack_reference;
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'billing' and table_name = 'invoices' and column_name = 'stripe_invoice_id') then
+    alter table billing.invoices rename column stripe_invoice_id to paystack_reference;
+  end if;
+end $$;
 
 -- billing.payments: stripe_payment_intent_id → paystack_payment_reference
-alter table billing.payments rename column stripe_payment_intent_id to paystack_payment_reference;
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'billing' and table_name = 'payments' and column_name = 'stripe_payment_intent_id') then
+    alter table billing.payments rename column stripe_payment_intent_id to paystack_payment_reference;
+  end if;
+end $$;
 
 -- billing.tutor_payout_accounts: stripe_connected_account_id → paystack_subaccount_code
-alter table billing.tutor_payout_accounts rename column stripe_connected_account_id to paystack_subaccount_code;
+do $$
+begin
+  if exists (select 1 from information_schema.columns where table_schema = 'billing' and table_name = 'tutor_payout_accounts' and column_name = 'stripe_connected_account_id') then
+    alter table billing.tutor_payout_accounts rename column stripe_connected_account_id to paystack_subaccount_code;
+  end if;
+end $$;
 
 -- Add paystack_customer_code to parent_profiles for quick lookup
 alter table public.parent_profiles
@@ -1560,21 +1590,21 @@ create index if not exists dashboard_chat_messages_channel_created_idx
 alter table public.tutor_live_content_posts enable row level security;
 alter table public.dashboard_chat_messages enable row level security;
 
-create policy "tutor_live_content_posts_select_authenticated"
-on public.tutor_live_content_posts
+drop policy if exists "tutor_live_content_posts_select_authenticated" on public.tutor_live_content_posts;
+create policy "tutor_live_content_posts_select_authenticated" on public.tutor_live_content_posts
 for select
 using (auth.uid() is not null);
 
-create policy "tutor_live_content_posts_insert_tutor_only"
-on public.tutor_live_content_posts
+drop policy if exists "tutor_live_content_posts_insert_tutor_only" on public.tutor_live_content_posts;
+create policy "tutor_live_content_posts_insert_tutor_only" on public.tutor_live_content_posts
 for insert
 with check (
   auth.uid() = tutor_user_id
   and private.current_user_has_role('tutor'::public.app_role)
 );
 
-create policy "tutor_live_content_posts_update_owner_tutor_only"
-on public.tutor_live_content_posts
+drop policy if exists "tutor_live_content_posts_update_owner_tutor_only" on public.tutor_live_content_posts;
+create policy "tutor_live_content_posts_update_owner_tutor_only" on public.tutor_live_content_posts
 for update
 using (
   auth.uid() = tutor_user_id
@@ -1585,8 +1615,8 @@ with check (
   and private.current_user_has_role('tutor'::public.app_role)
 );
 
-create policy "dashboard_chat_messages_select_channel_role_members"
-on public.dashboard_chat_messages
+drop policy if exists "dashboard_chat_messages_select_channel_role_members" on public.dashboard_chat_messages;
+create policy "dashboard_chat_messages_select_channel_role_members" on public.dashboard_chat_messages
 for select
 using (
   auth.uid() is not null
@@ -1597,8 +1627,8 @@ using (
   )
 );
 
-create policy "dashboard_chat_messages_insert_sender_only"
-on public.dashboard_chat_messages
+drop policy if exists "dashboard_chat_messages_insert_sender_only" on public.dashboard_chat_messages;
+create policy "dashboard_chat_messages_insert_sender_only" on public.dashboard_chat_messages
 for insert
 with check (
   auth.uid() = sender_user_id
@@ -1627,8 +1657,8 @@ create index if not exists learning_activity_events_class_created_idx
 
 alter table public.learning_activity_events enable row level security;
 
-create policy "learning_activity_events_select_admin_tutor_parent_student"
-on public.learning_activity_events
+drop policy if exists "learning_activity_events_select_admin_tutor_parent_student" on public.learning_activity_events;
+create policy "learning_activity_events_select_admin_tutor_parent_student" on public.learning_activity_events
 for select
 using (
   private.current_user_is_admin()
@@ -1646,8 +1676,8 @@ using (
   )
 );
 
-create policy "learning_activity_events_insert_admin_tutor"
-on public.learning_activity_events
+drop policy if exists "learning_activity_events_insert_admin_tutor" on public.learning_activity_events;
+create policy "learning_activity_events_insert_admin_tutor" on public.learning_activity_events
 for insert
 with check (
   auth.uid() is not null
@@ -2080,8 +2110,8 @@ grant execute on function public.sync_current_user_membership() to authenticated
 grant execute on function public.create_tutor_assignment(text, text, text, text, timestamptz, numeric) to authenticated;
 grant execute on function public.submit_student_assignment(uuid, text, jsonb) to authenticated;
 grant execute on function public.grade_student_submission(uuid, numeric, text, jsonb) to authenticated;
-create policy "storage_assignment_assets_select_authorized"
-on storage.objects
+drop policy if exists "storage_assignment_assets_select_authorized" on storage.objects;
+create policy "storage_assignment_assets_select_authorized" on storage.objects
 for select
 to authenticated
 using (
@@ -2091,8 +2121,8 @@ using (
   and private.can_access_assignment(((storage.foldername(name))[2])::uuid)
 );
 
-create policy "storage_assignment_assets_insert_tutor"
-on storage.objects
+drop policy if exists "storage_assignment_assets_insert_tutor" on storage.objects;
+create policy "storage_assignment_assets_insert_tutor" on storage.objects
 for insert
 to authenticated
 with check (
@@ -2106,8 +2136,8 @@ with check (
   )
 );
 
-create policy "storage_student_work_select_authorized"
-on storage.objects
+drop policy if exists "storage_student_work_select_authorized" on storage.objects;
+create policy "storage_student_work_select_authorized" on storage.objects
 for select
 to authenticated
 using (
@@ -2117,8 +2147,8 @@ using (
   and private.can_access_submission(((storage.foldername(name))[2])::uuid)
 );
 
-create policy "storage_student_work_insert_authorized"
-on storage.objects
+drop policy if exists "storage_student_work_insert_authorized" on storage.objects;
+create policy "storage_student_work_insert_authorized" on storage.objects
 for insert
 to authenticated
 with check (

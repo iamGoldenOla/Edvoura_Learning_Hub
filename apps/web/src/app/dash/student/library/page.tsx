@@ -6,11 +6,21 @@ export default async function LibraryPage() {
   const viewer = await requireAppViewer();
   const supabase = await createClient();
 
-  // Fetch events from learning_activity_events where event_type = 'lesson_resource_uploaded'
+  // 1. Get the student's enrolled class IDs
+  const { data: enrollments } = await supabase
+    .from('class_enrollments')
+    .select('class_id')
+    .eq('student_user_id', viewer.userId)
+    .eq('status', 'active');
+
+  const classIds = enrollments?.map(e => e.class_id) || [];
+
+  // 2. Fetch events (Resources + Spelling Bees) for those classes
   const { data: resources } = await supabase
     .from('learning_activity_events')
-    .select('id, payload, created_at')
-    .eq('event_type', 'lesson_resource_uploaded')
+    .select('id, event_type, payload, created_at')
+    .in('event_type', ['lesson_resource_uploaded', 'spelling_bee_created'])
+    .in('class_id', classIds)
     .order('created_at', { ascending: false });
 
   return (
@@ -27,11 +37,18 @@ export default async function LibraryPage() {
           resources.map((resource) => (
             <div key={resource.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-edvoura-navy hover:bg-slate-50">
               <div className="flex items-start gap-4">
-                <div className="rounded-lg bg-blue-100 p-3 text-blue-600">
+                <div className={`rounded-lg p-3 ${resource.event_type === 'spelling_bee_created' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
                   <FileText className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900">{resource.payload.title}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900">{resource.payload.title}</h3>
+                    {resource.event_type === 'spelling_bee_created' && (
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                        Spelling Bee
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-1 text-sm text-slate-600">{resource.payload.description || 'No description provided.'}</p>
                   <p className="mt-2 text-xs text-slate-400">
                     {new Date(resource.created_at).toLocaleDateString()}

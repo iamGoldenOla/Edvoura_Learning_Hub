@@ -17,8 +17,8 @@ create index if not exists learning_activity_events_class_created_idx
 
 alter table public.learning_activity_events enable row level security;
 
-create policy "learning_activity_events_select_admin_tutor_parent_student"
-on public.learning_activity_events
+drop policy if exists "learning_activity_events_select_admin_tutor_parent_student" on public.learning_activity_events;
+create policy "learning_activity_events_select_admin_tutor_parent_student" on public.learning_activity_events
 for select
 using (
   private.current_user_is_admin()
@@ -36,8 +36,8 @@ using (
   )
 );
 
-create policy "learning_activity_events_insert_admin_tutor"
-on public.learning_activity_events
+drop policy if exists "learning_activity_events_insert_admin_tutor" on public.learning_activity_events;
+create policy "learning_activity_events_insert_admin_tutor" on public.learning_activity_events
 for insert
 with check (
   auth.uid() is not null

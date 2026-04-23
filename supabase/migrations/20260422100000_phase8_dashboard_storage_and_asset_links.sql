@@ -1,5 +1,5 @@
-create policy "storage_assignment_assets_select_authorized"
-on storage.objects
+drop policy if exists "storage_assignment_assets_select_authorized" on storage.objects;
+create policy "storage_assignment_assets_select_authorized" on storage.objects
 for select
 to authenticated
 using (
@@ -9,8 +9,8 @@ using (
   and private.can_access_assignment(((storage.foldername(name))[2])::uuid)
 );
 
-create policy "storage_assignment_assets_insert_tutor"
-on storage.objects
+drop policy if exists "storage_assignment_assets_insert_tutor" on storage.objects;
+create policy "storage_assignment_assets_insert_tutor" on storage.objects
 for insert
 to authenticated
 with check (
@@ -24,8 +24,8 @@ with check (
   )
 );
 
-create policy "storage_student_work_select_authorized"
-on storage.objects
+drop policy if exists "storage_student_work_select_authorized" on storage.objects;
+create policy "storage_student_work_select_authorized" on storage.objects
 for select
 to authenticated
 using (
@@ -35,8 +35,8 @@ using (
   and private.can_access_submission(((storage.foldername(name))[2])::uuid)
 );
 
-create policy "storage_student_work_insert_authorized"
-on storage.objects
+drop policy if exists "storage_student_work_insert_authorized" on storage.objects;
+create policy "storage_student_work_insert_authorized" on storage.objects
 for insert
 to authenticated
 with check (

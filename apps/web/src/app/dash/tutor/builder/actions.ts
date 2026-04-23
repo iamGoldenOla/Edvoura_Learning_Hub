@@ -113,14 +113,31 @@ export async function createQuizOrResource(formData: FormData) {
       });
 
     if (error) throw new Error(error.message);
-  } else if (type === 'resource' || type === 'spelling-bee') {
-    // Log as a learning activity event since we don't have a resources or spelling bee table
+  } else if (type === 'spelling-bee') {
+    // Create an actual assignment so it shows up in "Home Work"
+    const description = formData.get('description') as string;
+    
+    const { error } = await supabaseAdmin
+      .from('assignments')
+      .insert({
+        class_id: tutorClass!.id,
+        title: `Spelling Bee: ${title.trim()}`,
+        instructions: description?.trim() || null,
+        status: 'published',
+        points_possible: 100,
+        created_by_user_id: tutorId,
+        due_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Default 1 week due
+      });
+
+    if (error) throw new Error(error.message);
+  } else if (type === 'resource') {
+    // Log as a learning activity event for the Resource Library
     const description = formData.get('description') as string;
     
     const { error } = await supabaseAdmin
       .from('learning_activity_events')
       .insert({
-        event_type: type === 'resource' ? 'lesson_resource_uploaded' : 'spelling_bee_created',
+        event_type: 'lesson_resource_uploaded',
         actor_user_id: tutorId,
         class_id: tutorClass!.id,
         payload: {
