@@ -101,7 +101,7 @@ export async function createQuizOrResource(formData: FormData) {
     const instructions = formData.get('instructions') as string;
     const timeLimit = formData.get('timeLimit') as string;
 
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('quizzes')
       .insert({
         class_id: tutorClass!.id,
@@ -110,14 +110,17 @@ export async function createQuizOrResource(formData: FormData) {
         time_limit_minutes: timeLimit ? parseInt(timeLimit, 10) : null,
         status: 'published',
         created_by_user_id: tutorId
-      });
+      })
+      .select('id')
+      .single();
 
     if (error) throw new Error(error.message);
+    return { success: true, id: data.id };
   } else if (type === 'spelling-bee') {
     // Create an actual assignment so it shows up in "Home Work"
     const description = formData.get('description') as string;
     
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('assignments')
       .insert({
         class_id: tutorClass!.id,
@@ -127,14 +130,17 @@ export async function createQuizOrResource(formData: FormData) {
         points_possible: 100,
         created_by_user_id: tutorId,
         due_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Default 1 week due
-      });
+      })
+      .select('id')
+      .single();
 
     if (error) throw new Error(error.message);
+    return { success: true, id: data.id };
   } else if (type === 'resource') {
     // Log as a learning activity event for the Resource Library
     const description = formData.get('description') as string;
     
-    const { error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('learning_activity_events')
       .insert({
         event_type: 'lesson_resource_uploaded',
@@ -144,9 +150,12 @@ export async function createQuizOrResource(formData: FormData) {
           title: title.trim(),
           description: description?.trim() || null
         }
-      });
+      })
+      .select('id')
+      .single();
 
     if (error) throw new Error(error.message);
+    return { success: true, id: data.id };
   }
 
   revalidatePath('/dash/tutor/builder');

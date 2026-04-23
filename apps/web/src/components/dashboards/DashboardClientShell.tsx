@@ -280,10 +280,10 @@ export default function DashboardClientShell({
                 active={pathname === '/dash/student/classes'}
               />
               <BottomNavItem
-                href="/dash/student/assignments"
+                href="/dash/student/homework"
                 label="Homework"
                 icon={CheckCircle2}
-                active={pathname === '/dash/student/assignments'}
+                active={pathname === '/dash/student/homework' || pathname === '/dash/student/assignments'}
               />
               <BottomNavItem
                 href="/dash/student/games"

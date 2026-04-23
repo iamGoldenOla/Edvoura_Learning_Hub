@@ -53,6 +53,7 @@ const KNOWN_STUDENT_ROUTES = new Set([
   '/dash/student',
   '/dash/student/analytics',
   '/dash/student/assignments',
+  '/dash/student/homework',
   '/dash/student/badges',
   '/dash/student/classes',
   '/dash/student/exam-prep',
@@ -89,7 +90,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
         { href: '/dash/student', icon: Layout, label: 'Home', exact: true },
         { href: '/dash/student/classes', icon: BookOpen, label: 'Classes' },
         { href: '/dash/student/live', icon: Video, label: 'Join Lesson' },
-        { href: '/dash/student/assignments', icon: ClipboardList, label: 'Homework' },
+        { href: '/dash/student/homework', icon: ClipboardList, label: 'Homework' },
       ],
     },
     {

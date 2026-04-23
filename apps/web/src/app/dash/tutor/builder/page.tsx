@@ -360,8 +360,26 @@ export default function TutorBuilderPage() {
                               formData.append('description', formInstructions.trim());
                             }
                             
-                            await createQuizOrResource(formData);
+                            const result = await createQuizOrResource(formData);
                             
+                            if (result.success && result.id && formResourceFile) {
+                              const supabase = createClient();
+                              const safeName = `${Date.now()}-${formResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+                              const objectPath = `assignments/${result.id}/${safeName}`;
+                              
+                              const upload = await supabase.storage
+                                .from('assignment-assets')
+                                .upload(objectPath, formResourceFile);
+
+                              if (!upload.error) {
+                                await supabase.rpc('attach_assignment_asset', {
+                                  target_assignment_id: result.id,
+                                  object_path: objectPath,
+                                  bucket_id: 'assignment-assets',
+                                });
+                              }
+                            }
+
                             setFormTitle('');
                             setFormInstructions('');
                             setFormDueAt('');
