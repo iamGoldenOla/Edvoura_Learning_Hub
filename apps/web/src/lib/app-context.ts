@@ -744,6 +744,7 @@ export type TutorDashboardData = {
     scheduledEndAt: string;
     status: string;
     studentCount: number;
+    joinUrl: string | null;
   }>;
   gradingQueue: Array<{
     id: string;
