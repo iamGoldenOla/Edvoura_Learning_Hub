@@ -56,15 +56,17 @@ const NavItem = ({
   label: string;
   active?: boolean;
 }) => (
-  <Link href={href} className="block">
+  <Link href={href} className="block group mb-1.5">
     <div
-      className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-        active ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
+      className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] ${
+        active 
+          ? 'bg-blue-100 border-dark text-dark shadow-[3px_3px_0px_#060E1C]' 
+          : 'bg-transparent border-transparent text-dark/70 hover:bg-white hover:border-dark hover:text-dark hover:shadow-[3px_3px_0px_#060E1C]'
       }`}
     >
-      <Icon className="h-4 w-4 shrink-0" />
-      <span className="text-sm font-semibold">{label}</span>
-      {active ? <div className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400" /> : null}
+      <Icon className="h-5 w-5 shrink-0" />
+      <span className="text-sm font-black tracking-tight">{label}</span>
+      {active ? <div className="ml-auto h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-yellow" /> : null}
     </div>
   </Link>
 );
@@ -165,15 +167,15 @@ export default function DashboardClientShell({
     <BandProvider initialBand={initialBand}>
       <DashboardToastViewport />
       <DashboardQueryActionBridge />
-      <div className="flex min-h-screen bg-slate-100 text-slate-900">
-        <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r border-slate-200 bg-slate-950 p-6 lg:flex">
-          <div className="mb-8 flex items-center gap-3 rounded-xl border border-slate-700 bg-slate-900 px-3 py-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-400 text-slate-950">
-              <Crown className="h-5 w-5" />
+      <div className="flex min-h-screen bg-off-white text-dark">
+        <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r-[4px] border-dark bg-slate-50 p-6 lg:flex shadow-[4px_0_0_#060E1C] z-30">
+          <div className="mb-8 flex items-center gap-4 rounded-2xl border-[3px] border-dark bg-yellow px-4 py-4 shadow-[4px_4px_0px_#060E1C]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[3px] border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C]">
+              <Crown className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Edvoura</p>
-              <p className="text-xs text-slate-400">
+              <p className="text-lg font-black text-dark tracking-tight leading-none">EDVOURA</p>
+              <p className="text-[9px] font-black text-dark/70 uppercase tracking-[0.2em] mt-1">
                 {effectiveRole === 'tutor'
                   ? 'Tutor Portal'
                   : effectiveRole === 'parent'
@@ -187,8 +189,8 @@ export default function DashboardClientShell({
             </div>
           </div>
 
-          <nav className="custom-scrollbar flex-1 space-y-2 overflow-y-auto pr-1">
-            <p className="px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Navigation</p>
+          <nav className="custom-scrollbar flex-1 space-y-1 overflow-y-auto pr-2 pb-6">
+            <p className="px-4 mb-2 mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">Navigation</p>
 
             <NavItem
               href={`/dash/${effectiveRole}`}
@@ -202,22 +204,22 @@ export default function DashboardClientShell({
             {effectiveRole === 'parent' ? <ParentSidebarNav /> : null}
             {effectiveRole === 'admin' ? <AdminSidebarNav isSuperAdmin={isSuperAdmin} /> : null}
 
-            <p className="px-3 pt-5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">System</p>
+            <p className="px-4 mb-2 mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">System</p>
             <NavItem href="/" icon={ArrowLeft} label="Exit Portal" />
           </nav>
 
-          <div className="mt-6 space-y-4 border-t border-slate-800 pt-5">
-            <div className="flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900 p-3">
-              <div className="h-10 w-10 overflow-hidden rounded-lg border border-slate-700 bg-slate-800 p-1">
+          <div className="mt-4 space-y-4 border-t-[3px] border-dark/10 pt-6">
+            <div className="flex items-center gap-3 rounded-2xl border-[3px] border-dark bg-white p-3 shadow-[4px_4px_0px_#060E1C]">
+              <div className="h-10 w-10 overflow-hidden rounded-xl border-[2px] border-dark bg-off-white">
                 <img
                   src={avatarUrl}
                   alt="Avatar"
-                  className="w-full h-full"
+                  className="w-full h-full object-cover"
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-white">{viewerName}</p>
-                <p className="truncate text-xs text-slate-400">
+                <p className="truncate text-sm font-black text-dark">{viewerName}</p>
+                <p className="truncate text-[10px] font-bold text-dark/60 uppercase tracking-widest">
                   {effectiveRole === 'student'
                     ? viewerSecondaryLabel
                     : isSuperAdmin
@@ -230,35 +232,35 @@ export default function DashboardClientShell({
           </div>
         </aside>
 
-        <div className="flex h-screen flex-1 flex-col overflow-hidden">
-          <header className="border-b border-slate-200 bg-white px-5 py-4 sm:px-8">
+        <div className="flex h-screen flex-1 flex-col overflow-hidden bg-off-white">
+          <header className="border-b-[4px] border-dark bg-white px-5 py-4 sm:px-8 z-20">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="hidden items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 sm:flex">
-                  <Search className="h-4 w-4 text-slate-500" />
-                  <span className="text-xs font-medium text-slate-500">Search</span>
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="hidden items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 sm:flex shadow-[2px_2px_0px_#060E1C]">
+                  <Search className="h-4 w-4 text-dark/50" />
+                  <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>
                 </div>
-                <p className="truncate text-sm font-medium text-slate-600">
+                <p className="truncate text-sm font-black text-dark/60">
                   {roleLabel}
                 </p>
                 {effectiveRole === 'student' ? <StudentBandSwitcher /> : null}
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-right">
-                  <p suppressHydrationWarning className="text-sm font-semibold text-slate-900">
+              <div className="flex items-center gap-4">
+                <div className="rounded-xl border-[3px] border-dark bg-white px-4 py-2 text-right shadow-[2px_2px_0px_#060E1C]">
+                  <p suppressHydrationWarning className="text-sm font-black text-dark">
                     {timeLabel}
                   </p>
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-slate-500">Local Time</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-dark/50">Local Time</p>
                 </div>
 
                 <button
                   type="button"
-                  className="relative rounded-lg border border-slate-300 bg-white p-2.5 text-slate-700 hover:bg-slate-50"
+                  className="relative rounded-xl border-[3px] border-dark bg-white p-3 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95"
                   aria-label="Notifications"
                 >
                   <Bell className="h-5 w-5" />
-                  <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber-500" />
+                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-rose-500" />
                 </button>
               </div>
             </div>

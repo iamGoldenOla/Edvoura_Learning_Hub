@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/utils/supabase/client';
 
@@ -137,121 +137,163 @@ export default function TutorGradingPage() {
   }, []);
 
   return (
-    <div className="p-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-edvoura-navy mb-2">Grading Tasks</h1>
-        <p className="text-slate-600">Live submission queue fed directly from student assignment activity.</p>
-      </div>
-
-      {message ? (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">{message}</div>
-      ) : null}
-
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Link href="/dash/tutor/builder?tool=assignment">
-          <Button variant="primary" className="text-xs">Create Assignment</Button>
-        </Link>
-        <Link href="/dash/tutor/roster">
-          <Button variant="outline" className="border-slate-300 bg-white text-xs">Open Student Roster</Button>
-        </Link>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Needs Grading ({queue.filter((item) => item.status !== 'graded').length})</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isLoading ? (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Loading submissions...</div>
-          ) : queue.length > 0 ? (
-            queue.map((item) => (
-              <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">{item.assignmentTitle}</p>
-                    <p className="text-xs text-slate-600">{item.studentName}</p>
-                    <p className="text-xs text-slate-500">{item.submittedAt}</p>
-                  </div>
-                  <span className="rounded-full bg-white px-3 py-1 text-[11px] uppercase tracking-[0.12em] text-slate-600">
-                    {item.status}
-                  </span>
-                </div>
-
-                {item.textResponse ? (
-                  <div className="rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-700">
-                    {item.textResponse}
-                  </div>
-                ) : null}
-
-                {item.fileName ? (
-                  <p className="text-xs text-slate-600">Student attached: {item.fileName}</p>
-                ) : null}
-
-                <div className="grid gap-3 md:grid-cols-[120px_1fr_auto]">
-                  <input
-                    value={item.score}
-                    onChange={(event) =>
-                      setQueue((current) =>
-                        current.map((entry) => (entry.id === item.id ? { ...entry, score: event.target.value } : entry)),
-                      )
-                    }
-                    placeholder="Score"
-                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                  />
-                  <input
-                    value={item.feedback}
-                    onChange={(event) =>
-                      setQueue((current) =>
-                        current.map((entry) => (entry.id === item.id ? { ...entry, feedback: event.target.value } : entry)),
-                      )
-                    }
-                    placeholder="Feedback"
-                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                  />
-                  <Button
-                    variant="primary"
-                    className="text-xs"
-                    disabled={savingId === item.id}
-                    onClick={async () => {
-                      const numericScore = Number(item.score);
-
-                      if (!Number.isFinite(numericScore)) {
-                        setMessage('Enter a valid numeric score before grading.');
-                        return;
-                      }
-
-                      setSavingId(item.id);
-                      const supabase = createClient();
-                      const { error } = await supabase.rpc('grade_student_submission', {
-                        target_submission_id: item.id,
-                        score: numericScore,
-                        feedback_text: item.feedback.trim() || null,
-                        rubric_json: {},
-                      });
-                      setSavingId(null);
-
-                      if (error) {
-                        setMessage(error.message);
-                        return;
-                      }
-
-                      setMessage('Submission graded successfully.');
-                      await loadQueue();
-                    }}
-                  >
-                    {savingId === item.id ? 'Saving...' : item.status === 'graded' ? 'Update Grade' : 'Grade'}
-                  </Button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-12 text-slate-500">
-              <span className="text-4xl block mb-4">✨</span>
-              <p>No student submissions have arrived yet.</p>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        
+        {/* Header */}
+        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div className="space-y-3 min-w-0">
+              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+                ASSESSMENT CENTER
+              </span>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+                Grading Tasks
+              </h1>
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+                Live submission queue fed directly from student assignment activity. Review and grade work in real-time.
+              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            
+            <div className="flex flex-wrap items-center gap-4">
+              <Link href="/dash/tutor/builder?tool=assignment">
+                <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
+                  Create Assignment
+                </Button>
+              </Link>
+              <Link href="/dash/tutor/roster">
+                <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
+                  Student Roster
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-8 md:p-12 space-y-8">
+          {message ? (
+            <div className="rounded-2xl border-[3px] border-dark bg-blue-100 p-5 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C]">
+              {message}
+            </div>
+          ) : null}
+
+          <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+            <div className="p-6 border-b-[3px] border-dark bg-off-white">
+              <h2 className="text-2xl font-black text-dark tracking-tight">Needs Grading ({queue.filter((item) => item.status !== 'graded').length})</h2>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {isLoading ? (
+                <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
+                  Loading submissions...
+                </div>
+              ) : queue.length > 0 ? (
+                <div className="grid gap-6">
+                  {queue.map((item) => (
+                    <div key={item.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[5px_5px_0px_#060E1C] transition-all hover:shadow-[7px_7px_0px_#060E1C]">
+                      <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                        <div>
+                          <p className="text-xl font-black text-dark tracking-tight leading-tight">{item.assignmentTitle}</p>
+                          <div className="flex items-center gap-3 mt-2">
+                            <span className="text-sm font-bold text-dark/70">{item.studentName}</span>
+                            <span className="text-dark/30 font-bold">•</span>
+                            <span className="text-xs font-black uppercase tracking-widest text-dark/50">{item.submittedAt}</span>
+                          </div>
+                        </div>
+                        <span className={`rounded-xl border-[2px] border-dark px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${item.status === 'graded' ? 'bg-emerald-300 text-dark' : 'bg-amber-300 text-dark'}`}>
+                          {item.status}
+                        </span>
+                      </div>
+
+                      {item.textResponse ? (
+                        <div className="rounded-xl border-[2px] border-dark/20 bg-white p-4 text-sm font-medium text-dark/80 my-4 shadow-sm">
+                          {item.textResponse}
+                        </div>
+                      ) : null}
+
+                      {item.fileName ? (
+                        <div className="rounded-xl border-[2px] border-dark/20 bg-blue-50 p-3 my-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-blue-900/60 mb-1">Attached File</p>
+                          <p className="text-xs font-bold text-blue-900">{item.fileName}</p>
+                        </div>
+                      ) : null}
+
+                      <div className="grid gap-4 md:grid-cols-[150px_1fr_auto] items-end mt-6 pt-6 border-t-[3px] border-dark/10">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-dark/60 ml-1">Score</label>
+                          <input
+                            value={item.score}
+                            onChange={(event) =>
+                              setQueue((current) =>
+                                current.map((entry) => (entry.id === item.id ? { ...entry, score: event.target.value } : entry)),
+                              )
+                            }
+                            placeholder="e.g. 95"
+                            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-lg font-black text-dark outline-none focus:border-yellow"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-dark/60 ml-1">Feedback Notes</label>
+                          <input
+                            value={item.feedback}
+                            onChange={(event) =>
+                              setQueue((current) =>
+                                current.map((entry) => (entry.id === item.id ? { ...entry, feedback: event.target.value } : entry)),
+                              )
+                            }
+                            placeholder="Great job on..."
+                            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+                          />
+                        </div>
+                        <Button
+                          className={`border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-3 h-auto ${item.status === 'graded' ? 'bg-emerald-400 text-dark' : 'bg-dark text-white shadow-[3px_3px_0px_#F5C518]'}`}
+                          disabled={savingId === item.id}
+                          onClick={async () => {
+                            const numericScore = Number(item.score);
+
+                            if (!Number.isFinite(numericScore)) {
+                              setMessage('Enter a valid numeric score before grading.');
+                              return;
+                            }
+
+                            setSavingId(item.id);
+                            const supabase = createClient();
+                            const { error } = await supabase.rpc('grade_student_submission', {
+                              target_submission_id: item.id,
+                              score: numericScore,
+                              feedback_text: item.feedback.trim() || null,
+                              rubric_json: {},
+                            });
+                            setSavingId(null);
+
+                            if (error) {
+                              setMessage(error.message);
+                              return;
+                            }
+
+                            setMessage('Submission graded successfully.');
+                            await loadQueue();
+                          }}
+                        >
+                          {savingId === item.id ? 'Saving...' : item.status === 'graded' ? 'Update Grade' : 'Save Grade'}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 px-6 rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50">
+                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-dark bg-yellow mb-6 shadow-[4px_4px_0px_#060E1C]">
+                    <Sparkles className="h-8 w-8 text-dark" />
+                  </div>
+                  <h3 className="text-2xl font-black text-dark mb-2 tracking-tight">You're all caught up!</h3>
+                  <p className="text-sm font-bold text-dark/60 max-w-sm mx-auto">No student submissions have arrived yet. When students submit work, it will appear here.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

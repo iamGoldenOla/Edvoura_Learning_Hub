@@ -238,35 +238,35 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   };
 
   const renderTutorSection = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tutor Teaching Profile</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Full Name</span>
+    <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+      <div className="p-6 border-b-[3px] border-dark bg-yellow/20">
+        <h2 className="text-2xl font-black text-dark tracking-tight">Tutor Teaching Profile</h2>
+      </div>
+      <div className="p-8 space-y-6">
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Full Name</span>
           <input
             value={tutorForm.fullName}
             onChange={(event) => setTutorForm((prev) => ({ ...prev, fullName: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Phone Number</span>
+        <div className="grid gap-6 md:grid-cols-2">
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Phone Number</span>
             <input
               value={tutorForm.phoneNumber}
               onChange={(event) => setTutorForm((prev) => ({ ...prev, phoneNumber: event.target.value }))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             />
           </label>
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Timezone</span>
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Timezone</span>
             <select
               value={tutorForm.timezone}
               onChange={(event) => setTutorForm((prev) => ({ ...prev, timezone: event.target.value }))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             >
               {timezoneOptions.map((zone) => (
                 <option key={zone} value={zone}>
@@ -277,98 +277,98 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
           </label>
         </div>
 
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Teaching Headline</span>
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Teaching Headline</span>
           <input
             value={tutorForm.headline}
             onChange={(event) => setTutorForm((prev) => ({ ...prev, headline: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Bio</span>
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Bio</span>
           <textarea
             rows={4}
             value={tutorForm.bio}
             onChange={(event) => setTutorForm((prev) => ({ ...prev, bio: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Expertise Summary</span>
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Expertise Summary</span>
           <textarea
             rows={3}
             value={tutorForm.expertiseSummary}
             onChange={(event) => setTutorForm((prev) => ({ ...prev, expertiseSummary: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Availability Notes</span>
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Availability Notes</span>
           <textarea
             rows={3}
             value={tutorForm.availabilityNotes}
             onChange={(event) => setTutorForm((prev) => ({ ...prev, availabilityNotes: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   const renderTutorClasses = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Classes You Are Taking</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+      <div className="p-6 border-b-[3px] border-dark bg-blue-100">
+        <h2 className="text-2xl font-black text-dark tracking-tight">Classes You Are Taking</h2>
+      </div>
+      <div className="p-8">
         {props.tutorClasses.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {props.tutorClasses.map((classItem) => (
               <div
                 key={classItem.id}
-                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800"
+                className="rounded-2xl border-[3px] border-dark bg-off-white p-4 shadow-[4px_4px_0px_#060E1C]"
               >
-                <p className="font-semibold">{classItem.title}</p>
-                <p className="text-xs text-slate-600">
-                  {classItem.subjectName} | Status: {classItem.status}
+                <p className="font-black text-lg text-dark">{classItem.title}</p>
+                <p className="text-xs font-bold text-dark/70 mt-1 uppercase tracking-widest">
+                  {classItem.subjectName} | Status: <span className="text-emerald-600">{classItem.status}</span>
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-slate-600">
+          <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 text-center text-sm font-semibold text-dark/60">
             No classes are currently assigned to you yet. Once assigned, they will appear here.
-          </p>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   const renderStudentSection = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Student Learning Profile</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Grade Level Code</span>
+    <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+      <div className="p-6 border-b-[3px] border-dark bg-yellow/20">
+        <h2 className="text-2xl font-black text-dark tracking-tight">Student Learning Profile</h2>
+      </div>
+      <div className="p-8 space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Grade Level Code</span>
             <input
               value={studentForm.gradeLevelCode}
               onChange={(event) => setStudentForm((prev) => ({ ...prev, gradeLevelCode: event.target.value }))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             />
           </label>
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Timezone</span>
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Timezone</span>
             <select
               value={studentForm.timezone}
               onChange={(event) => setStudentForm((prev) => ({ ...prev, timezone: event.target.value }))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             >
               {timezoneOptions.map((zone) => (
                 <option key={zone} value={zone}>
@@ -379,44 +379,44 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
           </label>
         </div>
 
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">School Name</span>
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">School Name</span>
           <input
             value={studentForm.schoolName}
             onChange={(event) => setStudentForm((prev) => ({ ...prev, schoolName: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
 
-        <label className="block space-y-1">
-          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Academic Goals</span>
+        <label className="block space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Academic Goals</span>
           <textarea
             rows={3}
             value={studentForm.academicGoalNotes}
             onChange={(event) => setStudentForm((prev) => ({ ...prev, academicGoalNotes: event.target.value }))}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
           />
         </label>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Target Study Hours / Week</span>
+        <div className="grid gap-6 md:grid-cols-2">
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Target Study Hours / Week</span>
             <input
               value={studentExtras.weeklyStudyHoursTarget}
               onChange={(event) =>
                 setStudentExtras((prev) => ({ ...prev, weeklyStudyHoursTarget: event.target.value }))
               }
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             />
           </label>
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Preferred Study Window</span>
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Preferred Study Window</span>
             <select
               value={studentExtras.preferredStudyWindow}
               onChange={(event) =>
                 setStudentExtras((prev) => ({ ...prev, preferredStudyWindow: event.target.value }))
               }
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             >
               <option value="">Select preferred window</option>
               <option value="morning">Morning</option>
@@ -426,15 +426,15 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
           </label>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Parent Contact Preference</span>
+        <div className="grid gap-6 md:grid-cols-2">
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Parent Contact Preference</span>
             <select
               value={studentExtras.parentContactPreference}
               onChange={(event) =>
                 setStudentExtras((prev) => ({ ...prev, parentContactPreference: event.target.value }))
               }
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             >
               <option value="">Select contact mode</option>
               <option value="email">Email</option>
@@ -442,76 +442,80 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
               <option value="whatsapp">WhatsApp</option>
             </select>
           </label>
-          <label className="block space-y-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Wellbeing Notes</span>
+          <label className="block space-y-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Wellbeing Notes</span>
             <textarea
               rows={2}
               value={studentExtras.wellbeingNotes}
               onChange={(event) => setStudentExtras((prev) => ({ ...prev, wellbeingNotes: event.target.value }))}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900"
+              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
             />
           </label>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 
   const renderStudentSnapshot = () =>
     props.studentSummary ? (
-      <Card>
-        <CardHeader>
-          <CardTitle>Learning Snapshot</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Active Classes</p>
-              <p className="text-xl font-bold text-slate-900">{props.studentSummary.activeClasses}</p>
+      <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+        <div className="p-6 border-b-[3px] border-dark bg-emerald-100">
+          <h2 className="text-2xl font-black text-dark tracking-tight">Learning Snapshot</h2>
+        </div>
+        <div className="p-8">
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+            <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+              <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Active Classes</p>
+              <p className="mt-2 text-3xl font-black text-dark">{props.studentSummary.activeClasses}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Pending Assignments</p>
-              <p className="text-xl font-bold text-slate-900">{props.studentSummary.pendingAssignments}</p>
+            <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+              <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Pending Work</p>
+              <p className="mt-2 text-3xl font-black text-dark">{props.studentSummary.pendingAssignments}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Completed Work</p>
-              <p className="text-xl font-bold text-slate-900">{props.studentSummary.completedAssignments}</p>
+            <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+              <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Completed Work</p>
+              <p className="mt-2 text-3xl font-black text-dark">{props.studentSummary.completedAssignments}</p>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Upcoming Lessons</p>
-              <p className="text-xl font-bold text-slate-900">{props.studentSummary.upcomingLessons}</p>
+            <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+              <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Upcoming Lessons</p>
+              <p className="mt-2 text-3xl font-black text-dark">{props.studentSummary.upcomingLessons}</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     ) : null;
 
   const displayAvatar = avatarPreview ?? avatarPersistedUrl;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 p-8">
-      <h1 className="text-3xl font-bold text-edvoura-navy">Profile Settings</h1>
+    <div className="mx-auto max-w-[1000px] space-y-8 p-6 sm:p-8 pb-20">
+      <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark mb-8">
+        Profile Settings
+      </h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Basics</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+        <div className="p-6 border-b-[3px] border-dark bg-amber-100">
+          <h2 className="text-2xl font-black text-dark tracking-tight">Account Basics</h2>
+        </div>
+        <div className="p-8 space-y-6">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm text-slate-500">Email Address</p>
-              <p className="text-base font-semibold text-slate-900">{props.viewer.email}</p>
-              <p className="text-xs uppercase tracking-wide text-slate-500">Role: {role}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mb-1">Email Address</p>
+              <p className="text-lg font-black text-dark tracking-tight">{props.viewer.email}</p>
+              <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-dark bg-yellow w-fit px-3 py-1 rounded-md border-[2px] border-dark shadow-[2px_2px_0px_#060E1C]">
+                Role: {role}
+              </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="h-16 w-16 overflow-hidden rounded-full border border-slate-200 bg-slate-50">
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-20 overflow-hidden rounded-2xl border-[3px] border-dark bg-off-white shadow-[3px_3px_0px_#060E1C]">
                 {displayAvatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={displayAvatar} alt="Avatar preview" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">No image</div>
+                  <div className="flex h-full w-full items-center justify-center text-[10px] font-black uppercase tracking-widest text-dark/40">No image</div>
                 )}
               </div>
-              <label className="inline-flex cursor-pointer items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50">
+              <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-[3px] border-dark bg-white px-5 py-3 text-xs font-black text-dark hover:bg-slate-50 transition-all shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
                 Upload Profile Image
                 <input
                   type="file"
@@ -522,9 +526,9 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
               </label>
             </div>
           </div>
-          {avatarPath ? <p className="text-xs text-slate-500">Saved avatar path: {avatarPath}</p> : null}
-        </CardContent>
-      </Card>
+          {avatarPath ? <p className="text-xs font-bold text-dark/50">Saved avatar path: {avatarPath}</p> : null}
+        </div>
+      </div>
 
       {role === 'tutor' ? (
         <>
@@ -540,15 +544,15 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
         </>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="primary" isLoading={isSaving} onClick={handleSave}>
-          Save Profile Settings
+      <div className="flex flex-wrap items-center gap-4 pt-6 border-t-[3px] border-dark/10">
+        <Button className="bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" disabled={isSaving} onClick={handleSave}>
+          {isSaving ? 'Saving...' : 'Save Profile Settings'}
         </Button>
-        <Button variant="outline" onClick={() => alert('Use your account auth page to change password.')}>
+        <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" onClick={() => alert('Use your account auth page to change password.')}>
           Change Password
         </Button>
-        {statusMessage ? <p className="text-sm text-slate-700">{statusMessage}</p> : null}
       </div>
+      {statusMessage ? <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C] mt-4">{statusMessage}</div> : null}
     </div>
   );
 }

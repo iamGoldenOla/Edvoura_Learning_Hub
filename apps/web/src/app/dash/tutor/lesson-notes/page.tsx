@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BookOpen, CheckSquare, ClipboardList, FilePenLine, Pencil, PlusCircle, ShieldCheck, Target, Trash2 } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 type LessonPlan = {
@@ -205,221 +204,229 @@ export default function TutorLessonNotesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-edvoura-navy">Lesson Notes and Plans</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Prepare lesson plans, objectives, delivery notes, and class activities.
-        </p>
-      </section>
-
-      {feedback ? (
-        <section className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900">{feedback}</section>
-      ) : null}
-
-      <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
-        <Stat title="Plans This Week" value={stats.total} icon={ClipboardList} />
-        <Stat title="Ready to Deliver" value={stats.ready} icon={CheckSquare} />
-        <Stat title="Draft Notes" value={stats.draft} icon={FilePenLine} />
-        <Stat title="Resource Packs" value={stats.packs} icon={BookOpen} />
-      </section>
-
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="space-y-6 xl:col-span-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Current Lesson Plans</CardTitle>
-              <Button variant="primary" className="text-xs" onClick={() => setShowForm((v) => !v)}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {showForm ? 'Close Form' : 'New Lesson Note'}
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {showForm ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {editingPlanId ? 'Edit Lesson Note' : 'Create Lesson Note'}
-                  </h3>
-                  <div className="mt-3 space-y-3">
-                    <input
-                      value={className}
-                      onChange={(event) => setClassName(event.target.value)}
-                      placeholder="Class name (e.g., JSS3 Mathematics)"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <input
-                      value={topic}
-                      onChange={(event) => setTopic(event.target.value)}
-                      placeholder="Topic"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <input
-                        value={lessonDate}
-                        onChange={(event) => setLessonDate(event.target.value)}
-                        type="date"
-                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                      />
-                      <input
-                        value={duration}
-                        onChange={(event) => setDuration(event.target.value)}
-                        placeholder="Duration (e.g., 60 mins)"
-                        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                      />
-                    </div>
-                    <textarea
-                      value={objective}
-                      onChange={(event) => setObjective(event.target.value)}
-                      placeholder="Learning objective(s)"
-                      rows={3}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={priorKnowledge}
-                      onChange={(event) => setPriorKnowledge(event.target.value)}
-                      placeholder="Prior knowledge/bridge from last lesson"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <input
-                      value={keyVocabulary}
-                      onChange={(event) => setKeyVocabulary(event.target.value)}
-                      placeholder="Key vocabulary"
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={resources}
-                      onChange={(event) => setResources(event.target.value)}
-                      placeholder="Teaching resources/materials"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={differentiation}
-                      onChange={(event) => setDifferentiation(event.target.value)}
-                      placeholder="Differentiation and SEND/ELL support"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={formativeAssessment}
-                      onChange={(event) => setFormativeAssessment(event.target.value)}
-                      placeholder="Formative assessment and checks for understanding"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={homework}
-                      onChange={(event) => setHomework(event.target.value)}
-                      placeholder="Homework / independent practice"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={safeguarding}
-                      onChange={(event) => setSafeguarding(event.target.value)}
-                      placeholder="Safeguarding and classroom management notes"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <textarea
-                      value={reflection}
-                      onChange={(event) => setReflection(event.target.value)}
-                      placeholder="Teacher reflection / next-step adjustment"
-                      rows={2}
-                      className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="primary" className="text-xs" onClick={() => createLessonPlan('Ready')}>
-                        {editingPlanId ? 'Update as Ready' : 'Save as Ready'}
-                      </Button>
-                      <Button variant="outline" className="border-slate-300 bg-white text-xs" onClick={() => createLessonPlan('Draft')}>
-                        {editingPlanId ? 'Update as Draft' : 'Save as Draft'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-
-              {plans.map((item) => (
-                <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-2 flex items-center justify-end gap-1">
-                    <Button variant="outline" className="h-7 border-slate-300 bg-white px-2 text-xs" onClick={() => startEditPlan(item)}>
-                      <Pencil className="mr-1 h-3.5 w-3.5" />
-                      Edit
-                    </Button>
-                    <Button variant="outline" className="h-7 border-rose-300 bg-white px-2 text-xs text-rose-700" onClick={() => deletePlan(item.id)}>
-                      <Trash2 className="mr-1 h-3.5 w-3.5" />
-                      Delete
-                    </Button>
-                  </div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    {item.className} | {item.lessonDate} | {item.duration}
-                  </p>
-                  <p className="mt-1 text-sm font-semibold text-slate-900">{item.topic}</p>
-                  <p className="mt-1 text-xs text-slate-600">{item.objective}</p>
-                  <p className="mt-1 text-xs text-slate-600"><strong>Assessment:</strong> {item.formativeAssessment}</p>
-                  <p className="mt-1 text-xs text-slate-600"><strong>Differentiation:</strong> {item.differentiation}</p>
-                  <p className="mt-1 text-xs text-slate-600"><strong>Safeguarding:</strong> {item.safeguarding}</p>
-                  <p className="mt-2 text-xs font-semibold text-slate-700">Status: {item.status}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        
+        {/* Header */}
+        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div className="space-y-3 min-w-0">
+              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+                TEACHING MANAGEMENT
+              </span>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+                Lesson Notes & Plans
+              </h1>
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+                Prepare lesson plans, objectives, delivery notes, and class activities in one unified place.
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-6 xl:col-span-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Plan Checklist</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-700">
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Learning objective defined</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Starter activity prepared</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Practice questions prepared</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Exit ticket drafted</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Differentiation strategy included</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Safeguarding and behavior protocol set</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Homework and reflection completed</div>
-            </CardContent>
-          </Card>
+        <div className="p-8 md:p-12 space-y-8">
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-slate-600" />
-                Veteran Teaching Standard
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-700">
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
-                Objective must be measurable and observable.
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
-                At least two formative checks during delivery.
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
-                Plan remediation for struggling learners.
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">
-                End lesson with reflection and next-step plan.
-              </div>
-            </CardContent>
-          </Card>
+          {feedback ? (
+            <section className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm text-dark font-black shadow-[5px_5px_0px_#060E1C]">{feedback}</section>
+          ) : null}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-slate-600" />
-                Lesson Safety Check
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm text-slate-700">
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Safe activity flow and supervision points</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Respectful classroom language standards</div>
-              <div className="rounded-lg border border-slate-200 bg-white p-3">Sensitive learner support notes</div>
-            </CardContent>
-          </Card>
+          <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
+            <Stat title="Plans This Week" value={stats.total} icon={ClipboardList} bgColor="bg-emerald-200" />
+            <Stat title="Ready to Deliver" value={stats.ready} icon={CheckSquare} bgColor="bg-blue-200" />
+            <Stat title="Draft Notes" value={stats.draft} icon={FilePenLine} bgColor="bg-amber-200" />
+            <Stat title="Resource Packs" value={stats.packs} icon={BookOpen} bgColor="bg-rose-200" />
+          </section>
+
+          <section className="grid grid-cols-1 gap-8 xl:grid-cols-12">
+            
+            <div className="space-y-6 xl:col-span-8">
+              <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+                <div className="p-6 border-b-[3px] border-dark bg-off-white flex flex-row items-center justify-between">
+                  <h2 className="text-2xl font-black text-dark tracking-tight">Current Lesson Plans</h2>
+                  <Button className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2" onClick={() => setShowForm((v) => !v)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    {showForm ? 'Close Form' : 'New Lesson Note'}
+                  </Button>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  {showForm ? (
+                    <div className="rounded-2xl border-[3px] border-dark bg-blue-50 p-6 shadow-[5px_5px_0px_#060E1C]">
+                      <h3 className="text-xl font-black text-dark tracking-tight">
+                        {editingPlanId ? 'Edit Lesson Note' : 'Create Lesson Note'}
+                      </h3>
+                      <div className="mt-6 space-y-4">
+                        <input
+                          value={className}
+                          onChange={(event) => setClassName(event.target.value)}
+                          placeholder="Class name (e.g., JSS3 Mathematics)"
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <input
+                          value={topic}
+                          onChange={(event) => setTopic(event.target.value)}
+                          placeholder="Topic"
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <input
+                            value={lessonDate}
+                            onChange={(event) => setLessonDate(event.target.value)}
+                            type="date"
+                            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          />
+                          <input
+                            value={duration}
+                            onChange={(event) => setDuration(event.target.value)}
+                            placeholder="Duration (e.g., 60 mins)"
+                            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          />
+                        </div>
+                        <textarea
+                          value={objective}
+                          onChange={(event) => setObjective(event.target.value)}
+                          placeholder="Learning objective(s)"
+                          rows={3}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={priorKnowledge}
+                          onChange={(event) => setPriorKnowledge(event.target.value)}
+                          placeholder="Prior knowledge/bridge from last lesson"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <input
+                          value={keyVocabulary}
+                          onChange={(event) => setKeyVocabulary(event.target.value)}
+                          placeholder="Key vocabulary"
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={resources}
+                          onChange={(event) => setResources(event.target.value)}
+                          placeholder="Teaching resources/materials"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={differentiation}
+                          onChange={(event) => setDifferentiation(event.target.value)}
+                          placeholder="Differentiation and SEND/ELL support"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={formativeAssessment}
+                          onChange={(event) => setFormativeAssessment(event.target.value)}
+                          placeholder="Formative assessment and checks for understanding"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={homework}
+                          onChange={(event) => setHomework(event.target.value)}
+                          placeholder="Homework / independent practice"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={safeguarding}
+                          onChange={(event) => setSafeguarding(event.target.value)}
+                          placeholder="Safeguarding and classroom management notes"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <textarea
+                          value={reflection}
+                          onChange={(event) => setReflection(event.target.value)}
+                          placeholder="Teacher reflection / next-step adjustment"
+                          rows={2}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                        />
+                        <div className="flex flex-wrap gap-4 pt-4 border-t-[3px] border-dark/10">
+                          <Button className="bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto" onClick={() => createLessonPlan('Ready')}>
+                            {editingPlanId ? 'Update as Ready' : 'Save as Ready'}
+                          </Button>
+                          <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto" onClick={() => createLessonPlan('Draft')}>
+                            {editingPlanId ? 'Update as Draft' : 'Save as Draft'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {plans.map((item) => (
+                    <div key={item.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[5px_5px_0px_#060E1C]">
+                      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-dark bg-white px-3 py-1 rounded-md border-[2px] border-dark">
+                          {item.className} | {item.lessonDate} | {item.duration}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Button className="h-8 border-[2px] border-dark bg-white text-dark font-black text-xs hover:bg-slate-50 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => startEditPlan(item)}>
+                            <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
+                          </Button>
+                          <Button className="h-8 border-[2px] border-dark bg-rose-100 text-rose-700 font-black text-xs hover:bg-rose-200 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => deletePlan(item.id)}>
+                            <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-2xl font-black text-dark tracking-tight">{item.topic}</p>
+                      <p className="mt-2 text-sm font-bold text-dark/70">{item.objective}</p>
+                      <div className="mt-4 space-y-2 border-t-[2px] border-dark/10 pt-4">
+                        <p className="text-xs text-dark/70 font-semibold"><strong className="text-dark font-black uppercase tracking-widest">Assessment:</strong> {item.formativeAssessment}</p>
+                        <p className="text-xs text-dark/70 font-semibold"><strong className="text-dark font-black uppercase tracking-widest">Differentiation:</strong> {item.differentiation}</p>
+                        <p className="text-xs text-dark/70 font-semibold"><strong className="text-dark font-black uppercase tracking-widest">Safeguarding:</strong> {item.safeguarding}</p>
+                      </div>
+                      <p className={`mt-4 inline-flex px-3 py-1 text-xs font-black uppercase tracking-widest border-[2px] border-dark rounded-lg ${item.status === 'Ready' ? 'bg-emerald-200 text-emerald-900' : 'bg-amber-200 text-amber-900'}`}>
+                        Status: {item.status}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6 xl:col-span-4">
+              <div className="border-[3px] border-dark rounded-3xl bg-white p-6 shadow-[5px_5px_0px_#060E1C]">
+                <h3 className="text-xl font-black text-dark mb-4">Plan Checklist</h3>
+                <div className="space-y-3 text-sm font-semibold text-dark/80">
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Learning objective defined</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Starter activity prepared</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Practice questions prepared</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Exit ticket drafted</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Differentiation strategy included</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Safeguarding protocol set</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Homework and reflection</div>
+                </div>
+              </div>
+
+              <div className="border-[3px] border-dark rounded-3xl bg-blue-100 p-6 shadow-[5px_5px_0px_#060E1C]">
+                <h3 className="text-xl font-black text-dark mb-4 flex items-center gap-2">
+                  <Target className="h-5 w-5 text-dark" />
+                  Veteran Standard
+                </h3>
+                <div className="space-y-3 text-sm font-semibold text-dark/80">
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Objective must be measurable and observable.</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">At least two formative checks during delivery.</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Plan remediation for struggling learners.</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">End lesson with reflection and next-step plan.</div>
+                </div>
+              </div>
+
+              <div className="border-[3px] border-dark rounded-3xl bg-rose-100 p-6 shadow-[5px_5px_0px_#060E1C]">
+                <h3 className="text-xl font-black text-dark mb-4 flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-dark" />
+                  Lesson Safety
+                </h3>
+                <div className="space-y-3 text-sm font-semibold text-dark/80">
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Safe activity flow and supervision points</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Respectful classroom language standards</div>
+                  <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Sensitive learner support notes</div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </div>
@@ -430,20 +437,24 @@ function Stat({
   title,
   value,
   icon: Icon,
+  bgColor = "bg-white"
 }: {
   title: string;
   value: string;
   icon: React.ComponentType<{ className?: string }>;
+  bgColor?: string;
 }) {
   return (
-    <Card>
-      <CardContent className="flex items-center justify-between p-4">
+    <div className={`border-[3px] border-dark rounded-2xl ${bgColor} p-6 shadow-[5px_5px_0px_#060E1C]`}>
+      <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-medium text-slate-500">{title}</p>
-          <p className="mt-1 text-xl font-semibold text-slate-900">{value}</p>
+          <p className="text-xs font-black uppercase tracking-widest text-dark/70">{title}</p>
+          <p className="mt-2 text-3xl font-black text-dark">{value}</p>
         </div>
-        <Icon className="h-5 w-5 text-slate-500" />
-      </CardContent>
-    </Card>
+        <div className="h-12 w-12 rounded-xl border-[3px] border-dark bg-white flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
+          <Icon className="h-6 w-6 text-dark" />
+        </div>
+      </div>
+    </div>
   );
 }
