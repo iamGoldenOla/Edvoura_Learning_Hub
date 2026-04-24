@@ -1,38 +1,79 @@
 import Link from 'next/link';
 import { ClipboardCheck, FileText, Timer } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+export default async function AdminAssignmentsPage() {
+  const supabase = await createClient();
 
-export default function AdminAssignmentsPage() {
+  const [
+    { count: activeAssignments },
+    { count: pendingGrading },
+  ] = await Promise.all([
+    supabase.from('assignments').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+    supabase.from('assignment_submissions').select('*', { count: 'exact', head: true }).in('status', ['submitted', 'late']),
+  ]);
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-bold text-slate-900">Assignment Oversight</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Monitor assignment publication, submissions, grading queues, and overdue workload.
-        </p>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 border-b-[4px] border-dark bg-sky-100">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+            Assignment Oversight
+          </h1>
+          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+            Monitor assignment publication, submissions, grading queues, and overdue workload.
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card><CardContent className="p-5"><FileText className="h-5 w-5 text-blue-600" /><p className="mt-2 text-xs text-slate-500">Active Assignments</p><p className="text-2xl font-bold text-slate-900">518</p></CardContent></Card>
-        <Card><CardContent className="p-5"><ClipboardCheck className="h-5 w-5 text-indigo-600" /><p className="mt-2 text-xs text-slate-500">Pending Grading</p><p className="text-2xl font-bold text-slate-900">84</p></CardContent></Card>
-        <Card><CardContent className="p-5"><Timer className="h-5 w-5 text-rose-600" /><p className="mt-2 text-xs text-slate-500">Overdue Reviews</p><p className="text-2xl font-bold text-slate-900">12</p></CardContent></Card>
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="rounded-[28px] border-[4px] border-dark bg-blue-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <FileText className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Active Assignments</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">{activeAssignments ?? 0}</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-purple-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <ClipboardCheck className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Pending Grading</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">{pendingGrading ?? 0}</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <Timer className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Overdue Reviews</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">0</p>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Link href="/dash/admin/assignments?action=grading-queue" className="inline-flex items-center justify-center rounded-md bg-edvoura-navy px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-edvoura-navy-light">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-black text-dark tracking-tight">Actions</h2>
+        </div>
+        <div className="p-6 sm:p-8 flex flex-wrap gap-4">
+          <Link href="/dash/admin/assignments?action=grading-queue" className="bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 inline-flex items-center">
             Open Global Grading Queue
           </Link>
-          <Link href="/dash/admin/assignments?action=overdue-submissions" className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-transparent px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
+          <Link href="/dash/admin/assignments?action=overdue-submissions" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 inline-flex items-center">
             Review Overdue Submissions
           </Link>
-          <Link href="/dash/admin/assignments?export=report" className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-transparent px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100">
+          <Link href="/dash/admin/assignments?export=report" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 inline-flex items-center">
             Export Assignment Report
           </Link>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

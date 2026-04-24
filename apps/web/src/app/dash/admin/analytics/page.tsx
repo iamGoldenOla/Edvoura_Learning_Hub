@@ -1,52 +1,98 @@
 import Link from 'next/link';
 import { Activity, BarChart3, ChartSpline, Users } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
+import { getAdminDashboardData } from '@/lib/app-context';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+export default async function AdminAnalyticsPage() {
+  const supabase = await createClient();
+  const dashboard = await getAdminDashboardData();
 
-export default function AdminAnalyticsPage() {
+  // Basic real-time analytics
+  const [{ data: averageProgressData }] = await Promise.all([
+    supabase.from('progress_snapshots').select('average_score, attendance_rate, assignment_completion_rate').limit(100),
+  ]);
+
+  let avgAttendance = 0;
+  let avgCompletion = 0;
+  const progressRows = averageProgressData ?? [];
+
+  if (progressRows.length > 0) {
+    avgAttendance = progressRows.reduce((acc, row) => acc + (Number(row.attendance_rate) || 0), 0) / progressRows.length;
+    avgCompletion = progressRows.reduce((acc, row) => acc + (Number(row.assignment_completion_rate) || 0), 0) / progressRows.length;
+  }
+
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-bold text-slate-900">Reports and Analytics</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Cross-platform visibility for academics, engagement, billing, and operations.
-        </p>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 border-b-[4px] border-dark bg-yellow">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+            Reports and Analytics
+          </h1>
+          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+            Cross-platform visibility for academics, engagement, billing, and operations.
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {[
-          { label: 'Daily Active Learners', value: '3,842', icon: Users },
-          { label: 'Attendance Rate', value: '92.4%', icon: Activity },
-          { label: 'Assignment Completion', value: '88.1%', icon: ChartSpline },
-          { label: 'Revenue Growth', value: '+14.8%', icon: BarChart3 },
-        ].map((item) => (
-          <Card key={item.label}>
-            <CardContent className="p-5">
-              <item.icon className="h-5 w-5 text-indigo-600" />
-              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">{item.label}</p>
-              <p className="text-2xl font-bold text-slate-900">{item.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-[28px] border-[4px] border-dark bg-emerald-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <Users className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Active Learners</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">{dashboard.totalStudents}</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-sky-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <Activity className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Avg. Attendance</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">{avgAttendance.toFixed(1)}%</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-purple-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <ChartSpline className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Avg. Completion</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">{avgCompletion.toFixed(1)}%</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <BarChart3 className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Revenue Growth</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">+0%</p>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Exportable Reports</CardTitle>
-          <Link
-            href="/dash/admin/notifications?action=schedule-weekly-digest"
-            className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-transparent px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
-          >
-            Schedule Weekly Digest
-          </Link>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm text-slate-700">
-          <div className="rounded-lg border border-slate-200 p-3">Learner-band performance report</div>
-          <div className="rounded-lg border border-slate-200 p-3">Tutor delivery quality and response SLAs</div>
-          <div className="rounded-lg border border-slate-200 p-3">Parent engagement and notification outcomes</div>
-          <div className="rounded-lg border border-slate-200 p-3">Gamification health: XP, badges, streaks, challenges</div>
-        </CardContent>
-      </Card>
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-black text-dark tracking-tight">Exportable Reports</h2>
+        </div>
+        <div className="p-6 sm:p-8 space-y-4">
+          <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-lg">Learner-band performance report</div>
+          <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-lg">Tutor delivery quality and response SLAs</div>
+          <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-lg">Parent engagement and notification outcomes</div>
+          <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-lg">Gamification health: XP, badges, streaks, challenges</div>
+
+          <div className="pt-6 border-t-[4px] border-dark/10 flex">
+            <Link href="/dash/admin/notifications?action=schedule-weekly-digest" className="bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 inline-flex items-center">
+              Schedule Weekly Digest
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
