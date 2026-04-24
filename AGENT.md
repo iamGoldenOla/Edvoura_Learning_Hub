@@ -6,11 +6,11 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-22)
+## Last Session Handoff (2026-04-24)
 
-### Current Status: Pure Vercel + Supabase Deployment Achieved
+### Current Status: Dashboards Overhauled & Live Data Integrated
 
-The repo still has its canonical architecture of `apps/web` plus the privileged NestJS backend in `apps/api`, but the web dashboard now has an active cutover branch of work that starts replacing mock/API-dependent classroom flows with direct Supabase data.
+The platform has successfully transitioned its core management interfaces (Admin, Super Admin, Tutor, Parent) into a fully-wired, production-grade command center using a unified **Neo-Brutalist** design language (`border-[4px] border-dark`, hard shadows, vibrant pastels) powered by real-time Supabase queries instead of mocked data.
 
 ### What Exists Today
 
@@ -18,12 +18,10 @@ The repo still has its canonical architecture of `apps/web` plus the privileged 
 - The canonical Supabase schema history remains in `supabase/migrations/`.
 - A single manual SQL artifact now exists at `supabase/cutover_all.sql`.
 - The active cutover guide now exists at `VERCEL_SUPABASE_CUTOVER.md`.
-- `apps/web` can be deployed to Vercel.
-- `apps/api` code remains in the repo but is no longer required by `apps/web`.
-- `apps/web` no longer depends on `NEXT_PUBLIC_API_URL` — all frontend flows use direct Supabase access or Next.js Server Actions/Route Handlers.
-- `api-client.ts` is now orphaned — zero imports reference it.
-- A new migration now exists at `supabase/migrations/20260421130000_phase7_direct_dashboard_assignment_flow.sql`.
-- A follow-up storage migration now exists at `supabase/migrations/20260422100000_phase8_dashboard_storage_and_asset_links.sql`.
+- `apps/web` is deployed to Vercel and depends directly on Supabase via Server Actions and Route Handlers.
+- All 14 Super Admin sub-pages (`Users`, `Students`, `Tutors`, `Academic`, `Engagement`, `Finance`, `Support`, etc.) now fetch **live data** instead of mock placeholders.
+- The UI across Parent, Tutor, and Admin portals has been standardized to the Neo-Brutalist design system.
+- Paystack payment routing logic has been corrected (Parents stay in-app, Tutors enter bank details internally, Super Admin gets raw Paystack console access).
 
 #### Current Supabase Footprint
 - Four storage buckets are created by migrations:
