@@ -39,10 +39,10 @@ export async function createTutorLiveSlot(formData: FormData) {
   let classId = existingClass?.id;
 
   if (!classId) {
-    // Fetch subject and grade names for a nice class title
+    // Fetch subject and grade names for a nice class title, plus the band_id
     const [{ data: sub }, { data: grd }] = await Promise.all([
       supabase.from('subjects').select('name').eq('id', subjectId).single(),
-      supabase.from('grade_levels').select('display_name').eq('id', gradeLevelId).single(),
+      supabase.from('grade_levels').select('display_name, band_id').eq('id', gradeLevelId).single(),
     ]);
 
     const { data: newClass, error: createClassError } = await supabase
@@ -51,14 +51,17 @@ export async function createTutorLiveSlot(formData: FormData) {
         title: `${sub?.name || 'New Class'} - ${grd?.display_name || 'All'}`,
         subject_id: subjectId,
         grade_level_id: gradeLevelId,
+        grade_band_id: grd?.band_id,
         primary_tutor_user_id: session.user.id,
+        created_by_user_id: session.user.id,
+        status: 'active',
       })
       .select('id')
       .single();
 
     if (createClassError) {
       console.error('Failed to auto-create class:', createClassError);
-      redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to create class for this subject')}`);
+      redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to create class for this subject: ' + createClassError.message)}`);
     }
     classId = newClass.id;
   }

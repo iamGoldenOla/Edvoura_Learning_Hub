@@ -1,4 +1,5 @@
 -- Allow tutors to create classes
+drop policy if exists "tutors_insert_classes" on public.classes;
 create policy "tutors_insert_classes" on public.classes
 for insert
 to authenticated
@@ -8,6 +9,7 @@ with check (
 );
 
 -- Allow tutors to update their own classes
+drop policy if exists "tutors_update_classes" on public.classes;
 create policy "tutors_update_classes" on public.classes
 for update
 to authenticated
@@ -23,6 +25,7 @@ with check (
 );
 
 -- Allow tutors to delete their own lessons (to cancel meetings)
+drop policy if exists "tutors_delete_lessons" on public.lessons;
 create policy "tutors_delete_lessons" on public.lessons
 for delete
 to authenticated
