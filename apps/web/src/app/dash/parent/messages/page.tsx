@@ -6,13 +6,17 @@ export default async function ParentMessagesPage() {
   const senderName = viewer.currentUser.profile.fullName ?? 'Parent';
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-edvoura-navy">Parent Messages</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Chat directly with tutors and Grade 7-12 learner support thread when needed.
-        </p>
-      </section>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 border-b-[4px] border-dark bg-sky-100">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+            Parent Messages
+          </h1>
+          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+            Chat directly with tutors and Grade 7-12 learner support thread when needed.
+          </p>
+        </div>
+      </div>
 
       <RoleChatBox
         title="Parent Communication Hub"

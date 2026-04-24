@@ -1,7 +1,5 @@
 import { Award, Flame, Star, Trophy } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle, MetricCard } from '@/components/ui/card';
-
 const rewards = [
   { id: 'rw-1', title: 'Math Sprint Champion', date: 'Apr 10', points: 120 },
   { id: 'rw-2', title: 'Reading Streak', date: 'Apr 08', points: 90 },
@@ -10,38 +8,74 @@ const rewards = [
 
 export default function ParentRewardsPage() {
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-edvoura-navy">Rewards and Engagement</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Track XP, badges, streaks, and challenge completions for your child.
-        </p>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 border-b-[4px] border-dark bg-yellow">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+            Rewards and Engagement
+          </h1>
+          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+            Track XP, badges, streaks, and challenge completions for your child.
+          </p>
+        </div>
+      </div>
+
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="rounded-[28px] border-[4px] border-dark bg-purple-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <Star className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Current XP</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">2,430</p>
+            <p className="text-xs font-bold text-dark/60 mt-2 uppercase tracking-widest">This term</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <Flame className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Active Streak</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">9 days</p>
+            <p className="text-xs font-bold text-dark/60 mt-2 uppercase tracking-widest">Daily learning streak</p>
+          </div>
+        </div>
+
+        <div className="rounded-[28px] border-[4px] border-dark bg-emerald-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+          <div className="flex items-center gap-3">
+            <Award className="h-6 w-6 text-dark" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Badges Earned</p>
+          </div>
+          <div className="mt-6">
+            <p className="text-5xl font-black text-dark">14</p>
+            <p className="text-xs font-bold text-dark/60 mt-2 uppercase tracking-widest">Across all subjects</p>
+          </div>
+        </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <MetricCard title="Current XP" value="2,430" description="This term" icon={<Star className="h-4 w-4" />} />
-        <MetricCard title="Active Streak" value="9 days" description="Daily learning streak" icon={<Flame className="h-4 w-4" />} />
-        <MetricCard title="Badges Earned" value="14" description="Across all subjects" icon={<Award className="h-4 w-4" />} />
-      </section>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-edvoura-navy" />
-            Recent Achievements
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center gap-3">
+          <Trophy className="h-6 w-6 text-dark" />
+          <h2 className="text-2xl font-black text-dark tracking-tight">Recent Achievements</h2>
+        </div>
+        <div className="p-6 sm:p-8 space-y-4">
           {rewards.map((reward) => (
-            <div key={reward.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-semibold text-slate-900">{reward.title}</p>
-              <p className="mt-1 text-xs text-slate-600">
-                {reward.date} | +{reward.points} XP
-              </p>
+            <div key={reward.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C] flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-lg font-black text-dark">{reward.title}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">
+                  {reward.date}
+                </p>
+              </div>
+              <span className="inline-flex rounded-xl border-[2px] border-dark bg-yellow px-4 py-2 text-sm font-black text-dark shadow-[2px_2px_0px_#060E1C]">
+                +{reward.points} XP
+              </span>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

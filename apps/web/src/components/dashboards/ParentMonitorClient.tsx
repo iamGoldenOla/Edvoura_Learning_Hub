@@ -2,10 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, CalendarDays, CheckCircle2, Clock4, XCircle } from 'lucide-react';
+import { AlertTriangle, CalendarDays, CheckCircle2, Clock4, XCircle, Users } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type ParentChild = {
   userId: string;
@@ -82,121 +81,126 @@ export default function ParentMonitorClient({ linkedChildren }: { linkedChildren
   const absentCount = attendance.filter((item) => item.status === 'absent').length;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-edvoura-navy">Lessons & Attendance</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Monitor timetable, lesson participation, and attendance risk for each child.
-        </p>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          {linkedChildren.length > 0 ? (
-            linkedChildren.map((child) => (
-              <button
-                key={child.userId}
-                type="button"
-                onClick={() => setActiveChildId(child.userId)}
-                className={`rounded-md border px-3 py-1.5 text-xs font-medium ${
-                  activeChild?.userId === child.userId
-                    ? 'border-blue-300 bg-blue-50 text-blue-700'
-                    : 'border-slate-300 bg-white text-slate-700'
-                }`}
-              >
-                {child.fullName ?? 'Unnamed Child'}
-              </button>
-            ))
-          ) : (
-            <p className="text-xs text-slate-600">No child profiles linked yet.</p>
-          )}
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 border-b-[4px] border-dark bg-yellow/20">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+            Lessons & Attendance
+          </h1>
+          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+            Monitor timetable, lesson participation, and attendance risk for each child.
+          </p>
         </div>
-      </section>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card>
-          <CardContent className="p-5">
-            <p className="text-xs text-slate-500">Upcoming Lessons</p>
-            <p className="text-2xl font-bold text-slate-900">{lessons.filter((lesson) => lesson.status === 'upcoming').length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <p className="text-xs text-slate-500">Present in Recent Lessons</p>
-            <p className="text-2xl font-bold text-slate-900">{presentCount}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5">
-            <p className="text-xs text-slate-500">Absence Alerts</p>
-            <p className="text-2xl font-bold text-rose-700">{absentCount}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-slate-600" />
-              Upcoming Lessons / Timetable
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {lessons.map((lesson) => (
-              <div key={lesson.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="font-semibold text-slate-900">{lesson.title}</p>
-                <p className="text-xs text-slate-600">
-                  {lesson.date} at {lesson.time} | Tutor: {lesson.tutor}
-                </p>
-                <p className="mt-1 text-xs text-slate-500 capitalize">Status: {lesson.status}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock4 className="h-4 w-4 text-slate-600" />
-              Attendance History
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {attendance.map((entry) => (
-              <div key={entry.id} className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <div>
-                  <p className="font-semibold text-slate-900">{entry.classTitle}</p>
-                  <p className="text-xs text-slate-600">{entry.date}</p>
-                </div>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-wide ${
-                    entry.status === 'present'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : entry.status === 'late'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-rose-100 text-rose-700'
+        <div className="p-6 bg-off-white flex flex-wrap items-center gap-4">
+          <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
+            <Users className="h-4 w-4" />
+            Switch Child
+          </span>
+          {linkedChildren.length > 0 ? (
+            <div className="flex flex-wrap gap-3">
+              {linkedChildren.map((child) => (
+                <button
+                  key={child.userId}
+                  type="button"
+                  onClick={() => setActiveChildId(child.userId)}
+                  className={`rounded-xl border-[3px] px-4 py-2 text-sm font-black transition-all hover:translate-x-[1px] hover:translate-y-[1px] ${
+                    activeChild?.userId === child.userId
+                      ? 'border-dark bg-dark text-white shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
+                      : 'border-dark bg-white text-dark shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
                   }`}
                 >
-                  {entry.status === 'present' ? <CheckCircle2 className="h-3 w-3" /> : null}
-                  {entry.status === 'late' ? <AlertTriangle className="h-3 w-3" /> : null}
-                  {entry.status === 'absent' ? <XCircle className="h-3 w-3" /> : null}
-                  {entry.status}
-                </span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+                  {child.fullName ?? 'Unnamed Child'}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs font-bold text-dark/60">No child profiles linked yet.</p>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="rounded-[28px] border-[4px] border-dark bg-blue-100 p-6 shadow-[6px_6px_0px_#060E1C]">
+          <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Upcoming Lessons</p>
+          <p className="mt-2 text-4xl font-black text-dark">{lessons.filter((lesson) => lesson.status === 'upcoming').length}</p>
+        </div>
+        <div className="rounded-[28px] border-[4px] border-dark bg-emerald-100 p-6 shadow-[6px_6px_0px_#060E1C]">
+          <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Present in Recent Lessons</p>
+          <p className="mt-2 text-4xl font-black text-dark">{presentCount}</p>
+        </div>
+        <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C]">
+          <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Absence Alerts</p>
+          <p className="mt-2 text-4xl font-black text-rose-700">{absentCount}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Timetable */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center gap-3">
+            <CalendarDays className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Upcoming Lessons / Timetable</h2>
+          </div>
+          <div className="p-6 sm:p-8">
+            <div className="space-y-4">
+              {lessons.map((lesson) => (
+                <div key={lesson.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
+                  <p className="text-lg font-black text-dark">{lesson.title}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">
+                    {lesson.date} at {lesson.time} | Tutor: {lesson.tutor}
+                  </p>
+                  <span className={`mt-3 inline-block rounded-xl border-[2px] border-dark px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${lesson.status === 'upcoming' ? 'bg-amber-100 text-amber-900' : lesson.status === 'completed' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'}`}>
+                    {lesson.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Attendance History */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-blue-100 flex items-center gap-3">
+            <Clock4 className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Attendance History</h2>
+          </div>
+          <div className="p-6 sm:p-8">
+            <div className="space-y-4">
+              {attendance.map((entry) => (
+                <div key={entry.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
+                  <div>
+                    <p className="text-lg font-black text-dark">{entry.classTitle}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">{entry.date}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center gap-2 rounded-xl border-[2px] border-dark px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${
+                      entry.status === 'present'
+                        ? 'bg-emerald-100 text-emerald-900'
+                        : entry.status === 'late'
+                          ? 'bg-amber-100 text-amber-900'
+                          : 'bg-rose-100 text-rose-900'
+                    }`}
+                  >
+                    {entry.status === 'present' ? <CheckCircle2 className="h-4 w-4" /> : null}
+                    {entry.status === 'late' ? <AlertTriangle className="h-4 w-4" /> : null}
+                    {entry.status === 'absent' ? <XCircle className="h-4 w-4" /> : null}
+                    {entry.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-4 pt-6 border-t-[4px] border-dark/10">
         <Link href="/dash/parent/messages">
-          <Button variant="primary" className="text-xs">
+          <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
             Message Tutor About Attendance
           </Button>
         </Link>
         <Link href="/dash/parent/reports">
-          <Button variant="outline" className="text-xs">
+          <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
             Open Homework & Progress Reports
           </Button>
         </Link>
