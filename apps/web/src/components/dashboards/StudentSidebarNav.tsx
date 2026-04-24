@@ -177,13 +177,13 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       ],
     },
     {
-      title: 'Resources and Revision',
+      title: 'Resources & Revision',
       items: [
         { href: '/dash/student/notes', icon: NotebookPen, label: 'Notes' },
         { href: '/dash/student/library', icon: Library, label: 'Library' },
         { href: '/dash/student/videos', icon: MonitorPlay, label: 'Videos' },
-        { href: '/dash/student/read', icon: BookOpen, label: 'Read' },
-        { href: '/dash/student/flashcards', icon: Layers, label: 'Flashcards' },
+        { href: '/dash/student/read', icon: BookOpen, label: 'Study Articles' },
+        { href: '/dash/student/flashcards', icon: Layers, label: 'Revision Cards' },
       ],
     },
     {
@@ -191,7 +191,6 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       items: [
         { href: '/dash/student/tracker', icon: LineChart, label: 'Subject Mastery' },
         { href: '/dash/student/analytics', icon: LineChart, label: 'Analytics' },
-        { href: '/dash/student/streak', icon: Flame, label: 'Streak' },
         { href: '/dash/student/leaderboard', icon: Trophy, label: 'Leaderboard' },
         { href: '/dash/student/badges', icon: BadgeCheck, label: 'Badges' },
         { href: '/dash/student/rewards', icon: Star, label: 'Rewards' },
@@ -201,9 +200,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Communication',
       items: [
         { href: '/dash/student/live', icon: PlayCircle, label: 'Live Room' },
-        { href: '/dash/student/tutor', icon: Users, label: 'Tutor' },
-        { href: '/dash/student/tutor-chat', icon: MessageCircle, label: 'Tutor Chat' },
-        { href: '/dash/student/message', icon: MessageSquare, label: 'Messages' },
+        { href: '/dash/student/tutor-chat', icon: MessageCircle, label: 'Messages' },
       ],
     },
     {
