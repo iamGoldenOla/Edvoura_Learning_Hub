@@ -14,7 +14,16 @@
  */
 
 import { generateText } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
+
+// We use the @ai-sdk/openai package to create a custom provider for OpenRouter.
+const openrouter = createOpenAI({
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPENROUTER_API_KEY ?? process.env.OPENAI_API_KEY,
+});
+
+// The user has configured Z.Ai Edvoura via OpenRouter to use Google Gemma 4 31B
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemma-4-31b';
 
 import {
   type ContentType,
@@ -57,7 +66,7 @@ export async function generateEducationalContent(params: {
           : '';
 
       const { text } = await generateText({
-        model: openai('gpt-4o'),
+        model: openrouter(DEFAULT_MODEL),
         system: SYSTEM_IDENTITY,
         prompt: userPrompt + retryHint,
         temperature: 0.7,
@@ -116,7 +125,7 @@ export async function analyzeStudentPerformance(params: {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const { text } = await generateText({
-        model: openai('gpt-4o'),
+        model: openrouter(DEFAULT_MODEL),
         system: SYSTEM_IDENTITY,
         prompt: userPrompt,
         temperature: 0.5,
@@ -160,7 +169,7 @@ export async function generateParentReport(params: {
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
       const { text } = await generateText({
-        model: openai('gpt-4o'),
+        model: openrouter(DEFAULT_MODEL),
         system: SYSTEM_IDENTITY,
         prompt: userPrompt,
         temperature: 0.6,
