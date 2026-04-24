@@ -1,6 +1,11 @@
 -- EDVOURA LEARNING HUB: AI ENGINE ORCHESTRATION SCHEMA
 -- Migration: Creates the tables necessary for the AI Operations, Curriculum, and Tutor Engines.
 
+DROP TABLE IF EXISTS public.ai_action_logs CASCADE;
+DROP TABLE IF EXISTS public.student_learning_profiles CASCADE;
+DROP TABLE IF EXISTS public.ai_generated_content CASCADE;
+DROP TABLE IF EXISTS public.curriculum_maps CASCADE;
+
 -- =====================================================================================
 -- 1. CURRICULUM INTELLIGENCE SYSTEM
 -- Acts as the ground truth for AI generation. The AI cannot invent topics, it must pull from here.
