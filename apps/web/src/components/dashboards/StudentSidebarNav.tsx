@@ -253,12 +253,15 @@ const NavItem = ({
 }) => (
   <Link
     href={safeHref(href)}
-    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-      active ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'
+    className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] mb-1.5 ${
+      active 
+        ? 'bg-yellow border-dark text-dark shadow-[3px_3px_0px_#ffffff] translate-x-[-2px] translate-y-[-2px]' 
+        : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white'
     }`}
   >
-    <Icon className="h-4 w-4 shrink-0" />
-    <span className="text-sm font-medium">{label}</span>
+    <Icon className="h-5 w-5 shrink-0" />
+    <span className="text-sm font-black tracking-tight">{label}</span>
+    {active ? <div className="ml-auto h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-white" /> : null}
   </Link>
 );
 
@@ -268,7 +271,7 @@ const renderSections = (pathname: string, sections: NavSection[]) =>
       key={section.title}
       className={sectionIndex === 0 ? 'space-y-1.5' : 'mt-4 space-y-1.5 border-t border-slate-800 pt-4'}
     >
-      <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{section.title}</p>
+      <p className="mb-2 px-4 text-xs font-black uppercase tracking-[0.16em] text-white/50">{section.title}</p>
       {section.items.map((item) => (
         <NavItem
           key={item.href}

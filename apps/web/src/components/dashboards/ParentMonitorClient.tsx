@@ -15,70 +15,101 @@ type ParentChild = {
 type LessonItem = {
   id: string;
   title: string;
-  date: string;
-  time: string;
-  tutor: string;
-  status: 'upcoming' | 'completed' | 'missed';
+  scheduledStartAt: string;
+  scheduledEndAt: string;
+  status: string;
+  classTitle: string;
+  subjectName: string;
+  tutorName: string;
+  childUserId: string;
 };
 
 type AttendanceItem = {
   id: string;
-  date: string;
+  lessonTitle: string;
   classTitle: string;
-  status: 'present' | 'late' | 'absent';
+  scheduledAt: string;
+  status: string;
+  childUserId: string;
 };
 
-const buildLessons = (child: ParentChild | null, seed: number): LessonItem[] => {
-  if (!child) return [];
-  return [
-    {
-      id: `${child.userId}-lesson-1`,
-      title: `${child.gradeLevelName} Mathematics`,
-      date: 'Mon',
-      time: '16:00',
-      tutor: 'Mrs. Adekunle',
-      status: 'upcoming',
-    },
-    {
-      id: `${child.userId}-lesson-2`,
-      title: 'English Composition',
-      date: 'Wed',
-      time: '15:30',
-      tutor: 'Mr. Olatunji',
-      status: seed % 3 === 0 ? 'missed' : 'completed',
-    },
-    {
-      id: `${child.userId}-lesson-3`,
-      title: 'Science Lab Skills',
-      date: 'Fri',
-      time: '17:00',
-      tutor: 'Ms. Bassey',
-      status: 'upcoming',
-    },
-  ];
+const formatDate = (iso: string) => {
+  if (!iso) return '--';
+  try {
+    return new Date(iso).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+  } catch {
+    return '--';
+  }
 };
 
-const buildAttendance = (child: ParentChild | null, seed: number): AttendanceItem[] => {
-  if (!child) return [];
-  return [
-    { id: `${child.userId}-a1`, date: '2026-04-11', classTitle: 'Mathematics', status: 'present' },
-    { id: `${child.userId}-a2`, date: '2026-04-10', classTitle: 'English', status: seed % 4 === 0 ? 'late' : 'present' },
-    { id: `${child.userId}-a3`, date: '2026-04-09', classTitle: 'Science', status: seed % 3 === 0 ? 'absent' : 'present' },
-  ];
+const formatTime = (iso: string) => {
+  if (!iso) return '--';
+  try {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '--';
+  }
 };
 
-export default function ParentMonitorClient({ linkedChildren }: { linkedChildren: ParentChild[] }) {
+const statusLabel = (status: string) => {
+  switch (status) {
+    case 'scheduled': return 'upcoming';
+    case 'live': return 'live';
+    case 'completed': return 'completed';
+    case 'cancelled': return 'cancelled';
+    default: return status;
+  }
+};
+
+const statusColor = (status: string) => {
+  const normalized = statusLabel(status);
+  switch (normalized) {
+    case 'upcoming':
+    case 'live':
+      return 'bg-amber-100 text-amber-900';
+    case 'completed':
+      return 'bg-emerald-100 text-emerald-900';
+    default:
+      return 'bg-rose-100 text-rose-900';
+  }
+};
+
+const attendanceColor = (status: string) => {
+  switch (status) {
+    case 'present': return 'bg-emerald-100 text-emerald-900';
+    case 'late': return 'bg-amber-100 text-amber-900';
+    default: return 'bg-rose-100 text-rose-900';
+  }
+};
+
+export default function ParentMonitorClient({
+  linkedChildren,
+  lessons,
+  attendance,
+}: {
+  linkedChildren: ParentChild[];
+  lessons: LessonItem[];
+  attendance: AttendanceItem[];
+}) {
   const [activeChildId, setActiveChildId] = useState<string>(linkedChildren[0]?.userId ?? '');
   const activeChild = useMemo(
     () => linkedChildren.find((child) => child.userId === activeChildId) ?? linkedChildren[0] ?? null,
     [linkedChildren, activeChildId],
   );
-  const activeIndex = Math.max(0, linkedChildren.findIndex((child) => child.userId === activeChild?.userId));
 
-  const lessons = useMemo(() => buildLessons(activeChild, activeIndex + 2), [activeChild, activeIndex]);
-  const attendance = useMemo(() => buildAttendance(activeChild, activeIndex + 5), [activeChild, activeIndex]);
-  const presentCount = attendance.filter((item) => item.status === 'present').length;
-  const absentCount = attendance.filter((item) => item.status === 'absent').length;
+  // Filter data for active child
+  const childLessons = useMemo(
+    () => (activeChild ? lessons.filter((l) => l.childUserId === activeChild.userId) : []),
+    [lessons, activeChild],
+  );
+  const childAttendance = useMemo(
+    () => (activeChild ? attendance.filter((a) => a.childUserId === activeChild.userId) : []),
+    [attendance, activeChild],
+  );
+
+  const upcomingCount = childLessons.filter((l) => l.status === 'scheduled' || l.status === 'live').length;
+  const presentCount = childAttendance.filter((a) => a.status === 'present').length;
+  const absentCount = childAttendance.filter((a) => a.status === 'absent').length;
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
@@ -122,7 +153,7 @@ export default function ParentMonitorClient({ linkedChildren }: { linkedChildren
       <div className="grid gap-6 md:grid-cols-3">
         <div className="rounded-[28px] border-[4px] border-dark bg-blue-100 p-6 shadow-[6px_6px_0px_#060E1C]">
           <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Upcoming Lessons</p>
-          <p className="mt-2 text-4xl font-black text-dark">{lessons.filter((lesson) => lesson.status === 'upcoming').length}</p>
+          <p className="mt-2 text-4xl font-black text-dark">{upcomingCount}</p>
         </div>
         <div className="rounded-[28px] border-[4px] border-dark bg-emerald-100 p-6 shadow-[6px_6px_0px_#060E1C]">
           <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Present in Recent Lessons</p>
@@ -135,26 +166,36 @@ export default function ParentMonitorClient({ linkedChildren }: { linkedChildren
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Timetable */}
+        {/* Timetable / Lessons */}
         <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center gap-3">
             <CalendarDays className="h-6 w-6 text-dark" />
-            <h2 className="text-2xl font-black text-dark tracking-tight">Upcoming Lessons / Timetable</h2>
+            <h2 className="text-2xl font-black text-dark tracking-tight">Lessons</h2>
           </div>
           <div className="p-6 sm:p-8">
-            <div className="space-y-4">
-              {lessons.map((lesson) => (
-                <div key={lesson.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
-                  <p className="text-lg font-black text-dark">{lesson.title}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">
-                    {lesson.date} at {lesson.time} | Tutor: {lesson.tutor}
-                  </p>
-                  <span className={`mt-3 inline-block rounded-xl border-[2px] border-dark px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${lesson.status === 'upcoming' ? 'bg-amber-100 text-amber-900' : lesson.status === 'completed' ? 'bg-emerald-100 text-emerald-900' : 'bg-rose-100 text-rose-900'}`}>
-                    {lesson.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {childLessons.length > 0 ? (
+              <div className="space-y-4">
+                {childLessons.map((lesson) => (
+                  <div key={lesson.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
+                    <p className="text-lg font-black text-dark">{lesson.title}</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">
+                      {lesson.subjectName} — {lesson.classTitle} | Tutor: {lesson.tutorName}
+                    </p>
+                    <p className="text-xs font-bold text-dark/50 mt-2">
+                      {formatDate(lesson.scheduledStartAt)} at {formatTime(lesson.scheduledStartAt)}
+                    </p>
+                    <span className={`mt-3 inline-block rounded-xl border-[2px] border-dark px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${statusColor(lesson.status)}`}>
+                      {statusLabel(lesson.status)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-10 text-center flex flex-col items-center">
+                <CalendarDays className="h-8 w-8 text-dark/30 mb-4" />
+                <p className="text-sm font-bold text-dark/60 italic">No lessons scheduled yet. They will appear here once a tutor creates lessons.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -165,30 +206,33 @@ export default function ParentMonitorClient({ linkedChildren }: { linkedChildren
             <h2 className="text-2xl font-black text-dark tracking-tight">Attendance History</h2>
           </div>
           <div className="p-6 sm:p-8">
-            <div className="space-y-4">
-              {attendance.map((entry) => (
-                <div key={entry.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
-                  <div>
-                    <p className="text-lg font-black text-dark">{entry.classTitle}</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">{entry.date}</p>
+            {childAttendance.length > 0 ? (
+              <div className="space-y-4">
+                {childAttendance.map((entry) => (
+                  <div key={entry.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
+                    <div>
+                      <p className="text-lg font-black text-dark">{entry.lessonTitle}</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-1">
+                        {entry.classTitle} — {formatDate(entry.scheduledAt)}
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-2 rounded-xl border-[2px] border-dark px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${attendanceColor(entry.status)}`}
+                    >
+                      {entry.status === 'present' ? <CheckCircle2 className="h-4 w-4" /> : null}
+                      {entry.status === 'late' ? <AlertTriangle className="h-4 w-4" /> : null}
+                      {entry.status === 'absent' ? <XCircle className="h-4 w-4" /> : null}
+                      {entry.status}
+                    </span>
                   </div>
-                  <span
-                    className={`inline-flex items-center gap-2 rounded-xl border-[2px] border-dark px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] ${
-                      entry.status === 'present'
-                        ? 'bg-emerald-100 text-emerald-900'
-                        : entry.status === 'late'
-                          ? 'bg-amber-100 text-amber-900'
-                          : 'bg-rose-100 text-rose-900'
-                    }`}
-                  >
-                    {entry.status === 'present' ? <CheckCircle2 className="h-4 w-4" /> : null}
-                    {entry.status === 'late' ? <AlertTriangle className="h-4 w-4" /> : null}
-                    {entry.status === 'absent' ? <XCircle className="h-4 w-4" /> : null}
-                    {entry.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-10 text-center flex flex-col items-center">
+                <Clock4 className="h-8 w-8 text-dark/30 mb-4" />
+                <p className="text-sm font-bold text-dark/60 italic">No attendance records yet. Records will appear after lessons are held.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
