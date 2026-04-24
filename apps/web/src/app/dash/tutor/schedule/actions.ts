@@ -219,3 +219,18 @@ export async function startLesson(lessonId: string) {
 
   return { hostUrl: finalHostUrl || liveSession?.join_url };
 }
+
+export async function deleteLesson(lessonId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('lessons')
+    .delete()
+    .eq('id', lessonId);
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath('/dash/tutor/schedule');
+  revalidatePath('/dash/tutor');
+}

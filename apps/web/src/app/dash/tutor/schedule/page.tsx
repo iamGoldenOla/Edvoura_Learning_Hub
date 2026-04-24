@@ -6,6 +6,7 @@ import { createTutorLiveSlot } from '@/app/dash/tutor/schedule/actions';
 import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButton';
 import { requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
+import DeleteLessonButton from '@/components/dashboards/DeleteLessonButton';
 
 type TutorLiveScheduleRow = {
   id: string;
@@ -139,11 +140,7 @@ export default async function TutorSchedulePage(props: {
                             <Video className="w-4 h-4" /> Join Google Meet
                           </Button>
                         </a>
-                      ) : (
-                        <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                          No student join link attached yet. Add one in the scheduler form.
-                        </div>
-                      )}
+                      ) : null}
 
                       {session.host_url ? (
                         <a href={session.host_url} target="_blank" rel="noreferrer">
@@ -152,6 +149,8 @@ export default async function TutorSchedulePage(props: {
                           </Button>
                         </a>
                       ) : null}
+
+                      <DeleteLessonButton lessonId={session.id} />
                     </div>
                   </article>
                 ))
