@@ -1,89 +1,94 @@
-import React from 'react';
-import { Bookmark, Lock, Sparkles, Medal, Rocket, Trophy } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+'use client';
+
+import { useState } from 'react';
+import { Sparkles, Trophy, Star, Lock, Heart, Sun, Cloud, Moon } from 'lucide-react';
+
+const STICKERS = [
+  { id: 1, name: 'Math Star', unlocked: true, icon: '⭐', color: 'bg-yellow-100', rarity: 'Common' },
+  { id: 2, name: 'Science Wiz', unlocked: true, icon: '🧪', color: 'bg-green-100', rarity: 'Rare' },
+  { id: 3, name: 'Speed Reader', unlocked: true, icon: '🚀', color: 'bg-blue-100', rarity: 'Epic' },
+  { id: 4, name: 'Kind Heart', unlocked: false, icon: '❤️', color: 'bg-pink-100', rarity: 'Common' },
+  { id: 5, name: 'Art Master', unlocked: false, icon: '🎨', color: 'bg-purple-100', rarity: 'Rare' },
+  { id: 6, name: 'Music Maker', unlocked: false, icon: '🎵', color: 'bg-indigo-100', rarity: 'Common' },
+  { id: 7, name: 'Nature Lover', unlocked: false, icon: '🌿', color: 'bg-emerald-100', rarity: 'Epic' },
+  { id: 8, name: 'Early Bird', unlocked: false, icon: '☀️', color: 'bg-amber-100', rarity: 'Common' },
+];
 
 export default function StickerBookPage() {
-  // Mock Data for Stickers
-  const stickers = [
-    { id: 1, name: 'Math Logic', unlocked: true, icon: <Rocket className="w-8 h-8 text-edvoura-navy" />, status: 'Earned Oct 12' },
-    { id: 2, name: 'Science Discovery', unlocked: true, icon: <Sparkles className="w-8 h-8 text-edvoura-navy" />, status: 'Earned Oct 10' },
-    { id: 3, name: 'Literature Review', unlocked: true, icon: <Bookmark className="w-8 h-8 text-edvoura-navy" />, status: 'Earned Oct 05' },
-    { id: 4, name: 'Perfect Spelling', unlocked: false, icon: <Lock className="w-8 h-8 text-slate-300" />, status: 'Requires: 100 XP' },
-    { id: 5, name: 'Punctuality', unlocked: false, icon: <Lock className="w-8 h-8 text-slate-300" />, status: 'Requires: 5 On-Time' },
-    { id: 6, name: 'Peer Support', unlocked: false, icon: <Lock className="w-8 h-8 text-slate-300" />, status: 'Requires: Tutor Nom.' },
-    { id: 7, name: '7-Day Streak', unlocked: false, icon: <Lock className="w-8 h-8 text-slate-300" />, status: 'Current: 4 Days' },
-    { id: 8, name: 'Master Scholar', unlocked: false, icon: <Lock className="w-8 h-8 text-slate-300" />, status: 'Requires: All Badges' }
-  ];
-
-  const unlockedCount = stickers.filter(s => s.unlocked).length;
-  const progressPercent = (unlockedCount / stickers.length) * 100;
+  const unlockedCount = STICKERS.filter(s => s.unlocked).length;
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-in slide-in-from-bottom-4 duration-500 space-y-8">
-      
-      {/* Mature Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3 text-white">
-            <Trophy className="w-7 h-7 text-edvoura-gold" /> Achievements & Badges
-          </h1>
-          <p className="mt-2 text-slate-300 text-sm">Review your earned academic milestones and upcoming reward thresholds.</p>
+    <div className="max-w-6xl mx-auto space-y-12 pb-12">
+      <header className="bg-white border-[4px] border-dark rounded-[40px] p-10 shadow-[10px_10px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="text-center md:text-left">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-100 text-pink-700 border-[3px] border-dark font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_#060E1C] mb-4">
+            <Sparkles className="h-4 w-4" />
+            My Sticker Book
+          </div>
+          <h1 className="text-5xl font-heading font-black text-dark tracking-tight">Prize Collection</h1>
+          <p className="mt-2 text-xl text-dark/60 font-semibold italic">Collect all the magic stickers by finishing missions!</p>
         </div>
-        <div className="mt-6 md:mt-0 flex gap-4 text-center">
-          <div className="bg-slate-800 border border-slate-700 px-6 py-3 rounded-xl min-w-32">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Total Earned</p>
-            <p className="text-3xl font-black text-edvoura-gold">{unlockedCount} <span className="text-sm text-slate-500 font-bold">/ {stickers.length}</span></p>
-          </div>
+        
+        <div className="bg-yellow border-[4px] border-dark rounded-[32px] p-8 shadow-[8px_8px_0px_#060E1C] text-center min-w-[160px]">
+           <Trophy className="h-10 w-10 text-dark mx-auto mb-2" />
+           <p className="text-[10px] font-black uppercase tracking-widest text-dark/30">Stickers Found</p>
+           <p className="text-4xl font-black text-dark">{unlockedCount} / {STICKERS.length}</p>
         </div>
-      </div>
+      </header>
 
-      <Card className="rounded-2xl shadow-sm border-slate-200">
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-lg">Mastery Progression</CardTitle>
-            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-wider">{progressPercent}% Completed</span>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-            <div 
-              className="bg-edvoura-navy h-full transition-all duration-1000"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {stickers.map((sticker) => (
+      {/* The Sticker Book Grid */}
+      <div className="bg-white border-[6px] border-dark rounded-[60px] p-12 shadow-[16px_16px_0px_#060E1C] grid grid-cols-2 md:grid-cols-4 gap-8">
+        {STICKERS.map((sticker) => (
           <div 
             key={sticker.id}
             className={`
-              relative flex flex-col p-6 rounded-2xl border transition-all duration-300
-              ${sticker.unlocked ? 'bg-white border-slate-200 shadow-sm hover:border-edvoura-navy hover:shadow-md' : 'bg-slate-50/50 border-slate-100 border-dashed'}
+              relative aspect-square rounded-[32px] border-[4px] border-dark shadow-[6px_6px_0px_#060E1C] flex flex-col items-center justify-center transition-all group
+              ${sticker.unlocked ? sticker.color : 'bg-slate-50 grayscale opacity-40'}
             `}
           >
-            <div className="flex justify-between items-start mb-6">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${sticker.unlocked ? 'bg-slate-100' : 'bg-slate-100/50'}`}>
-                {sticker.icon}
-              </div>
-              {sticker.unlocked && (
-                <Medal className="w-5 h-5 text-edvoura-gold" />
-              )}
-            </div>
-            
-            <h3 className={`font-bold text-sm mb-1 ${sticker.unlocked ? 'text-slate-800' : 'text-slate-500'}`}>
-              {sticker.name}
-            </h3>
-            
-            <p className={`text-[10px] uppercase font-bold tracking-wider ${sticker.unlocked ? 'text-green-600' : 'text-slate-400'}`}>
-              {sticker.status}
-            </p>
+            {sticker.unlocked ? (
+              <>
+                <div className="text-6xl group-hover:scale-125 transition-transform animate-in zoom-in duration-500">
+                  {sticker.icon}
+                </div>
+                <div className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-white border-2 border-dark flex items-center justify-center">
+                  <Star className="h-4 w-4 text-yellow fill-current" />
+                </div>
+                <div className="mt-4 px-3 py-1 bg-white/50 rounded-full border-2 border-dark text-[10px] font-black uppercase tracking-widest text-dark">
+                  {sticker.name}
+                </div>
+              </>
+            ) : (
+              <>
+                <Lock className="h-12 w-12 text-slate-400" />
+                <div className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Locked</div>
+              </>
+            )}
           </div>
         ))}
       </div>
-      
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+         <div className="bg-blue-600 border-[4px] border-dark rounded-[32px] p-8 shadow-[8px_8px_0px_#060E1C] text-white">
+            <h3 className="text-xl font-black mb-4 flex items-center gap-2">
+              <Sun className="h-6 w-6" /> Daily Boost
+            </h3>
+            <p className="text-sm font-bold text-blue-100">Log in tomorrow to get a mystery sticker pack!</p>
+            <div className="mt-6 h-3 w-full bg-white/20 rounded-full overflow-hidden border-2 border-dark">
+               <div className="h-full bg-white w-3/4"></div>
+            </div>
+         </div>
+         
+         <div className="bg-indigo-600 border-[4px] border-dark rounded-[32px] p-8 shadow-[8px_8px_0px_#060E1C] text-white md:col-span-2 flex flex-col md:flex-row items-center gap-8">
+            <div className="h-24 w-24 bg-white/20 rounded-[20px] flex items-center justify-center text-5xl border-2 border-dark rotate-3">
+               🎁
+            </div>
+            <div>
+               <h3 className="text-2xl font-black mb-2">Next Milestone</h3>
+               <p className="text-indigo-100 font-bold">Collect 2 more stickers to unlock the <span className="text-yellow font-black underline">Super Scholar Card!</span></p>
+            </div>
+         </div>
+      </div>
     </div>
   );
 }
