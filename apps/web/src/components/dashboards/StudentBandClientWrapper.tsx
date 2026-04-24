@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, Languages, BrainCircuit } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, Languages, BrainCircuit, Volume2, Mic2, PlayCircle } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import StudentLiveContentPanel from './StudentLiveContentPanel';
@@ -97,8 +97,30 @@ export default function StudentBandClientWrapper({
     })
     .slice(0, 5);
   const [uploadedSubmissions, setUploadedSubmissions] = useState<Record<string, string>>({});
-
   const dailyWords = getDailyWords(band, new Date().toISOString().split('T')[0]);
+  const [spellingInput, setSpellingInput] = useState('');
+  const [spellingFeedback, setSpellingFeedback] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+
+  const speakWord = (word: string) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.1;
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
+  const checkSpelling = (word: string) => {
+    if (spellingInput.toLowerCase().trim() === word.toLowerCase().trim()) {
+      setSpellingFeedback({ type: 'success', message: 'Perfect! Well done! 🎉' });
+      speakWord('Perfect! Well done!');
+      setSpellingInput('');
+      setTimeout(() => setSpellingFeedback({ type: null, message: '' }), 3000);
+    } else {
+      setSpellingFeedback({ type: 'error', message: 'Try again, you can do it!' });
+      setTimeout(() => setSpellingFeedback({ type: null, message: '' }), 2000);
+    }
+  };
 
   const progressRows = dashboard.progress.slice(0, 4).map((entry) => ({
     id: entry.id,
@@ -150,51 +172,76 @@ export default function StudentBandClientWrapper({
                       href={nextLesson.joinUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700 shadow-sm animate-pulse"
+                      className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-200 transition-all animate-pulse"
                     >
-                      Join Live Lesson Now
+                      <PlayCircle className="mr-2 h-5 w-5" />
+                      Join Class Now
                     </a>
                   ) : (
                     <Link
                       href="/dash/student/live"
-                      className="inline-flex items-center rounded-md bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800"
+                      className="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
                     >
-                      Open live room
+                      Wait for teacher...
                     </Link>
                   )}
-                  <Link
-                    href="/dash/student/classes"
-                    className="inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
-                  >
-                    View schedule
-                  </Link>
                 </div>
               </div>
             ) : (
-              <EmptyState text="No upcoming lesson is scheduled yet." />
+              <div className="py-4 text-center">
+                <Video className="mx-auto h-8 w-8 text-slate-300 mb-2" />
+                <p className="text-sm text-slate-500">No live classes right now.</p>
+              </div>
             )}
           </Panel>
 
-          {/* New Daily Vocabulary Panel */}
-          <Panel title="Daily Vocabulary" icon={Languages}>
-            <div className="space-y-4">
-              <p className="text-xs text-slate-600 italic">
-                Master these 10 words today to boost your spelling score!
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {dailyWords.map((word, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-blue-50 transition-colors">
-                    <span className="text-[10px] font-bold text-slate-400">{idx + 1}.</span>
-                    <span className="text-sm font-semibold text-slate-800">{word}</span>
+          {/* Simplified & Interactive Daily Vocabulary */}
+          <Panel title="Daily Spelling Challenge" icon={Languages}>
+            <div className="space-y-6">
+              <div className="rounded-2xl bg-blue-50 p-6 text-center border-2 border-blue-100">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-4">Listen & Spell</h3>
+                <div className="flex flex-col items-center gap-4">
+                  <button 
+                    onClick={() => speakWord(dailyWords[0])}
+                    className="h-16 w-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
+                  >
+                    <Volume2 className="h-8 w-8" />
+                  </button>
+                  <p className="text-[10px] font-medium text-blue-400 italic">Click to hear today&apos;s word</p>
+                  
+                  <div className="w-full max-w-[240px] mt-2">
+                    <input 
+                      type="text"
+                      value={spellingInput}
+                      onChange={(e) => setSpellingInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && checkSpelling(dailyWords[0])}
+                      placeholder="Type the word here..."
+                      className="w-full rounded-xl border-2 border-blue-200 px-4 py-3 text-center text-lg font-bold text-slate-800 focus:border-blue-500 focus:outline-none transition-all"
+                    />
+                    {spellingFeedback.type && (
+                      <p className={`mt-2 text-xs font-bold ${spellingFeedback.type === 'success' ? 'text-green-600' : 'text-red-500'} animate-bounce`}>
+                        {spellingFeedback.message}
+                      </p>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
-              <Link 
-                href="/dash/student/homework" 
-                className="block text-center rounded-lg bg-blue-50 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-700 hover:bg-blue-100 transition-colors"
-              >
-                Practice Spelling →
-              </Link>
+
+              <div className="pt-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Today&apos;s Word List</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {dailyWords.map((word, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => speakWord(word)}
+                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-300 hover:bg-white transition-all group"
+                    >
+                      <span className="text-sm font-bold text-slate-700">{word}</span>
+                      <Volume2 className="h-3 w-3 text-slate-300 group-hover:text-blue-500" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </Panel>
 
