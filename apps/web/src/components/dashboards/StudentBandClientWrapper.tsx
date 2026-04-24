@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, Languages, BrainCircuit } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import StudentLiveContentPanel from './StudentLiveContentPanel';
 import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
+import { getDailyWords } from '@/lib/daily-words';
 
 const bandCopy = {
   '1-3': {
@@ -97,6 +98,8 @@ export default function StudentBandClientWrapper({
     .slice(0, 5);
   const [uploadedSubmissions, setUploadedSubmissions] = useState<Record<string, string>>({});
 
+  const dailyWords = getDailyWords(band, new Date().toISOString().split('T')[0]);
+
   const progressRows = dashboard.progress.slice(0, 4).map((entry) => ({
     id: entry.id,
     subject: entry.subjectName ?? 'General',
@@ -170,6 +173,29 @@ export default function StudentBandClientWrapper({
             ) : (
               <EmptyState text="No upcoming lesson is scheduled yet." />
             )}
+          </Panel>
+
+          {/* New Daily Vocabulary Panel */}
+          <Panel title="Daily Vocabulary" icon={Languages}>
+            <div className="space-y-4">
+              <p className="text-xs text-slate-600 italic">
+                Master these 10 words today to boost your spelling score!
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {dailyWords.map((word, idx) => (
+                  <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-blue-50 transition-colors">
+                    <span className="text-[10px] font-bold text-slate-400">{idx + 1}.</span>
+                    <span className="text-sm font-semibold text-slate-800">{word}</span>
+                  </div>
+                ))}
+              </div>
+              <Link 
+                href="/dash/student/homework" 
+                className="block text-center rounded-lg bg-blue-50 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-700 hover:bg-blue-100 transition-colors"
+              >
+                Practice Spelling →
+              </Link>
+            </div>
           </Panel>
 
           <Panel title="Pending assignments" icon={BookOpen}>
