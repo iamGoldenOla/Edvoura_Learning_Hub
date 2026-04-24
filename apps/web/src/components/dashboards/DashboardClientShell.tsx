@@ -60,13 +60,13 @@ const NavItem = ({
     <div
       className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] ${
         active 
-          ? 'bg-blue-100 border-dark text-dark shadow-[3px_3px_0px_#060E1C]' 
-          : 'bg-transparent border-transparent text-dark/70 hover:bg-white hover:border-dark hover:text-dark hover:shadow-[3px_3px_0px_#060E1C]'
+          ? 'bg-yellow border-dark text-dark shadow-[3px_3px_0px_#ffffff] translate-x-[-2px] translate-y-[-2px]' 
+          : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white'
       }`}
     >
       <Icon className="h-5 w-5 shrink-0" />
       <span className="text-sm font-black tracking-tight">{label}</span>
-      {active ? <div className="ml-auto h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-yellow" /> : null}
+      {active ? <div className="ml-auto h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-white" /> : null}
     </div>
   </Link>
 );
@@ -168,8 +168,8 @@ export default function DashboardClientShell({
       <DashboardToastViewport />
       <DashboardQueryActionBridge />
       <div className="flex min-h-screen bg-off-white text-dark">
-        <aside className="sticky top-0 hidden h-screen w-72 flex-col border-r-[4px] border-dark bg-slate-50 p-6 lg:flex shadow-[4px_0_0_#060E1C] z-30">
-          <div className="mb-8 flex items-center gap-4 rounded-2xl border-[3px] border-dark bg-yellow px-4 py-4 shadow-[4px_4px_0px_#060E1C]">
+        <aside className="sticky top-0 hidden h-screen w-72 flex-col bg-dark p-6 lg:flex shadow-[4px_0_0_#060E1C] z-30">
+          <div className="mb-8 flex items-center gap-4 rounded-2xl border-[3px] border-dark bg-yellow px-4 py-4 shadow-[4px_4px_0px_#ffffff]">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[3px] border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C]">
               <Crown className="h-6 w-6" />
             </div>
@@ -190,7 +190,7 @@ export default function DashboardClientShell({
           </div>
 
           <nav className="custom-scrollbar flex-1 space-y-1 overflow-y-auto pr-2 pb-6">
-            <p className="px-4 mb-2 mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">Navigation</p>
+            <p className="px-4 mb-2 mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Navigation</p>
 
             <NavItem
               href={`/dash/${effectiveRole}`}
@@ -204,12 +204,12 @@ export default function DashboardClientShell({
             {effectiveRole === 'parent' ? <ParentSidebarNav /> : null}
             {effectiveRole === 'admin' ? <AdminSidebarNav isSuperAdmin={isSuperAdmin} /> : null}
 
-            <p className="px-4 mb-2 mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">System</p>
+            <p className="px-4 mb-2 mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">System</p>
             <NavItem href="/" icon={ArrowLeft} label="Exit Portal" />
           </nav>
 
-          <div className="mt-4 space-y-4 border-t-[3px] border-dark/10 pt-6">
-            <div className="flex items-center gap-3 rounded-2xl border-[3px] border-dark bg-white p-3 shadow-[4px_4px_0px_#060E1C]">
+          <div className="mt-4 space-y-4 border-t-[3px] border-white/10 pt-6">
+            <div className="flex items-center gap-3 rounded-2xl border-[3px] border-dark bg-white p-3 shadow-[4px_4px_0px_#ffffff]">
               <div className="h-10 w-10 overflow-hidden rounded-xl border-[2px] border-dark bg-off-white">
                 <img
                   src={avatarUrl}
@@ -390,7 +390,7 @@ function TutorSidebarNav() {
 
   return (
     <div className="space-y-1.5">
-      <p className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+      <p className="mb-2 mt-4 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
         Tutor Workspace
       </p>
       {tutorNav.map((item) => (
@@ -403,8 +403,8 @@ function TutorSidebarNav() {
         />
       ))}
 
-      <div className="mt-4 space-y-1.5 border-t border-slate-800 pt-4">
-        <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+      <div className="mt-4 space-y-1.5 border-t-[3px] border-white/10 pt-4">
+        <p className="mb-2 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
           Teaching Tools
         </p>
         {toolsNav.map((item) => (
@@ -439,7 +439,7 @@ function ParentSidebarNav() {
 
   return (
     <div className="space-y-1.5">
-      <p className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+      <p className="mb-2 mt-4 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
         Parent Workspace
       </p>
       {parentNav.map((item) => (
@@ -480,7 +480,7 @@ function AdminSidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
 
   return (
     <div className="space-y-1.5">
-      <p className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+      <p className="mb-2 mt-4 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
         {isSuperAdmin ? 'Super Admin Workspace' : 'Admin Workspace'}
       </p>
       {adminNav

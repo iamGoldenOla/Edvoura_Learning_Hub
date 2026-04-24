@@ -14,10 +14,11 @@ import {
   Star,
   Trophy,
   Users,
+  Settings,
+  ArrowRight,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type ParentChild = {
   userId: string;
@@ -109,278 +110,291 @@ export default function ParentDashboardClient({
   const latestInvoice = invoices[0] ?? null;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
-      <section className="rounded-2xl border border-slate-200 bg-gradient-to-r from-edvoura-navy to-slate-900 p-6 text-white shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Parent Dashboard</h1>
-            <p className="mt-2 text-sm text-slate-200">
-              Welcome, {parentName}. Track each child with confidence, visibility, and control.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/dash/parent/messages">
-              <Button variant="secondary" className="text-xs">
-                Message Tutor
-              </Button>
-            </Link>
-            <Link href="/dash/parent/children">
-              <Button variant="outline" className="border-slate-500 text-xs text-white hover:bg-slate-800">
-                Manage Children
-              </Button>
-            </Link>
+    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+      
+      {/* Header Section */}
+      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div className="space-y-3 min-w-0">
+              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+                PARENT PORTAL
+              </span>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+                Welcome, {parentName}
+              </h1>
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+                Track each child with confidence, visibility, and control.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/dash/parent/messages">
+                <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
+                  Message Tutor
+                </Button>
+              </Link>
+              <Link href="/dash/parent/children">
+                <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
+                  Manage Children
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <Users className="h-3.5 w-3.5" />
+        <div className="p-6 bg-off-white flex flex-wrap items-center gap-4">
+          <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
+            <Users className="h-4 w-4" />
             Switch Child
           </span>
           {linkedChildren.length > 0 ? (
-            linkedChildren.map((child) => (
-              <button
-                key={child.userId}
-                type="button"
-                onClick={() => setActiveChildId(child.userId)}
-                className={`rounded-md border px-3 py-1.5 text-xs font-medium ${
-                  activeChild?.userId === child.userId
-                    ? 'border-blue-300 bg-blue-50 text-blue-700'
-                    : 'border-slate-300 bg-white text-slate-700'
-                }`}
-              >
-                {child.fullName ?? 'Unnamed Child'} ({child.gradeLevelName})
-              </button>
-            ))
+            <div className="flex flex-wrap gap-3">
+              {linkedChildren.map((child) => (
+                <button
+                  key={child.userId}
+                  type="button"
+                  onClick={() => setActiveChildId(child.userId)}
+                  className={`rounded-xl border-[3px] px-4 py-2 text-sm font-black transition-all hover:translate-x-[1px] hover:translate-y-[1px] ${
+                    activeChild?.userId === child.userId
+                      ? 'border-dark bg-dark text-white shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
+                      : 'border-dark bg-white text-dark shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
+                  }`}
+                >
+                  {child.fullName ?? 'Unnamed Child'} <span className="opacity-60 font-bold ml-1">({child.gradeLevelName})</span>
+                </button>
+              ))}
+            </div>
           ) : (
-            <p className="text-xs text-slate-600">No children linked yet. Use Manage Children to add one.</p>
+            <p className="text-xs font-bold text-dark/60">No children linked yet. Use Manage Children to add one.</p>
           )}
         </div>
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Child Snapshot</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Child Snapshot */}
+        <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-amber-100">
+            <h2 className="text-2xl font-black text-dark tracking-tight">Child Snapshot</h2>
+          </div>
+          <div className="p-6 sm:p-8">
             {activeChild ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Child Name</p>
-                  <p className="font-semibold text-slate-900">{activeChild.fullName ?? 'Unnamed Child'}</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Child Name</p>
+                  <p className="mt-1 text-xl font-black text-dark">{activeChild.fullName ?? 'Unnamed Child'}</p>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Grade</p>
-                  <p className="font-semibold text-slate-900">{activeChild.gradeLevelName}</p>
+                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Grade</p>
+                  <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeLevelName}</p>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">Learner Band</p>
-                  <p className="font-semibold text-slate-900">{activeChild.gradeBandName}</p>
+                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Learner Band</p>
+                  <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeBandName}</p>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-xs text-slate-500">School</p>
-                  <p className="font-semibold text-slate-900">{activeChild.schoolName ?? 'Not set'}</p>
+                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">School</p>
+                  <p className="mt-1 text-xl font-black text-dark truncate">{activeChild.schoolName ?? 'Not set'}</p>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-slate-600">Add a child profile to unlock this parent dashboard.</p>
+              <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-bold text-dark/60">
+                Add a child profile to unlock this parent dashboard.
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Notifications</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {alerts.map((alertItem) => (
-              <div key={alertItem.title} className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <p className="flex items-center gap-2 text-xs font-semibold text-amber-700">
-                  <ShieldAlert className="h-3.5 w-3.5" />
-                  {alertItem.title}
-                </p>
-                <p className="mt-1 text-xs text-amber-800">{alertItem.detail}</p>
+        {/* Notifications */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-rose-100 flex items-center justify-between">
+            <h2 className="text-2xl font-black text-dark tracking-tight">Alerts</h2>
+            <div className="h-10 w-10 bg-white border-[3px] border-dark rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
+              <Bell className="h-5 w-5 text-dark" />
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            {alerts.length > 0 ? (
+              alerts.map((alertItem) => (
+                <div key={alertItem.title} className="rounded-2xl border-[3px] border-dark bg-rose-50 p-4 shadow-[4px_4px_0px_#060E1C]">
+                  <p className="flex items-center gap-2 text-sm font-black text-rose-600 uppercase tracking-widest">
+                    <ShieldAlert className="h-4 w-4" />
+                    {alertItem.title}
+                  </p>
+                  <p className="mt-2 text-sm font-bold text-dark/80">{alertItem.detail}</p>
+                </div>
+              ))
+            ) : (
+               <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 text-center text-sm font-bold text-dark/60">
+                No active alerts.
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-slate-600" />
-              Lessons & Attendance
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Upcoming Lessons</p>
-                <p className="text-xl font-bold text-slate-900">{2 + (activeIndex % 3)}</p>
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Lessons & Attendance */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
+            <CalendarDays className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Lessons & Attendance</h2>
+          </div>
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Upcoming Lessons</p>
+                <p className="mt-2 text-4xl font-black text-dark">{2 + (activeIndex % 3)}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Attendance Rate</p>
-                <p className="text-xl font-bold text-slate-900">{engagement.attendanceRate}%</p>
+              <div className="rounded-2xl border-[3px] border-dark bg-emerald-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Attendance Rate</p>
+                <p className="mt-2 text-4xl font-black text-emerald-800">{engagement.attendanceRate}%</p>
               </div>
             </div>
-            <Link href="/dash/parent/monitor">
-              <Button variant="outline" className="w-full text-xs">
-                View Lesson Timetable & Attendance History
-              </Button>
+            <Link href="/dash/parent/monitor" className="flex items-center justify-between rounded-xl border-[3px] border-dark bg-dark text-white px-5 py-4 text-sm font-black hover:bg-yellow hover:text-dark shadow-[4px_4px_0px_#060E1C] hover:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none active:scale-95">
+              <span>View Timetable & History</span>
+              <ArrowRight className="h-5 w-5" />
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-slate-600" />
-              Homework & Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Assignments Due</p>
-                <p className="text-xl font-bold text-slate-900">{1 + (activeIndex % 4)}</p>
+        {/* Homework & Progress */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-blue-100 flex items-center gap-3">
+            <BookOpen className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Homework & Progress</h2>
+          </div>
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Assignments Due</p>
+                <p className="mt-2 text-4xl font-black text-dark">{1 + (activeIndex % 4)}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Completion Rate</p>
-                <p className="text-xl font-bold text-slate-900">{engagement.assignmentCompletion}%</p>
+              <div className="rounded-2xl border-[3px] border-dark bg-blue-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Completion Rate</p>
+                <p className="mt-2 text-4xl font-black text-blue-800">{engagement.assignmentCompletion}%</p>
               </div>
             </div>
-            <Link href="/dash/parent/reports">
-              <Button variant="outline" className="w-full text-xs">
-                Review Grades, Feedback, and Report Cards
-              </Button>
+            <Link href="/dash/parent/reports" className="flex items-center justify-between rounded-xl border-[3px] border-dark bg-dark text-white px-5 py-4 text-sm font-black hover:bg-yellow hover:text-dark shadow-[4px_4px_0px_#060E1C] hover:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none active:scale-95">
+              <span>Review Grades & Reports</span>
+              <ArrowRight className="h-5 w-5" />
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-slate-600" />
-              Rewards & Engagement
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="flex items-center gap-1 text-xs text-slate-500">
-                  <Trophy className="h-3.5 w-3.5" />
-                  Child XP
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* Rewards & Engagement */}
+        <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
+            <Sparkles className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Rewards & Engagement</h2>
+          </div>
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="rounded-2xl border-[3px] border-dark bg-purple-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
+                  <Trophy className="h-4 w-4" /> Child XP
                 </p>
-                <p className="text-xl font-bold text-slate-900">{engagement.xp}</p>
+                <p className="mt-2 text-3xl font-black text-dark">{engagement.xp}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="flex items-center gap-1 text-xs text-slate-500">
-                  <Star className="h-3.5 w-3.5" />
-                  Badges
+              <div className="rounded-2xl border-[3px] border-dark bg-blue-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
+                  <Star className="h-4 w-4" /> Badges
                 </p>
-                <p className="text-xl font-bold text-slate-900">{engagement.badges}</p>
+                <p className="mt-2 text-3xl font-black text-dark">{engagement.badges}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="flex items-center gap-1 text-xs text-slate-500">
-                  <Flame className="h-3.5 w-3.5" />
-                  Streak
+              <div className="rounded-2xl border-[3px] border-dark bg-rose-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
+                  <Flame className="h-4 w-4" /> Streak
                 </p>
-                <p className="text-xl font-bold text-slate-900">{engagement.streak} days</p>
+                <p className="mt-2 text-3xl font-black text-dark">{engagement.streak} days</p>
               </div>
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Challenge Completions</p>
-                <p className="text-xl font-bold text-slate-900">{engagement.challengesCompleted}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Challenge Completions</p>
+                <p className="mt-2 text-2xl font-black text-dark">{engagement.challengesCompleted}</p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Achievement Progress</p>
-                <p className="text-xl font-bold text-slate-900">{engagement.achievementProgress}%</p>
+              <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Achievement Progress</p>
+                <p className="mt-2 text-2xl font-black text-dark">{engagement.achievementProgress}%</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-slate-600" />
-              Billing
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Plan</p>
-              <p className="font-semibold text-slate-900">{subscription?.planName ?? 'No active plan'}</p>
-              <p className="text-xs text-slate-600">Status: {subscription?.status ?? 'inactive'}</p>
+        {/* Billing */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-emerald-100 flex items-center gap-3">
+            <CreditCard className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Billing</h2>
+          </div>
+          <div className="p-6 sm:p-8 space-y-6">
+            <div className="space-y-4">
+              <div className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Plan</p>
+                <p className="mt-1 text-lg font-black text-dark">{subscription?.planName ?? 'No active plan'}</p>
+                <p className="mt-1 text-xs font-bold text-dark/60">Status: {subscription?.status ?? 'inactive'}</p>
+              </div>
+              <div className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Latest Invoice</p>
+                <p className="mt-1 text-xl font-black text-dark">
+                  {latestInvoice
+                    ? `${(latestInvoice.amountDueMinor / 100).toLocaleString()} ${subscription?.planCurrencyCode ?? 'NGN'}`
+                    : 'No invoice yet'}
+                </p>
+                <p className={`mt-1 inline-flex rounded-md border-[2px] border-dark px-2 py-1 text-[10px] font-black uppercase tracking-widest ${latestInvoice?.status === 'paid' ? 'bg-emerald-300 text-dark' : 'bg-slate-200 text-dark'}`}>{latestInvoice?.status ?? 'n/a'}</p>
+              </div>
             </div>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Latest Invoice</p>
-              <p className="font-semibold text-slate-900">
-                {latestInvoice
-                  ? `${(latestInvoice.amountDueMinor / 100).toLocaleString()} ${subscription?.planCurrencyCode ?? 'NGN'}`
-                  : 'No invoice yet'}
-              </p>
-              <p className="text-xs text-slate-600">{latestInvoice?.status ?? 'n/a'}</p>
-            </div>
-            <Link href="/dash/parent/billing">
-              <Button variant="outline" className="w-full text-xs">
-                Manage Subscription & Payment History
-              </Button>
+            <Link href="/dash/parent/billing" className="flex items-center justify-between rounded-xl border-[3px] border-dark bg-dark text-white px-5 py-4 text-sm font-black hover:bg-yellow hover:text-dark shadow-[4px_4px_0px_#060E1C] hover:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none active:scale-95">
+              <span>Manage Subscription</span>
+              <ArrowRight className="h-5 w-5" />
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-slate-600" />
-              Messages
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-slate-600">
+      <div className="grid gap-8 lg:grid-cols-2">
+        {/* Messages */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-sky-100 flex items-center gap-3">
+            <MessageCircle className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Messages</h2>
+          </div>
+          <div className="p-6 sm:p-8">
+            <p className="text-sm font-bold text-dark/70 mb-6">
               Message tutors for lesson concerns, progress checks, and support follow-up.
             </p>
-            <div className="mt-3">
-              <Link href="/dash/parent/messages">
-                <Button variant="primary" className="text-xs">
-                  Open Parent Messaging
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            <Link href="/dash/parent/messages">
+              <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto w-full flex justify-between items-center">
+                <span>Open Parent Messaging</span>
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-slate-600" />
-              Consent & Account Settings
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-slate-600">
+        {/* Settings */}
+        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="p-6 border-b-[4px] border-dark bg-slate-100 flex items-center gap-3">
+            <Settings className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Consent & Settings</h2>
+          </div>
+          <div className="p-6 sm:p-8">
+            <p className="text-sm font-bold text-dark/70 mb-6">
               Keep account preferences, alerts, and child access controls up to date.
             </p>
             <Link href="/dash/profile">
-              <Button variant="outline" className="text-xs">
-                Open Profile and Availability
+              <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto w-full flex justify-between items-center">
+                <span>Open Profile and Availability</span>
+                <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
+
     </div>
   );
 }
