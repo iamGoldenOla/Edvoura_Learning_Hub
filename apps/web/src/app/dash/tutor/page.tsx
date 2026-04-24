@@ -195,11 +195,20 @@ export default async function TutorDashboard() {
 
                            {/* Actions */}
                            <div className="flex items-center gap-3">
-                              <TutorLessonStartButton lessonId={item.id} status={item.status} />
-                              {item.joinUrl && (
+                              {item.status !== 'live' ? (
+                                <TutorLessonStartButton lessonId={item.id} status={item.status} />
+                              ) : (
+                                <a href={item.joinUrl || '#'} target="_blank" rel="noreferrer">
+                                  <Button className="h-14 px-8 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
+                                    <Video className="w-5 h-5 fill-current" /> Join Classroom
+                                  </Button>
+                                </a>
+                              )}
+                              
+                              {item.status !== 'live' && item.joinUrl && (
                                 <a href={item.joinUrl} target="_blank" rel="noreferrer">
-                                  <Button variant="outline" className="h-12 px-6 rounded-xl border-slate-200 bg-white font-black text-[#0F172A] hover:bg-slate-50">
-                                    Join Room
+                                  <Button variant="outline" className="h-14 px-6 rounded-xl border-slate-200 bg-white font-black text-[#0F172A] hover:bg-slate-50">
+                                    Preview Room
                                   </Button>
                                 </a>
                               )}

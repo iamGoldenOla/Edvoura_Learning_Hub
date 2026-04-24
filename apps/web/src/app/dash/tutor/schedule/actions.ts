@@ -216,7 +216,7 @@ export async function startLesson(lessonId: string) {
   revalidatePath('/dash/tutor');
   revalidatePath('/dash/student/live');
 
-  return { hostUrl: finalHostUrl || liveSession?.join_url };
+  return { hostUrl: finalHostUrl || liveSession?.host_url || liveSession?.join_url };
 }
 
 export async function deleteLesson(lessonId: string) {

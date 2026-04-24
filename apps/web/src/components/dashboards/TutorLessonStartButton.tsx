@@ -5,39 +5,43 @@ import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { startLesson } from '@/app/dash/tutor/schedule/actions';
 
-export default function TutorLessonStartButton({ lessonId, status }: { lessonId: string, status: string }) {
+export default function TutorLessonStartButton({ lessonId, status }: { lessonId: string; status: string }) {
   const [loading, setLoading] = useState(false);
 
+  // Don't render if already live — the parent component shows "Join Classroom" instead
   if (status === 'live') return null;
 
   const handleStart = async () => {
     if (!confirm('Are you ready to start this lesson? Students will be notified and can join now.')) return;
-    
+
     setLoading(true);
-    
-    // Open a temporary window immediately to avoid popup blockers
+
+    // Open a blank window IMMEDIATELY on user click to avoid popup blockers
     const newWindow = window.open('about:blank', '_blank');
     if (newWindow) {
-      newWindow.document.title = "Preparing Classroom...";
-      newWindow.document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:#0F172A;font-weight:bold;">Preparing your Edvoura classroom, please wait...</div>';
+      newWindow.document.title = 'Preparing Classroom...';
+      newWindow.document.body.innerHTML =
+        '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:system-ui,sans-serif;color:#0F172A;font-size:18px;font-weight:700;">Preparing your Edvoura classroom…</div>';
     }
 
     try {
       const result = await startLesson(lessonId);
-      
+
       if (result?.hostUrl) {
-        if (newWindow) {
+        // Redirect the pre-opened window to Google Meet
+        if (newWindow && !newWindow.closed) {
           newWindow.location.href = result.hostUrl;
         } else {
           window.open(result.hostUrl, '_blank');
         }
       } else {
-        if (newWindow) newWindow.close();
-        alert('Lesson started! Your classroom is being prepared. If the room doesn\'t open automatically, please check your pop-up blocker or use the Join Room button.');
+        // No URL came back — close the blank window and reload so "Join Classroom" appears
+        if (newWindow && !newWindow.closed) newWindow.close();
+        window.location.reload();
       }
     } catch (err) {
       console.error(err);
-      if (newWindow) newWindow.close();
+      if (newWindow && !newWindow.closed) newWindow.close();
       alert('Failed to start lesson. Please refresh and try again.');
     } finally {
       setLoading(false);
@@ -45,13 +49,13 @@ export default function TutorLessonStartButton({ lessonId, status }: { lessonId:
   };
 
   return (
-    <Button 
-      onClick={handleStart} 
+    <Button
+      onClick={handleStart}
       disabled={loading}
-      className="bg-[#10B981] hover:bg-[#059669] text-white rounded-xl h-10 px-6 font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+      className="h-12 px-6 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
     >
       <Play className="w-4 h-4 fill-current" />
-      {loading ? 'Launching...' : 'Start Lesson'}
+      {loading ? 'Launching…' : 'Start Lesson'}
     </Button>
   );
 }
