@@ -28,5 +28,6 @@ for delete
 to authenticated
 using (
   tutor_user_id = auth.uid()
+  or created_by_user_id = auth.uid()
   or private.current_user_is_admin()
 );
