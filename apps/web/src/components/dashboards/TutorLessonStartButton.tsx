@@ -14,7 +14,12 @@ export default function TutorLessonStartButton({ lessonId, status }: { lessonId:
     if (!confirm('Are you ready to start this lesson? Students will be notified and can join now.')) return;
     setLoading(true);
     try {
-      await startLesson(lessonId);
+      const result = await startLesson(lessonId);
+      if (result?.hostUrl) {
+        window.open(result.hostUrl, '_blank');
+      } else {
+        alert('Lesson started! But no meeting link was found. Please add one in the schedule.');
+      }
     } catch (err) {
       console.error(err);
       alert('Failed to start lesson');

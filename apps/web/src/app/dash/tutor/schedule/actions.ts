@@ -69,6 +69,74 @@ export async function createTutorLiveSlot(formData: FormData) {
 
 export async function startLesson(lessonId: string) {
   const supabase = await createClient();
+  
+  // First, check if the lesson has a link
+  const { data: lesson } = await supabase
+    .from('lessons')
+    .select('title, scheduled_start_at, scheduled_end_at, class_id')
+    .eq('id', lessonId)
+    .single();
+
+  const { data: liveSession } = await supabase
+    .from('private.lesson_live_sessions' as any)
+    .select('join_url, host_url')
+    .eq('lesson_id', lessonId)
+    .maybeSingle();
+
+  let finalHostUrl = liveSession?.host_url;
+
+  if (!liveSession?.join_url && lesson) {
+    // Check if there is a personal meet link for students in this class
+    const { data: enrollments } = await supabase
+      .from('class_enrollments')
+      .select('student_user_id')
+      .eq('class_id', lesson.class_id);
+
+    if (enrollments && enrollments.length > 0) {
+      const studentIds = enrollments.map(e => e.student_user_id);
+      const { data: studentProfiles } = await supabase
+        .from('student_profiles')
+        .select('personal_meet_url, personal_meet_host_url')
+        .in('user_id', studentIds)
+        .not('personal_meet_url', 'is', null);
+
+      if (studentProfiles && studentProfiles.length === 1) {
+        // Use the student's personal link for this lesson
+        finalHostUrl = studentProfiles[0].personal_meet_host_url;
+        
+        // Also update the live session table so the student sees it
+        await supabase.from('private.lesson_live_sessions' as any).insert({
+          lesson_id: lessonId,
+          provider: 'google_meet',
+          join_url: studentProfiles[0].personal_meet_url,
+          host_url: studentProfiles[0].personal_meet_host_url,
+        });
+      }
+    }
+
+    // If still no link, try to auto-generate
+    if (!finalHostUrl) {
+      try {
+        const { createGoogleMeetSession } = await import('@/lib/google-calendar');
+        const meetUrls = await createGoogleMeetSession({
+          title: lesson.title || 'Live Session',
+          startTime: lesson.scheduled_start_at,
+          endTime: lesson.scheduled_end_at,
+        });
+        
+        await supabase.from('private.lesson_live_sessions' as any).insert({
+          lesson_id: lessonId,
+          provider: 'google_meet',
+          join_url: meetUrls.joinUrl,
+          host_url: meetUrls.hostUrl,
+        });
+        finalHostUrl = meetUrls.hostUrl;
+      } catch (err) {
+        console.error('Failed to generate meet link on start:', err);
+      }
+    }
+  }
+
   const { error } = await supabase.rpc('start_tutor_lesson', { p_lesson_id: lessonId });
 
   if (error) {
@@ -78,4 +146,6 @@ export async function startLesson(lessonId: string) {
   revalidatePath('/dash/tutor/schedule');
   revalidatePath('/dash/tutor');
   revalidatePath('/dash/student/live');
+
+  return { hostUrl: finalHostUrl };
 }
