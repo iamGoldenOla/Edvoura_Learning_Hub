@@ -135,8 +135,8 @@ export default async function TutorDashboard() {
         {/* Main Content Area */}
         <div className="space-y-8 xl:col-span-8">
           
-          {/* Today's Classes Section - Classy & Orchestrated */}
-          <Card className="rounded-[2.5rem] border-none bg-white shadow-2xl shadow-slate-200/40 overflow-hidden">
+          {/* Today's Classes Section - Classy & Orchestrated with Glassmorphism */}
+          <Card className="rounded-[2.5rem] border-none bg-white/80 backdrop-blur-xl shadow-2xl shadow-slate-200/40 overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 px-10 py-8 bg-slate-50/30">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/20">

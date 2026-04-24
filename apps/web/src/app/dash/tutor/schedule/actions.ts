@@ -66,18 +66,12 @@ export async function createTutorLiveSlot(formData: FormData) {
     classId = newClass.id;
   }
 
-  const startDate = new Date(scheduledStartAt);
-  const endDate = new Date(scheduledEndAt);
+  const startDateObj = new Date(scheduledStartAt);
+  const endDateObj = new Date(scheduledEndAt);
 
-  console.log('Creating live slot:', { 
-    scheduledStartAt, 
-    scheduledEndAt, 
-    parsedStart: startDate.toISOString(), 
-    parsedEnd: endDate.toISOString() 
-  });
-
-  if (endDate <= startDate) {
-    redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Lesson end time must be after the start time. You picked ' + scheduledStartAt + ' to ' + scheduledEndAt)}`);
+  if (endDateObj <= startDateObj) {
+    const errorMsg = `The end time (${scheduledEndAt}) must be after the start time (${scheduledStartAt}). Note: The scheduler uses a 24-hour clock (e.g., 13:00 is 1 PM). Please verify your selection.`;
+    redirect(`/dash/tutor/schedule?error=${encodeURIComponent(errorMsg)}`);
   }
 
   const isRecurring = formData.get('isRecurring') === 'on';
@@ -121,17 +115,11 @@ export async function createTutorLiveSlot(formData: FormData) {
   };
 
   try {
-    const startObj = new Date(startDate);
-    const endObj = new Date(endDate);
-    
-    if (endObj <= startObj) {
-      redirect(`/dash/tutor/schedule?error=${encodeURIComponent('The lesson end time must be after the start time. Please check your AM/PM or 24h settings.')}`);
-    }
 
     const slotsToCreate = isRecurring ? recurrenceWeeks : 1;
     for (let i = 0; i < slotsToCreate; i++) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      const start = new Date(scheduledStartAt);
+      const end = new Date(scheduledEndAt);
       start.setDate(start.getDate() + i * 7);
       end.setDate(end.getDate() + i * 7);
       await createSlot(start, end);
@@ -142,6 +130,7 @@ export async function createTutorLiveSlot(formData: FormData) {
   }
 
   revalidatePath('/dash/tutor/schedule');
+  revalidatePath('/dash/tutor');
   revalidatePath('/dash/student');
   revalidatePath('/dash/student/live');
   redirect('/dash/tutor/schedule?created=1');
