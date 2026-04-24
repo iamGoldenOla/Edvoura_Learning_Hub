@@ -107,7 +107,7 @@ CREATE POLICY "Tutors can read profiles of enrolled students"
       SELECT 1 FROM public.class_enrollments ce
       JOIN public.classes c ON c.id = ce.class_id
       WHERE ce.student_user_id = student_learning_profiles.student_user_id
-      AND c.tutor_user_id = auth.uid()
+      AND c.primary_tutor_user_id = auth.uid()
       AND ce.status = 'active'
     )
   );
