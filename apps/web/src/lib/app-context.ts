@@ -49,6 +49,8 @@ export type StudentDashboardData = {
     gradeBandName: string;
     schoolName: string | null;
     academicGoalNotes: string | null;
+    personalMeetUrl: string | null;
+    personalMeetHostUrl: string | null;
   };
   stats: {
     activeClasses: number;
@@ -145,6 +147,8 @@ const buildFallbackStudentDashboard = (
       gradeBandName: 'Senior Years',
       schoolName: null,
       academicGoalNotes: null,
+      personalMeetUrl: null,
+      personalMeetHostUrl: null,
     },
     stats: {
       activeClasses: 0,
@@ -269,7 +273,7 @@ async function getDirectStudentDashboardFromSupabase(
     supabase.from('profiles').select('id, email, full_name, avatar_path').eq('id', sessionUser.id).single(),
     supabase
       .from('student_profiles')
-      .select('grade_level_id, learner_band_id, school_name, academic_goal_notes')
+      .select('grade_level_id, learner_band_id, school_name, academic_goal_notes, personal_meet_url, personal_meet_host_url')
       .eq('user_id', sessionUser.id)
       .maybeSingle(),
   ]);
@@ -472,6 +476,8 @@ async function getDirectStudentDashboardFromSupabase(
       gradeBandName: gradeBand?.name ?? 'Senior Years',
       schoolName: studentProfile.school_name,
       academicGoalNotes: studentProfile.academic_goal_notes,
+      personalMeetUrl: studentProfile.personal_meet_url,
+      personalMeetHostUrl: studentProfile.personal_meet_host_url,
     },
     stats: {
       activeClasses: normalizedEnrollments.length,

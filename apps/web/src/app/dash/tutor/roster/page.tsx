@@ -3,6 +3,7 @@ import { AlertTriangle, BarChart3, CheckCircle2, Trophy, Users } from 'lucide-re
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import StudentLinkEditor from '@/components/dashboards/StudentLinkEditor';
 import { createClient } from '@/utils/supabase/server';
 
 type EnrollmentRow = {
@@ -27,6 +28,8 @@ type StudentProfileRow = {
   user_id: string;
   school_name: string | null;
   grade_level_id: string;
+  personal_meet_url?: string | null;
+  personal_meet_host_url?: string | null;
 };
 
 type GradeLevelRow = {
@@ -41,6 +44,8 @@ type LearnerCard = {
   gradeLabel: string;
   schoolName: string | null;
   status: string;
+  personalMeetUrl: string | null;
+  personalMeetHostUrl: string | null;
 };
 
 export default async function TutorRosterPage(props: {
@@ -74,7 +79,7 @@ export default async function TutorRosterPage(props: {
     classIds.length ? supabase.from('classes').select('id, title').in('id', classIds) : Promise.resolve({ data: [] as ClassRow[] }),
     studentIds.length ? supabase.from('profiles').select('id, full_name, email').in('id', studentIds) : Promise.resolve({ data: [] as ProfileRow[] }),
     studentIds.length
-      ? supabase.from('student_profiles').select('user_id, school_name, grade_level_id').in('user_id', studentIds)
+      ? supabase.from('student_profiles').select('user_id, school_name, grade_level_id, personal_meet_url, personal_meet_host_url').in('user_id', studentIds)
       : Promise.resolve({ data: [] as StudentProfileRow[] }),
   ]);
 
@@ -100,6 +105,8 @@ export default async function TutorRosterPage(props: {
       gradeLabel: studentProfile?.grade_level_id ? gradeLevelById.get(studentProfile.grade_level_id) ?? 'Grade pending' : 'Grade pending',
       schoolName: studentProfile?.school_name ?? null,
       status: row.status,
+      personalMeetUrl: studentProfile?.personal_meet_url ?? null,
+      personalMeetHostUrl: studentProfile?.personal_meet_host_url ?? null,
     };
   });
 
@@ -152,6 +159,18 @@ export default async function TutorRosterPage(props: {
                       <p className="text-xs text-slate-600">{learner.gradeLabel}</p>
                       <p className="text-xs text-slate-600">{learner.schoolName ?? 'School pending'}</p>
                       <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">{learner.status}</p>
+                      <div className="flex flex-col gap-1">
+                        {learner.personalMeetHostUrl ? (
+                          <a href={learner.personalMeetHostUrl} target="_blank" rel="noreferrer" className="text-[10px] font-bold text-blue-600 hover:underline">
+                            Join Eternal Meet
+                          </a>
+                        ) : null}
+                        <StudentLinkEditor 
+                          studentId={learner.id} 
+                          currentUrl={learner.personalMeetUrl} 
+                          currentHostUrl={learner.personalMeetHostUrl} 
+                        />
+                      </div>
                     </div>
                   </div>
                 ))

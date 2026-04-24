@@ -5,20 +5,24 @@ import { Video, PlayCircle, Clock, MessageCircle, Sparkles, Tv, Rocket } from 'l
 import type { StudentDashboardData } from '@/lib/app-context';
 
 export default function StudentLiveWaitingRoom({ 
-  dashboard,
+  dashboard, 
   band 
 }: { 
-  dashboard: StudentDashboardData,
-  band: string 
+  dashboard: StudentDashboardData, 
+  band: '1-3' | '4-6' | '7-12' 
 }) {
   const [isEarly, setIsEarly] = useState(true);
   const nextLesson = dashboard.upcomingLessons[0];
   
-  // Age-appropriate videos
+  // Support persistent meet links if defined in the profile
+  const personalMeetUrl = dashboard.profile.personalMeetUrl;
+  const joinUrl = nextLesson?.joinUrl || personalMeetUrl;
+  
+  // Age-appropriate videos (using SciShow Kids as a reliable source)
   const videos: Record<string, string> = {
-    '1-3': 'https://www.youtube.com/embed/videoseries?list=PL6573D54D5D4E12C8',
-    '4-6': 'https://www.youtube.com/embed/videoseries?list=PL_l7v58Gv7N4rYVvA-A-yH5x_8_X8_8_8',
-    '7-12': 'https://www.youtube.com/embed/videoseries?list=PL8dPuuaLjXtN0ge7yDk_UA0ldZJdhwkoV',
+    '1-3': 'https://www.youtube.com/embed/qNM0k522R_w', // Why is the sky blue?
+    '4-6': 'https://www.youtube.com/embed/9G6u0RzR2m4', // How do volcanoes erupt?
+    '7-12': 'https://www.youtube.com/embed/0_b7X9h-S3Y', // The science of everything
   };
 
   const videoUrl = videos[band] || videos['1-3'];

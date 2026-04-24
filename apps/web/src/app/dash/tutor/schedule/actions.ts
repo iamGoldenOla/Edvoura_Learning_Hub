@@ -66,3 +66,16 @@ export async function createTutorLiveSlot(formData: FormData) {
   revalidatePath('/dash/student/live');
   redirect('/dash/tutor/schedule?created=1');
 }
+
+export async function startLesson(lessonId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('start_tutor_lesson', { p_lesson_id: lessonId });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath('/dash/tutor/schedule');
+  revalidatePath('/dash/tutor');
+  revalidatePath('/dash/student/live');
+}

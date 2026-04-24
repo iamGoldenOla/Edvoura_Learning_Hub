@@ -3,6 +3,7 @@ import { Calendar as CalendarIcon, Clock, ExternalLink, Plus, Video } from 'luci
 
 import { Button } from '@/components/ui/button';
 import { createTutorLiveSlot } from '@/app/dash/tutor/schedule/actions';
+import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButton';
 import { requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
 
@@ -141,6 +142,8 @@ export default async function TutorSchedulePage(props: {
                     </div>
 
                     <div className="mt-4 flex flex-wrap gap-3">
+                      <TutorLessonStartButton lessonId={session.id} status={session.status} />
+                      
                       {session.join_url ? (
                         <a href={session.join_url} target="_blank" rel="noreferrer">
                           <Button variant="primary" className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">

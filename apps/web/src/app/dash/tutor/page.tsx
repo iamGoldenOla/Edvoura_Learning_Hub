@@ -21,6 +21,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, MetricCard } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import TutorLiveContentPublisher from '@/components/dashboards/TutorLiveContentPublisher';
+import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButton';
 import { requireAppViewer, getTutorDashboardData } from '@/lib/app-context';
 
 const tutorSections = [
@@ -164,29 +165,25 @@ export default async function TutorDashboard() {
                           {item.subjectName} • {item.studentCount} students • {formatDuration(item.scheduledStartAt, item.scheduledEndAt)}
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <Link href="/dash/tutor/roster">
-                          <Button variant="outline" className="border-slate-300 bg-white text-xs">
-                            Student List
-                          </Button>
-                        </Link>
-                        {item.joinUrl ? (
-                          <a
-                            href={item.joinUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center rounded-md bg-edvoura-navy px-3 py-2 text-xs font-medium text-white hover:bg-edvoura-navy-light"
-                          >
-                            {item.status === 'live' ? 'Join Live Now' : 'Open Lesson Room'}
-                          </a>
-                        ) : (
-                          <Link href="/dash/tutor/schedule">
-                            <Button variant="primary" className="text-xs">
-                              {item.status === 'live' ? 'Join Lesson' : 'Start Lesson'}
+                        <div className="flex flex-wrap gap-2">
+                          <TutorLessonStartButton lessonId={item.id} status={item.status} />
+                          
+                          <Link href="/dash/tutor/roster">
+                            <Button variant="outline" className="border-slate-300 bg-white text-xs">
+                              Student List
                             </Button>
                           </Link>
-                        )}
-                      </div>
+                          {item.joinUrl ? (
+                            <a
+                              href={item.joinUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center rounded-md bg-edvoura-navy px-3 py-2 text-xs font-medium text-white hover:bg-edvoura-navy-light"
+                            >
+                              {item.status === 'live' ? 'Join Live Now' : 'Open Lesson Room'}
+                            </a>
+                          ) : null}
+                        </div>
                     </div>
                   </div>
                 ))
