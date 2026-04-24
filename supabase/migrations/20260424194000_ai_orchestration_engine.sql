@@ -147,16 +147,16 @@ CREATE POLICY "Super Admins can manage AI action logs"
 
 -- =====================================================================================
 -- TRIGGERS
--- Auto-update timestamps
+-- Auto-update timestamps using the existing private.touch_updated_at() function
 -- =====================================================================================
 CREATE TRIGGER update_curriculum_maps_modtime
   BEFORE UPDATE ON public.curriculum_maps
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION private.touch_updated_at();
 
 CREATE TRIGGER update_ai_generated_content_modtime
   BEFORE UPDATE ON public.ai_generated_content
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION private.touch_updated_at();
 
 CREATE TRIGGER update_student_learning_profiles_modtime
   BEFORE UPDATE ON public.student_learning_profiles
-  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+  FOR EACH ROW EXECUTE FUNCTION private.touch_updated_at();
