@@ -4,11 +4,19 @@ import { createClient } from '@/utils/supabase/server';
 
 export default async function AdminSupportModerationPage() {
   const supabase = await createClient();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
 
   const [
     { count: unreadNotifications },
+    { count: notificationsToday },
+    { count: failedDeliveries },
+    { count: queuedDeliveries },
   ] = await Promise.all([
     supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('status', 'unread'),
+    supabase.from('notifications').select('*', { count: 'exact', head: true }).gte('created_at', todayStart.toISOString()),
+    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).eq('delivery_status', 'failed'),
+    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).eq('delivery_status', 'queued'),
   ]);
 
   return (
@@ -28,30 +36,30 @@ export default async function AdminSupportModerationPage() {
         <div className="rounded-[28px] border-[4px] border-dark bg-blue-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <LifeBuoy className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Open Tickets</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Queued Deliveries</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{queuedDeliveries ?? 0}</p>
           </div>
         </div>
 
         <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <MessageSquareWarning className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">High Priority</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Failed Deliveries</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{failedDeliveries ?? 0}</p>
           </div>
         </div>
 
         <div className="rounded-[28px] border-[4px] border-dark bg-amber-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <ShieldAlert className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Content Flags</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Notifications Today</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{notificationsToday ?? 0}</p>
           </div>
         </div>
 

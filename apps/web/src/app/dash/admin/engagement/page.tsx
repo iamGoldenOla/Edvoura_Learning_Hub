@@ -7,8 +7,12 @@ export default async function AdminEngagementPage() {
 
   const [
     { count: activitiesCount },
+    { count: resourceUploadsCount },
+    { count: spellingBeeCount },
   ] = await Promise.all([
     supabase.from('learning_activity_events').select('*', { count: 'exact', head: true }),
+    supabase.from('learning_activity_events').select('*', { count: 'exact', head: true }).eq('event_type', 'lesson_resource_uploaded'),
+    supabase.from('learning_activity_events').select('*', { count: 'exact', head: true }).eq('event_type', 'spelling_bee_created'),
   ]);
 
   return (
@@ -38,40 +42,42 @@ export default async function AdminEngagementPage() {
         <div className="rounded-[28px] border-[4px] border-dark bg-emerald-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <Award className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Badges Awarded</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Resource Uploads</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{resourceUploadsCount ?? 0}</p>
           </div>
         </div>
 
         <div className="rounded-[28px] border-[4px] border-dark bg-amber-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <Flame className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Active Streaks</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Spelling Bee Events</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{spellingBeeCount ?? 0}</p>
           </div>
         </div>
 
         <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <Trophy className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Challenges</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Live Activity Events</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{activitiesCount ?? 0}</p>
           </div>
         </div>
 
         <div className="rounded-[28px] border-[4px] border-dark bg-purple-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <Gift className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Rewards Issued</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Resource Ratio</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">
+              {activitiesCount ? `${Math.round(((resourceUploadsCount ?? 0) / activitiesCount) * 100)}%` : '--'}
+            </p>
           </div>
         </div>
       </div>

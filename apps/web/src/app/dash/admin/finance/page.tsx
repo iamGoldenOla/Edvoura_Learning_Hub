@@ -9,19 +9,22 @@ export default async function FinancePage() {
   const [
     { count: subscriptionsCount },
     { count: invoicesCount },
+    { count: payoutsCount },
   ] = await Promise.all([
     supabase.schema('billing').from('subscriptions').select('*', { count: 'exact', head: true }).in('status', ['active', 'trialing']),
     supabase.schema('billing').from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'paid'),
+    supabase.schema('billing').from('tutor_payouts').select('*', { count: 'exact', head: true }).eq('status', 'paid'),
   ]);
 
   const { data: recentInvoices = [] } = await supabase
     .schema('billing')
     .from('invoices')
-    .select('id, status, amount_paid_minor, currency_code, due_at')
-    .order('due_at', { ascending: false })
+    .select('id, status, amount_paid_minor, currency_code, due_at, updated_at')
+    .order('updated_at', { ascending: false })
     .limit(10);
 
   const normalizedInvoices = recentInvoices ?? [];
+  const latestActivity = normalizedInvoices[0]?.updated_at ?? null;
 
   const formatDate = (iso: string) => {
     try {
@@ -78,10 +81,13 @@ export default async function FinancePage() {
         <div className="rounded-[28px] border-[4px] border-dark bg-purple-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <Clock className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Last Sync</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Paid Payouts</p>
           </div>
           <div className="mt-6">
-            <p className="text-4xl font-black text-dark">Just now</p>
+            <p className="text-5xl font-black text-dark">{payoutsCount ?? 0}</p>
+            <p className="mt-2 text-[10px] font-black uppercase tracking-wider text-dark/50">
+              {latestActivity ? `Latest activity ${formatDate(latestActivity)}` : 'No billing activity yet'}
+            </p>
           </div>
         </div>
       </div>
