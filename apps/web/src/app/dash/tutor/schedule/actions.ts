@@ -15,50 +15,120 @@ export async function createTutorLiveSlot(formData: FormData) {
     redirect('/login');
   }
 
-  const classId = String(formData.get('classId') ?? '').trim();
+  const subjectId = String(formData.get('subjectId') ?? '').trim();
+  const gradeLevelId = String(formData.get('gradeLevelId') ?? '').trim();
   const title = String(formData.get('title') ?? '').trim();
   const scheduledStartAt = String(formData.get('scheduledStartAt') ?? '').trim();
   const scheduledEndAt = String(formData.get('scheduledEndAt') ?? '').trim();
   const joinUrl = String(formData.get('joinUrl') ?? '').trim();
   const hostUrl = String(formData.get('hostUrl') ?? '').trim();
 
-  if (!classId || !scheduledStartAt || !scheduledEndAt) {
+  if (!subjectId || !gradeLevelId || !scheduledStartAt || !scheduledEndAt) {
     redirect('/dash/tutor/schedule?error=missing-fields');
   }
+
+  // Find or create the class for this tutor/subject/grade
+  const { data: existingClass, error: classError } = await supabase
+    .from('classes')
+    .select('id')
+    .eq('primary_tutor_user_id', session.user.id)
+    .eq('subject_id', subjectId)
+    .eq('grade_level_id', gradeLevelId)
+    .maybeSingle();
+
+  let classId = existingClass?.id;
+
+  if (!classId) {
+    // Fetch subject and grade names for a nice class title
+    const [{ data: sub }, { data: grd }] = await Promise.all([
+      supabase.from('subjects').select('name').eq('id', subjectId).single(),
+      supabase.from('grade_levels').select('display_name').eq('id', gradeLevelId).single(),
+    ]);
+
+    const { data: newClass, error: createClassError } = await supabase
+      .from('classes')
+      .insert({
+        title: `${sub?.name || 'New Class'} - ${grd?.display_name || 'All'}`,
+        subject_id: subjectId,
+        grade_level_id: gradeLevelId,
+        primary_tutor_user_id: session.user.id,
+      })
+      .select('id')
+      .single();
+
+    if (createClassError) {
+      console.error('Failed to auto-create class:', createClassError);
+      redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to create class for this subject')}`);
+    }
+    classId = newClass.id;
+  }
+
+  const startDate = new Date(scheduledStartAt);
+  const endDate = new Date(scheduledEndAt);
+
+  console.log('Creating live slot:', { 
+    scheduledStartAt, 
+    scheduledEndAt, 
+    parsedStart: startDate.toISOString(), 
+    parsedEnd: endDate.toISOString() 
+  });
+
+  if (endDate <= startDate) {
+    redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Lesson end time must be after the start time. You picked ' + scheduledStartAt + ' to ' + scheduledEndAt)}`);
+  }
+
+  const isRecurring = formData.get('isRecurring') === 'on';
+  const recurrenceWeeks = parseInt(String(formData.get('recurrenceWeeks') || '1'), 10);
 
   let finalJoinUrl = joinUrl || null;
   let finalHostUrl = hostUrl || null;
 
-  if (!finalJoinUrl) {
-    try {
-      const { createGoogleMeetSession } = await import('@/lib/google-calendar');
-      const meetUrls = await createGoogleMeetSession({
-        title: title || 'Live Session',
-        startTime: new Date(scheduledStartAt).toISOString(),
-        endTime: new Date(scheduledEndAt).toISOString(),
-      });
-      finalJoinUrl = meetUrls.joinUrl;
-      finalHostUrl = meetUrls.hostUrl;
-    } catch (err: any) {
-      console.error('Failed to auto-generate Google Meet link:', err);
-      // Fallback: we still proceed but without a meet link if it fails?
-      // Or we can return an error to the user to either set up credentials or paste manually.
-      // redirect(`/dash/tutor/schedule?error=${encodeURIComponent(err.message || 'Failed to auto-generate Google Meet link')}`);
+  const createSlot = async (start: Date, end: Date) => {
+    let currentJoinUrl = finalJoinUrl;
+    let currentHostUrl = finalHostUrl;
+
+    if (!currentJoinUrl) {
+      try {
+        const { createGoogleMeetSession } = await import('@/lib/google-calendar');
+        const meetUrls = await createGoogleMeetSession({
+          title: title || 'Live Session',
+          startTime: start.toISOString(),
+          endTime: end.toISOString(),
+        });
+        currentJoinUrl = meetUrls.joinUrl;
+        currentHostUrl = meetUrls.hostUrl;
+      } catch (err: any) {
+        console.error('Failed to auto-generate Google Meet link:', err);
+      }
     }
-  }
 
-  const { error } = await supabase.rpc('create_tutor_live_slot', {
-    p_class_id: classId,
-    p_title: title || 'Live Session',
-    p_scheduled_start_at: new Date(scheduledStartAt).toISOString(),
-    p_scheduled_end_at: new Date(scheduledEndAt).toISOString(),
-    p_join_url: finalJoinUrl,
-    p_host_url: finalHostUrl,
-    p_provider: 'google_meet',
-  });
+    const { error } = await supabase.rpc('create_tutor_live_slot', {
+      p_class_id: classId,
+      p_title: title || 'Live Session',
+      p_scheduled_start_at: start.toISOString(),
+      p_scheduled_end_at: end.toISOString(),
+      p_join_url: currentJoinUrl,
+      p_host_url: currentHostUrl,
+      p_provider: 'google_meet',
+    });
 
-  if (error) {
-    redirect(`/dash/tutor/schedule?error=${encodeURIComponent(error.message)}`);
+    if (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  try {
+    const slotsToCreate = isRecurring ? recurrenceWeeks : 1;
+    for (let i = 0; i < slotsToCreate; i++) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      start.setDate(start.getDate() + i * 7);
+      end.setDate(end.getDate() + i * 7);
+      await createSlot(start, end);
+    }
+  } catch (err: any) {
+    console.error('Error creating live slot(s):', err);
+    redirect(`/dash/tutor/schedule?error=${encodeURIComponent(err.message)}`);
   }
 
   revalidatePath('/dash/tutor/schedule');
@@ -147,5 +217,5 @@ export async function startLesson(lessonId: string) {
   revalidatePath('/dash/tutor');
   revalidatePath('/dash/student/live');
 
-  return { hostUrl: finalHostUrl };
+  return { hostUrl: finalHostUrl || liveSession?.join_url };
 }

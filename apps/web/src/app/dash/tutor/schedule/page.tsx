@@ -33,26 +33,15 @@ export default async function TutorSchedulePage(props: {
   const errorParam = typeof searchParams.error === 'string' ? searchParams.error : null;
 
   const supabase = await createClient();
-  const [{ data: classesData = [] }, { data: scheduleRows = [] }] = await Promise.all([
+  const [{ data: classesData = [] }, { data: scheduleRows = [] }, { data: gradeLevels = [] }, { data: subjects = [] }] = await Promise.all([
     supabase
       .from('classes')
       .select('id, title, grade_level_id, subject_id')
       .eq('primary_tutor_user_id', viewer.currentUser.userId)
       .order('title', { ascending: true }),
     supabase.rpc('list_tutor_live_schedule'),
-  ]);
-
-  const classes = classesData ?? [];
-  const gradeLevelIds = [...new Set(classes.map((item) => item.grade_level_id).filter(Boolean))];
-  const subjectIds = [...new Set(classes.map((item) => item.subject_id).filter(Boolean))];
-
-  const [{ data: gradeLevels = [] }, { data: subjects = [] }] = await Promise.all([
-    gradeLevelIds.length
-      ? supabase.from('grade_levels').select('id, display_name').in('id', gradeLevelIds)
-      : Promise.resolve({ data: [] as Array<{ id: string; display_name: string }> }),
-    subjectIds.length
-      ? supabase.from('subjects').select('id, name').in('id', subjectIds)
-      : Promise.resolve({ data: [] as Array<{ id: string; name: string }> }),
+    supabase.from('grade_levels').select('id, display_name').order('display_name'),
+    supabase.from('subjects').select('id, name').order('name'),
   ]);
 
   const gradeById = new Map((gradeLevels ?? []).map((item) => [item.id, item.display_name]));
@@ -179,106 +168,148 @@ export default async function TutorSchedulePage(props: {
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
             <h2 className="text-xl font-bold text-edvoura-navy">Open a live teaching slot</h2>
             <p className="mt-2 text-sm text-slate-500">
-              Pick one of your classes, choose the lesson window, and paste the Google Meet join URL students should use.
+              Pick a subject and grade level to publish a live session for your students.
             </p>
 
-            {classes.length > 0 ? (
-              <form action={createTutorLiveSlot} className="mt-6 space-y-4">
+            <form action={createTutorLiveSlot} className="mt-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label htmlFor="classId" className="text-sm font-semibold text-slate-700">
-                    Class
+                  <label htmlFor="subjectId" className="text-sm font-semibold text-slate-700">
+                    Subject
                   </label>
                   <select
-                    id="classId"
-                    name="classId"
+                    id="subjectId"
+                    name="subjectId"
                     required
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
-                    defaultValue={classes[0]?.id}
                   >
-                    {classes.map((item) => (
+                    {(subjects || []).map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.title} · {subjectById.get(item.subject_id) ?? 'Subject pending'} ·{' '}
-                        {gradeById.get(item.grade_level_id) ?? 'Grade pending'}
+                        {item.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="title" className="text-sm font-semibold text-slate-700">
-                    Session title
+                  <label htmlFor="gradeLevelId" className="text-sm font-semibold text-slate-700">
+                    Grade Level
                   </label>
-                  <input
-                    id="title"
-                    name="title"
-                    type="text"
-                    placeholder="e.g. Fractions revision workshop"
+                  <select
+                    id="gradeLevelId"
+                    name="gradeLevelId"
+                    required
                     className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
-                  />
+                  >
+                    {(gradeLevels || []).map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.display_name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="scheduledStartAt" className="text-sm font-semibold text-slate-700">
-                      Start time
-                    </label>
-                    <input
-                      id="scheduledStartAt"
-                      name="scheduledStartAt"
-                      type="datetime-local"
-                      required
-                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="scheduledEndAt" className="text-sm font-semibold text-slate-700">
-                      End time
-                    </label>
-                    <input
-                      id="scheduledEndAt"
-                      name="scheduledEndAt"
-                      type="datetime-local"
-                      required
-                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="joinUrl" className="text-sm font-semibold text-slate-700">
-                    Student Google Meet URL <span className="text-slate-400 font-normal">(Optional)</span>
-                  </label>
-                  <input
-                    id="joinUrl"
-                    name="joinUrl"
-                    type="url"
-                    placeholder="Leave blank to auto-generate via Edvoura Bot"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="hostUrl" className="text-sm font-semibold text-slate-700">
-                    Tutor host URL
-                  </label>
-                  <input
-                    id="hostUrl"
-                    name="hostUrl"
-                    type="url"
-                    placeholder="Optional alternate host link"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
-                  />
-                </div>
-
-                <Button type="submit" variant="primary" className="w-full bg-edvoura-navy hover:bg-slate-800 text-white">
-                  Publish live session
-                </Button>
-              </form>
-            ) : (
-              <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">
-                No tutor classes are connected yet. Create a class through the assignment builder first, then return here to publish live sessions for enrolled students.
               </div>
-            )}
+
+              <div className="space-y-2">
+                <label htmlFor="title" className="text-sm font-semibold text-slate-700">
+                  Session title
+                </label>
+                <input
+                  id="title"
+                  name="title"
+                  type="text"
+                  placeholder="e.g. Fractions revision workshop"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="scheduledStartAt" className="text-sm font-semibold text-slate-700">
+                    Start time
+                  </label>
+                  <input
+                    id="scheduledStartAt"
+                    name="scheduledStartAt"
+                    type="datetime-local"
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="scheduledEndAt" className="text-sm font-semibold text-slate-700">
+                    End time
+                  </label>
+                  <input
+                    id="scheduledEndAt"
+                    name="scheduledEndAt"
+                    type="datetime-local"
+                    required
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2 p-3 border border-slate-200 rounded-xl bg-slate-50">
+                  <input
+                    type="checkbox"
+                    id="isRecurring"
+                    name="isRecurring"
+                    className="h-4 w-4 rounded border-slate-300 text-edvoura-navy focus:ring-edvoura-navy"
+                  />
+                  <label htmlFor="isRecurring" className="text-sm font-medium text-slate-700">
+                    Repeat weekly
+                  </label>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="recurrenceWeeks" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    For how many weeks?
+                  </label>
+                  <select
+                    id="recurrenceWeeks"
+                    name="recurrenceWeeks"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-800"
+                    defaultValue="4"
+                  >
+                    <option value="1">Just this week</option>
+                    <option value="4">Next 4 weeks</option>
+                    <option value="8">Next 8 weeks</option>
+                    <option value="12">Next 12 weeks (Full Term)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="joinUrl" className="text-sm font-semibold text-slate-700">
+                  Student Google Meet URL <span className="text-slate-400 font-normal">(Optional)</span>
+                </label>
+                <input
+                  id="joinUrl"
+                  name="joinUrl"
+                  type="url"
+                  placeholder="Leave blank to auto-generate via Edvoura Bot"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="hostUrl" className="text-sm font-semibold text-slate-700">
+                  Tutor host URL
+                </label>
+                <input
+                  id="hostUrl"
+                  name="hostUrl"
+                  type="url"
+                  placeholder="Optional alternate host link"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-800"
+                />
+              </div>
+
+              <Button type="submit" variant="primary" className="w-full bg-edvoura-navy hover:bg-slate-800 text-white">
+                Publish live session
+              </Button>
+            </form>
           </div>
 
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">

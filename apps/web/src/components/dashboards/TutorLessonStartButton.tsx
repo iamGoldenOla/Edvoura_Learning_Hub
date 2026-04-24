@@ -18,7 +18,7 @@ export default function TutorLessonStartButton({ lessonId, status }: { lessonId:
       if (result?.hostUrl) {
         window.open(result.hostUrl, '_blank');
       } else {
-        alert('Lesson started! But no meeting link was found. Please add one in the schedule.');
+        alert('Lesson started! Students can now join. Note: No meeting link was found for this session, please add one manually if needed.');
       }
     } catch (err) {
       console.error(err);
