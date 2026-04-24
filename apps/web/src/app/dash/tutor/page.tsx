@@ -16,6 +16,10 @@ import {
   UserCheck,
   Users,
   Video,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  LayoutDashboard,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle, MetricCard } from '@/components/ui/card';
@@ -25,18 +29,15 @@ import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButt
 import { requireAppViewer, getTutorDashboardData } from '@/lib/app-context';
 
 const tutorSections = [
-  { href: '/dash/tutor/schedule', title: "Today's Classes", description: 'Schedule, start or join lesson, attendance.', icon: CalendarClock },
-  { href: '/dash/tutor/roster', title: 'Students', description: 'Student list, performance tracking, weak engagement.', icon: Users },
-  { href: '/dash/tutor/lesson-notes', title: 'Lesson Notes and Plans', description: 'Prepare lesson notes and weekly teaching plans.', icon: NotebookPen },
-  { href: '/dash/tutor/builder', title: 'Assignments', description: 'Create assignments and upload lesson resources.', icon: FileText },
-  { href: '/dash/tutor/grading', title: 'Grading Queue', description: 'Grade submissions and send feedback.', icon: ClipboardCheck },
-  { href: '/dash/tutor/builder', title: 'Quizzes and Challenges', description: 'Build quizzes, tests, and challenge tasks.', icon: Target },
-  { href: '/dash/tutor/roster', title: 'Engagement Insights', description: 'Streaks, leaderboard, and participation trends.', icon: TrendingUp },
-  { href: '/dash/tutor/messages', title: 'Messages', description: 'Message parent and student by class.', icon: MessageCircle },
-  { href: '/dash/tutor/builder', title: 'Resources', description: 'Upload notes, slides, worksheets, and links.', icon: GraduationCap },
-  { href: '/dash/profile', title: 'Availability', description: 'Manage availability slots and profile details.', icon: UserCheck },
-  { href: '/dash/tutor/earnings', title: 'Invoice and Payment', description: 'Payout status, invoice history, and summary.', icon: DollarSign },
-  { href: '/dash/profile', title: 'Profile', description: 'Tutor profile, teaching subjects, and bio.', icon: ShieldCheck },
+  { href: '/dash/tutor/schedule', title: "Today's Classes", description: 'Schedule, start or join lesson, attendance.', icon: CalendarClock, color: 'bg-blue-50 text-blue-600' },
+  { href: '/dash/tutor/roster', title: 'Students', description: 'Student list, performance tracking.', icon: Users, color: 'bg-purple-50 text-purple-600' },
+  { href: '/dash/tutor/lesson-notes', title: 'Lesson Notes', description: 'Prepare lesson notes and plans.', icon: NotebookPen, color: 'bg-amber-50 text-amber-600' },
+  { href: '/dash/tutor/builder', title: 'Assignments', description: 'Create and manage assignments.', icon: FileText, color: 'bg-emerald-50 text-emerald-600' },
+  { href: '/dash/tutor/grading', title: 'Grading Queue', description: 'Grade submissions and feedback.', icon: ClipboardCheck, color: 'bg-rose-50 text-rose-600' },
+  { href: '/dash/tutor/builder', title: 'Quizzes', description: 'Build quizzes and tests.', icon: Target, color: 'bg-indigo-50 text-indigo-600' },
+  { href: '/dash/tutor/messages', title: 'Messages', description: 'Direct chat with parents/students.', icon: MessageCircle, color: 'bg-pink-50 text-pink-600' },
+  { href: '/dash/tutor/earnings', title: 'Earnings', description: 'Payout status and history.', icon: DollarSign, color: 'bg-green-50 text-green-600' },
+  { href: '/dash/profile', title: 'Profile', description: 'Manage bio and subjects.', icon: ShieldCheck, color: 'bg-slate-50 text-slate-600' },
 ];
 
 const formatTimeInZone = (iso: string, zone: string) =>
@@ -44,23 +45,13 @@ const formatTimeInZone = (iso: string, zone: string) =>
     hour: '2-digit',
     minute: '2-digit',
     timeZone: zone,
-    hour12: false,
+    hour12: true,
   }).format(new Date(iso));
 
 const formatDuration = (startIso: string, endIso: string) => {
   const diffMs = new Date(endIso).getTime() - new Date(startIso).getTime();
   const mins = Math.round(diffMs / (1000 * 60));
-  return `${mins} mins`;
-};
-
-const formatRelativeTime = (iso: string) => {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diffMs / (1000 * 60));
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `${mins}m`;
 };
 
 export default async function TutorDashboard() {
@@ -69,274 +60,241 @@ export default async function TutorDashboard() {
   const activeTimezone = dashboard.timezone || 'UTC';
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 p-6 sm:p-8">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-edvoura-navy">
-              Welcome back, {dashboard.tutorName}
+    <div className="mx-auto max-w-[1600px] space-y-8 p-6 sm:p-10 animate-in fade-in duration-700">
+      {/* Premium Header */}
+      <section className="relative overflow-hidden rounded-3xl bg-edvoura-navy p-8 md:p-12 text-white shadow-2xl">
+        <div className="absolute right-0 top-0 -mr-20 -mt-20 h-80 w-80 rounded-full bg-white/5 blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-60 w-60 rounded-full bg-edvoura-gold/10 blur-3xl"></div>
+        
+        <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-2 mb-4">
+               <span className="bg-edvoura-gold/20 text-edvoura-gold text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full border border-edvoura-gold/30">
+                Tutor Command Center
+               </span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+              Welcome, <span className="text-edvoura-gold">{dashboard.tutorName}</span>
             </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Your teaching command center. All data is live from your classes.
+            <p className="mt-4 text-lg text-slate-300 font-medium leading-relaxed">
+              You have <span className="text-white font-bold">{dashboard.todayLessons.length} classes</span> scheduled for today. 
+              Your grading queue has <span className="text-white font-bold">{dashboard.pendingGrading} submissions</span> waiting.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-4">
             <Link href="/dash/tutor/schedule">
-              <Button variant="outline" className="border-slate-300 bg-white">
-                <CalendarClock className="mr-2 h-4 w-4" />
-                Lesson Scheduling
+              <Button className="h-14 px-8 bg-edvoura-gold hover:bg-yellow-500 text-edvoura-navy font-bold rounded-2xl shadow-lg shadow-edvoura-gold/20 transition-all hover:scale-105">
+                <CalendarClock className="mr-2 h-5 w-5" />
+                Open Scheduler
               </Button>
             </Link>
             <Link href="/dash/tutor/builder">
-              <Button variant="primary">
-                <FileText className="mr-2 h-4 w-4" />
-                Assignment Creation
-              </Button>
-            </Link>
-            <Link href="/dash/tutor/lesson-notes">
-              <Button variant="outline" className="border-slate-300 bg-white">
-                <NotebookPen className="mr-2 h-4 w-4" />
-                Lesson Notes &amp; Plans
+              <Button className="h-14 px-8 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl backdrop-blur-md border border-white/20 transition-all hover:scale-105">
+                <Plus className="mr-2 h-5 w-5" />
+                Create Assignment
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-        <Link href="/dash/tutor/schedule" className="block">
-          <MetricCard
-            title="Today's Lessons"
-            value={String(dashboard.todayLessons.length)}
-            description={dashboard.todayLessons.length > 0 ? 'Sessions scheduled today' : 'No sessions today'}
-            icon={<CalendarClock className="h-4 w-4" />}
-          />
-        </Link>
-        <Link href="/dash/tutor/roster" className="block">
-          <MetricCard
-            title="My Students"
-            value={String(dashboard.totalStudents)}
-            description="Across active classes"
-            icon={<Users className="h-4 w-4" />}
-          />
-        </Link>
-        <Link href="/dash/tutor/grading" className="block">
-          <MetricCard
-            title="Pending Grading"
-            value={String(dashboard.pendingGrading)}
-            description="Submissions awaiting grades"
-            icon={<ClipboardCheck className="h-4 w-4" />}
-          />
-        </Link>
-        <Link href="/dash/tutor/builder" className="block">
-          <MetricCard
-            title="Total Assignments"
-            value={String(dashboard.totalAssignments)}
-            description="Across all classes"
-            icon={<FileText className="h-4 w-4" />}
-          />
-        </Link>
+      {/* Modern Stats Grid */}
+      <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          title="Daily Classes"
+          value={String(dashboard.todayLessons.length)}
+          description="Live sessions today"
+          icon={<Video className="h-5 w-5 text-blue-500" />}
+          className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50"
+        />
+        <MetricCard
+          title="Active Students"
+          value={String(dashboard.totalStudents)}
+          description="Total enrolled"
+          icon={<Users className="h-5 w-5 text-purple-500" />}
+          className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50"
+        />
+        <MetricCard
+          title="Pending Grading"
+          value={String(dashboard.pendingGrading)}
+          description="Need your attention"
+          icon={<ClipboardCheck className="h-5 w-5 text-rose-500" />}
+          className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50"
+        />
+        <MetricCard
+          title="Total Earnings"
+          value="₦--"
+          description="Updated this week"
+          icon={<DollarSign className="h-5 w-5 text-emerald-500" />}
+          className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50"
+        />
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="space-y-6 xl:col-span-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Video className="h-5 w-5 text-edvoura-navy" />
-                Today&apos;s Classes
-              </CardTitle>
-              <Link href="/dash/tutor/schedule" className="text-sm font-semibold text-edvoura-navy hover:underline">
-                View schedule
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {dashboard.todayLessons.length > 0 ? (
-                dashboard.todayLessons.map((item) => (
-                  <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                          {formatTimeInZone(item.scheduledStartAt, activeTimezone)} ({activeTimezone})
-                        </p>
-                        <h3 className="mt-1 text-base font-semibold text-slate-900">{item.title}</h3>
-                        <p className="text-sm text-slate-600">
-                          {item.subjectName} • {item.studentCount} students • {formatDuration(item.scheduledStartAt, item.scheduledEndAt)}
-                        </p>
-                      </div>
-                        <div className="flex flex-wrap gap-2">
-                          <TutorLessonStartButton lessonId={item.id} status={item.status} />
-                          
-                          <Link href="/dash/tutor/roster">
-                            <Button variant="outline" className="border-slate-300 bg-white text-xs">
-                              Student List
-                            </Button>
-                          </Link>
-                          {item.joinUrl ? (
-                            <a
-                              href={item.joinUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center rounded-md bg-edvoura-navy px-3 py-2 text-xs font-medium text-white hover:bg-edvoura-navy-light"
-                            >
-                              {item.status === 'live' ? 'Join Live Now' : 'Open Lesson Room'}
-                            </a>
-                          ) : null}
-                        </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600">
-                  No lessons scheduled for today. Use the scheduler to create one.
+      <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
+        {/* Main Content Area */}
+        <div className="space-y-8 xl:col-span-8">
+          
+          {/* Today's Classes Card */}
+          <Card className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 px-8 py-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-xl">
+                   <Video className="h-6 w-6 text-blue-600" />
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck className="h-5 w-5 text-edvoura-navy" />
-                Grading Queue
-              </CardTitle>
-              <Link href="/dash/tutor/grading" className="text-sm font-semibold text-edvoura-navy hover:underline">
-                Open grading
-              </Link>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {dashboard.gradingQueue.length > 0 ? (
-                dashboard.gradingQueue.map((task) => (
-                  <div key={task.id} className="rounded-xl border border-slate-200 bg-white p-4">
-                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">{task.studentName}</p>
-                    <p className="mt-1 text-sm font-semibold text-slate-900">{task.assignmentTitle}</p>
-                    <p className="text-xs text-slate-600">
-                      {task.status === 'late' ? '⚠ Late submission' : 'Submitted'} • {formatRelativeTime(task.submittedAt)}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600">
-                  No submissions to grade right now. Your students are up to date!
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-edvoura-navy" />
-                My Classes
-              </CardTitle>
-              <Link href="/dash/tutor/roster" className="text-sm font-semibold text-edvoura-navy hover:underline">
-                All students
-              </Link>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {dashboard.classes.length > 0 ? (
-                dashboard.classes.map((cls) => (
-                  <div key={cls.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4 hover:border-edvoura-navy hover:bg-white transition-colors">
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="h-4 w-4 text-slate-600" />
-                      <p className="text-sm font-semibold text-slate-900">{cls.title}</p>
-                    </div>
-                    <p className="mt-1 text-xs text-slate-600">{cls.subjectName} • {cls.studentCount} students enrolled</p>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600">
-                  No classes yet. Create an assignment to auto-generate a class.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Teaching Content Broadcast</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TutorLiveContentPublisher />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6 xl:col-span-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Messages</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-slate-600">
-                Send parent and student updates by class/session.
-              </p>
-              <Link href="/dash/tutor/messages">
-                <Button variant="outline" className="w-full border-slate-300 bg-white">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  Message Parent/Student
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Tutor Controls</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-2">
-              <Link href="/dash/tutor/builder">
-                <Button variant="outline" className="w-full justify-start border-slate-300 bg-white text-left">
-                  Upload Lesson Resources
-                </Button>
-              </Link>
-              <Link href="/dash/tutor/schedule">
-                <Button variant="outline" className="w-full justify-start border-slate-300 bg-white text-left">
-                  Attendance Marking
-                </Button>
-              </Link>
-              <Link href="/dash/tutor/lesson-notes">
-                <Button variant="outline" className="w-full justify-start border-slate-300 bg-white text-left">
-                  Lesson Notes and Plans
-                </Button>
-              </Link>
-              <Link href="/dash/profile">
-                <Button variant="outline" className="w-full justify-start border-slate-300 bg-white text-left">
-                  Availability/Profile Management
-                </Button>
-              </Link>
-              <Link href="/dash/tutor/earnings">
-                <Button variant="outline" className="w-full justify-start border-slate-300 bg-white text-left">
-                  Invoice/Payment
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">All Dashboard Sections</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          All required sections below are mapped and clickable.
-        </p>
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {tutorSections.map((section) => (
-            <Link
-              key={section.title}
-              href={section.href}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-4 transition-colors hover:border-edvoura-navy hover:bg-white"
-            >
-              <div className="flex items-center gap-2">
-                <section.icon className="h-4 w-4 text-slate-600" />
-                <p className="text-sm font-semibold text-slate-900">{section.title}</p>
+                <CardTitle className="text-xl font-bold text-slate-900">Today&apos;s Live Classes</CardTitle>
               </div>
-              <p className="mt-1 text-xs text-slate-600">{section.description}</p>
-            </Link>
-          ))}
+              <Link href="/dash/tutor/schedule" className="group flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-700">
+                Go to Schedule <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </CardHeader>
+            <CardContent className="p-8">
+              {dashboard.todayLessons.length > 0 ? (
+                <div className="space-y-4">
+                  {dashboard.todayLessons.map((item) => (
+                    <div key={item.id} className="group relative rounded-2xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-lg hover:shadow-slate-200/50">
+                      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                        <div className="flex gap-4">
+                           <div className="hidden sm:flex flex-col items-center justify-center h-16 w-16 rounded-2xl bg-white border border-slate-100 text-slate-400 font-bold">
+                              <span className="text-xs uppercase tracking-tighter">Starts</span>
+                              <span className="text-slate-900">{formatTimeInZone(item.scheduledStartAt, activeTimezone).split(' ')[0]}</span>
+                           </div>
+                           <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">
+                                  {item.subjectName}
+                                </span>
+                                {item.status === 'live' && (
+                                  <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-white bg-rose-500 px-2 py-0.5 rounded-md animate-pulse">
+                                    <div className="h-1 w-1 rounded-full bg-white"></div> Live
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="mt-2 text-xl font-black text-slate-900">{item.title}</h3>
+                              <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-500">
+                                <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {item.studentCount} students</span>
+                                <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {formatDuration(item.scheduledStartAt, item.scheduledEndAt)}</span>
+                              </div>
+                           </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           <TutorLessonStartButton lessonId={item.id} status={item.status} />
+                           <Link href="/dash/tutor/roster">
+                             <Button variant="outline" className="h-11 rounded-xl border-slate-200 bg-white hover:bg-slate-50">
+                               Manage
+                             </Button>
+                           </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border-2 border-dashed border-slate-100 bg-slate-50/50 p-12 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                    <CalendarClock className="h-8 w-8 text-slate-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">No classes for today</h3>
+                  <p className="mt-2 text-sm text-slate-500 max-w-xs mx-auto">
+                    Take a break or use the time to prepare your next lesson notes and plans.
+                  </p>
+                  <Link href="/dash/tutor/schedule" className="mt-6 inline-block">
+                     <Button className="bg-edvoura-navy text-white rounded-xl">Schedule Session</Button>
+                  </Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Broadcast & Grading Row */}
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+             <Card className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50">
+                <CardHeader className="px-8 pt-8">
+                  <CardTitle className="flex items-center gap-2">
+                    <Rocket className="h-5 w-5 text-orange-500" />
+                    Quick Broadcast
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-8 pb-8">
+                  <p className="text-sm text-slate-500 mb-6">Send a message to all your students instantly.</p>
+                  <TutorLiveContentPublisher />
+                </CardContent>
+             </Card>
+
+             <Card className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between px-8 pt-8 pb-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <ClipboardCheck className="h-5 w-5 text-rose-500" />
+                    Grading Queue
+                  </CardTitle>
+                  <Link href="/dash/tutor/grading" className="text-xs font-bold text-rose-600">View all</Link>
+                </CardHeader>
+                <CardContent className="px-8 pb-8 space-y-4">
+                  {dashboard.gradingQueue.length > 0 ? (
+                    dashboard.gradingQueue.map((task) => (
+                      <div key={task.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p className="text-xs font-bold text-slate-900">{task.studentName}</p>
+                        <p className="text-xs text-slate-500 mt-1">{task.assignmentTitle}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                       <CheckCircle2 className="h-10 w-10 text-emerald-400 mb-2" />
+                       <p className="text-sm font-bold text-slate-900">All caught up!</p>
+                       <p className="text-xs text-slate-500">No pending submissions.</p>
+                    </div>
+                  )}
+                </CardContent>
+             </Card>
+          </div>
         </div>
-      </section>
+
+        {/* Sidebar Controls */}
+        <div className="space-y-8 xl:col-span-4">
+          <Card className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50 p-6">
+            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <LayoutDashboard className="h-5 w-5 text-slate-400" />
+              Command Links
+            </h3>
+            <div className="grid grid-cols-1 gap-3">
+              {tutorSections.map((section) => (
+                <Link
+                  key={section.title}
+                  href={section.href}
+                  className="group flex items-center gap-4 p-4 rounded-2xl transition-all hover:bg-slate-50 hover:translate-x-1"
+                >
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all group-hover:scale-110 ${section.color}`}>
+                    <section.icon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-sm font-bold text-slate-900 truncate">{section.title}</p>
+                    <p className="text-xs text-slate-500 truncate">{section.description}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-slate-300 transition-all group-hover:text-slate-900 group-hover:translate-x-1" />
+                </Link>
+              ))}
+            </div>
+          </Card>
+
+          {/* Help/Support Section */}
+          <Card className="rounded-3xl border-none bg-gradient-to-br from-edvoura-navy to-slate-900 p-8 text-white">
+             <Trophy className="h-10 w-10 text-edvoura-gold mb-6" />
+             <h3 className="text-xl font-black mb-2">Tutor Excellence</h3>
+             <p className="text-sm text-slate-400 leading-relaxed">
+               Need help with lesson planning or using the assignment builder? Our support team is here for you.
+             </p>
+             <Button variant="outline" className="mt-6 w-full h-12 rounded-xl border-white/20 bg-white/5 text-white hover:bg-white/10 font-bold">
+               Visit Help Center
+             </Button>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
+
+const Plus = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
