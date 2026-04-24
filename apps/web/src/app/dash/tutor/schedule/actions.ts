@@ -221,6 +221,17 @@ export async function startLesson(lessonId: string) {
 
 export async function deleteLesson(lessonId: string) {
   const supabase = await createClient();
+
+  // 1. Get the class_id before deleting the lesson
+  const { data: lesson } = await supabase
+    .from('lessons')
+    .select('class_id')
+    .eq('id', lessonId)
+    .single();
+
+  const classId = lesson?.class_id;
+
+  // 2. Delete the lesson
   const { error, count } = await supabase
     .from('lessons')
     .delete({ count: 'exact' })
@@ -232,6 +243,19 @@ export async function deleteLesson(lessonId: string) {
   }
 
   console.log(`Deleted ${count} lesson record(s)`);
+
+  // 3. If the class now has zero lessons, clean it up (removes enrollments too via cascade)
+  if (classId) {
+    const { count: remainingLessons } = await supabase
+      .from('lessons')
+      .select('id', { count: 'exact', head: true })
+      .eq('class_id', classId);
+
+    if (remainingLessons === 0) {
+      console.log(`Class ${classId} has no remaining lessons — auto-deleting class and enrollments`);
+      await supabase.from('classes').delete().eq('id', classId);
+    }
+  }
 
   revalidatePath('/dash/tutor/schedule');
   revalidatePath('/dash/tutor');
