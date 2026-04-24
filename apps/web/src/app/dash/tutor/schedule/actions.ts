@@ -221,15 +221,21 @@ export async function startLesson(lessonId: string) {
 
 export async function deleteLesson(lessonId: string) {
   const supabase = await createClient();
-  const { error } = await supabase
+  const { error, count } = await supabase
     .from('lessons')
-    .delete()
+    .delete({ count: 'exact' })
     .eq('id', lessonId);
 
   if (error) {
+    console.error('Failed to delete lesson:', error);
     throw error;
   }
 
+  console.log(`Deleted ${count} lesson record(s)`);
+
   revalidatePath('/dash/tutor/schedule');
   revalidatePath('/dash/tutor');
+  revalidatePath('/dash/student/live');
+  revalidatePath('/dash/student');
+  revalidatePath('/dash/student/home-work');
 }
