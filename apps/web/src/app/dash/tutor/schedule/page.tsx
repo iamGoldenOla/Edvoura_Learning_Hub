@@ -73,7 +73,7 @@ export default async function TutorSchedulePage(props: {
             <h1 className="text-4xl font-black text-edvoura-navy tracking-tight">Master Schedule</h1>
           </div>
           <p className="text-slate-500 text-lg leading-relaxed">
-            Manage your live teaching sessions. Publish new slots, sync with your calendar, and launch virtual classrooms.
+            Organize and launch your virtual classrooms. Schedule recurring sessions or create one-off teaching slots.
           </p>
         </div>
         
@@ -351,7 +351,7 @@ export default async function TutorSchedulePage(props: {
                 <h3 className="text-xl font-black">Pro Tip</h3>
              </div>
              <p className="text-slate-300 text-sm leading-relaxed">
-                If you leave the Meet Link blank, Edvoura Bot will automatically create a unique Google Meet for this session and share it with your students 15 minutes before the start time.
+                You can leave the Meet Link blank; the system will automatically generate a unique Google Meet for your session and share it with your students.
              </p>
           </div>
         </section>

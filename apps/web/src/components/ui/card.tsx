@@ -32,9 +32,9 @@ export function CardContent({ className = '', children, ...props }: React.HTMLAt
   );
 }
 
-export function MetricCard({ title, value, description, icon }: { title: string, value: string | number, description?: string, icon?: React.ReactNode }) {
+export function MetricCard({ title, value, description, icon, className = '' }: { title: string, value: string | number, description?: string, icon?: React.ReactNode, className?: string }) {
   return (
-    <Card>
+    <Card className={className}>
       <CardContent className="flex flex-col gap-1 p-6">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium text-slate-500">{title}</span>
