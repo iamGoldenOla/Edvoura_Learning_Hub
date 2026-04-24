@@ -843,18 +843,27 @@ export async function getTutorDashboardData(): Promise<TutorDashboardData> {
     const { data: lessonsData = [] } = classIds.length
       ? await supabase
           .from('lessons')
-          .select('id, class_id, title, scheduled_start_at, scheduled_end_at, status')
+          .select('id, class_id, title, scheduled_start_at, scheduled_end_at, status, provider')
           .in('class_id', classIds)
           .gte('scheduled_start_at', todayStart.toISOString())
           .lte('scheduled_start_at', todayEnd.toISOString())
           .order('scheduled_start_at', { ascending: true })
-      : { data: [] as Array<{ id: string; class_id: string; title: string; scheduled_start_at: string; scheduled_end_at: string; status: string }> };
+      : { data: [] as Array<{ id: string; class_id: string; title: string; scheduled_start_at: string; scheduled_end_at: string; status: string; provider: string }> };
 
     const normalizedLessons = lessonsData ?? [];
+    const lessonIds = normalizedLessons.map(l => l.id);
+    
+    const { data: liveSessions = [] } = lessonIds.length
+      ? await supabase.from('private.lesson_live_sessions').select('lesson_id, join_url, host_url').in('lesson_id', lessonIds)
+      : { data: [] as any[] };
+
+    const liveSessionByLessonId = new Map(liveSessions?.map(ls => [ls.lesson_id, ls]) ?? []);
     const classById = new Map(normalizedClasses.map((c) => [c.id, c]));
 
     const todayLessons = normalizedLessons.map((l) => {
       const relatedClass = classById.get(l.class_id);
+      const liveSession = liveSessionByLessonId.get(l.id);
+      
       return {
         id: l.id,
         title: l.title,
@@ -864,6 +873,7 @@ export async function getTutorDashboardData(): Promise<TutorDashboardData> {
         scheduledEndAt: l.scheduled_end_at,
         status: l.status,
         studentCount: enrollmentCountByClass.get(l.class_id) ?? 0,
+        joinUrl: liveSession?.host_url ?? liveSession?.join_url ?? null,
       };
     });
 

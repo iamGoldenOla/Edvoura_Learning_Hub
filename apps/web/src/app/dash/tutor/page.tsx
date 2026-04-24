@@ -170,11 +170,22 @@ export default async function TutorDashboard() {
                             Student List
                           </Button>
                         </Link>
-                        <Link href="/dash/tutor/schedule">
-                          <Button variant="primary" className="text-xs">
-                            {item.status === 'live' ? 'Join Lesson' : 'Start Lesson'}
-                          </Button>
-                        </Link>
+                        {item.joinUrl ? (
+                          <a
+                            href={item.joinUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center rounded-md bg-edvoura-navy px-3 py-2 text-xs font-medium text-white hover:bg-edvoura-navy-light"
+                          >
+                            {item.status === 'live' ? 'Join Live Now' : 'Open Lesson Room'}
+                          </a>
+                        ) : (
+                          <Link href="/dash/tutor/schedule">
+                            <Button variant="primary" className="text-xs">
+                              {item.status === 'live' ? 'Join Lesson' : 'Start Lesson'}
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
