@@ -23,6 +23,23 @@ The platform has successfully transitioned its core management interfaces (Admin
 - The UI across Parent, Tutor, and Admin portals has been standardized to the Neo-Brutalist design system.
 - Paystack payment routing logic has been corrected (Parents stay in-app, Tutors enter bank details internally, Super Admin gets raw Paystack console access).
 
+#### AI Engine (New — 2026-04-24)
+- **Database**: Migration `20260424194000_ai_orchestration_engine.sql` creates four new tables:
+  - `curriculum_maps` — Ground-truth curriculum data (WAEC/NECO/British/Hybrid), topics, objectives, difficulty weights, and prerequisite chains.
+  - `ai_generated_content` — Validated AI output (lesson notes, stories, comprehensions, quizzes) with draft/approved/published workflow.
+  - `student_learning_profiles` — Personalization engine data (learning pace, strong/weak subjects, AI-recommended interventions).
+  - `ai_action_logs` — Audit trail for all automated AI actions (weekly reports, intervention alerts).
+- **Library**: `apps/web/src/lib/ai/` contains:
+  - `schemas.ts` — Zod validators for every content type (LessonNote, Story, Comprehension, Quiz, StudentAnalysis, ParentReport). Enforces min-length, structural depth, and format compliance.
+  - `prompts.ts` — Curated system prompts with Nigerian/African educational context, curriculum alignment, and professional depth requirements.
+  - `orchestrator.ts` — LLM-agnostic generation engine (Vercel AI SDK + OpenAI GPT-4o) with retry logic and Zod validation firewall.
+- **API Routes**: Three new Next.js Route Handlers:
+  - `POST /api/ai/generate` — Content generation (auth-guarded for tutors/admins).
+  - `POST /api/ai/analyze-student` — Personalization engine (analyzes performance, updates learning profiles, logs interventions).
+  - `POST /api/ai/parent-report` — Auto-generates warm weekly parent reports and sends notifications.
+- **Dependencies**: `ai`, `@ai-sdk/openai`, `zod` added to `apps/web`.
+- **Env requirement**: `OPENAI_API_KEY` must be set in Vercel environment variables.
+
 #### Current Supabase Footprint
 - Four storage buckets are created by migrations:
   - `avatars`
