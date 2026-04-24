@@ -12,10 +12,12 @@ export default async function StudentClassesPage() {
 
   const enrollments = dashboard.enrollments.map((e) => ({
     id: e.id,
+    classId: e.classId,
     title: e.classTitle,
     subject: e.subjectName,
     status: 'active',
     tutorName: e.tutorName,
+    hasLiveLesson: dashboard.upcomingLessons.some(l => l.classTitle === e.classTitle && (l.status === 'live' || l.status === 'scheduled'))
   }));
 
   return (
@@ -70,13 +72,20 @@ export default async function StudentClassesPage() {
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-3">
-                    <a
-                      href="/dash/student/live"
-                      className="inline-flex items-center gap-2 px-4 py-2 border-[2px] border-dark bg-yellow text-[11px] font-black shadow-[3px_3px_0px_#060E1C]"
-                    >
-                      <Video className="w-4 h-4" />
-                      Join Live
-                    </a>
+                    {course.hasLiveLesson ? (
+                      <a
+                        href="/dash/student/live"
+                        className="inline-flex items-center gap-2 px-4 py-2 border-[2px] border-dark bg-yellow text-[11px] font-black shadow-[3px_3px_0px_#060E1C] animate-pulse transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                      >
+                        <Video className="w-4 h-4" />
+                        Join Live Now
+                      </a>
+                    ) : (
+                      <div className="inline-flex items-center gap-2 px-4 py-2 border-[2px] border-dark bg-slate-50 text-dark/30 text-[11px] font-black">
+                        <Video className="w-4 h-4" />
+                        Offline
+                      </div>
+                    )}
                     <a
                       href="/dash/student/assignments"
                       className="inline-flex items-center gap-2 px-4 py-2 border-[2px] border-dark bg-white text-[11px] font-black"

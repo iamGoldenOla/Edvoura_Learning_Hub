@@ -236,6 +236,7 @@ export async function deleteLesson(lessonId: string) {
   revalidatePath('/dash/tutor/schedule');
   revalidatePath('/dash/tutor');
   revalidatePath('/dash/student/live');
+  revalidatePath('/dash/student/classes');
   revalidatePath('/dash/student');
   revalidatePath('/dash/student/home-work');
 }
