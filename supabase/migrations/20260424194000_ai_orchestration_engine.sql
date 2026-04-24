@@ -95,8 +95,8 @@ CREATE POLICY "Parents can read their child's learning profile"
   ON public.student_learning_profiles FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM public.parent_child_links pcl
-      WHERE pcl.parent_user_id = auth.uid() AND pcl.child_user_id = student_learning_profiles.student_user_id
+      SELECT 1 FROM public.parent_student_links psl
+      WHERE psl.parent_user_id = auth.uid() AND psl.student_user_id = student_learning_profiles.student_user_id
     )
   );
 
