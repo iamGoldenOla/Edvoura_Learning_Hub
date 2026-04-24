@@ -46,16 +46,16 @@ export default async function ParentBillingPage() {
             </div>
             
             <div className="flex flex-wrap gap-4 mt-auto">
-              <Link href="https://paystack.com" target="_blank" rel="noreferrer">
+              <Link href="/dash/parent/billing?action=checkout">
                 <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
                   <CreditCard className="mr-2 h-5 w-5" />
-                  Upgrade via Paystack
+                  Upgrade Plan (Paystack)
                 </Button>
               </Link>
-              <Link href="https://paystack.com/manage" target="_blank" rel="noreferrer">
+              <Link href="/dash/parent/billing?action=manage-subscription">
                 <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
                   <FileText className="mr-2 h-5 w-5" />
-                  Manage Paystack Billing
+                  Manage Billing Settings
                 </Button>
               </Link>
             </div>

@@ -112,8 +112,8 @@ export default async function TutorEarningsPage(props: {
               <div className="border-[3px] border-dark rounded-3xl bg-blue-100 p-6 shadow-[5px_5px_0px_#060E1C]">
                 <h3 className="text-xl font-black text-dark mb-4">Payment Actions</h3>
                 <div className="space-y-3">
-                  <Link href="https://dashboard.paystack.com/#/settings/payouts" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl border-[2px] border-dark bg-white px-4 py-3 text-sm font-black text-dark hover:bg-yellow hover:translate-x-[2px] hover:translate-y-[2px] shadow-[3px_3px_0px_#060E1C] hover:shadow-none transition-all">
-                    <span className="flex items-center gap-2"><PaymentIcon className="h-4 w-4" /> Manage Paystack Account</span>
+                  <Link href="/dash/tutor/earnings?action=update-bank-details" className="flex items-center justify-between rounded-xl border-[2px] border-dark bg-white px-4 py-3 text-sm font-black text-dark hover:bg-yellow hover:translate-x-[2px] hover:translate-y-[2px] shadow-[3px_3px_0px_#060E1C] hover:shadow-none transition-all">
+                    <span className="flex items-center gap-2"><PaymentIcon className="h-4 w-4" /> Update Bank Details</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link href="/dash/tutor/earnings?action=download-invoice" className="flex items-center justify-between rounded-xl border-[2px] border-dark bg-white px-4 py-3 text-sm font-black text-dark hover:bg-yellow hover:translate-x-[2px] hover:translate-y-[2px] shadow-[3px_3px_0px_#060E1C] hover:shadow-none transition-all">
