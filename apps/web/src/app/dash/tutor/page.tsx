@@ -135,53 +135,75 @@ export default async function TutorDashboard() {
         {/* Main Content Area */}
         <div className="space-y-8 xl:col-span-8">
           
-          {/* Today's Classes Card */}
-          <Card className="rounded-3xl border-none bg-white shadow-xl shadow-slate-200/50 overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 px-8 py-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-xl">
-                   <Video className="h-6 w-6 text-blue-600" />
+          {/* Today's Classes Section - Classy & Orchestrated */}
+          <Card className="rounded-[2.5rem] border-none bg-white shadow-2xl shadow-slate-200/40 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 px-10 py-8 bg-slate-50/30">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/20">
+                   <Video className="h-6 w-6 text-white" />
                 </div>
-                <CardTitle className="text-xl font-bold text-slate-900">Today&apos;s Live Classes</CardTitle>
+                <div>
+                  <CardTitle className="text-2xl font-black text-slate-900 tracking-tight">Today&apos;s Schedule</CardTitle>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Live from your command center</p>
+                </div>
               </div>
-              <Link href="/dash/tutor/schedule" className="group flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-700">
-                Go to Schedule <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <Link href="/dash/tutor/schedule" className="group flex items-center gap-2 text-sm font-black text-blue-600 transition-all hover:gap-3">
+                Full Schedule <ArrowRight className="h-4 w-4" />
               </Link>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-0">
               {dashboard.todayLessons.length > 0 ? (
-                <div className="space-y-4">
+                <div className="divide-y divide-slate-100">
                   {dashboard.todayLessons.map((item) => (
-                    <div key={item.id} className="group relative rounded-2xl border border-slate-100 bg-slate-50/50 p-6 transition-all hover:bg-white hover:shadow-lg hover:shadow-slate-200/50">
-                      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-                        <div className="flex gap-4">
-                           <div className="hidden sm:flex flex-col items-center justify-center h-16 w-16 rounded-2xl bg-white border border-slate-100 text-slate-400 font-bold">
-                              <span className="text-xs uppercase tracking-tighter">Starts</span>
-                              <span className="text-slate-900">{formatTimeInZone(item.scheduledStartAt, activeTimezone).split(' ')[0]}</span>
-                           </div>
-                           <div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md">
-                                  {item.subjectName}
+                    <div key={item.id} className="group relative px-10 py-8 transition-all hover:bg-slate-50/50">
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+                        {/* Time Column */}
+                        <div className="flex flex-col min-w-[100px]">
+                           <span className="text-2xl font-black text-slate-900 tracking-tight">
+                             {formatTimeInZone(item.scheduledStartAt, activeTimezone).split(' ')[0]}
+                           </span>
+                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                             {formatTimeInZone(item.scheduledStartAt, activeTimezone).split(' ')[1] || activeTimezone}
+                           </span>
+                        </div>
+
+                        {/* Details Column */}
+                        <div className="flex-1 space-y-2">
+                           <div className="flex items-center gap-3">
+                              <span className="px-3 py-1 bg-edvoura-navy text-white text-[10px] font-black uppercase tracking-widest rounded-full">
+                                {item.subjectName}
+                              </span>
+                              {item.status === 'live' && (
+                                <span className="flex items-center gap-1.5 px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-full border border-rose-100 animate-pulse">
+                                  <div className="h-1.5 w-1.5 rounded-full bg-rose-600"></div> Live Now
                                 </span>
-                                {item.status === 'live' && (
-                                  <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-white bg-rose-500 px-2 py-0.5 rounded-md animate-pulse">
-                                    <div className="h-1 w-1 rounded-full bg-white"></div> Live
-                                  </span>
-                                )}
-                              </div>
-                              <h3 className="mt-2 text-xl font-black text-slate-900">{item.title}</h3>
-                              <div className="mt-2 flex flex-wrap gap-4 text-sm text-slate-500">
-                                <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {item.studentCount} students</span>
-                                <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {formatDuration(item.scheduledStartAt, item.scheduledEndAt)}</span>
-                              </div>
+                              )}
+                           </div>
+                           <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                             {item.title}
+                           </h3>
+                           <div className="flex items-center gap-5 text-sm font-bold text-slate-500">
+                             <span className="flex items-center gap-1.5"><Users className="h-4 w-4 text-slate-300" /> {item.studentCount} Students Enrolled</span>
+                             <span className="w-1 h-1 rounded-full bg-slate-200"></span>
+                             <span className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-slate-300" /> {formatDuration(item.scheduledStartAt, item.scheduledEndAt)} Workshop</span>
                            </div>
                         </div>
+
+                        {/* Actions Column */}
                         <div className="flex items-center gap-3">
                            <TutorLessonStartButton lessonId={item.id} status={item.status} />
-                           <Link href="/dash/tutor/roster">
-                             <Button variant="outline" className="h-11 rounded-xl border-slate-200 bg-white hover:bg-slate-50">
-                               Manage
+                           
+                           {item.joinUrl && (
+                             <a href={item.joinUrl} target="_blank" rel="noreferrer" className="hidden sm:block">
+                               <Button variant="outline" className="h-12 px-6 rounded-2xl border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold transition-all active:scale-95">
+                                 Open Room
+                               </Button>
+                             </a>
+                           )}
+                           
+                           <Link href="/dash/tutor/roster" className="hidden xl:block">
+                             <Button variant="ghost" className="h-12 w-12 p-0 rounded-2xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all">
+                               <Users className="h-5 w-5" />
                              </Button>
                            </Link>
                         </div>
@@ -190,16 +212,18 @@ export default async function TutorDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-3xl border-2 border-dashed border-slate-100 bg-slate-50/50 p-12 text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                    <CalendarClock className="h-8 w-8 text-slate-400" />
+                <div className="px-10 py-20 text-center">
+                  <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-slate-50 text-slate-200 shadow-inner">
+                    <CalendarClock className="h-10 w-10" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">No classes for today</h3>
-                  <p className="mt-2 text-sm text-slate-500 max-w-xs mx-auto">
-                    Take a break or use the time to prepare your next lesson notes and plans.
+                  <h3 className="text-xl font-black text-slate-900">No sessions today</h3>
+                  <p className="mt-2 text-slate-500 max-w-xs mx-auto text-sm leading-relaxed">
+                    Your schedule is clear for today. Use the time to prep assignments or enjoy the break!
                   </p>
-                  <Link href="/dash/tutor/schedule" className="mt-6 inline-block">
-                     <Button className="bg-edvoura-navy text-white rounded-xl">Schedule Session</Button>
+                  <Link href="/dash/tutor/schedule" className="mt-8 inline-block">
+                     <Button className="h-12 px-8 bg-edvoura-navy text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-xl shadow-edvoura-navy/10">
+                       Open Scheduler
+                     </Button>
                   </Link>
                 </div>
               )}

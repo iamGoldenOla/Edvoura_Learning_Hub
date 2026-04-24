@@ -121,6 +121,13 @@ export async function createTutorLiveSlot(formData: FormData) {
   };
 
   try {
+    const startObj = new Date(startDate);
+    const endObj = new Date(endDate);
+    
+    if (endObj <= startObj) {
+      redirect(`/dash/tutor/schedule?error=${encodeURIComponent('The lesson end time must be after the start time. Please check your AM/PM or 24h settings.')}`);
+    }
+
     const slotsToCreate = isRecurring ? recurrenceWeeks : 1;
     for (let i = 0; i < slotsToCreate; i++) {
       const start = new Date(startDate);
