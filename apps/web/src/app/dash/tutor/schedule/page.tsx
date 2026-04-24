@@ -169,12 +169,18 @@ export default async function TutorSchedulePage(props: {
                     <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
                         {session.status === 'live' ? (
-                          /* LIVE: show a big green "Join Classroom" button so the tutor can always re-enter */
-                          <a href={session.host_url || session.join_url || '#'} target="_blank" rel="noreferrer">
-                            <Button className="h-12 px-6 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
-                              <Video className="w-5 h-5 fill-current" /> Join Classroom
-                            </Button>
-                          </a>
+                          /* LIVE: show Join Classroom if a link exists, otherwise show a helpful note */
+                          (session.host_url || session.join_url) ? (
+                            <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer">
+                              <Button className="h-12 px-6 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95">
+                                <Video className="w-5 h-5 fill-current" /> Join Classroom
+                              </Button>
+                            </a>
+                          ) : (
+                            <span className="text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 px-4 py-3 rounded-xl">
+                              No meeting link — please delete this session, create a new one, and paste your Google Meet link in the form.
+                            </span>
+                          )
                         ) : (
                           /* SCHEDULED: show Start + optional Preview */
                           <>
@@ -327,15 +333,19 @@ export default async function TutorSchedulePage(props: {
 
                 <div className="space-y-1.5">
                   <label htmlFor="joinUrl" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                    Google Meet Link <span className="text-slate-300 font-normal">(Optional)</span>
+                    Google Meet Link <span className="text-rose-400 font-normal">(Required)</span>
                   </label>
                   <input
                     id="joinUrl"
                     name="joinUrl"
                     type="url"
-                    placeholder="Leave blank to auto-generate"
+                    required
+                    placeholder="e.g. https://meet.google.com/abc-defg-hij"
                     className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
                   />
+                  <p className="text-[10px] text-slate-400 font-medium leading-snug">
+                    Go to <a href="https://meet.google.com" target="_blank" rel="noreferrer" className="underline text-blue-500">meet.google.com</a> → New Meeting → Create for later → paste link here.
+                  </p>
                 </div>
 
                 <Button type="submit" className="w-full h-14 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-xl font-black text-lg transition-all active:scale-98">
