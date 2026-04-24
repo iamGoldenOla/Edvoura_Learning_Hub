@@ -61,7 +61,6 @@ export async function generateEducationalContent(params: {
         system: SYSTEM_IDENTITY,
         prompt: userPrompt + retryHint,
         temperature: 0.7,
-        maxTokens: 4096,
       });
 
       // Strip any markdown wrapping the LLM might add
@@ -121,7 +120,6 @@ export async function analyzeStudentPerformance(params: {
         system: SYSTEM_IDENTITY,
         prompt: userPrompt,
         temperature: 0.5,
-        maxTokens: 2048,
       });
 
       const cleaned = text
@@ -166,7 +164,6 @@ export async function generateParentReport(params: {
         system: SYSTEM_IDENTITY,
         prompt: userPrompt,
         temperature: 0.6,
-        maxTokens: 1500,
       });
 
       const cleaned = text
