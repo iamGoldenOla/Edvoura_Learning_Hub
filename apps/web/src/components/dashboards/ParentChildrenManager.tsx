@@ -307,14 +307,14 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
             ))}
 
             <Button
-              className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base"
+              className="w-full bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base"
               disabled={isSubmitting}
               onClick={submitChildrenBatch}
             >
               <PlusCircle className="mr-2 h-5 w-5" />
               {isSubmitting ? 'Saving...' : 'Save Children'}
             </Button>
-            {statusMessage ? <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C]">{statusMessage}</div> : null}
+            {statusMessage ? <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm font-black !text-dark shadow-[4px_4px_0px_#060E1C]">{statusMessage}</div> : null}
 
             <div className="border-t-[4px] border-dark/10 pt-6 space-y-4">
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
@@ -351,13 +351,13 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
                 </label>
               </div>
               <Button
-                className="w-full bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base"
+                className="w-full bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base"
                 disabled={isLinking || !linkForm.childEmail.trim()}
                 onClick={linkExistingChild}
               >
                 {isLinking ? 'Linking...' : 'Link Existing Child by Email'}
               </Button>
-              {linkMessage ? <div className="rounded-xl border-[3px] border-dark bg-emerald-100 p-4 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C]">{linkMessage}</div> : null}
+              {linkMessage ? <div className="rounded-xl border-[3px] border-dark bg-emerald-100 p-4 text-sm font-black !text-dark shadow-[4px_4px_0px_#060E1C]">{linkMessage}</div> : null}
             </div>
           </div>
         </div>

@@ -238,44 +238,56 @@ export default function StudentBandClientWrapper({
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{copy.label}</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-          Hello {dashboard.profile.fullName ?? 'Student'}
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">{copy.subtitle}</p>
-
-        <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard label="Upcoming lessons" value={String(dashboard.stats.upcomingLessons)} icon={Clock3} />
-          <StatCard label="Pending tasks" value={String(dashboard.stats.pendingAssignments)} icon={CheckCircle2} />
-          <StatCard label="Average score" value={formatPercent(dashboard.stats.averageScore)} icon={TrendingUp} />
-          <StatCard label="Attendance" value={formatPercent(dashboard.stats.attendanceRate)} icon={Target} />
+    <div className="mx-auto max-w-[1400px] space-y-8 pb-12">
+      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-8 border-b-[4px] border-dark bg-yellow/20">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-2">{copy.label}</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+            Hello, {dashboard.profile.fullName ?? 'Student'}
+          </h1>
+          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+            {copy.subtitle}
+          </p>
         </div>
-      </section>
+        
+        <div className="p-6 sm:p-8 bg-off-white grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard label="Upcoming lessons" value={String(dashboard.stats.upcomingLessons)} icon={Clock3} color="bg-emerald-100" />
+          <StatCard label="Pending tasks" value={String(dashboard.stats.pendingAssignments)} icon={CheckCircle2} color="bg-blue-100" />
+          <StatCard label="Average score" value={formatPercent(dashboard.stats.averageScore)} icon={TrendingUp} color="bg-rose-100" />
+          <StatCard label="Attendance" value={formatPercent(dashboard.stats.attendanceRate)} icon={Target} color="bg-amber-100" />
+        </div>
+      </div>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="space-y-6 xl:col-span-8">
-          <Panel title="Live from tutor" icon={Video}>
+      <section className="grid grid-cols-1 gap-8 xl:grid-cols-12">
+        <div className="space-y-8 xl:col-span-8">
+          <Panel title="Live from tutor" icon={Video} color="bg-rose-100">
             <StudentLiveContentPanel />
           </Panel>
 
-          <Panel title="Next lesson" icon={Video}>
+          <Panel title="Next lesson" icon={Clock3} color="bg-amber-100">
             {nextLesson ? (
-              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">{nextLesson.title}</p>
-                <p className="text-sm text-slate-600">
-                  {nextLesson.subjectName} - {nextLesson.classTitle}
-                </p>
-                <p className="text-sm text-slate-600">{formatDateTime(nextLesson.scheduledStartAt)}</p>
-                <p className="text-xs font-medium text-slate-500">{countdownText(nextLesson.scheduledStartAt)}</p>
-                <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[4px_4px_0px_#060E1C]">
+                <div>
+                  <h3 className="text-xl font-black text-dark">{nextLesson.title}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-2">
+                    {nextLesson.subjectName} - {nextLesson.classTitle}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <span className="inline-flex rounded-xl border-[2px] border-dark bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C]">
+                      {formatDateTime(nextLesson.scheduledStartAt)}
+                    </span>
+                    <span className="inline-flex rounded-xl border-[2px] border-dark bg-rose-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-rose-900 shadow-[2px_2px_0px_#060E1C] animate-pulse">
+                      {countdownText(nextLesson.scheduledStartAt)}
+                    </span>
+                  </div>
+                </div>
+                <div className="shrink-0">
                   {nextLesson.joinUrl ? (
                     <a
                       href={nextLesson.joinUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-200 transition-all animate-pulse"
+                      className="inline-flex items-center justify-center bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 animate-pulse"
                     >
                       <PlayCircle className="mr-2 h-5 w-5" />
                       Join Class Now
@@ -283,7 +295,7 @@ export default function StudentBandClientWrapper({
                   ) : (
                     <Link
                       href="/dash/student/live"
-                      className="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-xs font-medium text-white hover:bg-slate-800"
+                      className="inline-flex items-center justify-center bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4"
                     >
                       Wait for teacher...
                     </Link>
@@ -291,33 +303,30 @@ export default function StudentBandClientWrapper({
                 </div>
               </div>
             ) : (
-              <div className="py-4 text-center">
-                <Video className="mx-auto h-8 w-8 text-slate-300 mb-2" />
-                <p className="text-sm text-slate-500">No live classes right now.</p>
-              </div>
+              <EmptyState text="No live classes right now." icon={Video} />
             )}
           </Panel>
 
-          <Panel title="Pending assignments" icon={BookOpen}>
-            <div className="space-y-3">
+          <Panel title="Pending assignments" icon={BookOpen} color="bg-blue-100">
+            <div className="space-y-4">
               {pendingAssignments.length > 0 ? (
                 pendingAssignments.map((assignment) => (
-                  <article key={assignment.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <article key={assignment.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                        <span className="inline-flex rounded-md border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
                           {assignment.subjectName}
-                        </p>
-                        <h3 className="mt-1 text-sm font-semibold text-slate-900">{assignment.title}</h3>
-                        <p className="mt-1 text-xs text-slate-600">Due {formatDate(assignment.dueAt)}</p>
+                        </span>
+                        <h3 className="mt-3 text-xl font-black text-dark">{assignment.title}</h3>
+                        <p className="mt-2 text-xs font-bold text-dark/70">Due {formatDate(assignment.dueAt)}</p>
                       </div>
-                      <span className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700">
+                      <span className="inline-flex items-center rounded-xl border-[2px] border-dark bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
                         {assignment.submissionStatus ?? 'not started'}
                       </span>
                     </div>
 
-                    <div className="mt-3 rounded-md border border-slate-300 bg-white p-3">
-                      <p className="text-xs font-medium text-slate-700">Upload assignment submission</p>
+                    <div className="mt-6 rounded-xl border-[3px] border-dark bg-white p-4 shadow-[inset_2px_2px_0px_rgba(0,0,0,0.05)]">
+                      <p className="text-xs font-black uppercase tracking-widest text-dark/60">Upload Submission</p>
                       <input
                         type="file"
                         onChange={(event) => {
@@ -325,10 +334,10 @@ export default function StudentBandClientWrapper({
                           if (!fileName) return;
                           setUploadedSubmissions((current) => ({ ...current, [assignment.id]: fileName }));
                         }}
-                        className="mt-2 block w-full text-xs text-slate-700 file:mr-2 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:px-2 file:py-1"
+                        className="mt-3 block w-full text-sm font-bold text-dark file:mr-4 file:rounded-xl file:border-[3px] file:border-dark file:bg-slate-100 file:px-4 file:py-2 file:font-black file:text-dark hover:file:bg-slate-200 transition-all"
                       />
                       {uploadedSubmissions[assignment.id] ? (
-                        <p className="mt-2 text-xs text-green-700">
+                        <p className="mt-3 inline-flex rounded-xl border-[2px] border-dark bg-emerald-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-900 shadow-[2px_2px_0px_#060E1C]">
                           Uploaded: {uploadedSubmissions[assignment.id]}
                         </p>
                       ) : null}
@@ -336,45 +345,46 @@ export default function StudentBandClientWrapper({
                   </article>
                 ))
               ) : (
-                <EmptyState text="No pending assignments right now." />
+                <EmptyState text="No pending assignments right now." icon={CheckCircle2} />
               )}
             </div>
             <Link
               href="/dash/student/assignments"
-              className="mt-4 inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100"
+              className="mt-6 inline-flex items-center justify-between w-full bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4"
             >
-              Open all assignments
+              <span>Open all assignments</span>
+              <ArrowRight className="h-5 w-5" />
             </Link>
           </Panel>
         </div>
 
-        <div className="space-y-6 xl:col-span-4">
-          <Panel title="Subject progress" icon={TrendingUp}>
-            <div className="space-y-3">
+        <div className="space-y-8 xl:col-span-4 flex flex-col">
+          <Panel title="Subject progress" icon={TrendingUp} color="bg-emerald-100">
+            <div className="space-y-4">
               {progressRows.length > 0 ? (
                 progressRows.map((row) => {
                   const width = Math.max(6, Math.min(100, row.value || 0));
 
                   return (
-                    <div key={row.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                      <div className="mb-2 flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-slate-700">{row.subject}</span>
-                        <span className="text-xs font-semibold text-slate-700">{row.value.toFixed(0)}%</span>
+                    <div key={row.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                      <div className="mb-3 flex items-center justify-between gap-4">
+                        <span className="text-sm font-black text-dark tracking-tight">{row.subject}</span>
+                        <span className="inline-flex rounded-xl border-[2px] border-dark bg-white px-2 py-1 text-[10px] font-black shadow-[2px_2px_0px_#060E1C]">{row.value.toFixed(0)}%</span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                        <div className="h-full rounded-full bg-slate-700" style={{ width: `${width}%` }} />
+                      <div className="h-4 w-full rounded-full border-[3px] border-dark bg-white overflow-hidden shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]">
+                        <div className="h-full bg-emerald-400 border-r-[3px] border-dark" style={{ width: `${width}%` }} />
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <EmptyState text="Progress data will show after your first graded work." />
+                <EmptyState text="Progress data will show after your first graded work." icon={TrendingUp} />
               )}
             </div>
           </Panel>
 
-          <Panel title="Quick actions" icon={CheckCircle2}>
-            <div className="grid grid-cols-1 gap-2">
+          <Panel title="Quick actions" icon={Sparkles} color="bg-yellow/40">
+            <div className="grid grid-cols-1 gap-3">
               <QuickLink href="/dash/student/live" label="Join class" />
               <QuickLink href="/dash/student/assignments" label="Submit homework" />
               <QuickLink href="/dash/student/exam-prep" label="Practice tests" />
@@ -382,17 +392,22 @@ export default function StudentBandClientWrapper({
             </div>
           </Panel>
 
-          <Panel title="Subscription" icon={Target}>
-            <div className="space-y-2 text-sm text-slate-700">
-              <p>
-                Access: <span className="font-semibold">{billingSummary.entitlement.hasAccess ? 'Enabled' : 'Blocked'}</span>
-              </p>
-              <p>
-                Plan: <span className="font-semibold">{planName}</span>
-              </p>
-              <p>
-                Price: <span className="font-semibold">{planAmount}</span>
-              </p>
+          <Panel title="Subscription" icon={Target} color="bg-purple-100" className="mt-auto">
+            <div className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C] space-y-4">
+              <div className="flex justify-between items-center border-b-[3px] border-dark/10 pb-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Access</span>
+                <span className={`inline-flex rounded-md border-[2px] border-dark px-2 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] ${billingSummary.entitlement.hasAccess ? 'bg-emerald-300 text-dark' : 'bg-rose-100 text-rose-900'}`}>
+                  {billingSummary.entitlement.hasAccess ? 'Enabled' : 'Blocked'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center border-b-[3px] border-dark/10 pb-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Plan</span>
+                <span className="text-sm font-black text-dark">{planName}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Price</span>
+                <span className="text-sm font-black text-dark">{planAmount}</span>
+              </div>
             </div>
           </Panel>
         </div>
@@ -415,18 +430,24 @@ function FunCard({ icon, label, href, color }: { icon: string; label: string; hr
   title,
   icon: Icon,
   children,
+  color,
+  className = '',
 }: {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   children: React.ReactNode;
+  color: string;
+  className?: string;
 }) {
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-      <div className="mb-4 flex items-center gap-2">
-        <Icon className="h-4 w-4 text-slate-500" />
-        <h2 className="text-base font-semibold text-slate-900">{title}</h2>
+    <section className={`rounded-[28px] border-[4px] border-dark bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col ${className}`}>
+      <div className={`p-6 border-b-[4px] border-dark ${color} flex items-center gap-3`}>
+        <Icon className="h-6 w-6 text-dark" />
+        <h2 className="text-2xl font-black text-dark tracking-tight">{title}</h2>
       </div>
-      {children}
+      <div className="p-6 sm:p-8 flex-1 flex flex-col">
+        {children}
+      </div>
     </section>
   );
 }
@@ -435,18 +456,20 @@ function StatCard({
   label,
   value,
   icon: Icon,
+  color,
 }: {
   label: string;
   value: string;
   icon: React.ComponentType<{ className?: string }>;
+  color: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+    <div className={`rounded-2xl border-[3px] border-dark ${color} p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col`}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-medium text-slate-500">{label}</span>
-        <Icon className="h-4 w-4 text-slate-500" />
+        <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">{label}</span>
+        <Icon className="h-4 w-4 text-dark/50" />
       </div>
-      <p className="mt-2 text-lg font-semibold text-slate-900">{value}</p>
+      <p className="mt-4 text-3xl md:text-4xl font-black text-dark">{value}</p>
     </div>
   );
 }
@@ -455,14 +478,19 @@ function QuickLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center justify-between rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+      className="inline-flex items-center justify-between rounded-xl border-[3px] border-dark bg-white px-5 py-4 text-sm font-black text-dark transition-all hover:bg-slate-50 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[4px_4px_0px_#060E1C]"
     >
-      {label}
-      <span className="text-xs text-slate-500">Open</span>
+      <span>{label}</span>
+      <ArrowRight className="h-5 w-5" />
     </Link>
   );
 }
 
-function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">{text}</div>;
+function EmptyState({ text, icon: Icon }: { text: string; icon: React.ComponentType<{ className?: string }> }) {
+  return (
+    <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-10 text-center flex flex-col items-center">
+      <Icon className="h-8 w-8 text-dark/30 mb-4" />
+      <p className="text-sm font-bold text-dark/60 italic">{text}</p>
+    </div>
+  );
 }

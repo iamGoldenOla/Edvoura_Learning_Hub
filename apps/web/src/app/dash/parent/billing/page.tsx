@@ -46,11 +46,11 @@ export default async function ParentBillingPage() {
             </div>
             
             <div className="flex flex-wrap gap-4 mt-auto">
-              <Button className="bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
+              <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
                 <CreditCard className="mr-2 h-5 w-5" />
                 Upgrade via Paystack
               </Button>
-              <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
+              <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
                 <FileText className="mr-2 h-5 w-5" />
                 Update Payment Method
               </Button>
@@ -74,7 +74,7 @@ export default async function ParentBillingPage() {
             </div>
             
             <Link href="/dash/profile" className="mt-auto">
-              <Button className="w-full bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base flex justify-between items-center">
+              <Button className="w-full bg-dark border-[3px] border-dark !text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base flex justify-between items-center">
                 <span>Account Settings</span>
                 <ArrowRight className="h-5 w-5" />
               </Button>

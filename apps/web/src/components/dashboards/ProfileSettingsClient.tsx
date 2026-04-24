@@ -545,14 +545,14 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
       ) : null}
 
       <div className="flex flex-wrap items-center gap-4 pt-6 border-t-[3px] border-dark/10">
-        <Button className="bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" disabled={isSaving} onClick={handleSave}>
+        <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" disabled={isSaving} onClick={handleSave}>
           {isSaving ? 'Saving...' : 'Save Profile Settings'}
         </Button>
-        <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" onClick={() => alert('Use your account auth page to change password.')}>
+        <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" onClick={() => alert('Use your account auth page to change password.')}>
           Change Password
         </Button>
       </div>
-      {statusMessage ? <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C] mt-4">{statusMessage}</div> : null}
+      {statusMessage ? <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm font-black !text-dark shadow-[4px_4px_0px_#060E1C] mt-4">{statusMessage}</div> : null}
     </div>
   );
 }

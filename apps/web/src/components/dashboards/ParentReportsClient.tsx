@@ -180,12 +180,12 @@ export default function ParentReportsClient({ linkedChildren }: { linkedChildren
 
       <div className="flex flex-wrap gap-4 pt-6 border-t-[4px] border-dark/10">
         <Link href="/dash/parent/messages">
-          <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
+          <Button className="bg-yellow border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
             Message Tutor About Report
           </Button>
         </Link>
         <Link href="/dash/parent/billing">
-          <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
+          <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
             Open Billing and Subscription
           </Button>
         </Link>
