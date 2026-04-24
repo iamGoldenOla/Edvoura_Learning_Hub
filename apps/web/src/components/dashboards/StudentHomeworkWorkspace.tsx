@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { useBand } from './BandContext';
+import ChildHomeworkView from './ChildHomeworkView';
 import StudentAssignmentUploadCard from './StudentAssignmentUploadCard';
 
 const formatDate = (value: string | null) => {
@@ -30,7 +32,12 @@ export default function StudentHomeworkWorkspace({
 }: { 
   assignments: Assignment[] 
 }) {
+  const { band } = useBand();
   const [activeTab, setActiveTab] = useState<'todo' | 'graded'>('todo');
+
+  if (band === '1-3') {
+    return <ChildHomeworkView assignments={assignments} />;
+  }
 
   const pending = assignments.filter(
     (a) =>

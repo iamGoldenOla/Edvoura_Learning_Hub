@@ -1,4 +1,5 @@
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
+import { PlayCircle, Clock, Video, Sparkles } from 'lucide-react';
 
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
@@ -54,32 +55,42 @@ export default async function LivePage() {
             dashboard.upcomingLessons.map((lesson) => (
               <article key={lesson.id} className="border-[3px] border-dark rounded-2xl bg-white p-5">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] tracking-[0.25em] text-dark/40">{lesson.subjectName}</p>
-                    <h2 className="text-2xl font-black text-dark">{lesson.title}</h2>
-                    <p className="text-sm normal-case text-dark/70 font-semibold">{lesson.classTitle}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                       <span className="px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded text-[9px] font-black uppercase tracking-widest">{lesson.subjectName}</span>
+                       <span className="px-2 py-0.5 bg-green-100 text-green-600 rounded text-[9px] font-black uppercase tracking-widest">{lesson.status}</span>
+                    </div>
+                    <h2 className="text-3xl font-black text-dark tracking-tight">{lesson.title}</h2>
+                    <p className="text-sm normal-case text-dark/50 font-bold">{lesson.classTitle}</p>
                   </div>
-                  <div className="text-sm font-black text-dark">{formatDateTime(lesson.scheduledStartAt)}</div>
+                  
+                  <div className="bg-slate-50 border-[3px] border-dark rounded-2xl p-4 flex flex-col items-center justify-center min-w-[140px]">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-dark/30 mb-1">Starts At</div>
+                    <div className="text-lg font-black text-dark">{new Date(lesson.scheduledStartAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-3 text-[11px]">
-                  <span className="px-3 py-2 border-[2px] border-dark bg-off-white">
-                    Ends {formatDateTime(lesson.scheduledEndAt)}
-                  </span>
-                  <span className="px-3 py-2 border-[2px] border-dark bg-off-white">
-                    {lesson.provider.replace('_', ' ')}
-                  </span>
-                  <span className="px-3 py-2 border-[2px] border-dark bg-off-white">{lesson.status}</span>
+                <div className="mt-6 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 text-xs font-bold text-dark/40">
+                     <div className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(lesson.scheduledStartAt).toLocaleDateString()}</div>
+                     <div className="flex items-center gap-1"><Video className="h-3 w-3" /> {lesson.provider.replace('_', ' ')}</div>
+                  </div>
+                  
                   {lesson.joinUrl ? (
                     <a
                       href={lesson.joinUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="px-6 py-3 border-[3px] border-dark bg-yellow font-black uppercase text-[12px] tracking-widest shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all animate-bounce"
+                      className="px-10 py-4 border-[4px] border-dark bg-yellow font-black uppercase text-sm tracking-widest shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all animate-pulse flex items-center gap-3"
                     >
-                      Join Session Now
+                      <PlayCircle className="h-6 w-6" />
+                      Join Now!
                     </a>
-                  ) : null}
+                  ) : (
+                    <div className="px-8 py-3 border-[3px] border-dark bg-slate-100 text-slate-400 font-black uppercase text-xs tracking-widest">
+                      Getting Ready...
+                    </div>
+                  )}
                 </div>
               </article>
             ))
