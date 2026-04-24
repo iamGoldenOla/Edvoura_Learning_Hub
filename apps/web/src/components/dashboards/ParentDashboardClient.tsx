@@ -7,12 +7,11 @@ import {
   BookOpen,
   CalendarDays,
   CreditCard,
-  Flame,
   MessageCircle,
+  ClipboardList,
+  Layers,
+  LineChart,
   ShieldAlert,
-  Sparkles,
-  Star,
-  Trophy,
   Users,
   Settings,
   ArrowRight,
@@ -53,14 +52,35 @@ type BillingSummary = {
   }>;
 };
 
+type ChildSummary = {
+  childUserId: string;
+  alerts: Array<{
+    id: string;
+    title: string;
+    detail: string;
+  }>;
+  upcomingLessons: number;
+  attendanceRate: number | null;
+  pendingAssignments: number;
+  completionRate: number | null;
+  activeClasses: number;
+  gradedSubmissions: number;
+  averageScore: number | null;
+  snapshotCount: number;
+};
+
+const formatPercent = (value: number | null) => (value != null ? `${Math.round(value)}%` : '--');
+
 export default function ParentDashboardClient({
   parentName,
   linkedChildren,
   billingSummary,
+  childSummaries,
 }: {
   parentName: string;
   linkedChildren: ParentChild[];
   billingSummary: BillingSummary | null;
+  childSummaries: ChildSummary[];
 }) {
   const [activeChildId, setActiveChildId] = useState<string>(linkedChildren[0]?.userId ?? '');
 
@@ -69,41 +89,10 @@ export default function ParentDashboardClient({
     [linkedChildren, activeChildId],
   );
 
-  const activeIndex = Math.max(
-    0,
-    linkedChildren.findIndex((child) => child.userId === activeChild?.userId),
+  const activeSummary = useMemo(
+    () => childSummaries.find((summary) => summary.childUserId === activeChild?.userId) ?? childSummaries[0] ?? null,
+    [activeChild?.userId, childSummaries],
   );
-
-  const engagement = useMemo(() => {
-    const base = (activeIndex + 3) * 7;
-    return {
-      xp: 940 + base * 5,
-      badges: 8 + (activeIndex % 4),
-      streak: 5 + (activeIndex % 5),
-      challengesCompleted: 11 + (activeIndex % 6),
-      achievementProgress: Math.min(96, 66 + base % 24),
-      attendanceRate: Math.min(99, 84 + (base % 13)),
-      assignmentCompletion: Math.min(98, 76 + (base % 18)),
-    };
-  }, [activeIndex]);
-
-  const alerts = useMemo(() => {
-    if (!activeChild) return [];
-    return [
-      {
-        title: 'Low Engagement Alert',
-        detail: `${activeChild.fullName ?? 'Child'} had lighter activity in the last 48 hours.`,
-      },
-      {
-        title: 'Missed-Lesson Alert',
-        detail: `1 scheduled lesson was marked absent this week for ${activeChild.fullName ?? 'this child'}.`,
-      },
-      {
-        title: 'Overdue Assignment Alert',
-        detail: `2 assignments are pending submission in ${activeChild.gradeLevelName}.`,
-      },
-    ];
-  }, [activeChild]);
 
   const invoices = billingSummary?.invoices ?? [];
   const subscription = billingSummary?.subscription;
@@ -213,8 +202,8 @@ export default function ParentDashboardClient({
             </div>
           </div>
           <div className="p-6 space-y-4">
-            {alerts.length > 0 ? (
-              alerts.map((alertItem) => (
+            {activeSummary?.alerts.length ? (
+              activeSummary.alerts.map((alertItem) => (
                 <div key={alertItem.title} className="rounded-2xl border-[3px] border-dark bg-rose-50 p-4 shadow-[4px_4px_0px_#060E1C]">
                   <p className="flex items-center gap-2 text-sm font-black text-rose-600 uppercase tracking-widest">
                     <ShieldAlert className="h-4 w-4" />
@@ -243,11 +232,11 @@ export default function ParentDashboardClient({
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Upcoming Lessons</p>
-                <p className="mt-2 text-4xl font-black text-dark">{2 + (activeIndex % 3)}</p>
+                <p className="mt-2 text-4xl font-black text-dark">{activeSummary?.upcomingLessons ?? 0}</p>
               </div>
               <div className="rounded-2xl border-[3px] border-dark bg-emerald-100 p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Attendance Rate</p>
-                <p className="mt-2 text-4xl font-black text-emerald-800">{engagement.attendanceRate}%</p>
+                <p className="mt-2 text-4xl font-black text-emerald-800">{formatPercent(activeSummary?.attendanceRate ?? null)}</p>
               </div>
             </div>
             <Link href="/dash/parent/monitor" className="flex items-center justify-between rounded-xl border-[3px] border-dark bg-dark text-white px-5 py-4 text-sm font-black hover:bg-yellow hover:text-dark shadow-[4px_4px_0px_#060E1C] hover:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none active:scale-95">
@@ -267,11 +256,11 @@ export default function ParentDashboardClient({
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Assignments Due</p>
-                <p className="mt-2 text-4xl font-black text-dark">{1 + (activeIndex % 4)}</p>
+                <p className="mt-2 text-4xl font-black text-dark">{activeSummary?.pendingAssignments ?? 0}</p>
               </div>
               <div className="rounded-2xl border-[3px] border-dark bg-blue-100 p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Completion Rate</p>
-                <p className="mt-2 text-4xl font-black text-blue-800">{engagement.assignmentCompletion}%</p>
+                <p className="mt-2 text-4xl font-black text-blue-800">{formatPercent(activeSummary?.completionRate ?? null)}</p>
               </div>
             </div>
             <Link href="/dash/parent/reports" className="flex items-center justify-between rounded-xl border-[3px] border-dark bg-dark text-white px-5 py-4 text-sm font-black hover:bg-yellow hover:text-dark shadow-[4px_4px_0px_#060E1C] hover:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] transition-all hover:shadow-none active:scale-95">
@@ -286,39 +275,39 @@ export default function ParentDashboardClient({
         {/* Rewards & Engagement */}
         <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
-            <Sparkles className="h-6 w-6 text-dark" />
-            <h2 className="text-2xl font-black text-dark tracking-tight">Rewards & Engagement</h2>
+            <LineChart className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark tracking-tight">Progress Signals</h2>
           </div>
           <div className="p-6 sm:p-8 space-y-6">
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="rounded-2xl border-[3px] border-dark bg-purple-100 p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
-                  <Trophy className="h-4 w-4" /> Child XP
+                  <ClipboardList className="h-4 w-4" /> Graded Work
                 </p>
-                <p className="mt-2 text-3xl font-black text-dark">{engagement.xp}</p>
+                <p className="mt-2 text-3xl font-black text-dark">{activeSummary?.gradedSubmissions ?? 0}</p>
               </div>
               <div className="rounded-2xl border-[3px] border-dark bg-blue-100 p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
-                  <Star className="h-4 w-4" /> Badges
+                  <Layers className="h-4 w-4" /> Active Classes
                 </p>
-                <p className="mt-2 text-3xl font-black text-dark">{engagement.badges}</p>
+                <p className="mt-2 text-3xl font-black text-dark">{activeSummary?.activeClasses ?? 0}</p>
               </div>
               <div className="rounded-2xl border-[3px] border-dark bg-rose-100 p-5 shadow-[4px_4px_0px_#060E1C]">
                 <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
-                  <Flame className="h-4 w-4" /> Streak
+                  <BookOpen className="h-4 w-4" /> Avg Score
                 </p>
-                <p className="mt-2 text-3xl font-black text-dark">{engagement.streak} days</p>
+                <p className="mt-2 text-3xl font-black text-dark">{formatPercent(activeSummary?.averageScore ?? null)}</p>
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Challenge Completions</p>
-                <p className="mt-2 text-2xl font-black text-dark">{engagement.challengesCompleted}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Unread Alerts</p>
+                <p className="mt-2 text-2xl font-black text-dark">{activeSummary?.alerts.length ?? 0}</p>
               </div>
               <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Achievement Progress</p>
-                <p className="mt-2 text-2xl font-black text-dark">{engagement.achievementProgress}%</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Progress Snapshots</p>
+                <p className="mt-2 text-2xl font-black text-dark">{activeSummary?.snapshotCount ?? 0}</p>
               </div>
             </div>
           </div>
