@@ -32,6 +32,7 @@ import {
   UserCircle2,
   Users,
   Video,
+  Volume2,
 } from 'lucide-react';
 
 import { useBand } from './BandContext';
@@ -78,7 +79,7 @@ const KNOWN_STUDENT_ROUTES = new Set([
   '/dash/student/tracker',
   '/dash/student/tutor',
   '/dash/student/tutor-chat',
-  '/dash/student/videos',
+  '/dash/student/spelling-bee',
   '/dash/profile',
 ]);
 
@@ -89,27 +90,25 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       items: [
         { href: '/dash/student', icon: Layout, label: 'Home', exact: true },
         { href: '/dash/student/classes', icon: BookOpen, label: 'Classes' },
-        { href: '/dash/student/live', icon: Video, label: 'Join Lesson' },
+        { href: '/dash/student/spelling-bee', icon: Volume2, label: 'Spelling Bee' },
         { href: '/dash/student/homework', icon: ClipboardList, label: 'Homework' },
       ],
     },
     {
-      title: 'Fun and Practice',
+      title: 'Fun Zone',
       items: [
-        { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
         { href: '/dash/student/flashcards', icon: Layers, label: 'Flashcards' },
         { href: '/dash/student/read', icon: BookOpen, label: 'Read' },
-        { href: '/dash/student/stories', icon: ScrollText, label: 'Stories' },
+        { href: '/dash/student/stories', icon: PlayCircle, label: 'Stories' },
+        { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
       ],
     },
     {
-      title: 'Rewards',
+      title: 'My Growth',
       items: [
-        { href: '/dash/student/garden', icon: Sparkles, label: 'Garden' },
-        { href: '/dash/student/stickers', icon: Sticker, label: 'Stickers' },
-        { href: '/dash/student/rewards', icon: Star, label: 'Rewards' },
-        { href: '/dash/student/tracker', icon: LineChart, label: 'Progress' },
-        { href: '/dash/student/streak', icon: Flame, label: 'Streak' },
+        { href: '/dash/student/garden', icon: Sparkles, label: 'Magic Garden' },
+        { href: '/dash/student/stickers', icon: Trophy, label: 'Prize Box' },
+        { href: '/dash/student/streak', icon: Flame, label: 'My Streak' },
       ],
     },
     {

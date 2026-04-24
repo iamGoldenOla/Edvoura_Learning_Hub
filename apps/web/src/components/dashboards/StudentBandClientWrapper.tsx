@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, Languages, BrainCircuit, Volume2, Mic2, PlayCircle } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, Languages, BrainCircuit, Volume2, Mic2, PlayCircle, Star, Flame, ArrowRight } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import StudentLiveContentPanel from './StudentLiveContentPanel';
@@ -134,6 +134,109 @@ export default function StudentBandClientWrapper({
     billingSummary.subscription?.planCurrencyCode ?? billingSummary.plans[0]?.currencyCode ?? null,
   );
 
+  if (band === '1-3') {
+    const stars = dashboard.stats.completedAssignments * 8 + dashboard.stats.activeClasses * 4;
+    const stickers = Math.max(2, dashboard.stats.completedAssignments);
+    const streak = Math.max(1, dashboard.progress.length);
+
+    return (
+      <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+        <header className="bg-white border-[4px] border-dark rounded-[40px] p-8 md:p-12 shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="text-center md:text-left">
+            <h1 className="text-4xl md:text-6xl font-heading font-black text-dark tracking-tight leading-none">
+              Hi, {dashboard.profile.fullName?.split(' ')[0] || 'Explorer'}! 👋
+            </h1>
+            <p className="mt-4 text-xl md:text-2xl font-bold text-dark/60 italic">Ready for your magic missions today?</p>
+          </div>
+          <div className="flex gap-4">
+             <div className="bg-yellow border-[4px] border-dark rounded-[32px] p-6 shadow-[6px_6px_0px_#060E1C] text-center min-w-[120px]">
+                <Star className="h-8 w-8 text-dark mx-auto mb-2 fill-current" />
+                <p className="text-3xl font-black text-dark">{stars}</p>
+             </div>
+             <div className="bg-orange-400 border-[4px] border-dark rounded-[32px] p-6 shadow-[6px_6px_0px_#060E1C] text-center min-w-[120px]">
+                <Flame className="h-8 w-8 text-white mx-auto mb-2 fill-current" />
+                <p className="text-3xl font-black text-white">{streak}</p>
+             </div>
+          </div>
+        </header>
+
+        {/* Quick Fun Links */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <FunCard icon="🐝" label="Spelling Bee" href="/dash/student/spelling-bee" color="bg-yellow" />
+          <FunCard icon="🎮" label="Play Zone" href="/dash/student/games" color="bg-green-400" />
+          <FunCard icon="📖" label="Read Corner" href="/dash/student/read" color="bg-blue-400" />
+          <FunCard icon="📺" label="Stories" href="/dash/student/stories" color="bg-red-400" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+           {/* Active Missions */}
+           <div className="lg:col-span-2 space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Today's Missions</h2>
+                <Link href="/dash/student/homework" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">See All</Link>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {dashboard.assignments.slice(0, 2).map((hw: any) => (
+                  <div key={hw.id} className="bg-white border-[4px] border-dark rounded-[40px] p-8 shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col">
+                     <div className="h-14 w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-3xl mb-6">
+                        📚
+                     </div>
+                     <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{hw.subjectName}</p>
+                     <h3 className="text-2xl font-black text-dark mb-6 flex-1">{hw.title}</h3>
+                     <Link 
+                       href="/dash/student/homework"
+                       className="w-full py-4 bg-indigo-600 text-white border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] text-center"
+                     >
+                       Start Now!
+                     </Link>
+                  </div>
+                ))}
+              </div>
+           </div>
+
+           {/* Live Now / Next */}
+           <div className="space-y-6">
+              <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Live Class</h2>
+              {nextLesson ? (
+                <div className="bg-white border-[4px] border-dark rounded-[40px] shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+                   <div className="bg-red-500 p-4 border-b-[4px] border-dark text-center">
+                      <span className="text-xs font-black text-white uppercase tracking-widest animate-pulse">
+                         Live in {countdownText(nextLesson.scheduledStartAt)}
+                      </span>
+                   </div>
+                   <div className="p-8 text-center space-y-4">
+                      <div className="h-20 w-20 rounded-full bg-slate-50 border-[3px] border-dark flex items-center justify-center text-4xl mx-auto">
+                         👨‍🏫
+                      </div>
+                      <h3 className="text-2xl font-black text-dark">{nextLesson.title}</h3>
+                      <p className="text-sm font-bold text-dark/40">{nextLesson.classTitle}</p>
+                      
+                      {nextLesson.joinUrl ? (
+                        <a
+                          href={nextLesson.joinUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block w-full py-5 bg-yellow text-dark border-[4px] border-dark rounded-2xl font-black uppercase text-sm tracking-widest shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                        >
+                          Join Class Now
+                        </a>
+                      ) : (
+                        <div className="py-4 text-sm font-bold text-dark/30 italic">Getting the room ready...</div>
+                      )}
+                   </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 border-[4px] border-dark border-dashed rounded-[40px] p-12 text-center">
+                   <p className="font-bold text-dark/30 italic">No classes today. Take a break!</p>
+                </div>
+              )}
+           </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 pb-10">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -193,56 +296,6 @@ export default function StudentBandClientWrapper({
                 <p className="text-sm text-slate-500">No live classes right now.</p>
               </div>
             )}
-          </Panel>
-
-          {/* Simplified & Interactive Daily Vocabulary */}
-          <Panel title="Daily Spelling Challenge" icon={Languages}>
-            <div className="space-y-6">
-              <div className="rounded-2xl bg-blue-50 p-6 text-center border-2 border-blue-100">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-4">Listen & Spell</h3>
-                <div className="flex flex-col items-center gap-4">
-                  <button 
-                    onClick={() => speakWord(dailyWords[0])}
-                    className="h-16 w-16 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 active:scale-95 transition-all"
-                  >
-                    <Volume2 className="h-8 w-8" />
-                  </button>
-                  <p className="text-[10px] font-medium text-blue-400 italic">Click to hear today&apos;s word</p>
-                  
-                  <div className="w-full max-w-[240px] mt-2">
-                    <input 
-                      type="text"
-                      value={spellingInput}
-                      onChange={(e) => setSpellingInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && checkSpelling(dailyWords[0])}
-                      placeholder="Type the word here..."
-                      className="w-full rounded-xl border-2 border-blue-200 px-4 py-3 text-center text-lg font-bold text-slate-800 focus:border-blue-500 focus:outline-none transition-all"
-                    />
-                    {spellingFeedback.type && (
-                      <p className={`mt-2 text-xs font-bold ${spellingFeedback.type === 'success' ? 'text-green-600' : 'text-red-500'} animate-bounce`}>
-                        {spellingFeedback.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Today&apos;s Word List</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {dailyWords.map((word, idx) => (
-                    <button 
-                      key={idx} 
-                      onClick={() => speakWord(word)}
-                      className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-300 hover:bg-white transition-all group"
-                    >
-                      <span className="text-sm font-bold text-slate-700">{word}</span>
-                      <Volume2 className="h-3 w-3 text-slate-300 group-hover:text-blue-500" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
           </Panel>
 
           <Panel title="Pending assignments" icon={BookOpen}>
@@ -348,7 +401,17 @@ export default function StudentBandClientWrapper({
   );
 }
 
-function Panel({
+function FunCard({ icon, label, href, color }: { icon: string; label: string; href: string; color: string }) {
+  return (
+    <Link 
+      href={href}
+      className={`${color} border-[4px] border-dark rounded-[32px] p-6 shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex flex-col items-center text-center group`}
+    >
+       <div className="text-4xl mb-2 group-hover:scale-125 transition-transform">{icon}</div>
+       <span className="text-[10px] font-black uppercase tracking-widest text-dark">{label}</span>
+    </Link>
+  );
+}function Panel({
   title,
   icon: Icon,
   children,
