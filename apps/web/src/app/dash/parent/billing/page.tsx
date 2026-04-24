@@ -19,7 +19,7 @@ export default async function ParentBillingPage() {
             Billing & Subscription
           </h1>
           <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Manage plan status, payment history, and account billing records.
+            Manage Paystack subscription status, payment history, and account billing records.
           </p>
         </div>
       </div>
@@ -46,14 +46,18 @@ export default async function ParentBillingPage() {
             </div>
             
             <div className="flex flex-wrap gap-4 mt-auto">
-              <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
-                <CreditCard className="mr-2 h-5 w-5" />
-                Upgrade via Paystack
-              </Button>
-              <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
-                <FileText className="mr-2 h-5 w-5" />
-                Update Payment Method
-              </Button>
+              <Link href="https://paystack.com" target="_blank" rel="noreferrer">
+                <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
+                  <CreditCard className="mr-2 h-5 w-5" />
+                  Upgrade via Paystack
+                </Button>
+              </Link>
+              <Link href="https://paystack.com/manage" target="_blank" rel="noreferrer">
+                <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Manage Paystack Billing
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

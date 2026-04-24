@@ -39,15 +39,15 @@ export default async function FinancePage() {
         <div className="p-8 border-b-[4px] border-dark bg-yellow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark flex items-center gap-3">
-              <LayoutGrid className="w-10 h-10 text-dark" /> Finance Dashboard
+              <LayoutGrid className="w-10 h-10 text-dark" /> Finance & Billing
             </h1>
             <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-              Secure enterprise-grade overview for Finance records and actions.
+              Secure enterprise-grade overview for Paystack transactions, subscriptions, and payouts.
             </p>
           </div>
           <div className="flex gap-3">
-            <Link href="/dash/admin/finance?export=report" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 inline-flex items-center">
-              Export Report
+            <Link href="https://dashboard.paystack.com" target="_blank" rel="noreferrer" className="bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 inline-flex items-center">
+              Open Paystack Console
             </Link>
           </div>
         </div>
@@ -88,11 +88,16 @@ export default async function FinancePage() {
 
       {/* Data Table */}
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-6 border-b-[4px] border-dark bg-rose-100 flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-black text-dark tracking-tight">Recent Invoices</h2>
-          <Link href="/dash/admin/finance?view=all" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 py-2 inline-flex items-center text-sm">
-            View All
-          </Link>
+        <div className="p-6 border-b-[4px] border-dark bg-rose-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <h2 className="text-2xl font-black text-dark tracking-tight">Recent Paystack Invoices</h2>
+          <div className="flex gap-3">
+            <Link href="/dash/admin/finance?action=sync-paystack" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 py-2 inline-flex items-center text-sm">
+              Sync Paystack
+            </Link>
+            <Link href="/dash/admin/finance?view=all" className="bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 py-2 inline-flex items-center text-sm">
+              View All
+            </Link>
+          </div>
         </div>
         <div className="p-0 overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[600px]">
