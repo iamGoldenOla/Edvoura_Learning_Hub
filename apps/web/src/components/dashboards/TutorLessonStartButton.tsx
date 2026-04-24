@@ -18,7 +18,7 @@ export default function TutorLessonStartButton({ lessonId, status }: { lessonId:
       if (result?.hostUrl) {
         window.open(result.hostUrl, '_blank');
       } else {
-        alert('Lesson started! Students can now join. Note: No meeting link was found for this session, please add one manually if needed.');
+        alert('Lesson started! Your classroom is being prepared. If the room doesn\'t open automatically, please check your pop-up blocker or use the Join Room button.');
       }
     } catch (err) {
       console.error(err);

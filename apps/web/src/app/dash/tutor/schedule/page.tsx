@@ -8,7 +8,9 @@ import {
   Trash2, 
   ChevronRight,
   Info,
-  CalendarCheck
+  CalendarCheck,
+  CheckCircle2,
+  Users
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -61,307 +63,282 @@ export default async function TutorSchedulePage(props: {
   const upcomingSessions = typedSchedule.filter((session) => new Date(session.scheduled_end_at) >= new Date());
 
   return (
-    <div className="mx-auto max-w-[1600px] p-6 sm:p-10 animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-10">
-      
-      {/* Premium Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 border-b border-slate-200 pb-10">
-        <div className="max-w-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 bg-edvoura-gold/10 rounded-2xl">
-               <CalendarCheck className="w-8 h-8 text-edvoura-gold" />
+    <div className="bg-[#F8FAFC] min-h-screen">
+      {/* Solid Header */}
+      <div className="bg-[#0F172A] text-white">
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                 <CalendarCheck className="w-6 h-6 text-[#EAB308]" />
+                 <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#94A3B8]">Teaching Management</span>
+              </div>
+              <h1 className="text-4xl font-black tracking-tight">Master Schedule</h1>
+              <p className="text-[#94A3B8] mt-3 max-w-xl font-medium">
+                Organize your virtual classrooms and manage recurring sessions from one solid command center.
+              </p>
             </div>
-            <h1 className="text-4xl font-black text-edvoura-navy tracking-tight">Master Schedule</h1>
-          </div>
-          <p className="text-slate-500 text-lg leading-relaxed">
-            Organize and launch your virtual classrooms. Schedule recurring sessions or create one-off teaching slots.
-          </p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-          <div className="group relative">
-            <Link href="/dash/tutor/schedule?action=sync-calendar">
-              <Button variant="outline" className="h-14 px-6 border-slate-200 text-slate-600 bg-white shadow-sm hover:bg-slate-50 rounded-2xl font-bold flex items-center gap-2">
-                <Clock className="w-5 h-5 text-slate-400" /> Google Calendar Sync
-              </Button>
-            </Link>
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1 bg-slate-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              Keep your personal calendar updated with lesson reminders
+            
+            <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              <Link href="/dash/tutor/schedule?action=sync-calendar">
+                <Button variant="outline" className="h-12 px-6 border-[#334155] text-[#94A3B8] bg-transparent hover:bg-[#1E293B] hover:text-white rounded-xl font-bold flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Sync Calendar
+                </Button>
+              </Link>
+              <a href="#scheduler" className="flex-1 lg:flex-none">
+                <Button className="h-12 px-8 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl font-black w-full flex items-center gap-2 shadow-lg shadow-blue-900/20">
+                  <Plus className="w-5 h-5" /> New Session
+                </Button>
+              </a>
             </div>
           </div>
-          
-          <a href="#scheduler" className="flex-1 lg:flex-none">
-            <Button className="h-14 px-8 bg-edvoura-navy hover:bg-slate-800 text-white shadow-xl shadow-edvoura-navy/10 rounded-2xl font-bold w-full flex items-center gap-2">
-              <Plus className="w-5 h-5" /> Open Time Slot
-            </Button>
-          </a>
         </div>
       </div>
 
-      {/* Notifications */}
-      {created && (
-        <div className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-6 text-emerald-900 shadow-sm animate-in zoom-in-95">
-          <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-500 flex items-center justify-center text-white">
-            <CheckCircle2 className="h-6 w-6" />
+      <div className="mx-auto max-w-7xl px-6 py-12 space-y-10">
+        {/* Notifications */}
+        {created && (
+          <div className="flex items-center gap-4 rounded-xl border-l-4 border-emerald-500 bg-white p-6 shadow-md animate-in slide-in-from-top-2">
+            <div className="h-10 w-10 shrink-0 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-black text-slate-900">Session Published Successfully</p>
+              <p className="text-sm text-slate-500">The lesson is now live on the student dashboards.</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold">Session Published Successfully</p>
-            <p className="text-sm text-emerald-700/80">Students enrolled in the class can now see this on their live dashboard.</p>
-          </div>
-        </div>
-      )}
+        )}
 
-      {errorParam && (
-        <div className="flex items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/50 p-6 text-rose-900 shadow-sm animate-in zoom-in-95">
-           <div className="h-10 w-10 shrink-0 rounded-full bg-rose-500 flex items-center justify-center text-white">
-            <Info className="h-6 w-6" />
+        {errorParam && (
+          <div className="flex items-center gap-4 rounded-xl border-l-4 border-rose-500 bg-white p-6 shadow-md animate-in slide-in-from-top-2">
+             <div className="h-10 w-10 shrink-0 rounded-full bg-rose-500 flex items-center justify-center text-white">
+              <Info className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-black text-slate-900">Creation Error</p>
+              <p className="text-sm text-slate-500 font-medium">{decodeURIComponent(errorParam)}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold">Execution Error</p>
-            <p className="text-sm text-rose-700/80">{decodeURIComponent(errorParam)}</p>
-          </div>
-        </div>
-      )}
+        )}
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-10 items-start">
-        
-        {/* Session List Area */}
-        <section className="space-y-8">
-          <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/30 p-10">
-            <div className="flex items-center justify-between gap-6 mb-10">
-              <div>
-                <h2 className="text-2xl font-black text-edvoura-navy">Upcoming Sessions</h2>
-                <p className="text-slate-500 mt-2">Sessions scheduled for the next 12 weeks.</p>
-              </div>
-              <div className="px-5 py-2.5 rounded-2xl bg-slate-100 text-sm font-black text-slate-700 tracking-tight">
-                {upcomingSessions.length} Active
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          
+          {/* Session List Area */}
+          <section className="lg:col-span-7 space-y-6">
+            <div className="flex items-center justify-between px-2">
+               <h2 className="text-xl font-black text-slate-900">Upcoming Live Sessions</h2>
+               <span className="bg-white border border-slate-200 px-4 py-1.5 rounded-full text-xs font-black text-slate-600 shadow-sm">
+                  {upcomingSessions.length} Active
+               </span>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {upcomingSessions.length > 0 ? (
                 upcomingSessions.map((session) => (
-                  <article key={session.id} className="group relative rounded-3xl border border-slate-100 bg-slate-50/40 p-8 transition-all hover:bg-white hover:shadow-xl hover:shadow-slate-200/40 hover:-translate-y-1">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
-                      <div className="flex gap-6">
-                         <div className="hidden sm:flex flex-col items-center justify-center h-20 w-20 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{new Date(session.scheduled_start_at).toLocaleString('default', { month: 'short' })}</span>
-                            <span className="text-2xl font-black text-slate-900">{new Date(session.scheduled_start_at).getDate()}</span>
-                         </div>
-                         <div>
-                            <div className="flex items-center gap-2 mb-2">
-                               <span className="px-3 py-1 bg-edvoura-navy/5 text-edvoura-navy text-[10px] font-black uppercase tracking-widest rounded-lg">
-                                 {session.subject_name}
-                               </span>
-                               <span className="px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-lg">
-                                 {session.grade_level_name}
-                               </span>
-                            </div>
-                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">{session.title}</h3>
-                            <div className="mt-3 flex items-center gap-4 text-sm font-bold text-slate-500">
-                               <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-slate-400" /> {formatDateTime(session.scheduled_start_at)}</span>
-                               <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-                               <span>{session.class_title}</span>
-                            </div>
-                         </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap items-center gap-3">
-                         <TutorLessonStartButton lessonId={session.id} status={session.status} />
-                         
-                         {session.join_url && (
-                           <a href={session.join_url} target="_blank" rel="noreferrer">
-                             <Button className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-600/20 font-bold flex items-center gap-2">
-                               <Video className="w-5 h-5" /> Join Meet
-                             </Button>
-                           </a>
-                         )}
-                         
-                         <DeleteLessonButton lessonId={session.id} />
-                      </div>
+                  <article key={session.id} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex flex-col sm:flex-row gap-6">
+                       {/* Date Label */}
+                       <div className="flex flex-col items-center justify-center h-20 w-20 bg-slate-50 rounded-xl border border-slate-100 shrink-0">
+                          <span className="text-[10px] font-black uppercase text-slate-400">{new Date(session.scheduled_start_at).toLocaleString('default', { month: 'short' })}</span>
+                          <span className="text-2xl font-black text-slate-900">{new Date(session.scheduled_start_at).getDate()}</span>
+                       </div>
+
+                       <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                             <span className="px-2 py-0.5 bg-[#F1F5F9] text-[#475569] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#E2E8F0]">
+                               {session.subject_name}
+                             </span>
+                             <span className="px-2 py-0.5 bg-[#F1F5F9] text-[#475569] text-[9px] font-black uppercase tracking-widest rounded-md border border-[#E2E8F0]">
+                               {session.grade_level_name}
+                             </span>
+                          </div>
+                          <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">{session.title}</h3>
+                          <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-bold text-slate-500">
+                             <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> {formatDateTime(session.scheduled_start_at)}</span>
+                             <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-slate-400" /> Class: {session.class_title}</span>
+                          </div>
+                       </div>
                     </div>
 
-                    <div className="mt-8 flex items-center gap-4 border-t border-slate-100 pt-6">
-                       <div className="flex -space-x-2">
-                          {[1,2,3].map(i => (
-                             <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-slate-200"></div>
-                          ))}
-                          <div className="h-8 w-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">+12</div>
+                    <div className="mt-6 pt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+                       <div className="flex items-center gap-3">
+                          <TutorLessonStartButton lessonId={session.id} status={session.status} />
+                          {session.join_url && (
+                             <a href={session.join_url} target="_blank" rel="noreferrer">
+                                <Button variant="outline" className="h-10 px-5 border-slate-200 text-slate-700 bg-white hover:bg-slate-50 rounded-xl font-bold flex items-center gap-2">
+                                   <Video className="w-4 h-4" /> Join Room
+                                </Button>
+                             </a>
+                          )}
                        </div>
-                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Enrolled Students Ready</p>
+                       <DeleteLessonButton lessonId={session.id} />
                     </div>
                   </article>
                 ))
               ) : (
-                <div className="rounded-[2rem] border-2 border-dashed border-slate-100 bg-slate-50/50 p-20 text-center">
-                  <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-white shadow-xl shadow-slate-200/50 text-slate-200">
-                    <CalendarIcon className="h-12 w-12" />
+                <div className="bg-white rounded-3xl border-2 border-dashed border-slate-200 p-20 text-center">
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50 text-slate-300">
+                    <CalendarIcon className="h-8 w-8" />
                   </div>
-                  <h3 className="text-xl font-black text-slate-900">Your schedule is clear</h3>
-                  <p className="mt-3 text-slate-500 max-w-sm mx-auto">
-                    Publish your first live teaching slot using the form on the right to start engaging with your students.
+                  <h3 className="text-lg font-black text-slate-900">Your schedule is clear</h3>
+                  <p className="mt-2 text-slate-500 text-sm max-w-xs mx-auto font-medium">
+                    Create your first live teaching slot using the form on the right.
                   </p>
                 </div>
               )}
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Scheduler Form Area */}
-        <section id="scheduler" className="space-y-8 sticky top-10">
-          <div className="rounded-[2.5rem] border border-slate-200/60 bg-white shadow-2xl shadow-slate-200/30 p-10">
-            <h2 className="text-2xl font-black text-edvoura-navy">Publish Live Slot</h2>
-            <p className="mt-3 text-slate-500 leading-relaxed">
-              Define your session details and recurrence. Everything will sync instantly to the student portal.
-            </p>
+          {/* Scheduler Form Area */}
+          <section id="scheduler" className="lg:col-span-5 sticky top-10">
+            <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Publish Live Slot</h2>
+              <p className="mt-2 text-slate-500 text-sm font-medium">
+                Fill in the details below to sync a new session to the student portal.
+              </p>
 
-            <form action={createTutorLiveSlot} className="mt-10 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="subjectId" className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    Subject
-                  </label>
-                  <select
-                    id="subjectId"
-                    name="subjectId"
-                    required
-                    className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-edvoura-navy outline-none transition-all"
-                  >
-                    {(subjects || []).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
+              <form action={createTutorLiveSlot} className="mt-8 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="subjectId" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      Subject
+                    </label>
+                    <select
+                      id="subjectId"
+                      name="subjectId"
+                      required
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
+                    >
+                      {(subjects || []).map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="gradeLevelId" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      Grade Level
+                    </label>
+                    <select
+                      id="gradeLevelId"
+                      name="gradeLevelId"
+                      required
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
+                    >
+                      {(gradeLevels || []).map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.display_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label htmlFor="gradeLevelId" className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    Grade Level
-                  </label>
-                  <select
-                    id="gradeLevelId"
-                    name="gradeLevelId"
-                    required
-                    className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-edvoura-navy outline-none transition-all"
-                  >
-                    {(gradeLevels || []).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.display_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="title" className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  Session Title
-                </label>
-                <input
-                  id="title"
-                  name="title"
-                  type="text"
-                  placeholder="e.g. Mastering Algebraic Expressions"
-                  className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-edvoura-navy outline-none transition-all"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label htmlFor="scheduledStartAt" className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    Start Time
+                <div className="space-y-1.5">
+                  <label htmlFor="title" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    Session Title
                   </label>
                   <input
-                    id="scheduledStartAt"
-                    name="scheduledStartAt"
-                    type="datetime-local"
+                    id="title"
+                    name="title"
+                    type="text"
                     required
-                    className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-edvoura-navy outline-none transition-all"
+                    placeholder="e.g. Mastering Algebraic Expressions"
+                    className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="scheduledEndAt" className="text-xs font-black uppercase tracking-widest text-slate-400">
-                    End Time
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label htmlFor="scheduledStartAt" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      Start Time
+                    </label>
+                    <input
+                      id="scheduledStartAt"
+                      name="scheduledStartAt"
+                      type="datetime-local"
+                      required
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="scheduledEndAt" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      End Time
+                    </label>
+                    <input
+                      id="scheduledEndAt"
+                      name="scheduledEndAt"
+                      type="datetime-local"
+                      required
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50">
+                    <input
+                      type="checkbox"
+                      id="isRecurring"
+                      name="isRecurring"
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor="isRecurring" className="text-xs font-bold text-slate-700">
+                      Repeat Weekly
+                    </label>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label htmlFor="recurrenceWeeks" className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                      Weeks
+                    </label>
+                    <select
+                      id="recurrenceWeeks"
+                      name="recurrenceWeeks"
+                      className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 outline-none"
+                      defaultValue="4"
+                    >
+                      <option value="1">Just once</option>
+                      <option value="4">4 weeks</option>
+                      <option value="8">8 weeks</option>
+                      <option value="12">12 weeks</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="joinUrl" className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    Google Meet Link <span className="text-slate-300 font-normal">(Optional)</span>
                   </label>
                   <input
-                    id="scheduledEndAt"
-                    name="scheduledEndAt"
-                    type="datetime-local"
-                    required
-                    className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-edvoura-navy outline-none transition-all"
+                    id="joinUrl"
+                    name="joinUrl"
+                    type="url"
+                    placeholder="Leave blank to auto-generate"
+                    className="w-full h-12 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex items-center gap-3 p-5 rounded-2xl border border-slate-100 bg-slate-50/50">
-                  <input
-                    type="checkbox"
-                    id="isRecurring"
-                    name="isRecurring"
-                    className="h-5 w-5 rounded-md border-slate-300 text-edvoura-navy focus:ring-edvoura-navy transition-all"
-                  />
-                  <label htmlFor="isRecurring" className="text-sm font-bold text-slate-700">
-                    Repeat Weekly
-                  </label>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="recurrenceWeeks" className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
-                    Duration
-                  </label>
-                  <select
-                    id="recurrenceWeeks"
-                    name="recurrenceWeeks"
-                    className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 outline-none"
-                    defaultValue="4"
-                  >
-                    <option value="1">Just once</option>
-                    <option value="4">4 weeks</option>
-                    <option value="8">8 weeks</option>
-                    <option value="12">Full Term (12w)</option>
-                  </select>
-                </div>
-              </div>
+                <Button type="submit" className="w-full h-14 bg-[#0F172A] hover:bg-[#1E293B] text-white rounded-xl font-black text-lg transition-all active:scale-98">
+                  Publish to Dashboard
+                </Button>
+              </form>
+            </div>
 
-              <div className="space-y-2">
-                <label htmlFor="joinUrl" className="text-xs font-black uppercase tracking-widest text-slate-400">
-                  Student Meet Link <span className="text-slate-300 font-normal">(Optional)</span>
-                </label>
-                <input
-                  id="joinUrl"
-                  name="joinUrl"
-                  type="url"
-                  placeholder="Leave blank for auto-generation"
-                  className="w-full h-14 rounded-2xl border border-slate-200 bg-slate-50 px-5 text-sm font-bold text-slate-900 focus:bg-white focus:border-edvoura-navy outline-none transition-all"
-                />
-              </div>
-
-              <Button type="submit" className="w-full h-16 bg-edvoura-navy hover:bg-slate-900 text-white rounded-[1.25rem] font-black text-lg shadow-2xl shadow-edvoura-navy/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-                Publish to Dashboard
-              </Button>
-            </form>
-          </div>
-
-          {/* Quick Guide Card */}
-          <div className="rounded-[2rem] bg-gradient-to-br from-edvoura-navy to-slate-900 p-8 text-white">
-             <div className="flex items-center gap-3 mb-6">
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                   <Info className="h-5 w-5 text-edvoura-gold" />
-                </div>
-                <h3 className="text-xl font-black">Pro Tip</h3>
-             </div>
-             <p className="text-slate-300 text-sm leading-relaxed">
-                You can leave the Meet Link blank; the system will automatically generate a unique Google Meet for your session and share it with your students.
-             </p>
-          </div>
-        </section>
+            {/* Solid Tip Card */}
+            <div className="mt-6 bg-[#FEF9C3] border border-[#FEF08A] rounded-2xl p-6">
+               <div className="flex items-center gap-2 mb-2">
+                  <Info className="h-4 w-4 text-[#A16207]" />
+                  <span className="text-xs font-black uppercase tracking-widest text-[#A16207]">Pro Tip</span>
+               </div>
+               <p className="text-[#854D0E] text-xs font-bold leading-relaxed">
+                  The system uses a 24-hour clock. For an afternoon session (e.g. 1 PM), please enter 13:00 to avoid scheduling errors.
+               </p>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );
 }
-
-const CheckCircle2 = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);

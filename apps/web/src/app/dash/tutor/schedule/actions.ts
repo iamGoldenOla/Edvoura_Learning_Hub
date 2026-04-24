@@ -174,7 +174,7 @@ export async function startLesson(lessonId: string) {
         finalHostUrl = studentProfiles[0].personal_meet_host_url;
         
         // Also update the live session table so the student sees it
-        await supabase.from('private.lesson_live_sessions' as any).insert({
+        await supabase.from('private.lesson_live_sessions' as any).upsert({
           lesson_id: lessonId,
           provider: 'google_meet',
           join_url: studentProfiles[0].personal_meet_url,
@@ -193,7 +193,7 @@ export async function startLesson(lessonId: string) {
           endTime: lesson.scheduled_end_at,
         });
         
-        await supabase.from('private.lesson_live_sessions' as any).insert({
+        await supabase.from('private.lesson_live_sessions' as any).upsert({
           lesson_id: lessonId,
           provider: 'google_meet',
           join_url: meetUrls.joinUrl,
