@@ -2,8 +2,17 @@ import Link from 'next/link';
 import { Award, Flame, Gift, Trophy, Zap } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/utils/supabase/server';
 
-export default function AdminEngagementPage() {
+export default async function AdminEngagementPage() {
+  const supabase = await createClient();
+
+  const [
+    { count: activitiesCount },
+  ] = await Promise.all([
+    supabase.from('learning_activity_events').select('*', { count: 'exact', head: true }),
+  ]);
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -15,17 +24,17 @@ export default function AdminEngagementPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         {[
-          { label: 'XP Events Today', value: '18,240', icon: Zap },
-          { label: 'Badges Awarded', value: '1,124', icon: Award },
-          { label: 'Active Streaks', value: '4,803', icon: Flame },
-          { label: 'Challenges Completed', value: '2,191', icon: Trophy },
-          { label: 'Rewards Issued', value: '742', icon: Gift },
+          { label: 'Platform Activities', value: activitiesCount ?? 0, icon: Zap },
+          { label: 'Badges Awarded', value: 0, icon: Award },
+          { label: 'Active Streaks', value: 0, icon: Flame },
+          { label: 'Challenges Completed', value: 0, icon: Trophy },
+          { label: 'Rewards Issued', value: 0, icon: Gift },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent className="p-5">
               <item.icon className="h-5 w-5 text-emerald-600" />
-              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">{item.label}</p>
-              <p className="text-2xl font-bold text-slate-900">{item.value}</p>
+              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500 font-bold">{item.label}</p>
+              <p className="text-2xl font-bold text-slate-900">{item.value.toLocaleString()}</p>
             </CardContent>
           </Card>
         ))}

@@ -2,8 +2,17 @@ import Link from 'next/link';
 import { Bell, LifeBuoy, MessageSquareWarning, ShieldAlert, UserRoundCheck } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/utils/supabase/server';
 
-export default function AdminSupportModerationPage() {
+export default async function AdminSupportModerationPage() {
+  const supabase = await createClient();
+
+  const [
+    { count: unreadNotifications },
+  ] = await Promise.all([
+    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('status', 'unread'),
+  ]);
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -15,16 +24,16 @@ export default function AdminSupportModerationPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Open Tickets', value: '23', icon: LifeBuoy },
-          { label: 'High Priority', value: '4', icon: MessageSquareWarning },
-          { label: 'Content Flags', value: '11', icon: ShieldAlert },
-          { label: 'Unsent Alerts', value: '7', icon: Bell },
+          { label: 'Open Tickets', value: 0, icon: LifeBuoy },
+          { label: 'High Priority', value: 0, icon: MessageSquareWarning },
+          { label: 'Content Flags', value: 0, icon: ShieldAlert },
+          { label: 'Unread Alerts', value: unreadNotifications ?? 0, icon: Bell },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent className="p-5">
               <item.icon className="h-5 w-5 text-rose-600" />
-              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">{item.label}</p>
-              <p className="text-2xl font-bold text-slate-900">{item.value}</p>
+              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500 font-bold">{item.label}</p>
+              <p className="text-2xl font-bold text-slate-900">{item.value.toLocaleString()}</p>
             </CardContent>
           </Card>
         ))}

@@ -2,8 +2,21 @@ import Link from 'next/link';
 import { BookMarked, BookOpenCheck, CalendarClock, Layers, ShieldCheck } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/utils/supabase/server';
 
-export default function AdminAcademicSetupPage() {
+export default async function AdminAcademicSetupPage() {
+  const supabase = await createClient();
+
+  const [
+    { count: subjectsCount },
+    { count: bandsCount },
+    { count: lessonsCount },
+  ] = await Promise.all([
+    supabase.from('subjects').select('*', { count: 'exact', head: true }),
+    supabase.from('grade_bands').select('*', { count: 'exact', head: true }),
+    supabase.from('lessons').select('*', { count: 'exact', head: true }).in('status', ['live', 'scheduled']),
+  ]);
+
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -15,16 +28,16 @@ export default function AdminAcademicSetupPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          { label: 'Subjects', value: '28', icon: BookMarked },
-          { label: 'Curriculum Tracks', value: '9', icon: Layers },
-          { label: 'Live Lessons This Week', value: '342', icon: CalendarClock },
-          { label: 'Quality Flags', value: '6', icon: ShieldCheck },
+          { label: 'Subjects', value: subjectsCount ?? 0, icon: BookMarked },
+          { label: 'Grade Bands', value: bandsCount ?? 0, icon: Layers },
+          { label: 'Active Lessons', value: lessonsCount ?? 0, icon: CalendarClock },
+          { label: 'Quality Flags', value: 0, icon: ShieldCheck },
         ].map((item) => (
           <Card key={item.label}>
             <CardContent className="p-5">
               <item.icon className="h-5 w-5 text-blue-600" />
-              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500">{item.label}</p>
-              <p className="text-2xl font-bold text-slate-900">{item.value}</p>
+              <p className="mt-2 text-xs uppercase tracking-wider text-slate-500 font-bold">{item.label}</p>
+              <p className="text-2xl font-bold text-slate-900">{item.value.toLocaleString()}</p>
             </CardContent>
           </Card>
         ))}
