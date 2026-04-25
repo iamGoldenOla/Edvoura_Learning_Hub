@@ -50,6 +50,18 @@ export function buildGenerationPrompt(params: {
     ? `\nStudent context: ${studentContext}`
     : '';
 
+  let minChars = 400;
+  let lengthDesc = "at least 400 characters long — simple, engaging, and easy to read";
+
+  const gradeStr = gradeLevel.toUpperCase();
+  if (gradeStr.includes('SSS') || gradeStr.includes('10') || gradeStr.includes('11') || gradeStr.includes('12')) {
+    minChars = 2000;
+    lengthDesc = "at least 2000 characters long — detailed, highly advanced, and rigorous";
+  } else if (gradeStr.includes('JSS') || gradeStr.includes('7') || gradeStr.includes('8') || gradeStr.includes('9') || gradeStr.includes('4') || gradeStr.includes('5') || gradeStr.includes('6')) {
+    minChars = 1000;
+    lengthDesc = "at least 1000 characters long — thorough and well-structured";
+  }
+
   switch (contentType) {
     case 'lesson_note':
       return `Generate a highly comprehensive lesson note for ${gradeLevel} ${subject} on the topic "${topic}".
@@ -61,7 +73,7 @@ ${studentBlock}
 The lesson note MUST include:
 - topic: the exact topic title
 - objectives: at least 3 clear, measurable learning objectives
-- explanation: a THOROUGH, DETAILED explanation (minimum 300 characters). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns. DO NOT BE LAZY.
+- explanation: a THOROUGH, DETAILED explanation (${lengthDesc}). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns. DO NOT BE LAZY.
 - examples: at least 2 worked examples with detailed context and solution
 - practiceQuestions: at least 5 questions with answers, covering easy/medium/hard difficulties
 - teacherNotes: optional tips for the tutor delivering this lesson
@@ -78,7 +90,7 @@ The story MUST:
 - Be set in an African context (Nigerian town, school, market, family compound, etc.)
 - Have vivid characters with African names
 - Teach a clear moral lesson
-- Be rich, immersive, and at least 400 characters long
+- Be rich, immersive, and ${lengthDesc}
 - Include at least 3 vocabulary words with meanings
 
 Output ONLY valid JSON with: title, moralLesson, ageSuitability, content, vocabulary[{word, meaning}]`;
@@ -90,7 +102,7 @@ ${objectivesBlock}
 ${studentBlock}
 
 The passage MUST:
-- Be thorough and educational (minimum 400 characters)
+- Be thorough and educational (${lengthDesc})
 - Include factual, inferential, AND evaluative questions
 - Have at least 5 questions with detailed answers
 - Include at least 3 vocabulary words with meanings
