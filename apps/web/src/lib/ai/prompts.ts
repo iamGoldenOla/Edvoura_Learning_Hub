@@ -171,7 +171,24 @@ export function buildStudentAnalysisPrompt(params: {
     assignmentsCompleted: number;
     attendanceRate: number;
   }[];
+  topicPerformance?: {
+    subject: string;
+    topic: string;
+    score: number;
+    source: 'assignment' | 'ai_practice';
+    feedback?: string | null;
+  }[];
 }) {
+  const topicBlock =
+    params.topicPerformance && params.topicPerformance.length > 0
+      ? `\nTopic-level evidence:\n${params.topicPerformance
+          .map(
+            (item) =>
+              `- ${item.subject} / ${item.topic}: ${item.score}% via ${item.source}${item.feedback ? ` | feedback: ${item.feedback}` : ''}`,
+          )
+          .join('\n')}`
+      : '\nTopic-level evidence: none available.';
+
   return `Analyze the following student's academic performance and generate a comprehensive learning profile.
 
 Student: ${params.studentName} (ID: ${params.studentId})
@@ -184,14 +201,19 @@ ${params.performanceData
       `- ${item.subject}: Average Score ${item.averageScore}%, ${item.assignmentsCompleted} assignments completed, ${item.attendanceRate}% attendance`,
   )
   .join('\n')}
+${topicBlock}
 
 You must provide:
 1. overallAssessment: A detailed, professional assessment (min 50 chars)
 2. learningPace: "accelerated", "standard", or "needs_intervention"
-3. strongAreas: subjects where the student excels, with reasons
-4. weakAreas: subjects needing attention, with specific reasons
-5. recommendations: at least 2 actionable items with priority and target audience (tutor/parent/student)
-6. revisionPlan: focus topics and a suggested weekly schedule
+3. strongAreas: subjects where the student excels, optionally with topicFocus, and clear reasons
+4. weakAreas: subjects needing attention, optionally with topicFocus, with specific reasons and severity
+5. weakTopics: at least 1 topic-level weakness using the topic evidence provided, including evidence, latestScore, and trend
+6. recommendations: at least 2 actionable items with priority and target audience (tutor/parent/student)
+7. tutorActions: at least 2 concrete tutor interventions with targetSubject, optional targetTopic, and rationale
+8. parentSummary: a headline, concise summary, and 2+ supportActions the parent can do at home
+9. studentPlan: encouragement, 2+ focusTopics, 3+ nextSteps, and a recommended practiceStyle
+10. revisionPlan: focusTopics, a suggested weekly schedule, and 2+ weeklyGoals
 
 Be specific, data-driven, and constructive.
 Output only valid JSON matching the schema.`;

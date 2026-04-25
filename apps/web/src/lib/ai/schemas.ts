@@ -147,10 +147,34 @@ export const StudentAnalysisSchema = z.object({
   overallAssessment: z.string().min(50),
   learningPace: z.enum(['accelerated', 'standard', 'needs_intervention']),
   strongAreas: z
-    .array(z.object({ subject: z.string(), reason: z.string().min(20) }))
+    .array(
+      z.object({
+        subject: z.string(),
+        topicFocus: z.string().optional(),
+        reason: z.string().min(20),
+      }),
+    )
     .min(1),
   weakAreas: z
-    .array(z.object({ subject: z.string(), reason: z.string().min(20) }))
+    .array(
+      z.object({
+        subject: z.string(),
+        topicFocus: z.string().optional(),
+        reason: z.string().min(20),
+        severity: z.enum(['high', 'medium', 'low']),
+      }),
+    )
+    .min(1),
+  weakTopics: z
+    .array(
+      z.object({
+        subject: z.string(),
+        topic: z.string().min(3),
+        evidence: z.string().min(20),
+        latestScore: z.number().min(0).max(100).nullable(),
+        trend: z.enum(['declining', 'inconsistent', 'emerging']),
+      }),
+    )
     .min(1),
   recommendations: z
     .array(
@@ -161,9 +185,32 @@ export const StudentAnalysisSchema = z.object({
       }),
     )
     .min(2, 'At least 2 actionable recommendations required'),
+  tutorActions: z
+    .array(
+      z.object({
+        action: z.string().min(20),
+        priority: z.enum(['high', 'medium', 'low']),
+        targetSubject: z.string().min(2),
+        targetTopic: z.string().optional(),
+        rationale: z.string().min(20),
+      }),
+    )
+    .min(2, 'At least 2 tutor actions required'),
+  parentSummary: z.object({
+    headline: z.string().min(10),
+    summary: z.string().min(60),
+    supportActions: z.array(z.string().min(12)).min(2),
+  }),
+  studentPlan: z.object({
+    encouragement: z.string().min(20),
+    focusTopics: z.array(z.string().min(3)).min(2),
+    nextSteps: z.array(z.string().min(10)).min(3),
+    practiceStyle: z.string().min(12),
+  }),
   revisionPlan: z.object({
-    focusTopics: z.array(z.string()).min(1),
+    focusTopics: z.array(z.string().min(3)).min(2),
     suggestedSchedule: z.string().min(30),
+    weeklyGoals: z.array(z.string().min(8)).min(2),
   }),
 });
 

@@ -232,6 +232,13 @@ export async function analyzeStudentPerformance(params: {
     assignmentsCompleted: number;
     attendanceRate: number;
   }[];
+  topicPerformance?: {
+    subject: string;
+    topic: string;
+    score: number;
+    source: 'assignment' | 'ai_practice';
+    feedback?: string | null;
+  }[];
 }) {
   const result = await generateValidatedWithFallback({
     prompt: buildStudentAnalysisPrompt(params),
