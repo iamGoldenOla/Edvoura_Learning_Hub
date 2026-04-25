@@ -33,9 +33,9 @@ CREATE POLICY "Parents can view their children's practice scores"
     FOR SELECT
     USING (
         EXISTS (
-            SELECT 1 FROM public.parent_child_links
+            SELECT 1 FROM public.parent_student_links
             WHERE parent_user_id = auth.uid()
-            AND child_user_id = student_ai_practice_scores.student_id
+            AND student_user_id = student_ai_practice_scores.student_id
         )
     );
 
