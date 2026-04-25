@@ -99,7 +99,6 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Fun Zone',
       items: [
         { href: '/dash/student/flashcards', icon: Layers, label: 'Flashcards' },
-        { href: '/dash/student/quiz', icon: Sparkles, label: 'AI Adventure' },
         { href: '/dash/student/read', icon: BookOpen, label: 'Read' },
         { href: '/dash/student/stories', icon: PlayCircle, label: 'Stories' },
         { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
@@ -220,47 +219,20 @@ class SidebarErrorBoundary extends React.Component<
     super(props);
     this.state = { hasError: false };
   }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch() {
-    // Keep silent in UI; fallback renders the locked sidebar.
-  }
-
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch() {}
   render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
+    if (this.state.hasError) return this.props.fallback;
     return this.props.children;
   }
 }
 
 const safeHref = (href: string) => (KNOWN_STUDENT_ROUTES.has(href) ? href : '/dash/student');
-
 const isActiveRoute = (pathname: string, href: string, exact?: boolean) =>
   exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
-const NavItem = ({
-  href,
-  icon: Icon,
-  label,
-  active,
-}: {
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  active?: boolean;
-}) => (
-  <Link
-    href={safeHref(href)}
-    className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] mb-1.5 ${
-      active 
-        ? 'bg-yellow border-dark text-dark shadow-[3px_3px_0px_#ffffff] translate-x-[-2px] translate-y-[-2px]' 
-        : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white'
-    }`}
-  >
+const NavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
+  <Link href={safeHref(href)} className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] mb-1.5 ${active ? 'bg-yellow border-dark text-dark shadow-[3px_3px_0px_#ffffff] translate-x-[-2px] translate-y-[-2px]' : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white'}`}>
     <Icon className="h-5 w-5 shrink-0" />
     <span className="text-sm font-black tracking-tight">{label}</span>
     {active ? <div className="ml-auto h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-white" /> : null}
@@ -269,19 +241,10 @@ const NavItem = ({
 
 const renderSections = (pathname: string, sections: NavSection[]) =>
   sections.map((section, sectionIndex) => (
-    <div
-      key={section.title}
-      className={sectionIndex === 0 ? 'space-y-1.5' : 'mt-4 space-y-1.5 border-t border-slate-800 pt-4'}
-    >
+    <div key={section.title} className={sectionIndex === 0 ? 'space-y-1.5' : 'mt-4 space-y-1.5 border-t border-slate-800 pt-4'}>
       <p className="mb-2 px-4 text-xs font-black uppercase tracking-[0.16em] text-white/50">{section.title}</p>
       {section.items.map((item) => (
-        <NavItem
-          key={item.href}
-          href={item.href}
-          icon={item.icon}
-          label={item.label}
-          active={isActiveRoute(pathname, item.href, item.exact)}
-        />
+        <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
       ))}
     </div>
   ));
@@ -297,7 +260,6 @@ function StudentSidebarNavContent({ initialBand }: { initialBand: LearnerBand })
   const pathname = usePathname();
   const activeBand = band || initialBand;
   const sections = LOCKED_NAV_BY_BAND[activeBand] ?? LOCKED_NAV_BY_BAND[initialBand] ?? LOCKED_NAV_BY_BAND['7-12'];
-
   return <div>{renderSections(pathname, sections)}</div>;
 }
 

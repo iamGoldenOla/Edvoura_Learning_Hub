@@ -128,8 +128,8 @@ export async function POST(request: NextRequest) {
   const analysis = result.data;
 
   // Resolve subject IDs from names
-  const weakSubjectNames = analysis.weakAreas.map((a) => a.subject);
-  const strongSubjectNames = analysis.strongAreas.map((a) => a.subject);
+  const weakSubjectNames = (analysis.weakAreas as any[]).map((a: any) => a.subject);
+  const strongSubjectNames = (analysis.strongAreas as any[]).map((a: any) => a.subject);
 
   const { data: allSubjects } = await supabase.from('subjects').select('id, name');
 

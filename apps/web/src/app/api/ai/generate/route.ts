@@ -29,12 +29,12 @@ export async function POST(request: NextRequest) {
     .select('role')
     .eq('user_id', user.id);
 
-  const allowedRoles = ['tutor', 'admin', 'super_admin'];
+  const allowedRoles = ['tutor', 'admin', 'super_admin', 'student'];
   const hasAccess = roles?.some((r) => allowedRoles.includes(r.role));
 
   if (!hasAccess) {
     return NextResponse.json(
-      { error: 'Forbidden — only tutors and admins may generate content' },
+      { error: 'Forbidden — only students, tutors and admins may generate content' },
       { status: 403 },
     );
   }
