@@ -19,3 +19,5 @@ supabase/.branches/
 # Build outputs
 apps/*/dist/
 packages/*/dist/
+
+.vercel
