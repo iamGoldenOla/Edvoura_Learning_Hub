@@ -11,9 +11,11 @@ export default async function AdminNotificationsPage() {
   const [
     { count: queuedCount },
     { count: sentTodayCount },
+    { count: failedDeliveriesCount },
   ] = await Promise.all([
-    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('status', 'unread'),
-    supabase.from('notifications').select('*', { count: 'exact', head: true }).eq('status', 'read').gte('created_at', todayStart.toISOString()),
+    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).eq('delivery_status', 'queued'),
+    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).in('delivery_status', ['sent', 'delivered']).gte('created_at', todayStart.toISOString()),
+    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).eq('delivery_status', 'failed'),
   ]);
 
   return (
@@ -53,10 +55,10 @@ export default async function AdminNotificationsPage() {
         <div className="rounded-[28px] border-[4px] border-dark bg-purple-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <Megaphone className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Broadcasts</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Failed Deliveries</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">0</p>
+            <p className="text-5xl font-black text-dark">{failedDeliveriesCount ?? 0}</p>
           </div>
         </div>
       </div>

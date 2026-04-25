@@ -8,13 +8,15 @@ export default async function AdminAnalyticsPage() {
   const dashboard = await getAdminDashboardData();
 
   // Basic real-time analytics
-  const [{ data: averageProgressData }] = await Promise.all([
+  const [{ data: averageProgressData }, { data: paidInvoices = [] }] = await Promise.all([
     supabase.from('progress_snapshots').select('average_score, attendance_rate, assignment_completion_rate').limit(100),
+    supabase.schema('billing').from('invoices').select('amount_paid_minor').eq('status', 'paid'),
   ]);
 
   let avgAttendance = 0;
   let avgCompletion = 0;
   const progressRows = averageProgressData ?? [];
+  const totalRevenueMinor = (paidInvoices ?? []).reduce((sum, row) => sum + (row.amount_paid_minor ?? 0), 0);
 
   if (progressRows.length > 0) {
     avgAttendance = progressRows.reduce((acc, row) => acc + (Number(row.attendance_rate) || 0), 0) / progressRows.length;
@@ -68,10 +70,10 @@ export default async function AdminAnalyticsPage() {
         <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
           <div className="flex items-center gap-3">
             <BarChart3 className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Revenue Growth</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Paid Revenue</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">+0%</p>
+            <p className="text-5xl font-black text-dark">NGN {(totalRevenueMinor / 100).toLocaleString()}</p>
           </div>
         </div>
       </div>

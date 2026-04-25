@@ -10,9 +10,11 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^3.0.53",
     "@edvoura/contracts": "workspace:*",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
+    "ai": "^6.0.168",
     "framer-motion": "^12.38.0",
     "googleapis": "^171.4.0",
     "lucide-react": "^1.8.0",
@@ -20,7 +22,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
-    "svix": "^1.90.0"
+    "svix": "^1.90.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
