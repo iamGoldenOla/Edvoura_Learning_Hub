@@ -22,7 +22,7 @@ const openrouter = createOpenAI({
   apiKey: process.env.OPENROUTER_API_KEY ?? process.env.OPENAI_API_KEY,
 });
 
-// The user has configured Z.Ai Edvoura via OpenRouter to use Google Gemma 4 31B
+// The user has configured Edvoura AI via OpenRouter to use Google Gemma 4 31B
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemma-4-31b';
 
 import {

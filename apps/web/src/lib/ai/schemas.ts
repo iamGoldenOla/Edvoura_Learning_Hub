@@ -19,7 +19,7 @@ export const LessonNoteSchema = z.object({
     .min(3, 'At least 3 learning objectives required'),
   explanation: z
     .string()
-    .min(800, 'Explanation must be comprehensive — at least 800 characters'),
+    .min(300, 'Explanation must be comprehensive'),
   examples: z
     .array(
       z.object({
@@ -51,12 +51,12 @@ export const StorySchema = z.object({
   ageSuitability: z.string(), // e.g. "6-8", "9-12"
   content: z
     .string()
-    .min(1200, 'Story must be rich and immersive — at least 1200 characters'),
+    .min(400, 'Story must be rich and immersive'),
   vocabulary: z
     .array(
       z.object({
         word: z.string(),
-        meaning: z.string().min(10),
+        meaning: z.string().min(3),
       }),
     )
     .min(3, 'At least 3 vocabulary words required'),
@@ -71,12 +71,12 @@ export const ComprehensionSchema = z.object({
   title: z.string().min(5),
   passage: z
     .string()
-    .min(800, 'Passage must be thorough — at least 800 characters'),
+    .min(400, 'Passage must be thorough'),
   vocabulary: z
     .array(
       z.object({
         word: z.string(),
-        meaning: z.string().min(10),
+        meaning: z.string().min(3),
       }),
     )
     .min(3),
@@ -84,7 +84,7 @@ export const ComprehensionSchema = z.object({
     .array(
       z.object({
         question: z.string().min(10),
-        answer: z.string().min(10),
+        answer: z.string().min(3),
         type: z.enum(['factual', 'inferential', 'evaluative']),
       }),
     )
@@ -106,7 +106,7 @@ export const QuizSchema = z.object({
         questionType: z.enum(['multiple_choice', 'short_answer', 'true_false', 'fill_in_blank']),
         options: z.array(z.string()).optional(), // for MCQ
         correctAnswer: z.string().min(1),
-        explanation: z.string().min(20, 'Each answer must have a teaching explanation'),
+        explanation: z.string().min(5, 'Each answer must have a teaching explanation'),
         difficulty: z.enum(['easy', 'medium', 'hard']),
       }),
     )

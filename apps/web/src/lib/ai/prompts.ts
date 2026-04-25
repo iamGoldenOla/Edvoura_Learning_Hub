@@ -61,7 +61,7 @@ ${studentBlock}
 The lesson note MUST include:
 - topic: the exact topic title
 - objectives: at least 3 clear, measurable learning objectives
-- explanation: a THOROUGH, DETAILED explanation (minimum 800 characters). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns. DO NOT BE LAZY.
+- explanation: a THOROUGH, DETAILED explanation (minimum 300 characters). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns. DO NOT BE LAZY.
 - examples: at least 2 worked examples with detailed context and solution
 - practiceQuestions: at least 5 questions with answers, covering easy/medium/hard difficulties
 - teacherNotes: optional tips for the tutor delivering this lesson
@@ -78,7 +78,7 @@ The story MUST:
 - Be set in an African context (Nigerian town, school, market, family compound, etc.)
 - Have vivid characters with African names
 - Teach a clear moral lesson
-- Be rich, immersive, and at least 1200 characters long
+- Be rich, immersive, and at least 400 characters long
 - Include at least 3 vocabulary words with meanings
 
 Output ONLY valid JSON with: title, moralLesson, ageSuitability, content, vocabulary[{word, meaning}]`;
@@ -90,7 +90,7 @@ ${objectivesBlock}
 ${studentBlock}
 
 The passage MUST:
-- Be thorough and educational (minimum 800 characters)
+- Be thorough and educational (minimum 400 characters)
 - Include factual, inferential, AND evaluative questions
 - Have at least 5 questions with detailed answers
 - Include at least 3 vocabulary words with meanings

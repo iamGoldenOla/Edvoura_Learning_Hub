@@ -15,6 +15,7 @@ import {
   Users,
   Settings,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -75,14 +76,17 @@ export default function ParentDashboardClient({
   parentName,
   linkedChildren,
   billingSummary,
-  childSummaries,
+  childSummaries = [],
 }: {
   parentName: string;
   linkedChildren: ParentChild[];
   billingSummary: BillingSummary | null;
-  childSummaries: ChildSummary[];
+  childSummaries?: ChildSummary[];
 }) {
   const [activeChildId, setActiveChildId] = useState<string>(linkedChildren[0]?.userId ?? '');
+  const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
+  const [insightData, setInsightData] = useState<any>(null);
+  const [insightError, setInsightError] = useState('');
 
   const activeChild = useMemo(
     () => linkedChildren.find((child) => child.userId === activeChildId) ?? linkedChildren[0] ?? null,
@@ -142,7 +146,11 @@ export default function ParentDashboardClient({
                 <button
                   key={child.userId}
                   type="button"
-                  onClick={() => setActiveChildId(child.userId)}
+                  onClick={() => {
+                    setActiveChildId(child.userId);
+                    setInsightData(null);
+                    setInsightError('');
+                  }}
                   className={`rounded-xl border-[3px] px-4 py-2 text-sm font-black transition-all hover:translate-x-[1px] hover:translate-y-[1px] ${
                     activeChild?.userId === child.userId
                       ? 'border-dark bg-dark text-white shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
@@ -192,6 +200,90 @@ export default function ParentDashboardClient({
             )}
           </div>
         </div>
+
+        {/* Edvoura AI Insights Card */}
+        {activeChild && activeSummary && (
+          <div className="lg:col-span-3 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden mt-2 mb-2">
+            <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-white border-[3px] border-dark rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
+                  <Sparkles className="h-5 w-5 text-yellow-600" />
+                </div>
+                <h2 className="text-2xl font-black text-dark tracking-tight">Edvoura AI Weekly Insights</h2>
+              </div>
+              
+              <Button
+                disabled={isGeneratingInsight}
+                onClick={async () => {
+                  setIsGeneratingInsight(true);
+                  setInsightError('');
+                  try {
+                    const res = await fetch('/api/ai/parent-report', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        childName: activeChild.fullName ?? 'Your child',
+                        reportPeriod: 'This Week',
+                        performanceSummary: `Attendance: ${activeSummary.attendanceRate}%, Avg Score: ${activeSummary.averageScore}%, Completed: ${activeSummary.completionRate}%`,
+                        highlights: ['Consistent attendance', 'Good quiz participation'],
+                        concerns: activeSummary.alerts.map(a => a.detail)
+                      }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      setInsightData(data.content);
+                    } else {
+                      setInsightError(data.error || 'Failed to generate insight.');
+                    }
+                  } catch (err: any) {
+                    setInsightError(err.message || 'Unknown error');
+                  } finally {
+                    setIsGeneratingInsight(false);
+                  }
+                }}
+                className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-2 h-auto"
+              >
+                {isGeneratingInsight ? 'Edvoura AI is analyzing...' : 'Generate AI Report'}
+              </Button>
+            </div>
+            
+            {(insightData || insightError) && (
+              <div className="p-6 sm:p-8 bg-blue-50/50">
+                {insightError ? (
+                  <p className="text-rose-600 font-bold">{insightError}</p>
+                ) : insightData ? (
+                  <div className="space-y-6">
+                    <p className="text-lg font-bold text-dark/80 leading-relaxed">
+                      {insightData.summary}
+                    </p>
+                    <div className="grid gap-6 md:grid-cols-2">
+                      <div className="rounded-2xl border-[3px] border-dark bg-emerald-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-3">Highlights</p>
+                        <ul className="list-disc pl-5 space-y-1 font-bold text-dark text-sm">
+                          {insightData.praisePoints.map((point: string, i: number) => (
+                            <li key={i}>{point}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="rounded-2xl border-[3px] border-dark bg-amber-100 p-5 shadow-[4px_4px_0px_#060E1C]">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-3">Areas to Focus On</p>
+                        <ul className="list-disc pl-5 space-y-1 font-bold text-dark text-sm">
+                          {insightData.improvementAreas.map((point: string, i: number) => (
+                            <li key={i}>{point}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-3">Suggested Question to ask your child</p>
+                      <p className="font-bold text-dark italic">"{insightData.suggestedConversationStarter}"</p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Notifications */}
         <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">

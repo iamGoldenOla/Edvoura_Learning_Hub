@@ -103,7 +103,7 @@ export default function TutorBuilderPage() {
 
   const [userId, setUserId] = useState("");
 
-  // Z.Ai Form State
+  // Edvoura AI Form State
   const [aiType, setAiType] = useState("lesson_note");
   const [aiTopic, setAiTopic] = useState("");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
@@ -270,7 +270,7 @@ export default function TutorBuilderPage() {
 
           <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
             <ToolCard
-              title="Z.Ai Generator"
+              title="Edvoura AI Generator"
               subtitle="Auto-create lessons"
               icon={Sparkles}
               active={activeTool === "ai-generator"}
@@ -338,7 +338,7 @@ export default function TutorBuilderPage() {
                     {activeTool === "quiz" && "Quiz & Test Builder"}
                     {activeTool === "resources" && "Lesson Resource Library"}
                     {activeTool === "spelling-bee" && "Spelling Bee Challenge"}
-                    {activeTool === "ai-generator" && "Z.Ai Content Generator"}
+                    {activeTool === "ai-generator" && "Edvoura AI Content Generator"}
                   </h2>
                   {activeTool !== "ai-generator" && (
                     <Button
@@ -357,7 +357,7 @@ export default function TutorBuilderPage() {
                     <div className="rounded-2xl border-[3px] border-dark bg-yellow/10 p-6 shadow-[5px_5px_0px_#060E1C] space-y-6">
                       <h3 className="text-xl font-black text-dark tracking-tight flex items-center gap-2">
                         <Sparkles className="w-6 h-6 text-yellow" />
-                        Generate with Z.Ai (Powered by Google Gemma 4 31B)
+                        Generate with Edvoura AI (Powered by Google Gemma 4 31B)
                       </h3>
 
                       <div className="grid gap-4 md:grid-cols-2">
@@ -378,7 +378,7 @@ export default function TutorBuilderPage() {
                         <input
                           value={aiTopic}
                           onChange={(e) => setAiTopic(e.target.value)}
-                          placeholder="What topic should Z.Ai write about?"
+                          placeholder="What topic should Edvoura AI write about?"
                           className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
                         />
 
@@ -424,7 +424,7 @@ export default function TutorBuilderPage() {
                           setIsGeneratingAi(true);
                           setAiResult(null);
                           setFeedback(
-                            "Generating content with Z.Ai... This might take 10-20 seconds.",
+                            "Generating content with Edvoura AI... This might take 10-20 seconds.",
                           );
                           try {
                             const res = await fetch("/api/ai/generate", {
@@ -441,7 +441,7 @@ export default function TutorBuilderPage() {
                             const data = await res.json();
                             if (res.ok) {
                               setAiResult(data.content);
-                              setFeedback("Z.Ai generation successful!");
+                              setFeedback("Edvoura AI generation successful!");
                             } else {
                               setFeedback(
                                 data.error || "Failed to generate content",
@@ -458,7 +458,7 @@ export default function TutorBuilderPage() {
                         className="bg-yellow border-[3px] border-dark text-dark font-black px-8 py-6 w-full text-lg shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
                       >
                         {isGeneratingAi
-                          ? "Z.Ai is thinking..."
+                          ? "Edvoura AI is thinking..."
                           : "Generate AI Content"}
                       </Button>
 
