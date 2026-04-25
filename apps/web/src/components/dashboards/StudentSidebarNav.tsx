@@ -92,6 +92,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
         { href: '/dash/student/classes', icon: BookOpen, label: 'Classes' },
         { href: '/dash/student/spelling-bee', icon: Volume2, label: 'Spelling Bee' },
         { href: '/dash/student/homework', icon: ClipboardList, label: 'Homework' },
+        { href: '/dash/student/quiz', icon: Sparkles, label: 'AI Adventure' },
       ],
     },
     {

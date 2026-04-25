@@ -26,7 +26,7 @@ export default async function ParentDashboardPage() {
 }
 
 async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createClient>>, childIds: string[]) {
-  const [{ data: enrollmentsData = [] }, { data: notificationsData = [] }, { data: snapshotsData = [] }] =
+  const [{ data: enrollmentsData = [] }, { data: notificationsData = [] }, { data: snapshotsData = [] }, { data: aiScoresData = [] }] =
     await Promise.all([
       supabase
         .from('class_enrollments')
@@ -45,6 +45,12 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
         .select('student_user_id, attendance_rate, assignment_completion_rate, average_score, snapshot_date')
         .in('student_user_id', childIds)
         .order('snapshot_date', { ascending: false }),
+      supabase
+        .from('student_ai_practice_scores')
+        .select('*')
+        .in('student_id', childIds)
+        .order('created_at', { ascending: false })
+        .limit(20),
     ]);
 
   const classIds = [...new Set((enrollmentsData ?? []).map((entry) => entry.class_id))];
@@ -98,6 +104,7 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
       gradedSubmissions: number;
       averageScore: number | null;
       snapshotCount: number;
+      aiPracticeScores: any[];
     }
   >();
 
@@ -113,26 +120,26 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
       gradedSubmissions: 0,
       averageScore: null,
       snapshotCount: 0,
+      aiPracticeScores: [],
     });
   }
-
-  const latestSnapshotByChildId = new Map<
-    string,
-    { attendanceRate: number | null; completionRate: number | null; averageScore: number | null }
-  >();
 
   for (const snapshot of snapshotsData ?? []) {
     const summary = summaryByChildId.get(snapshot.student_user_id);
     if (!summary) continue;
     summary.snapshotCount += 1;
 
-    if (!latestSnapshotByChildId.has(snapshot.student_user_id)) {
-      latestSnapshotByChildId.set(snapshot.student_user_id, {
-        attendanceRate: snapshot.attendance_rate != null ? Number(snapshot.attendance_rate) : null,
-        completionRate:
-          snapshot.assignment_completion_rate != null ? Number(snapshot.assignment_completion_rate) : null,
-        averageScore: snapshot.average_score != null ? Number(snapshot.average_score) : null,
-      });
+    if (!summary.attendanceRate) {
+      summary.attendanceRate = snapshot.attendance_rate != null ? Number(snapshot.attendance_rate) : null;
+      summary.completionRate = snapshot.assignment_completion_rate != null ? Number(snapshot.assignment_completion_rate) : null;
+      summary.averageScore = snapshot.average_score != null ? Number(snapshot.average_score) : null;
+    }
+  }
+
+  for (const score of aiScoresData ?? []) {
+    const summary = summaryByChildId.get(score.student_id);
+    if (summary) {
+      summary.aiPracticeScores.push(score);
     }
   }
 
@@ -210,14 +217,9 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
     const submittedIds = submittedAssignmentIdsByChild.get(childId) ?? new Set<string>();
     summary.pendingAssignments = [...assignmentIdsForChild].filter((assignmentId) => !submittedIds.has(assignmentId)).length;
 
-    const latestSnapshot = latestSnapshotByChildId.get(childId);
-    summary.attendanceRate = latestSnapshot?.attendanceRate ?? null;
-    summary.completionRate =
-      latestSnapshot?.completionRate ??
-      (assignmentIdsForChild.size > 0
-        ? Math.round((submittedIds.size / assignmentIdsForChild.size) * 100)
-        : null);
-    summary.averageScore = latestSnapshot?.averageScore ?? null;
+    if (summary.completionRate === null && assignmentIdsForChild.size > 0) {
+      summary.completionRate = Math.round((submittedIds.size / assignmentIdsForChild.size) * 100);
+    }
   }
 
   return childIds.map((childId) => summaryByChildId.get(childId)!);

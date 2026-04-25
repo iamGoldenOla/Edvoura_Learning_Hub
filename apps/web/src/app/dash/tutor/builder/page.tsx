@@ -268,14 +268,7 @@ export default function TutorBuilderPage() {
             </section>
           ) : null}
 
-          <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
-            <ToolCard
-              title="Edvoura AI Generator"
-              subtitle="Auto-create lessons"
-              icon={Sparkles}
-              active={activeTool === "ai-generator"}
-              onClick={() => setActiveTool("ai-generator")}
-            />
+          <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
             <ToolCard
               title="Assignments"
               subtitle="Send tasks to students"
@@ -338,142 +331,19 @@ export default function TutorBuilderPage() {
                     {activeTool === "quiz" && "Quiz & Test Builder"}
                     {activeTool === "resources" && "Lesson Resource Library"}
                     {activeTool === "spelling-bee" && "Spelling Bee Challenge"}
-                    {activeTool === "ai-generator" && "Edvoura AI Content Generator"}
                   </h2>
-                  {activeTool !== "ai-generator" && (
-                    <Button
-                      className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2"
-                      onClick={() => setShowAssignmentForm((value) => !value)}
-                    >
-                      {showAssignmentForm
-                        ? "Close Form"
-                        : `New ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Challenge"}`}
-                    </Button>
-                  )}
+                  <Button
+                    className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2"
+                    onClick={() => setShowAssignmentForm((value) => !value)}
+                  >
+                    {showAssignmentForm
+                      ? "Close Form"
+                      : `New ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Challenge"}`}
+                  </Button>
                 </div>
 
                 <div className="p-6 space-y-6">
-                  {activeTool === "ai-generator" ? (
-                    <div className="rounded-2xl border-[3px] border-dark bg-yellow/10 p-6 shadow-[5px_5px_0px_#060E1C] space-y-6">
-                      <h3 className="text-xl font-black text-dark tracking-tight flex items-center gap-2">
-                        <Sparkles className="w-6 h-6 text-yellow" />
-                        Generate with Edvoura AI (Powered by Google Gemma 4 31B)
-                      </h3>
-
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <select
-                          value={aiType}
-                          onChange={(e) => setAiType(e.target.value)}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-                        >
-                          <option value="lesson_note">Lesson Note</option>
-                          <option value="story">Story</option>
-                          <option value="comprehension">
-                            Comprehension Passage
-                          </option>
-                          <option value="quiz">Quiz</option>
-                          <option value="worksheet">Worksheet</option>
-                        </select>
-
-                        <input
-                          value={aiTopic}
-                          onChange={(e) => setAiTopic(e.target.value)}
-                          placeholder="What topic should Edvoura AI write about?"
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-                        />
-
-                        <select
-                          value={formSubject}
-                          onChange={(event) =>
-                            setFormSubject(event.target.value)
-                          }
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-                        >
-                          <option value="">Select subject context</option>
-                          {subjects.map((subject) => (
-                            <option key={subject.id} value={subject.name}>
-                              {subject.name}
-                            </option>
-                          ))}
-                        </select>
-
-                        <select
-                          value={formGradeCode}
-                          onChange={(event) =>
-                            setFormGradeCode(event.target.value)
-                          }
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-                        >
-                          <option value="">Select target grade</option>
-                          {gradeLevels.map((grade) => (
-                            <option key={grade.id} value={grade.display_name}>
-                              {grade.display_name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <Button
-                        disabled={
-                          isGeneratingAi ||
-                          !aiTopic ||
-                          !formSubject ||
-                          !formGradeCode
-                        }
-                        onClick={async () => {
-                          setIsGeneratingAi(true);
-                          setAiResult(null);
-                          setFeedback(
-                            "Generating content with Edvoura AI... This might take 10-20 seconds.",
-                          );
-                          try {
-                            const res = await fetch("/api/ai/generate", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                contentType: aiType,
-                                topic: aiTopic,
-                                subject: formSubject,
-                                gradeLevel: formGradeCode,
-                              }),
-                            });
-
-                            const data = await res.json();
-                            if (res.ok) {
-                              setAiResult(data.content);
-                              setFeedback("Edvoura AI generation successful!");
-                            } else {
-                              setFeedback(
-                                data.error || "Failed to generate content",
-                              );
-                            }
-                          } catch (err: any) {
-                            setFeedback(
-                              err.message || "Unknown error occurred.",
-                            );
-                          } finally {
-                            setIsGeneratingAi(false);
-                          }
-                        }}
-                        className="bg-yellow border-[3px] border-dark text-dark font-black px-8 py-6 w-full text-lg shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
-                      >
-                        {isGeneratingAi
-                          ? "Edvoura AI is thinking..."
-                          : "Generate AI Content"}
-                      </Button>
-
-                      {aiResult && (
-                        <div className="mt-8 bg-white border-[3px] border-dark p-6 rounded-2xl shadow-[4px_4px_0px_#060E1C]">
-                          <h4 className="font-black text-xl mb-4 border-b-[3px] border-dark pb-2">
-                            Generation Result
-                          </h4>
-                          <pre className="whitespace-pre-wrap font-mono text-xs overflow-auto max-h-[500px] p-4 bg-gray-50 border-[2px] border-dark rounded-xl">
-                            {JSON.stringify(aiResult, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  ) : showAssignmentForm ? (
+                  {showAssignmentForm ? (
                     <div className="rounded-2xl border-[3px] border-dark bg-blue-50 p-6 shadow-[5px_5px_0px_#060E1C]">
                       <h3 className="text-xl font-black text-dark tracking-tight">
                         Create{" "}
@@ -883,6 +753,123 @@ export default function TutorBuilderPage() {
             </div>
 
             <div className="space-y-6 xl:col-span-4">
+              <div className="border-[4px] border-dark rounded-3xl bg-yellow/10 p-6 shadow-[8px_8px_0px_#060E1C] space-y-6 sticky top-8">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-yellow border-[3px] border-dark rounded-2xl shadow-[3px_3px_0px_#060E1C]">
+                    <Sparkles className="w-6 h-6 text-dark" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-dark tracking-tight leading-none">
+                      Edvoura AI
+                    </h3>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mt-1">
+                      Content Assistant
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-xs font-bold text-dark/70 leading-relaxed">
+                  Automate your curriculum with Google Gemma 4. Generate lesson notes, stories, and quizzes in seconds.
+                </p>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Content Type</label>
+                    <select
+                      value={aiType}
+                      onChange={(e) => setAiType(e.target.value)}
+                      className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
+                    >
+                      <option value="lesson_note">Lesson Note</option>
+                      <option value="story">Story</option>
+                      <option value="comprehension">Comprehension</option>
+                      <option value="quiz">Quiz</option>
+                      <option value="worksheet">Worksheet</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Topic</label>
+                    <input
+                      value={aiTopic}
+                      onChange={(e) => setAiTopic(e.target.value)}
+                      placeholder="e.g. Algebra Basics"
+                      className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Subject & Grade</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <select
+                        value={formSubject}
+                        onChange={(event) => setFormSubject(event.target.value)}
+                        className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
+                      >
+                        <option value="">Subject</option>
+                        {subjects.map((s) => (
+                          <option key={s.id} value={s.name}>{s.name}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={formGradeCode}
+                        onChange={(event) => setFormGradeCode(event.target.value)}
+                        className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
+                      >
+                        <option value="">Grade</option>
+                        {gradeLevels.map((g) => (
+                          <option key={g.id} value={g.display_name}>{g.display_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <Button
+                    disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
+                    onClick={async () => {
+                      setIsGeneratingAi(true);
+                      setAiResult(null);
+                      setFeedback("Edvoura AI is composing your content...");
+                      try {
+                        const res = await fetch("/api/ai/generate", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            contentType: aiType,
+                            topic: aiTopic,
+                            subject: formSubject,
+                            gradeLevel: formGradeCode,
+                          }),
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          setAiResult(data.content);
+                          setFeedback("AI Generation successful! Check the result box.");
+                        } else {
+                          setFeedback(data.error || "Failed to generate content");
+                        }
+                      } catch (err: any) {
+                        setFeedback(err.message || "Unknown error occurred.");
+                      } finally {
+                        setIsGeneratingAi(false);
+                      }
+                    }}
+                    className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-4 w-full text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50 mt-4"
+                  >
+                    {isGeneratingAi ? "Thinking..." : "Generate Now"}
+                  </Button>
+
+                  {aiResult && (
+                    <div className="mt-4 bg-white border-[3px] border-dark p-4 rounded-2xl shadow-[4px_4px_0px_#060E1C]">
+                      <h4 className="font-black text-sm mb-2 border-b-[2px] border-dark pb-1">Result Preview</h4>
+                      <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[300px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
+                        {JSON.stringify(aiResult, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="border-[3px] border-dark rounded-3xl bg-blue-100 p-6 shadow-[5px_5px_0px_#060E1C]">
                 <h3 className="text-xl font-black text-dark mb-4">
                   What This Connects

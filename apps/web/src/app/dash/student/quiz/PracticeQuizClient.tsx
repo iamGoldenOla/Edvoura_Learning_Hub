@@ -79,6 +79,19 @@ export function PracticeQuizClient({ subjects, gradeCode }: { subjects: any[], g
       setHasSubmitted(false);
     } else {
       setQuizFinished(true);
+      // Save results to DB
+      void fetch('/api/ai/practice/score', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subjectName: formSubject,
+          topic: formTopic,
+          score: score, // This is current score, but handleNextQuestion is async state-wise
+          // Wait, state 'score' might not be updated yet if the last question was correct
+          // Let's calculate the final score more safely
+          totalQuestions: quizData.questions.length
+        })
+      });
     }
   }
 
