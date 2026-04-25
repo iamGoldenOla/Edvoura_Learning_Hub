@@ -1,43 +1,49 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireAppViewer } from '@/lib/app-context';
-import { Target, Clock, ArrowRight } from 'lucide-react';
+import { Target, Sparkles, Clock, ArrowRight } from 'lucide-react';
 import { PracticeQuizClient } from './PracticeQuizClient';
 
 export default async function QuizPage() {
   const viewer = await requireAppViewer();
   const supabase = await createClient();
 
+  // 1. Fetch manual quizzes
   const { data: quizzes } = await supabase
     .from('quizzes')
     .select('id, title, instructions, time_limit_minutes, status, created_at')
     .order('created_at', { ascending: false });
 
-  // Get subjects for the AI practice
-  const { data: subjects } = await supabase.from('subjects').select('id, name');
-  
-  // Get student's grade level for AI context
-  const { data: profile } = await supabase
-    .from('student_learning_profiles')
-    .select('grade_level:grade_levels(code)')
-    .eq('student_id', viewer.currentUser.userId)
-    .single();
+  // 2. Fetch published AI quizzes
+  const { data: aiQuizzes } = await supabase
+    .from('ai_generated_content')
+    .select('id, raw_output, created_at')
+    .eq('content_type', 'quiz')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false });
 
-  const gradeCode = (profile?.grade_level as any)?.code || 'JSS1';
+  // Map AI quizzes to a common format
+  const normalizedAiQuizzes = (aiQuizzes || []).map(q => ({
+    id: q.id,
+    title: (q.raw_output as any).title || 'AI Practice Challenge',
+    instructions: (q.raw_output as any).description || 'Master this topic with Edvoura AI.',
+    isAi: true,
+    data: q.raw_output
+  }));
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 border-b-[4px] border-dark bg-purple-100">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark flex items-center gap-4">
-            <Target className="h-10 w-10" /> Quizzes & Tests
+            <Target className="h-10 w-10" /> AI Study Hub
           </h1>
           <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Take quizzes and tests assigned by your tutors.
+            Tutor-assigned AI challenges and practice quizzes.
           </p>
         </div>
       </div>
 
-      <PracticeQuizClient subjects={subjects || []} gradeCode={gradeCode} />
+      <PracticeQuizClient aiQuizzes={normalizedAiQuizzes} />
 
       <section className="grid gap-6 md:grid-cols-2">
         {quizzes && quizzes.length > 0 ? (
@@ -56,12 +62,7 @@ export default async function QuizPage() {
               </div>
             </div>
           ))
-        ) : (
-          <div className="col-span-2 rounded-[28px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-12 text-center flex flex-col items-center">
-            <Target className="h-10 w-10 text-dark/30 mb-4" />
-            <p className="text-sm font-bold text-dark/60 italic">No quizzes assigned yet! Check back later.</p>
-          </div>
-        )}
+        ) : null}
       </section>
     </div>
   );

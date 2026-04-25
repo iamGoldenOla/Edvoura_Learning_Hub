@@ -108,6 +108,8 @@ export default function TutorBuilderPage() {
   const [aiTopic, setAiTopic] = useState("");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [aiResult, setAiResult] = useState<any>(null);
+  const [aiContentId, setAiContentId] = useState<string | null>(null);
+  const [isPublishingAi, setIsPublishingAi] = useState(false);
 
   const loadBuilderData = async () => {
     const supabase = createClient();
@@ -934,7 +936,8 @@ export default function TutorBuilderPage() {
                         const data = await res.json();
                         if (res.ok) {
                           setAiResult(data.content);
-                          setFeedback("AI Generation successful! Check the result box.");
+                          setAiContentId(data.record?.id || null);
+                          setFeedback("AI Generation successful! Review and publish to students below.");
                         } else {
                           setFeedback(data.error || "Failed to generate content");
                         }
@@ -950,11 +953,46 @@ export default function TutorBuilderPage() {
                   </Button>
 
                   {aiResult && (
-                    <div className="mt-4 bg-white border-[3px] border-dark p-4 rounded-2xl shadow-[4px_4px_0px_#060E1C]">
-                      <h4 className="font-black text-sm mb-2 border-b-[2px] border-dark pb-1">Result Preview</h4>
-                      <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[300px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
-                        {JSON.stringify(aiResult, null, 2)}
-                      </pre>
+                    <div className="mt-4 space-y-4">
+                      <div className="bg-white border-[3px] border-dark p-4 rounded-2xl shadow-[4px_4px_0px_#060E1C]">
+                        <div className="flex items-center justify-between mb-2 border-b-[2px] border-dark pb-1">
+                          <h4 className="font-black text-sm uppercase tracking-widest">Result Preview</h4>
+                          <span className="text-[10px] font-bold text-dark/40">ID: {aiContentId?.split('-')[0]}...</span>
+                        </div>
+                        <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[300px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
+                          {JSON.stringify(aiResult, null, 2)}
+                        </pre>
+                      </div>
+
+                      <Button
+                        disabled={isPublishingAi || !aiContentId}
+                        onClick={async () => {
+                          setIsPublishingAi(true);
+                          setFeedback("Publishing content to student dashboards...");
+                          try {
+                            const res = await fetch("/api/ai/publish", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ contentId: aiContentId }),
+                            });
+                            const data = await res.json();
+                            if (res.ok) {
+                              setFeedback("SUCCESS: Content is now live for students!");
+                              setAiResult(null);
+                              setAiContentId(null);
+                            } else {
+                              setFeedback(data.error || "Failed to publish content.");
+                            }
+                          } catch (err: any) {
+                            setFeedback(err.message || "Unknown error during publish.");
+                          } finally {
+                            setIsPublishingAi(false);
+                          }
+                        }}
+                        className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-4 text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
+                      >
+                        {isPublishingAi ? "Publishing..." : "Publish to Student Hubs"}
+                      </Button>
                     </div>
                   )}
                 </div>

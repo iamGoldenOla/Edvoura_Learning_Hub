@@ -1,59 +1,26 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Brain, ArrowRight, CheckCircle2, XCircle, RefreshCcw } from 'lucide-react';
+import { Sparkles, Brain, ArrowRight, CheckCircle2, XCircle, RefreshCcw, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function PracticeQuizClient({ subjects, gradeCode }: { subjects: any[], gradeCode: string }) {
-  const [formSubject, setFormSubject] = useState(subjects[0]?.name || '');
-  const [formTopic, setFormTopic] = useState('');
-  
-  const [isGenerating, setIsGenerating] = useState(false);
+export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
   const [quizData, setQuizData] = useState<any>(null);
-  const [error, setError] = useState('');
-
-  // Quiz taking state
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  async function handleGenerate() {
-    if (!formSubject || !formTopic) return;
-    setIsGenerating(true);
-    setError('');
-    setQuizData(null);
+  function startQuiz(data: any) {
+    // Filter out any non-MCQ questions just in case to maintain the layout
+    const mcqs = data.questions.filter((q: any) => q.options && q.options.length >= 2);
+    setQuizData({ ...data, questions: mcqs });
     setCurrentQuestionIndex(0);
     setScore(0);
     setQuizFinished(false);
     setSelectedAnswer(null);
     setHasSubmitted(false);
-
-    try {
-      const res = await fetch('/api/ai/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contentType: 'quiz',
-          subject: formSubject,
-          topic: formTopic,
-          gradeLevel: gradeCode || 'JSS 1',
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        // Filter out any non-MCQ questions just in case to maintain the layout
-        const mcqs = data.content.questions.filter((q: any) => q.options && q.options.length >= 2);
-        setQuizData({ ...data.content, questions: mcqs });
-      } else {
-        setError(data.error || 'Failed to generate quiz.');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while generating.');
-    } finally {
-      setIsGenerating(false);
-    }
   }
 
   function handleOptionClick(opt: string) {
@@ -65,7 +32,6 @@ export function PracticeQuizClient({ subjects, gradeCode }: { subjects: any[], g
   function handleSubmitAnswer() {
     if (!selectedAnswer) return;
     setHasSubmitted(true);
-    
     const currentQuestion = quizData.questions[currentQuestionIndex];
     if (selectedAnswer === currentQuestion.correctAnswer) {
       setScore(s => s + 1);
@@ -79,16 +45,14 @@ export function PracticeQuizClient({ subjects, gradeCode }: { subjects: any[], g
       setHasSubmitted(false);
     } else {
       setQuizFinished(true);
-      // Save results to DB
+      // Save results to DB (optional endpoint check)
       void fetch('/api/ai/practice/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          subjectName: formSubject,
-          topic: formTopic,
-          score: score, // This is current score, but handleNextQuestion is async state-wise
-          // Wait, state 'score' might not be updated yet if the last question was correct
-          // Let's calculate the final score more safely
+          subjectName: quizData.title,
+          topic: quizData.description || 'AI Challenge',
+          score: score,
           totalQuestions: quizData.questions.length
         })
       });
@@ -109,7 +73,7 @@ export function PracticeQuizClient({ subjects, gradeCode }: { subjects: any[], g
           onClick={() => setQuizData(null)}
           className="bg-emerald-400 border-[3px] border-dark text-dark font-black px-8 py-4 text-lg rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
         >
-          Generate Another Quiz
+          Back to Hub
         </Button>
       </div>
     );
@@ -215,69 +179,33 @@ export function PracticeQuizClient({ subjects, gradeCode }: { subjects: any[], g
   }
 
   return (
-    <div className="rounded-[28px] border-[4px] border-dark bg-[#E0E7FF] p-6 sm:p-10 shadow-[10px_10px_0px_#060E1C] relative overflow-hidden">
-      {/* Background decoration */}
-      <Brain className="absolute -bottom-10 -right-10 w-64 h-64 text-indigo-300/40 rotate-12" />
-      
-      <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
-        <div className="flex-1 space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-4 py-2 text-sm font-black tracking-widest text-dark uppercase shadow-[3px_3px_0px_#060E1C]">
-            <Sparkles className="h-4 w-4" /> Automated Practice
-          </div>
-          <h2 className="text-3xl md:text-5xl font-black text-dark tracking-tight leading-[1.1]">
-            Challenge Edvoura AI to a Quick Quiz
-          </h2>
-          <p className="text-lg font-bold text-dark/70">
-            Select a subject and topic, and Edvoura AI will instantly generate a 20-question challenge just for you.
-          </p>
-        </div>
-
-        <div className="w-full md:w-[400px] bg-white rounded-2xl border-[4px] border-dark p-6 shadow-[8px_8px_0px_#060E1C]">
-          <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-black uppercase tracking-widest text-dark/60 mb-2">Subject</label>
-              <select 
-                value={formSubject}
-                onChange={e => setFormSubject(e.target.value)}
-                className="w-full rounded-xl border-[3px] border-dark bg-gray-50 px-4 py-3 text-sm font-bold text-dark outline-none focus:border-indigo-500 focus:bg-white"
-              >
-                {subjects.map(s => (
-                  <option key={s.id} value={s.name}>{s.name}</option>
-                ))}
-              </select>
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {aiQuizzes.length > 0 ? (
+        aiQuizzes.map((q) => (
+          <div key={q.id} className="rounded-[28px] border-[4px] border-dark bg-indigo-50 p-6 shadow-[8px_8px_0px_#060E1C] flex flex-col hover:-translate-y-1 transition-all">
+            <div className="inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark mb-4 shadow-[2px_2px_0px_#060E1C]">
+              <Sparkles className="h-3 w-3" /> AI Challenge
             </div>
-            <div>
-              <label className="block text-sm font-black uppercase tracking-widest text-dark/60 mb-2">Topic (Be specific)</label>
-              <input 
-                value={formTopic}
-                onChange={e => setFormTopic(e.target.value)}
-                placeholder="e.g. Fractions, Cell Biology..."
-                className="w-full rounded-xl border-[3px] border-dark bg-gray-50 px-4 py-3 text-sm font-bold text-dark outline-none focus:border-indigo-500 focus:bg-white"
-              />
-            </div>
-            
-            {error && (
-              <p className="text-sm font-bold text-rose-600 bg-rose-50 p-3 rounded-lg border-[2px] border-rose-200">
-                {error}
-              </p>
-            )}
-
+            <h3 className="text-xl font-black text-dark tracking-tight leading-tight mb-2">
+              {q.title}
+            </h3>
+            <p className="text-sm font-bold text-dark/60 flex-1 mb-6">
+              {q.instructions}
+            </p>
             <Button 
-              disabled={isGenerating || !formSubject || !formTopic}
-              onClick={handleGenerate}
-              className="w-full bg-indigo-500 border-[3px] border-dark text-white font-black px-6 py-4 text-lg rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto mt-2"
+              onClick={() => startQuiz(q.data)}
+              className="bg-white border-[3px] border-dark text-dark font-black w-full shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all py-3"
             >
-              {isGenerating ? (
-                <>
-                  <RefreshCcw className="mr-2 h-5 w-5 animate-spin" /> Generating...
-                </>
-              ) : (
-                'Generate Practice'
-              )}
+              Start Practice <Play className="ml-2 h-4 w-4" />
             </Button>
           </div>
+        ))
+      ) : (
+        <div className="col-span-full rounded-[28px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-12 text-center flex flex-col items-center">
+          <Brain className="h-10 w-10 text-dark/30 mb-4" />
+          <p className="text-sm font-bold text-dark/60 italic">No AI Study Hub challenges published yet by your tutors.</p>
         </div>
-      </div>
+      )}
     </div>
   );
 }
