@@ -110,7 +110,7 @@ export const QuizSchema = z.object({
         difficulty: z.enum(['easy', 'medium', 'hard']),
       }),
     )
-    .min(5, 'At least 5 quiz questions required'),
+    .min(15, 'At least 15 quiz questions required'),
 });
 
 export type Quiz = z.infer<typeof QuizSchema>;

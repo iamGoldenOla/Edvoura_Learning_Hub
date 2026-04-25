@@ -112,17 +112,19 @@ Output ONLY valid JSON with: title, passage, vocabulary[{word, meaning}], questi
 
     case 'quiz':
     case 'worksheet':
-      return `Create a ${contentType === 'quiz' ? 'quiz' : 'worksheet'} for ${gradeLevel} ${subject} on "${topic}".
+      return `Create a highly intelligent, comprehensive ${contentType === 'quiz' ? 'quiz' : 'worksheet'} for ${gradeLevel} ${subject} on "${topic}".
 Curriculum system: ${curriculumSystem}.
-Difficulty: ${difficultyLabel}.
 ${objectivesBlock}
 ${studentBlock}
 
-Requirements:
-- At least 5 questions covering multiple question types (multiple_choice, short_answer, true_false, fill_in_blank)
-- Each question MUST have a detailed teaching explanation for the correct answer
-- Questions should progress from easy to hard
-- Include clear instructions
+CRITICAL REQUIREMENTS:
+- You MUST generate exactly 20 diverse, unique questions pulled from a deep subject knowledge bank. DO NOT REPEAT QUESTIONS.
+- The 20 questions MUST be divided across difficulty levels: roughly 7 easy, 7 medium, and 6 hard/difficult questions.
+- For 'multiple_choice' questions, you MUST provide exactly 4 options formatted as A, B, C, and D (like a "Who Wants to Be a Millionaire" layout).
+- For EVERY question, clearly provide the exact correct answer.
+- For EVERY question, provide a detailed teaching explanation of why the answer is correct.
+- Emphasize multiple_choice, but you may mix in short_answer, true_false, or fill_in_blank.
+- Include clear instructions for the student.
 
 Output ONLY valid JSON with: title, instructions, questions[{questionText, questionType, options?, correctAnswer, explanation, difficulty}]`;
 
