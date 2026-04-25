@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { requireAppViewer } from '@/lib/app-context';
 import { Target, Clock, ArrowRight } from 'lucide-react';
+import { PracticeQuizClient } from './PracticeQuizClient';
 
 export default async function QuizPage() {
   const viewer = await requireAppViewer();
@@ -10,6 +11,18 @@ export default async function QuizPage() {
     .from('quizzes')
     .select('id, title, instructions, time_limit_minutes, status, created_at')
     .order('created_at', { ascending: false });
+
+  // Get subjects for the AI practice
+  const { data: subjects } = await supabase.from('subjects').select('id, name');
+  
+  // Get student's grade level for AI context
+  const { data: profile } = await supabase
+    .from('student_learning_profiles')
+    .select('grade_level:grade_levels(code)')
+    .eq('student_id', viewer.userId)
+    .single();
+
+  const gradeCode = (profile?.grade_level as any)?.code || 'JSS1';
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
@@ -23,6 +36,8 @@ export default async function QuizPage() {
           </p>
         </div>
       </div>
+
+      <PracticeQuizClient subjects={subjects || []} gradeCode={gradeCode} />
 
       <section className="grid gap-6 md:grid-cols-2">
         {quizzes && quizzes.length > 0 ? (
