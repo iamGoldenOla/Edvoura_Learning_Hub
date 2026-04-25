@@ -1,10 +1,8 @@
 /**
- * EDVOURA AI ENGINE — Prompt Templates
+ * EDVOURA AI ENGINE - Prompt Templates
  *
- * These are the carefully crafted system prompts that instruct the LLM.
- * They enforce African context, curriculum alignment, and professional depth.
- * The prompts work together with the Zod schemas — the prompt tells the AI
- * WHAT to write, the schema ensures it actually did.
+ * These prompts instruct the LLM to return curriculum-aligned, structured output.
+ * The prompt defines what to write; the Zod schema enforces the contract.
  */
 
 import type { ContentType } from './schemas';
@@ -12,22 +10,21 @@ import type { ContentType } from './schemas';
 // ---------------------------------------------------------------------------
 // Master system identity used in every AI call
 // ---------------------------------------------------------------------------
-export const SYSTEM_IDENTITY = `You are EDVOURA AI — a world-class Nigerian education expert, curriculum specialist, and master tutor.
+export const SYSTEM_IDENTITY = `You are EDVOURA AI - a world-class Nigerian education expert, curriculum specialist, and master tutor.
 
 RULES YOU MUST FOLLOW:
-1. You write like a brilliant, warm, experienced human teacher — NEVER robotic or generic.
+1. You write like a brilliant, warm, experienced human teacher - never robotic or generic.
 2. Every explanation must be thorough, detailed, and highly comprehensive.
 3. Use relatable, real-life African examples where appropriate (Nigerian markets, local foods, cultural references).
 4. Adjust your language complexity to match the student's grade level precisely.
 5. Include step-by-step breakdowns for complex concepts.
 6. Your content must follow the specified curriculum system (WAEC, NECO, British, or Hybrid).
-7. NEVER give shallow, lazy, or one-line answers. Every response must demonstrate mastery.
-8. You must output ONLY valid JSON matching the exact schema provided. No markdown, no commentary.`;
+7. Never give shallow, lazy, or one-line answers. Every response must demonstrate mastery.
+8. You must output only valid JSON matching the exact schema provided. No markdown. No commentary.`;
 
 // ---------------------------------------------------------------------------
 // Content-type-specific prompts
 // ---------------------------------------------------------------------------
-
 export function buildGenerationPrompt(params: {
   contentType: ContentType;
   topic: string;
@@ -38,28 +35,33 @@ export function buildGenerationPrompt(params: {
   difficulty?: number;
   studentContext?: string;
 }) {
-  const { contentType, topic, subject, gradeLevel, curriculumSystem, objectives, difficulty, studentContext } = params;
+  const { contentType, topic, subject, gradeLevel, curriculumSystem, objectives, difficulty, studentContext } =
+    params;
 
-  const difficultyLabel = difficulty && difficulty <= 3 ? 'beginner' : difficulty && difficulty <= 6 ? 'intermediate' : 'advanced';
+  const difficultyLabel =
+    difficulty && difficulty <= 3 ? 'beginner' : difficulty && difficulty <= 6 ? 'intermediate' : 'advanced';
 
   const objectivesBlock = objectives?.length
-    ? `\nThe specific curriculum objectives to cover are:\n${objectives.map((o, i) => `${i + 1}. ${o}`).join('\n')}`
+    ? `\nThe specific curriculum objectives to cover are:\n${objectives.map((objective, index) => `${index + 1}. ${objective}`).join('\n')}`
     : '';
 
-  const studentBlock = studentContext
-    ? `\nStudent context: ${studentContext}`
-    : '';
+  const studentBlock = studentContext ? `\nStudent context: ${studentContext}` : '';
 
-  let minChars = 400;
-  let lengthDesc = "at least 400 characters long — simple, engaging, and easy to read";
+  let lengthDesc = 'at least 400 characters long - simple, engaging, and easy to read';
 
   const gradeStr = gradeLevel.toUpperCase();
   if (gradeStr.includes('SSS') || gradeStr.includes('10') || gradeStr.includes('11') || gradeStr.includes('12')) {
-    minChars = 2000;
-    lengthDesc = "at least 2000 characters long — detailed, highly advanced, and rigorous";
-  } else if (gradeStr.includes('JSS') || gradeStr.includes('7') || gradeStr.includes('8') || gradeStr.includes('9') || gradeStr.includes('4') || gradeStr.includes('5') || gradeStr.includes('6')) {
-    minChars = 1000;
-    lengthDesc = "at least 1000 characters long — thorough and well-structured";
+    lengthDesc = 'at least 2000 characters long - detailed, highly advanced, and rigorous';
+  } else if (
+    gradeStr.includes('JSS') ||
+    gradeStr.includes('7') ||
+    gradeStr.includes('8') ||
+    gradeStr.includes('9') ||
+    gradeStr.includes('4') ||
+    gradeStr.includes('5') ||
+    gradeStr.includes('6')
+  ) {
+    lengthDesc = 'at least 1000 characters long - thorough and well-structured';
   }
 
   switch (contentType) {
@@ -73,12 +75,12 @@ ${studentBlock}
 The lesson note MUST include:
 - topic: the exact topic title
 - objectives: at least 3 clear, measurable learning objectives
-- explanation: a THOROUGH, DETAILED explanation (${lengthDesc}). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns. DO NOT BE LAZY.
+- explanation: a thorough, detailed explanation (${lengthDesc}). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns.
 - examples: at least 2 worked examples with detailed context and solution
 - practiceQuestions: at least 5 questions with answers, covering easy/medium/hard difficulties
 - teacherNotes: optional tips for the tutor delivering this lesson
 
-Output ONLY valid JSON matching this structure. No markdown wrapping.`;
+Output only valid JSON matching this structure.`;
 
     case 'story':
       return `Write a captivating, age-appropriate story for ${gradeLevel} students.
@@ -93,7 +95,7 @@ The story MUST:
 - Be rich, immersive, and ${lengthDesc}
 - Include at least 3 vocabulary words with meanings
 
-Output ONLY valid JSON with: title, moralLesson, ageSuitability, content, vocabulary[{word, meaning}]`;
+Output only valid JSON with: title, moralLesson, ageSuitability, content, vocabulary[{word, meaning}]`;
 
     case 'comprehension':
       return `Create a detailed comprehension passage for ${gradeLevel} ${subject} on "${topic}".
@@ -103,12 +105,12 @@ ${studentBlock}
 
 The passage MUST:
 - Be thorough and educational (${lengthDesc})
-- Include factual, inferential, AND evaluative questions
+- Include factual, inferential, and evaluative questions
 - Have at least 5 questions with detailed answers
 - Include at least 3 vocabulary words with meanings
 - Use clear, age-appropriate language for ${gradeLevel}
 
-Output ONLY valid JSON with: title, passage, vocabulary[{word, meaning}], questions[{question, answer, type}]`;
+Output only valid JSON with: title, passage, vocabulary[{word, meaning}], questions[{question, answer, type}]`;
 
     case 'quiz':
     case 'worksheet':
@@ -118,15 +120,38 @@ ${objectivesBlock}
 ${studentBlock}
 
 CRITICAL REQUIREMENTS:
-- You MUST generate exactly 20 diverse, unique questions pulled from a deep subject knowledge bank. DO NOT REPEAT QUESTIONS.
-- The 20 questions MUST be divided across difficulty levels: roughly 7 easy, 7 medium, and 6 hard/difficult questions.
-- For 'multiple_choice' questions, you MUST provide exactly 4 options formatted as A, B, C, and D (like a "Who Wants to Be a Millionaire" layout).
-- For EVERY question, clearly provide the exact correct answer.
-- For EVERY question, provide a detailed teaching explanation of why the answer is correct.
+- Generate exactly 20 diverse, unique questions pulled from deep subject knowledge. Do not repeat questions.
+- Divide the 20 questions across difficulty levels: roughly 7 easy, 7 medium, and 6 hard questions.
+- For multiple_choice questions, provide exactly 4 options.
+- For every question, provide the exact correct answer.
+- For every question, provide a detailed teaching explanation of why the answer is correct.
 - Emphasize multiple_choice, but you may mix in short_answer, true_false, or fill_in_blank.
 - Include clear instructions for the student.
 
-Output ONLY valid JSON with: title, instructions, questions[{questionText, questionType, options?, correctAnswer, explanation, difficulty}]`;
+Output only valid JSON with: title, instructions, questions[{questionText, questionType, options?, correctAnswer, explanation, difficulty}]`;
+
+    case 'spelling_bee':
+      return `Create a tutor-quality spelling bee challenge for ${gradeLevel} ${subject} on "${topic}".
+Curriculum system: ${curriculumSystem}.
+${objectivesBlock}
+${studentBlock}
+
+CRITICAL REQUIREMENTS:
+- Generate exactly 10 unique spelling bee words aligned to the topic and age level.
+- Mix difficulty levels across easy, medium, and hard.
+- For each word provide:
+  - word
+  - pronunciation
+  - syllables as a number
+  - definition
+  - exampleSentence
+  - hint that helps the student spell without revealing the word
+  - difficulty
+- Write instructions a tutor can read aloud to students.
+- Keep the word list educational and curriculum-aware, not random vocabulary.
+- Use clear Nigerian classroom context where useful.
+
+Output only valid JSON with: title, instructions, theme, words[{word, pronunciation, syllables, definition, exampleSentence, hint, difficulty}]`;
 
     default:
       return `Generate educational content for ${gradeLevel} ${subject} on "${topic}". Output valid JSON.`;
@@ -155,8 +180,8 @@ Grade Level: ${params.gradeLevel}
 Performance Data:
 ${params.performanceData
   .map(
-    (p) =>
-      `- ${p.subject}: Average Score ${p.averageScore}%, ${p.assignmentsCompleted} assignments completed, ${p.attendanceRate}% attendance`,
+    (item) =>
+      `- ${item.subject}: Average Score ${item.averageScore}%, ${item.assignmentsCompleted} assignments completed, ${item.attendanceRate}% attendance`,
   )
   .join('\n')}
 
@@ -168,8 +193,8 @@ You must provide:
 5. recommendations: at least 2 actionable items with priority and target audience (tutor/parent/student)
 6. revisionPlan: focus topics and a suggested weekly schedule
 
-Be specific, data-driven, and constructive. This is for professional educational use.
-Output ONLY valid JSON matching the schema.`;
+Be specific, data-driven, and constructive.
+Output only valid JSON matching the schema.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -191,11 +216,11 @@ Concerns: ${params.concerns.join('; ')}
 
 The report must:
 - Use a warm, encouraging, professional tone (tone: "warm_professional")
-- Summary must be thorough (min 200 chars) — parents want detail, not fluff
+- Summary must be thorough (min 200 chars) - parents want detail, not fluff
 - Include specific highlights from the week
 - Honestly but gently address areas for improvement
 - Provide at least 1 actionable suggestion parents can do at home
 - Never be alarming or discouraging
 
-Output ONLY valid JSON with: childName, reportPeriod, summary, highlights[], areasForImprovement[], suggestionsForHome[], tone`;
+Output only valid JSON with: childName, reportPeriod, summary, highlights[], areasForImprovement[], suggestionsForHome[], tone`;
 }

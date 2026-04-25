@@ -858,6 +858,7 @@ export default function TutorBuilderPage() {
                               <option value="story">Story</option>
                               <option value="quiz">Quiz</option>
                               <option value="worksheet">Worksheet</option>
+                              <option value="spelling_bee">Spelling Bee</option>
                             </select>
                           </div>
                           <div>
@@ -914,7 +915,7 @@ export default function TutorBuilderPage() {
                 </div>
 
                 <p className="text-xs font-bold text-dark/70 leading-relaxed">
-                  Automate your curriculum with Google Gemma 4. Generate lesson notes, stories, and quizzes in seconds.
+                  Automate your curriculum with Edvoura AI. Generate lesson notes, quizzes, spelling bees, and tutor-ready study content in seconds.
                 </p>
 
                 <div className="space-y-4">
@@ -930,6 +931,7 @@ export default function TutorBuilderPage() {
                       <option value="comprehension">Comprehension</option>
                       <option value="quiz">Quiz</option>
                       <option value="worksheet">Worksheet</option>
+                      <option value="spelling_bee">Spelling Bee</option>
                     </select>
                   </div>
 

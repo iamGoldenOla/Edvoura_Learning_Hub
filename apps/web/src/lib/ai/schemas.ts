@@ -116,7 +116,31 @@ export const QuizSchema = z.object({
 export type Quiz = z.infer<typeof QuizSchema>;
 
 // ---------------------------------------------------------------------------
-// 5. STUDENT ANALYSIS (Personalization Engine output)
+// 5. SPELLING BEE
+// ---------------------------------------------------------------------------
+export const SpellingBeeSchema = z.object({
+  title: z.string().min(5),
+  instructions: z.string().min(20),
+  theme: z.string().min(3),
+  words: z
+    .array(
+      z.object({
+        word: z.string().min(2),
+        pronunciation: z.string().min(2),
+        syllables: z.number().int().min(1).max(10),
+        definition: z.string().min(8),
+        exampleSentence: z.string().min(12),
+        hint: z.string().min(5),
+        difficulty: z.enum(['easy', 'medium', 'hard']),
+      }),
+    )
+    .min(10, 'At least 10 spelling bee words required'),
+});
+
+export type SpellingBee = z.infer<typeof SpellingBeeSchema>;
+
+// ---------------------------------------------------------------------------
+// 6. STUDENT ANALYSIS (Personalization Engine output)
 // ---------------------------------------------------------------------------
 export const StudentAnalysisSchema = z.object({
   studentId: z.string().uuid(),
@@ -146,7 +170,7 @@ export const StudentAnalysisSchema = z.object({
 export type StudentAnalysis = z.infer<typeof StudentAnalysisSchema>;
 
 // ---------------------------------------------------------------------------
-// 6. PARENT REPORT (Auto-generated weekly digest)
+// 7. PARENT REPORT (Auto-generated weekly digest)
 // ---------------------------------------------------------------------------
 export const ParentReportSchema = z.object({
   childName: z.string(),
@@ -173,6 +197,7 @@ export const CONTENT_TYPES = [
   'comprehension',
   'quiz',
   'worksheet',
+  'spelling_bee',
 ] as const;
 
 export type ContentType = (typeof CONTENT_TYPES)[number];
@@ -188,5 +213,7 @@ export function getSchemaForType(type: ContentType) {
     case 'quiz':
     case 'worksheet':
       return QuizSchema;
+    case 'spelling_bee':
+      return SpellingBeeSchema;
   }
 }
