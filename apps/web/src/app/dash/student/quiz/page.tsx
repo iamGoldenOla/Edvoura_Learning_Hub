@@ -19,7 +19,7 @@ export default async function QuizPage() {
   const { data: profile } = await supabase
     .from('student_learning_profiles')
     .select('grade_level:grade_levels(code)')
-    .eq('student_id', viewer.userId)
+    .eq('student_id', viewer.currentUser.userId)
     .single();
 
   const gradeCode = (profile?.grade_level as any)?.code || 'JSS1';
