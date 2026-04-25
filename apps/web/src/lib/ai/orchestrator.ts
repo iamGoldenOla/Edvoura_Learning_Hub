@@ -13,6 +13,7 @@
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { z } from 'zod';
 
 // We use the @ai-sdk/openai package to create a custom provider for OpenRouter.
 const openrouter = createOpenAI({
@@ -25,7 +26,8 @@ const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'meta-llama/llama-3.1-70b-
 
 // Gemini Fallback
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
+const geminiModel = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
 import {
   type ContentType,
@@ -43,15 +45,42 @@ import {
 const MAX_RETRIES = 2;
 
 /**
- * Strips markdown and parses JSON
+ * Strips markdown fences and extracts the first valid JSON object/array.
  */
-function cleanAndParse(text: string, schema: any) {
+function extractJsonPayload(text: string) {
   const cleaned = text
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```\s*$/i, '')
     .trim();
-  const parsed = JSON.parse(cleaned);
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const firstObject = cleaned.indexOf('{');
+    const lastObject = cleaned.lastIndexOf('}');
+
+    if (firstObject >= 0 && lastObject > firstObject) {
+      return JSON.parse(cleaned.slice(firstObject, lastObject + 1));
+    }
+
+    const firstArray = cleaned.indexOf('[');
+    const lastArray = cleaned.lastIndexOf(']');
+
+    if (firstArray >= 0 && lastArray > firstArray) {
+      return JSON.parse(cleaned.slice(firstArray, lastArray + 1));
+    }
+
+    throw new Error('Model returned invalid JSON');
+  }
+}
+
+function cleanAndParse(text: string, schema: z.ZodTypeAny) {
+  const parsed = extractJsonPayload(text);
   return schema.parse(parsed);
+}
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export async function generateEducationalContent(params: {
@@ -100,8 +129,8 @@ export async function generateEducationalContent(params: {
         return { success: true as const, data: validated, contentType: params.contentType, attempts: attempt + 1 };
       }
 
-      throw new Error('No valid AI API keys found (OPENROUTER_API_KEY or GEMINI_API_KEY)');
-    } catch (err: any) {
+      throw new Error('No valid AI provider keys found. Set OPENROUTER_API_KEY/OPENAI_API_KEY or GEMINI_API_KEY.');
+    } catch (err: unknown) {
       lastError = err instanceof Error ? err : new Error(String(err));
       console.error(`[AI Orchestrator] Attempt ${attempt + 1} failed:`, lastError.message);
     }
@@ -142,8 +171,8 @@ export async function analyzeStudentPerformance(params: {
     });
     const validated = cleanAndParse(text, StudentAnalysisSchema);
     return { success: true as const, data: validated, attempts: 1 };
-  } catch (err: any) {
-    return { success: false as const, error: err.message, attempts: 1 };
+  } catch (err: unknown) {
+    return { success: false as const, error: getErrorMessage(err), attempts: 1 };
   }
 }
 
@@ -170,7 +199,7 @@ export async function generateParentReport(params: {
     });
     const validated = cleanAndParse(text, ParentReportSchema);
     return { success: true as const, data: validated, attempts: 1 };
-  } catch (err: any) {
-    return { success: false as const, error: err.message, attempts: 1 };
+  } catch (err: unknown) {
+    return { success: false as const, error: getErrorMessage(err), attempts: 1 };
   }
 }

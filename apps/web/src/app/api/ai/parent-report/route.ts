@@ -113,9 +113,9 @@ export async function POST(request: NextRequest) {
 
   // Optionally create a notification for the parent
   const { data: parentLinks } = await supabase
-    .from('parent_child_links')
+    .from('parent_student_links')
     .select('parent_user_id')
-    .eq('child_user_id', body.childUserId);
+    .eq('student_user_id', body.childUserId);
 
   if (parentLinks?.length) {
     for (const link of parentLinks) {

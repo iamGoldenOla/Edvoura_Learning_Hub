@@ -107,7 +107,7 @@ export default function TutorBuilderPage() {
   const [aiType, setAiType] = useState("lesson_note");
   const [aiTopic, setAiTopic] = useState("");
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<unknown>(null);
   const [aiContentId, setAiContentId] = useState<string | null>(null);
   const [isPublishingAi, setIsPublishingAi] = useState(false);
 
@@ -230,7 +230,83 @@ export default function TutorBuilderPage() {
 
   useEffect(() => {
     void loadBuilderData();
+    // loadBuilderData is intentionally run once on mount for the initial dashboard hydration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const runAiGeneration = async () => {
+    if (!aiTopic.trim() || !formSubject || !formGradeCode) {
+      setFeedback("Topic, subject, and grade are required for AI generation.");
+      return;
+    }
+
+    setIsGeneratingAi(true);
+    setAiResult(null);
+    setAiContentId(null);
+    setFeedback("Edvoura AI is composing your content...");
+
+    try {
+      const res = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contentType: aiType,
+          topic: aiTopic.trim(),
+          subject: formSubject,
+          gradeLevel: formGradeCode,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setAiResult(data.content);
+        setAiContentId(data.record?.id || null);
+        setFeedback("AI generation successful. Review and publish to students below.");
+        return;
+      }
+
+      const detail = data.detail ? ` ${data.detail}` : "";
+      const attempts = data.attempts ? ` Attempts: ${data.attempts}.` : "";
+      setFeedback(`${data.error || "Failed to generate content."}${detail}${attempts}`);
+    } catch (err: unknown) {
+      setFeedback(err instanceof Error ? err.message : "Unknown error occurred.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
+  const publishAiContent = async () => {
+    if (!aiContentId) {
+      setFeedback("Generate content first before publishing.");
+      return;
+    }
+
+    setIsPublishingAi(true);
+    setFeedback("Publishing content to student dashboards...");
+
+    try {
+      const res = await fetch("/api/ai/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentId: aiContentId }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setFeedback("SUCCESS: Content is now live for students!");
+        setAiResult(null);
+        setAiContentId(null);
+      } else {
+        setFeedback(data.error || "Failed to publish content.");
+      }
+    } catch (err: unknown) {
+      setFeedback(
+        err instanceof Error ? err.message : "Unknown error during publish.",
+      );
+    } finally {
+      setIsPublishingAi(false);
+    }
+  };
 
   const builderStats = useMemo(
     () => ({
@@ -651,9 +727,9 @@ export default function TutorBuilderPage() {
                                   );
                                   await loadBuilderData();
                                 }
-                              } catch (err: any) {
+                              } catch (err: unknown) {
                                 setFeedback(
-                                  err.message ||
+                                  (err instanceof Error ? err.message : null) ||
                                     "An error occurred during publishing.",
                                 );
                               } finally {
@@ -710,8 +786,12 @@ export default function TutorBuilderPage() {
                                       await deleteAssignment(item.id);
                                       setFeedback("Assignment deleted.");
                                       await loadBuilderData();
-                                    } catch (err: any) {
-                                      setFeedback(err.message);
+                                    } catch (err: unknown) {
+                                      setFeedback(
+                                        err instanceof Error
+                                          ? err.message
+                                          : "Unable to delete assignment.",
+                                      );
                                     }
                                   }
                                 }}
@@ -791,35 +871,8 @@ export default function TutorBuilderPage() {
                           </div>
                           <Button 
                             className="w-full bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] h-auto py-4"
-                            disabled={isGeneratingAi || !aiTopic}
-                            onClick={async () => {
-                              setIsGeneratingAi(true);
-                              setAiResult(null);
-                              setFeedback("Edvoura AI is composing your content...");
-                              try {
-                                const res = await fetch("/api/ai/generate", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    contentType: aiType,
-                                    topic: aiTopic,
-                                    subject: formSubject,
-                                    gradeLevel: formGradeCode,
-                                  }),
-                                });
-                                const data = await res.json();
-                                if (res.ok) {
-                                  setAiResult(data.content);
-                                  setFeedback("AI Generation successful!");
-                                } else {
-                                  setFeedback(data.error || "Failed to generate content");
-                                }
-                              } catch (err: any) {
-                                setFeedback(err.message || "Unknown error occurred.");
-                              } finally {
-                                setIsGeneratingAi(false);
-                              }
-                            }}
+                            disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
+                            onClick={() => void runAiGeneration()}
                           >
                             {isGeneratingAi ? "Thinking..." : "Generate with Edvoura AI"}
                           </Button>
@@ -910,7 +963,7 @@ export default function TutorBuilderPage() {
                       >
                         <option value="">Grade</option>
                         {gradeLevels.map((g) => (
-                          <option key={g.id} value={g.display_name}>{g.display_name}</option>
+                          <option key={g.id} value={g.code}>{g.display_name}</option>
                         ))}
                       </select>
                     </div>
@@ -918,41 +971,13 @@ export default function TutorBuilderPage() {
 
                   <Button
                     disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
-                    onClick={async () => {
-                      setIsGeneratingAi(true);
-                      setAiResult(null);
-                      setFeedback("Edvoura AI is composing your content...");
-                      try {
-                        const res = await fetch("/api/ai/generate", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            contentType: aiType,
-                            topic: aiTopic,
-                            subject: formSubject,
-                            gradeLevel: formGradeCode,
-                          }),
-                        });
-                        const data = await res.json();
-                        if (res.ok) {
-                          setAiResult(data.content);
-                          setAiContentId(data.record?.id || null);
-                          setFeedback("AI Generation successful! Review and publish to students below.");
-                        } else {
-                          setFeedback(data.error || "Failed to generate content");
-                        }
-                      } catch (err: any) {
-                        setFeedback(err.message || "Unknown error occurred.");
-                      } finally {
-                        setIsGeneratingAi(false);
-                      }
-                    }}
+                    onClick={() => void runAiGeneration()}
                     className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-4 w-full text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50 mt-4"
                   >
                     {isGeneratingAi ? "Thinking..." : "Generate Now"}
                   </Button>
 
-                  {aiResult && (
+                  {Boolean(aiResult) && (
                     <div className="mt-4 space-y-4">
                       <div className="bg-white border-[3px] border-dark p-4 rounded-2xl shadow-[4px_4px_0px_#060E1C]">
                         <div className="flex items-center justify-between mb-2 border-b-[2px] border-dark pb-1">
@@ -966,29 +991,7 @@ export default function TutorBuilderPage() {
 
                       <Button
                         disabled={isPublishingAi || !aiContentId}
-                        onClick={async () => {
-                          setIsPublishingAi(true);
-                          setFeedback("Publishing content to student dashboards...");
-                          try {
-                            const res = await fetch("/api/ai/publish", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ contentId: aiContentId }),
-                            });
-                            const data = await res.json();
-                            if (res.ok) {
-                              setFeedback("SUCCESS: Content is now live for students!");
-                              setAiResult(null);
-                              setAiContentId(null);
-                            } else {
-                              setFeedback(data.error || "Failed to publish content.");
-                            }
-                          } catch (err: any) {
-                            setFeedback(err.message || "Unknown error during publish.");
-                          } finally {
-                            setIsPublishingAi(false);
-                          }
-                        }}
+                        onClick={() => void publishAiContent()}
                         className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-4 text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
                       >
                         {isPublishingAi ? "Publishing..." : "Publish to Student Hubs"}

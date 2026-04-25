@@ -3,10 +3,17 @@ import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash' });
 
 export async function POST(request: Request) {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: 'GEMINI_API_KEY is not configured for flashcard generation' },
+        { status: 503 },
+      );
+    }
+
     const supabase = await createClient();
     const {
       data: { session },
@@ -45,8 +52,11 @@ Example:
     const flashcards = JSON.parse(jsonStr);
 
     return NextResponse.json({ flashcards });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating flashcards:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Flashcard generation failed' },
+      { status: 500 },
+    );
   }
 }
