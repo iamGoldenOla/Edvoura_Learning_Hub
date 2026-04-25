@@ -99,6 +99,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Fun Zone',
       items: [
         { href: '/dash/student/flashcards', icon: Layers, label: 'Flashcards' },
+        { href: '/dash/student/quiz', icon: Sparkles, label: 'AI Adventure' },
         { href: '/dash/student/read', icon: BookOpen, label: 'Read' },
         { href: '/dash/student/stories', icon: PlayCircle, label: 'Stories' },
         { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
@@ -132,7 +133,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Practice',
       items: [
         { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
-        { href: '/dash/student/quiz', icon: Target, label: 'Quiz' },
+        { href: '/dash/student/quiz', icon: Sparkles, label: 'AI Study Hub' },
         { href: '/dash/student/flashcards', icon: Layers, label: 'Flashcards' },
         { href: '/dash/student/library', icon: Library, label: 'Library' },
         { href: '/dash/student/videos', icon: Tv, label: 'Videos' },
@@ -174,7 +175,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
         { href: '/dash/student/exam-prep', icon: Target, label: 'Exam Prep' },
         { href: '/dash/student/mock-exams', icon: ShieldCheck, label: 'Mock Exams' },
         { href: '/dash/student/past-questions', icon: ScrollText, label: 'Past Questions' },
-        { href: '/dash/student/quiz', icon: PenSquare, label: 'Quiz Center' },
+        { href: '/dash/student/quiz', icon: Sparkles, label: 'AI Study Hub' },
       ],
     },
     {

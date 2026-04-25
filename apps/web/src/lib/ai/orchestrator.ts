@@ -8,13 +8,11 @@
  * 4. Validates the response with the Zod schema
  * 5. Retries if validation fails (up to MAX_RETRIES)
  * 6. Returns clean, validated data or throws a structured error
- *
- * This design ensures the system works even if the AI degrades —
- * bad output is NEVER stored.
  */
 
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // We use the @ai-sdk/openai package to create a custom provider for OpenRouter.
 const openrouter = createOpenAI({
@@ -22,8 +20,12 @@ const openrouter = createOpenAI({
   apiKey: process.env.OPENROUTER_API_KEY ?? process.env.OPENAI_API_KEY,
 });
 
-// The user has configured Edvoura AI via OpenRouter to use Google Gemma 4 31B
-const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'google/gemma-4-31b';
+// Primary model for OpenRouter
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'meta-llama/llama-3.1-70b-instruct';
+
+// Gemini Fallback
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
 import {
   type ContentType,
@@ -40,9 +42,18 @@ import {
 
 const MAX_RETRIES = 2;
 
-// ---------------------------------------------------------------------------
-// Core content generation (Lesson Notes, Stories, Comprehensions, Quizzes)
-// ---------------------------------------------------------------------------
+/**
+ * Strips markdown and parses JSON
+ */
+function cleanAndParse(text: string, schema: any) {
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```\s*$/i, '')
+    .trim();
+  const parsed = JSON.parse(cleaned);
+  return schema.parse(parsed);
+}
+
 export async function generateEducationalContent(params: {
   contentType: ContentType;
   topic: string;
@@ -62,37 +73,37 @@ export async function generateEducationalContent(params: {
     try {
       const retryHint =
         attempt > 0
-          ? `\n\n⚠️ Your previous response was rejected because it did not meet quality or format requirements. Please be MORE thorough, MORE detailed, and ensure your JSON is valid. Attempt ${attempt + 1}/${MAX_RETRIES + 1}.`
+          ? `\n\n⚠️ Your previous response was rejected. Please be MORE thorough and ensure your JSON is valid. Attempt ${attempt + 1}/${MAX_RETRIES + 1}.`
           : '';
 
-      const { text } = await generateText({
-        model: openrouter(DEFAULT_MODEL),
-        system: SYSTEM_IDENTITY,
-        prompt: userPrompt + retryHint,
-        temperature: 0.7,
-      });
+      // Try OpenRouter First
+      if (process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY) {
+        try {
+          const { text } = await generateText({
+            model: openrouter(DEFAULT_MODEL),
+            system: SYSTEM_IDENTITY,
+            prompt: userPrompt + retryHint,
+            temperature: 0.7,
+          });
+          const validated = cleanAndParse(text, schema);
+          return { success: true as const, data: validated, contentType: params.contentType, attempts: attempt + 1 };
+        } catch (orErr) {
+          console.warn('[AI Orchestrator] OpenRouter failed, trying Gemini...', orErr);
+        }
+      }
 
-      // Strip any markdown wrapping the LLM might add
-      const cleaned = text
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/```\s*$/i, '')
-        .trim();
+      // Try Gemini Fallback
+      if (process.env.GEMINI_API_KEY) {
+        const result = await geminiModel.generateContent(SYSTEM_IDENTITY + '\n\n' + userPrompt + retryHint);
+        const text = result.response.text();
+        const validated = cleanAndParse(text, schema);
+        return { success: true as const, data: validated, contentType: params.contentType, attempts: attempt + 1 };
+      }
 
-      const parsed = JSON.parse(cleaned);
-      const validated = schema.parse(parsed);
-
-      return {
-        success: true as const,
-        data: validated,
-        contentType: params.contentType,
-        attempts: attempt + 1,
-      };
-    } catch (err) {
+      throw new Error('No valid AI API keys found (OPENROUTER_API_KEY or GEMINI_API_KEY)');
+    } catch (err: any) {
       lastError = err instanceof Error ? err : new Error(String(err));
-      console.error(
-        `[AI Orchestrator] Attempt ${attempt + 1} failed for ${params.contentType}:`,
-        lastError.message,
-      );
+      console.error(`[AI Orchestrator] Attempt ${attempt + 1} failed:`, lastError.message);
     }
   }
 
@@ -104,9 +115,6 @@ export async function generateEducationalContent(params: {
   };
 }
 
-// ---------------------------------------------------------------------------
-// Student Analysis (Personalization Engine)
-// ---------------------------------------------------------------------------
 export async function analyzeStudentPerformance(params: {
   studentName: string;
   studentId: string;
@@ -119,42 +127,26 @@ export async function analyzeStudentPerformance(params: {
   }[];
 }) {
   const userPrompt = buildStudentAnalysisPrompt(params);
-
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const { text } = await generateText({
-        model: openrouter(DEFAULT_MODEL),
-        system: SYSTEM_IDENTITY,
-        prompt: userPrompt,
-        temperature: 0.5,
-      });
-
-      const cleaned = text
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/```\s*$/i, '')
-        .trim();
-
-      const parsed = JSON.parse(cleaned);
-      const validated = StudentAnalysisSchema.parse(parsed);
-
-      return { success: true as const, data: validated, attempts: attempt + 1 };
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
+  try {
+    if (process.env.GEMINI_API_KEY) {
+       const result = await geminiModel.generateContent(SYSTEM_IDENTITY + '\n\n' + userPrompt);
+       const text = result.response.text();
+       const validated = cleanAndParse(text, StudentAnalysisSchema);
+       return { success: true as const, data: validated, attempts: 1 };
     }
+    const { text } = await generateText({
+      model: openrouter(DEFAULT_MODEL),
+      system: SYSTEM_IDENTITY,
+      prompt: userPrompt,
+      temperature: 0.5,
+    });
+    const validated = cleanAndParse(text, StudentAnalysisSchema);
+    return { success: true as const, data: validated, attempts: 1 };
+  } catch (err: any) {
+    return { success: false as const, error: err.message, attempts: 1 };
   }
-
-  return {
-    success: false as const,
-    error: lastError?.message ?? 'Student analysis failed',
-    attempts: MAX_RETRIES + 1,
-  };
 }
 
-// ---------------------------------------------------------------------------
-// Parent Report Generator (Operations Engine)
-// ---------------------------------------------------------------------------
 export async function generateParentReport(params: {
   childName: string;
   reportPeriod: string;
@@ -163,35 +155,22 @@ export async function generateParentReport(params: {
   concerns: string[];
 }) {
   const userPrompt = buildParentReportPrompt(params);
-
-  let lastError: Error | null = null;
-
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const { text } = await generateText({
-        model: openrouter(DEFAULT_MODEL),
-        system: SYSTEM_IDENTITY,
-        prompt: userPrompt,
-        temperature: 0.6,
-      });
-
-      const cleaned = text
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/```\s*$/i, '')
-        .trim();
-
-      const parsed = JSON.parse(cleaned);
-      const validated = ParentReportSchema.parse(parsed);
-
-      return { success: true as const, data: validated, attempts: attempt + 1 };
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
+  try {
+    if (process.env.GEMINI_API_KEY) {
+       const result = await geminiModel.generateContent(SYSTEM_IDENTITY + '\n\n' + userPrompt);
+       const text = result.response.text();
+       const validated = cleanAndParse(text, ParentReportSchema);
+       return { success: true as const, data: validated, attempts: 1 };
     }
+    const { text } = await generateText({
+      model: openrouter(DEFAULT_MODEL),
+      system: SYSTEM_IDENTITY,
+      prompt: userPrompt,
+      temperature: 0.6,
+    });
+    const validated = cleanAndParse(text, ParentReportSchema);
+    return { success: true as const, data: validated, attempts: 1 };
+  } catch (err: any) {
+    return { success: false as const, error: err.message, attempts: 1 };
   }
-
-  return {
-    success: false as const,
-    error: lastError?.message ?? 'Parent report generation failed',
-    attempts: MAX_RETRIES + 1,
-  };
 }

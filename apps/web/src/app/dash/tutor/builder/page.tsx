@@ -297,6 +297,13 @@ export default function TutorBuilderPage() {
               active={activeTool === "spelling-bee"}
               onClick={() => setActiveTool("spelling-bee")}
             />
+            <ToolCard
+              title="AI Generator"
+              subtitle="Generate notes & quizzes"
+              icon={Sparkles}
+              active={activeTool === "ai-generator"}
+              onClick={() => setActiveTool("ai-generator")}
+            />
           </section>
 
           <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
@@ -331,6 +338,7 @@ export default function TutorBuilderPage() {
                     {activeTool === "quiz" && "Quiz & Test Builder"}
                     {activeTool === "resources" && "Lesson Resource Library"}
                     {activeTool === "spelling-bee" && "Spelling Bee Challenge"}
+                    {activeTool === "ai-generator" && "Edvoura AI Generator"}
                   </h2>
                   <Button
                     className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2"
@@ -746,6 +754,88 @@ export default function TutorBuilderPage() {
                       No live assignments yet. Publish one above and it will
                       appear here, in the grading queue, and on matching student
                       dashboards.
+                    </div>
+                  )}
+
+                  {activeTool === "ai-generator" && (
+                    <div className="rounded-2xl border-[3px] border-dark bg-yellow/5 p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
+                      <div className="flex items-center gap-3">
+                        <Sparkles className="w-8 h-8 text-yellow-600" />
+                        <h3 className="text-2xl font-black text-dark">Quick AI Generator</h3>
+                      </div>
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs font-black uppercase tracking-widest text-dark/60">I want to create a...</label>
+                            <select 
+                              value={aiType} 
+                              onChange={(e) => setAiType(e.target.value)}
+                              className="w-full mt-2 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+                            >
+                              <option value="lesson_note">Lesson Note</option>
+                              <option value="story">Story</option>
+                              <option value="quiz">Quiz</option>
+                              <option value="worksheet">Worksheet</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-xs font-black uppercase tracking-widest text-dark/60">About this topic...</label>
+                            <input 
+                              value={aiTopic}
+                              onChange={(e) => setAiTopic(e.target.value)}
+                              placeholder="e.g. Photosynthesis"
+                              className="w-full mt-2 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+                            />
+                          </div>
+                          <Button 
+                            className="w-full bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] h-auto py-4"
+                            disabled={isGeneratingAi || !aiTopic}
+                            onClick={async () => {
+                              setIsGeneratingAi(true);
+                              setAiResult(null);
+                              setFeedback("Edvoura AI is composing your content...");
+                              try {
+                                const res = await fetch("/api/ai/generate", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    contentType: aiType,
+                                    topic: aiTopic,
+                                    subject: formSubject,
+                                    gradeLevel: formGradeCode,
+                                  }),
+                                });
+                                const data = await res.json();
+                                if (res.ok) {
+                                  setAiResult(data.content);
+                                  setFeedback("AI Generation successful!");
+                                } else {
+                                  setFeedback(data.error || "Failed to generate content");
+                                }
+                              } catch (err: any) {
+                                setFeedback(err.message || "Unknown error occurred.");
+                              } finally {
+                                setIsGeneratingAi(false);
+                              }
+                            }}
+                          >
+                            {isGeneratingAi ? "Thinking..." : "Generate with Edvoura AI"}
+                          </Button>
+                        </div>
+                        <div className="rounded-2xl border-[3px] border-dark bg-white p-6 shadow-[4px_4px_0px_#060E1C] min-h-[300px]">
+                           <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-4 border-b-2 border-dark pb-2">AI Output Preview</p>
+                           {aiResult ? (
+                             <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[400px]">
+                               {JSON.stringify(aiResult, null, 2)}
+                             </pre>
+                           ) : (
+                             <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
+                               <Sparkles className="w-12 h-12 text-dark/10" />
+                               <p className="text-xs font-bold text-dark/40">Results will appear here after generation.</p>
+                             </div>
+                           )}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
