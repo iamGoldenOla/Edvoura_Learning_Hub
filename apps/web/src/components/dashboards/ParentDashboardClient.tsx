@@ -77,12 +77,12 @@ export default function ParentDashboardClient({
   parentName,
   linkedChildren,
   billingSummary,
-  childSummaries,
+  childSummaries = [],
 }: {
   parentName: string;
   linkedChildren: ParentChild[];
   billingSummary: BillingSummary | null;
-  childSummaries: ChildSummary[];
+  childSummaries?: ChildSummary[];
 }) {
   const [activeChildId, setActiveChildId] = useState<string>(
     linkedChildren[0]?.userId ?? "",
