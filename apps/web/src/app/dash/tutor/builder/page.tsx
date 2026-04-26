@@ -586,8 +586,8 @@ export default function TutorBuilderPage() {
             />
           </section>
 
-          <section className="grid grid-cols-1 gap-8 xl:grid-cols-12">
-            <div className="space-y-6 xl:col-span-8">
+          <section className={`grid grid-cols-1 gap-8 ${activeTool === "ai-generator" ? "" : "xl:grid-cols-12"}`}>
+            <div className={`space-y-6 ${activeTool === "ai-generator" ? "" : "xl:col-span-8"}`}>
               <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
                 <div className="p-6 border-b-[3px] border-dark bg-off-white flex flex-row items-center justify-between">
                   <h2 className="text-2xl font-black text-dark tracking-tight">
@@ -1084,6 +1084,7 @@ export default function TutorBuilderPage() {
                   ) : null}
 
                   {activeTool === "ai-generator" && (
+                    <div className="space-y-6">
                     <div className="rounded-2xl border-[3px] border-dark bg-yellow/5 p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
                       <div className="flex items-center gap-3">
                         <Sparkles className="w-8 h-8 text-yellow-600" />
@@ -1151,11 +1152,41 @@ export default function TutorBuilderPage() {
                         </div>
                       </div>
                     </div>
+                    <div className="rounded-2xl border-[3px] border-dark bg-white p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
+                      <div className="flex flex-col gap-4 border-b-[3px] border-dark pb-5 md:flex-row md:items-center md:justify-between">
+                        <div className="space-y-2">
+                          <h3 className="text-3xl font-black tracking-tight text-dark">Edvoura AI Content Assistant</h3>
+                          <p className="text-sm font-bold text-dark/70">
+                            Expanded workspace for lesson notes, stories, quizzes, spelling bees, and publish-ready classroom content.
+                          </p>
+                        </div>
+                        <div className="inline-flex h-fit items-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0px_#060E1C]">
+                          <Sparkles className="h-4 w-4" />
+                          Tutor-Controlled AI
+                        </div>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="rounded-xl border-[3px] border-dark bg-emerald-100 p-4 shadow-[3px_3px_0px_#060E1C]">
+                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/70">Generation Status</p>
+                          <p className="mt-2 text-sm font-bold text-dark">
+                            {isGeneratingAi ? "Generation in progress..." : aiResult ? "Draft generated and ready for review." : "Awaiting prompt."}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 shadow-[3px_3px_0px_#060E1C]">
+                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/70">Publish Readiness</p>
+                          <p className="mt-2 text-sm font-bold text-dark">
+                            {aiContentId ? "Draft saved in database. One click to publish." : "Generate content to enable publish."}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
+            {activeTool !== "ai-generator" ? (
             <div className="space-y-6 xl:col-span-4">
               <div className="border-[4px] border-dark rounded-3xl bg-yellow/10 p-6 shadow-[8px_8px_0px_#060E1C] space-y-6 sticky top-8">
                 <div className="flex items-center gap-3">
@@ -1322,6 +1353,7 @@ export default function TutorBuilderPage() {
                 </div>
               </div>
             </div>
+            ) : null}
           </section>
         </div>
       </section>

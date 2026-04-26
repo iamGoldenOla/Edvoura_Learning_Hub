@@ -34,9 +34,12 @@ const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'meta-llama/llama-3.1-70b-instruct';
 const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
 const MAX_RETRIES = 3;
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const geminiModel = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+const OPENROUTER_MODEL_CANDIDATES = [
+  DEFAULT_MODEL,
+  'meta-llama/llama-3.1-70b-instruct',
+  'mistralai/mistral-large',
+  'anthropic/claude-3.5-sonnet',
+];
 
 function createOpenRouterClient(apiKey: string) {
   return createOpenAI({
@@ -56,6 +59,31 @@ function getOpenRouterKeys() {
     .map(([, value]) => value!.trim());
 
   const primaryKeys = [process.env.OPENROUTER_API_KEY, process.env.OPENAI_API_KEY]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.trim());
+
+  return [...new Set([...primaryKeys, ...numberedKeys])];
+}
+
+function getOpenRouterModels() {
+  const envModels = [process.env.OPENROUTER_MODEL_FALLBACKS]
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .flatMap((value) => value.split(',').map((entry) => entry.trim()).filter(Boolean));
+
+  return [...new Set([...OPENROUTER_MODEL_CANDIDATES, ...envModels])];
+}
+
+function getGeminiKeys() {
+  const numberedKeys = Object.entries(process.env)
+    .filter(([name, value]) => /^GEMINI_API_KEY_\d+$/.test(name) && typeof value === 'string' && value.trim())
+    .sort(([left], [right]) => {
+      const leftNumber = Number.parseInt(left.replace('GEMINI_API_KEY_', ''), 10);
+      const rightNumber = Number.parseInt(right.replace('GEMINI_API_KEY_', ''), 10);
+      return leftNumber - rightNumber;
+    })
+    .map(([, value]) => value!.trim());
+
+  const primaryKeys = [process.env.GEMINI_API_KEY]
     .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
     .map((value) => value.trim());
 
@@ -99,39 +127,58 @@ function cleanAndParse(text: string, schema: z.ZodTypeAny) {
 
 async function tryOpenRouterText(prompt: string, temperature: number) {
   const keys = getOpenRouterKeys();
-  let lastError: Error | null = null;
+  const models = getOpenRouterModels();
+  const failures: string[] = [];
 
   for (const [index, key] of keys.entries()) {
-    try {
-      const openrouter = createOpenRouterClient(key);
-      const { text } = await generateText({
-        model: openrouter(DEFAULT_MODEL),
-        system: SYSTEM_IDENTITY,
-        prompt,
-        temperature,
-      });
+    for (const modelName of models) {
+      try {
+        const openrouter = createOpenRouterClient(key);
+        const { text } = await generateText({
+          model: openrouter(modelName),
+          system: SYSTEM_IDENTITY,
+          prompt,
+          temperature,
+        });
 
-      return { text, provider: `openrouter:${index + 1}` };
-    } catch (error: unknown) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      console.warn(`[AI Orchestrator] OpenRouter key ${index + 1} failed.`, lastError.message);
+        return { text, provider: `openrouter:${index + 1}:${modelName}` };
+      } catch (error: unknown) {
+        const failure = error instanceof Error ? error.message : String(error);
+        failures.push(`key_${index + 1}/${modelName}: ${failure}`);
+        console.warn(`[AI Orchestrator] OpenRouter key ${index + 1} model ${modelName} failed.`, failure);
+      }
     }
   }
 
-  if (lastError) {
-    throw lastError;
+  if (failures.length > 0) {
+    throw new Error(`OpenRouter failed across all keys/models: ${failures.slice(0, 6).join(' | ')}`);
   }
 
   throw new Error('No valid OpenRouter keys configured');
 }
 
 async function tryGeminiText(prompt: string) {
-  if (!process.env.GEMINI_API_KEY) {
+  const keys = getGeminiKeys();
+  if (keys.length === 0) {
     throw new Error('GEMINI_API_KEY is not configured');
   }
 
-  const result = await geminiModel.generateContent(`${SYSTEM_IDENTITY}\n\n${prompt}`);
-  return { text: result.response.text(), provider: `gemini:${GEMINI_MODEL}` };
+  const failures: string[] = [];
+
+  for (const [index, key] of keys.entries()) {
+    try {
+      const genAI = new GoogleGenerativeAI(key);
+      const geminiModel = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+      const result = await geminiModel.generateContent(`${SYSTEM_IDENTITY}\n\n${prompt}`);
+      return { text: result.response.text(), provider: `gemini:${index + 1}:${GEMINI_MODEL}` };
+    } catch (error: unknown) {
+      const failure = error instanceof Error ? error.message : String(error);
+      failures.push(`key_${index + 1}: ${failure}`);
+      console.warn(`[AI Orchestrator] Gemini key ${index + 1} failed.`, failure);
+    }
+  }
+
+  throw new Error(`Gemini failed across all configured keys: ${failures.slice(0, 6).join(' | ')}`);
 }
 
 async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(options: {
@@ -142,6 +189,8 @@ async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(optio
 }) {
   const maxRetries = options.maxRetries ?? 1;
   let lastError: Error | null = null;
+  let lastOpenRouterError: string | null = null;
+  let lastGeminiError: string | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     const retryHint =
@@ -160,6 +209,7 @@ async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(optio
       };
     } catch (error: unknown) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      lastOpenRouterError = lastError.message;
       console.warn('[AI Orchestrator] OpenRouter failed, trying Gemini...', lastError.message);
     }
 
@@ -173,15 +223,21 @@ async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(optio
       };
     } catch (error: unknown) {
       lastError = error instanceof Error ? error : new Error(String(error));
+      lastGeminiError = lastError.message;
       console.error(`[AI Orchestrator] Attempt ${attempt + 1} failed:`, lastError.message);
     }
   }
 
+  const combinedError = [lastOpenRouterError ? `OpenRouter: ${lastOpenRouterError}` : null, lastGeminiError ? `Gemini: ${lastGeminiError}` : null]
+    .filter(Boolean)
+    .join(' | ');
+
   return {
     success: false as const,
     error:
-      lastError?.message ??
-      'No valid AI provider keys found. Set OPENROUTER_API_KEY/OPENROUTER_KEY_* or GEMINI_API_KEY.',
+      combinedError ||
+      (lastError?.message ??
+        'No valid AI provider keys found. Set OPENROUTER_API_KEY/OPENROUTER_KEY_* or GEMINI_API_KEY.'),
     attempts: maxRetries + 1,
   };
 }

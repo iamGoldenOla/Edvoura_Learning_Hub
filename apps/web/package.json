@@ -9,7 +9,9 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "qa:dashboard-copy": "node scripts/dashboard-placeholder-guard.mjs",
-    "qa:smoke:prod": "node scripts/production-smoke.mjs"
+    "qa:smoke:prod": "node scripts/production-smoke.mjs",
+    "qa:smoke:auth:prod": "node scripts/authenticated-dashboard-smoke.mjs",
+    "qa:ai:matrix:prod": "node scripts/ai-regression-matrix.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.53",

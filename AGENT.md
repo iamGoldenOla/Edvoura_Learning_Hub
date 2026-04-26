@@ -11,6 +11,7 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 ### Current Status: Main Branch Synced + Mobile Hardening + Tutor UX Fixes
 
 - `main` is now the deployment source of truth and has been fast-forwarded with the full AI/dashboard branch history.
+- Assignment RPC reliability was hardened in `supabase/migrations/20260426224500_harden_assignment_rpc_ambiguity.sql` to prevent ambiguous `class_id`/`assignment_id` runtime failures during dashboard uploads/submissions.
 - Marketing pages were hardened for ultra-small screens (down to `253px` width class) by tightening typography minimums and container spacing.
 - Tutor workflow fixes were applied:
   - Roster KPI now uses real counts (`lesson_attendance`, `progress_snapshots`) instead of placeholder labels.
@@ -20,6 +21,12 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
     - route now returns generated content even when draft save fails,
     - builder now shows inline AI status/error messages in the generator panel.
   - Tutor Messages UI was redesigned to a modern threaded chat layout while keeping role/channel safety constraints.
+  - Tutor message scroll behavior was stabilized so periodic refresh no longer snaps the page while typing/sending.
+  - AI orchestrator fallback was hardened:
+    - rotates across OpenRouter key pool and model fallback list,
+    - rotates across Gemini key pool (`GEMINI_API_KEY`, `GEMINI_API_KEY_n`),
+    - returns combined provider failure diagnostics instead of a single misleading Gemini-only error.
+  - AI Generator layout was expanded in the tutor builder; compact right-rail assistant is now absorbed into a larger in-flow assistant workspace when `AI Generator` is active.
 - Marketing navbar branding was adjusted so `EDVOURA` renders fully (no clipped `RA`) and slogan visibility/contrast is preserved.
 
 ### Current Status: Dashboards Overhauled & Live Data Integrated
@@ -105,7 +112,9 @@ The platform has successfully transitioned its core management interfaces (Admin
 4. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
 5. Enforce dashboard quality gates in `apps/web`:
    - `pnpm --dir apps/web run qa:dashboard-copy` (blocks banned placeholder KPI copy),
-   - `pnpm --dir apps/web run qa:smoke:prod` (mobile/public route smoke against production).
+   - `pnpm --dir apps/web run qa:smoke:prod` (mobile/public route smoke against production),
+   - `pnpm --dir apps/web run qa:smoke:auth:prod` (role-authenticated dashboard smoke),
+   - `pnpm --dir apps/web run qa:ai:matrix:prod` (fixed-prompt AI structural regression checks).
 
 ## Working Rules
 

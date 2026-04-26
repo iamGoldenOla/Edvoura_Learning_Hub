@@ -1061,6 +1061,14 @@ export type AdminDashboardData = {
   totalClasses: number;
   pendingTutorApprovals: number;
   activeSubscriptions: number;
+  healthPanel: {
+    openRouterKeysConfigured: number;
+    geminiKeysConfigured: number;
+    aiDraftQueue: number;
+    aiFailedGenerations24h: number;
+    chatMessages24h: number;
+    chatSilentChannels: number;
+  };
   recentSignups: Array<{
     id: string;
     fullName: string | null;
@@ -1080,6 +1088,14 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     totalClasses: 0,
     pendingTutorApprovals: 0,
     activeSubscriptions: 0,
+    healthPanel: {
+      openRouterKeysConfigured: 0,
+      geminiKeysConfigured: 0,
+      aiDraftQueue: 0,
+      aiFailedGenerations24h: 0,
+      chatMessages24h: 0,
+      chatSilentChannels: 0,
+    },
     recentSignups: [],
   };
 
@@ -1113,6 +1129,45 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       : { data: [] as Array<{ user_id: string; role: string }> };
 
     const roleByUserId = new Map((rolesData ?? []).map((r) => [r.user_id, r.role]));
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const knownChatChannels = ['tutor-parent', 'tutor-student-7-12', 'parent-student-7-12'];
+    const openRouterKeysConfigured = Object.entries(process.env).filter(
+      ([name, value]) =>
+        (/^OPENROUTER_KEY_\d+$/.test(name) || name === 'OPENROUTER_API_KEY') &&
+        typeof value === 'string' &&
+        value.trim().length > 0,
+    ).length;
+    const geminiKeysConfigured = Object.entries(process.env).filter(
+      ([name, value]) =>
+        (/^GEMINI_API_KEY(_\d+)?$/.test(name)) &&
+        typeof value === 'string' &&
+        value.trim().length > 0,
+    ).length;
+
+    const [
+      { count: aiDraftQueueCount },
+      { count: aiFailedGenerations24hCount },
+      { count: chatMessages24hCount },
+      { data: activeChatChannelsData = [] },
+    ] = await Promise.all([
+      supabase.from('ai_generated_content').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+      supabase
+        .from('learning_activity_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('event_type', 'ai_generation_failed')
+        .gte('created_at', since24h),
+      supabase
+        .from('dashboard_chat_messages')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', since24h),
+      supabase
+        .from('dashboard_chat_messages')
+        .select('channel_id')
+        .gte('created_at', since24h),
+    ]);
+
+    const activeChannels24h = new Set((activeChatChannelsData ?? []).map((entry) => entry.channel_id));
+    const chatSilentChannels = knownChatChannels.filter((channelId) => !activeChannels24h.has(channelId)).length;
 
     const recentSignups = normalizedProfiles.map((p) => ({
       id: p.id,
@@ -1129,6 +1184,14 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       totalClasses: classCount ?? 0,
       pendingTutorApprovals: pendingTutorCount ?? 0,
       activeSubscriptions: 0,
+      healthPanel: {
+        openRouterKeysConfigured,
+        geminiKeysConfigured,
+        aiDraftQueue: aiDraftQueueCount ?? 0,
+        aiFailedGenerations24h: aiFailedGenerations24hCount ?? 0,
+        chatMessages24h: chatMessages24hCount ?? 0,
+        chatSilentChannels,
+      },
       recentSignups,
     };
   } catch {

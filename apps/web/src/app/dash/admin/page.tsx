@@ -73,6 +73,14 @@ export default async function AdminDashboard() {
     { label: 'Parents', value: dashboard.totalParents.toLocaleString(), bg: 'bg-blue-300' },
     { label: 'Active Classes', value: dashboard.totalClasses.toLocaleString(), bg: 'bg-rose-300' },
   ];
+  const healthCards = [
+    { label: 'OpenRouter Keys', value: dashboard.healthPanel.openRouterKeysConfigured, bg: 'bg-emerald-100' },
+    { label: 'Gemini Keys', value: dashboard.healthPanel.geminiKeysConfigured, bg: 'bg-blue-100' },
+    { label: 'AI Draft Queue', value: dashboard.healthPanel.aiDraftQueue, bg: 'bg-yellow/60' },
+    { label: 'AI Failures (24h)', value: dashboard.healthPanel.aiFailedGenerations24h, bg: 'bg-rose-100' },
+    { label: 'Chat Messages (24h)', value: dashboard.healthPanel.chatMessages24h, bg: 'bg-sky-100' },
+    { label: 'Silent Channels (24h)', value: dashboard.healthPanel.chatSilentChannels, bg: 'bg-amber-100' },
+  ];
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
@@ -124,6 +132,23 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      <section className="overflow-hidden rounded-[24px] border-[4px] border-dark bg-white shadow-[8px_8px_0px_#060E1C]">
+        <div className="border-b-[4px] border-dark bg-dark p-5 text-white">
+          <h2 className="text-2xl font-black tracking-tight">System Health Panel</h2>
+          <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-white/70">
+            AI providers, generation queue, and chat delivery pulse
+          </p>
+        </div>
+        <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
+          {healthCards.map((card) => (
+            <div key={card.label} className={`rounded-2xl border-[3px] border-dark ${card.bg} p-4 shadow-[4px_4px_0px_#060E1C]`}>
+              <p className="text-[10px] font-black uppercase tracking-widest text-dark/70">{card.label}</p>
+              <p className="mt-2 text-3xl font-black tracking-tight text-dark">{card.value.toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {dashboard.pendingTutorApprovals > 0 && (
         <div className="border-[4px] border-dark rounded-[24px] bg-rose-100 shadow-[8px_8px_0px_#060E1C] overflow-hidden">

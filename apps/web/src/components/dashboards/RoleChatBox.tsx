@@ -39,6 +39,8 @@ export default function RoleChatBox({
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const endOfMessagesRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const shouldStickToBottomRef = useRef(true);
 
   const activeChannel = channels.find((channel) => channel.id === activeChannelId) ?? channels[0];
 
@@ -49,9 +51,16 @@ export default function RoleChatBox({
 
   useEffect(() => {
     if (!activeChannel?.id) return;
+    shouldStickToBottomRef.current = true;
 
     const fetchMessages = async () => {
       try {
+        const container = messagesContainerRef.current;
+        if (container) {
+          const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+          shouldStickToBottomRef.current = distanceFromBottom < 48;
+        }
+
         const { data, error } = await supabase
           .from('dashboard_chat_messages')
           .select('id, channel_id, sender_role, sender_name, text, created_at')
@@ -69,7 +78,18 @@ export default function RoleChatBox({
           text: message.text,
           createdAt: message.created_at,
         }));
-        setMessages(mapped);
+        setMessages((current) => {
+          const unchanged =
+            current.length === mapped.length &&
+            current.every(
+              (message, index) =>
+                message.id === mapped[index]?.id &&
+                message.text === mapped[index]?.text &&
+                message.createdAt === mapped[index]?.createdAt,
+            );
+
+          return unchanged ? current : mapped;
+        });
         setErrorMessage('');
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Unable to load messages.');
@@ -85,8 +105,18 @@ export default function RoleChatBox({
   }, [activeChannel?.id, supabase]);
 
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, [channelMessages]);
+    if (!shouldStickToBottomRef.current) {
+      return;
+    }
+
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    endOfMessagesRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+  }, [channelMessages, activeChannel?.id]);
 
   const sendMessage = async () => {
     const text = draft.trim();
@@ -115,6 +145,7 @@ export default function RoleChatBox({
       if (error) throw error;
 
       if (created) {
+        shouldStickToBottomRef.current = true;
         setMessages((current) => [
           ...current,
           {
@@ -182,7 +213,15 @@ export default function RoleChatBox({
           </div>
         </div>
 
-        <div className="custom-scrollbar flex-1 space-y-3 overflow-y-auto bg-[#e9edf4] p-4">
+        <div
+          ref={messagesContainerRef}
+          onScroll={(event) => {
+            const element = event.currentTarget;
+            const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
+            shouldStickToBottomRef.current = distanceFromBottom < 48;
+          }}
+          className="custom-scrollbar flex-1 space-y-3 overflow-y-auto bg-[#e9edf4] p-4"
+        >
           {channelMessages.length > 0 ? (
             channelMessages.map((message) => {
               const mine = message.senderRole === senderRole && message.senderName === senderName;
