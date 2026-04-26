@@ -586,8 +586,8 @@ export default function TutorBuilderPage() {
             />
           </section>
 
-          <section className={`grid grid-cols-1 gap-8 ${activeTool === "ai-generator" ? "" : "xl:grid-cols-12"}`}>
-            <div className={`space-y-6 ${activeTool === "ai-generator" ? "" : "xl:col-span-8"}`}>
+          <section className="space-y-8">
+            <div className="space-y-6">
               <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
                 <div className="p-6 border-b-[3px] border-dark bg-off-white flex flex-row items-center justify-between">
                   <h2 className="text-2xl font-black text-dark tracking-tight">
@@ -1186,15 +1186,14 @@ export default function TutorBuilderPage() {
               </div>
             </div>
 
-            {activeTool !== "ai-generator" ? (
-            <div className="space-y-6 xl:col-span-4">
-              <div className="border-[4px] border-dark rounded-3xl bg-yellow/10 p-6 shadow-[8px_8px_0px_#060E1C] space-y-6 sticky top-8">
+            <div className="space-y-6">
+              <div className="border-[4px] border-dark rounded-3xl bg-yellow/10 p-8 shadow-[8px_8px_0px_#060E1C] space-y-8">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-yellow border-[3px] border-dark rounded-2xl shadow-[3px_3px_0px_#060E1C]">
                     <Sparkles className="w-6 h-6 text-dark" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-dark tracking-tight leading-none">
+                    <h3 className="text-3xl font-black text-dark tracking-tight leading-none">
                       Edvoura AI
                     </h3>
                     <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mt-1">
@@ -1203,106 +1202,109 @@ export default function TutorBuilderPage() {
                   </div>
                 </div>
 
-                <p className="text-xs font-bold text-dark/70 leading-relaxed">
+                <p className="max-w-4xl text-sm font-bold text-dark/70 leading-relaxed">
                   Automate your curriculum with Edvoura AI. Generate lesson notes, quizzes, spelling bees, and tutor-ready study content in seconds.
                 </p>
 
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Content Type</label>
-                    <select
-                      value={aiType}
-                      onChange={(e) => setAiType(e.target.value)}
-                      className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
-                    >
-                      <option value="lesson_note">Lesson Note</option>
-                      <option value="story">Story</option>
-                      <option value="comprehension">Comprehension</option>
-                      <option value="quiz">Quiz</option>
-                      <option value="worksheet">Worksheet</option>
-                      <option value="spelling_bee">Spelling Bee</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Topic</label>
-                    <input
-                      value={aiTopic}
-                      onChange={(e) => setAiTopic(e.target.value)}
-                      placeholder="e.g. Algebra Basics"
-                      className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Subject & Grade</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <select
-                        value={formSubject}
-                        onChange={(event) => setFormSubject(event.target.value)}
-                        className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
-                      >
-                        <option value="">Subject</option>
-                        {subjects.map((s) => (
-                          <option key={s.id} value={s.name}>{s.name}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={formGradeCode}
-                        onChange={(event) => setFormGradeCode(event.target.value)}
-                        className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
-                      >
-                        <option value="">Grade</option>
-                        {gradeLevels.map((g) => (
-                          <option key={g.id} value={g.code}>{g.display_name}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <Button
-                    disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
-                    onClick={() => void runAiGeneration()}
-                    className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-4 w-full text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50 mt-4"
-                  >
-                    {isGeneratingAi ? "Thinking..." : "Generate Now"}
-                  </Button>
-                  {feedback ? (
-                    <div
-                      className={`rounded-xl border-[3px] p-3 text-xs font-black shadow-[3px_3px_0px_#060E1C] ${
-                        aiFeedbackTone === "success"
-                          ? "border-emerald-400 bg-emerald-100 text-emerald-900"
-                          : aiFeedbackTone === "error"
-                            ? "border-rose-400 bg-rose-100 text-rose-900"
-                            : "border-dark bg-blue-100 text-dark"
-                      }`}
-                    >
-                      {feedback}
-                    </div>
-                  ) : null}
-
-                  {Boolean(aiResult) && (
-                    <div className="mt-4 space-y-4">
-                      <div className="bg-white border-[3px] border-dark p-4 rounded-2xl shadow-[4px_4px_0px_#060E1C]">
-                        <div className="flex items-center justify-between mb-2 border-b-[2px] border-dark pb-1">
-                          <h4 className="font-black text-sm uppercase tracking-widest">Result Preview</h4>
-                          <span className="text-[10px] font-bold text-dark/40">ID: {aiContentId?.split('-')[0]}...</span>
-                        </div>
-                        <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[300px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
-                          {JSON.stringify(aiResult, null, 2)}
-                        </pre>
+                <div className="grid gap-6 xl:grid-cols-3">
+                  <div className="space-y-4 xl:col-span-2">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Content Type</label>
+                        <select
+                          value={aiType}
+                          onChange={(e) => setAiType(e.target.value)}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
+                        >
+                          <option value="lesson_note">Lesson Note</option>
+                          <option value="story">Story</option>
+                          <option value="comprehension">Comprehension</option>
+                          <option value="quiz">Quiz</option>
+                          <option value="worksheet">Worksheet</option>
+                          <option value="spelling_bee">Spelling Bee</option>
+                        </select>
                       </div>
 
-                      <Button
-                        disabled={isPublishingAi || !aiContentId}
-                        onClick={() => void publishAiContent()}
-                        className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-4 text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all"
-                      >
-                        {isPublishingAi ? "Publishing..." : "Publish to Student Hubs"}
-                      </Button>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Topic</label>
+                        <input
+                          value={aiTopic}
+                          onChange={(e) => setAiTopic(e.target.value)}
+                          placeholder="e.g. Algebra Basics"
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
+                        />
+                      </div>
                     </div>
-                  )}
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Subject & Grade</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          value={formSubject}
+                          onChange={(event) => setFormSubject(event.target.value)}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
+                        >
+                          <option value="">Subject</option>
+                          {subjects.map((s) => (
+                            <option key={s.id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={formGradeCode}
+                          onChange={(event) => setFormGradeCode(event.target.value)}
+                          className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
+                        >
+                          <option value="">Grade</option>
+                          {gradeLevels.map((g) => (
+                            <option key={g.id} value={g.code}>{g.display_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Button
+                      disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
+                      onClick={() => void runAiGeneration()}
+                      className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-4 w-full text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                    >
+                      {isGeneratingAi ? "Thinking..." : "Generate Now"}
+                    </Button>
+                    <Button
+                      disabled={isPublishingAi || !aiContentId}
+                      onClick={() => void publishAiContent()}
+                      className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-4 text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                    >
+                      {isPublishingAi ? "Publishing..." : "Publish to Student Hubs"}
+                    </Button>
+                    {feedback ? (
+                      <div
+                        className={`rounded-xl border-[3px] p-3 text-xs font-black shadow-[3px_3px_0px_#060E1C] ${
+                          aiFeedbackTone === "success"
+                            ? "border-emerald-400 bg-emerald-100 text-emerald-900"
+                            : aiFeedbackTone === "error"
+                              ? "border-rose-400 bg-rose-100 text-rose-900"
+                              : "border-dark bg-blue-100 text-dark"
+                        }`}
+                      >
+                        {feedback}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
+
+                {Boolean(aiResult) ? (
+                  <div className="rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[4px_4px_0px_#060E1C]">
+                    <div className="flex items-center justify-between mb-2 border-b-[2px] border-dark pb-1">
+                      <h4 className="font-black text-sm uppercase tracking-widest">Result Preview</h4>
+                      <span className="text-[10px] font-bold text-dark/40">ID: {aiContentId?.split('-')[0]}...</span>
+                    </div>
+                    <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[320px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
+                      {JSON.stringify(aiResult, null, 2)}
+                    </pre>
+                  </div>
+                ) : null}
               </div>
 
               <div className="border-[3px] border-dark rounded-3xl bg-blue-100 p-6 shadow-[5px_5px_0px_#060E1C]">
@@ -1353,7 +1355,6 @@ export default function TutorBuilderPage() {
                 </div>
               </div>
             </div>
-            ) : null}
           </section>
         </div>
       </section>

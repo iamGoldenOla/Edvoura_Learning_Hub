@@ -188,6 +188,7 @@ async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(optio
   maxRetries?: number;
 }) {
   const maxRetries = options.maxRetries ?? 1;
+  const hasGeminiFallback = getGeminiKeys().length > 0;
   let lastError: Error | null = null;
   let lastOpenRouterError: string | null = null;
   let lastGeminiError: string | null = null;
@@ -213,18 +214,22 @@ async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(optio
       console.warn('[AI Orchestrator] OpenRouter failed, trying Gemini...', lastError.message);
     }
 
-    try {
-      const geminiResult = await tryGeminiText(promptWithRetry);
-      return {
-        success: true as const,
-        data: cleanAndParse(geminiResult.text, options.schema),
-        provider: geminiResult.provider,
-        attempts: attempt + 1,
-      };
-    } catch (error: unknown) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-      lastGeminiError = lastError.message;
-      console.error(`[AI Orchestrator] Attempt ${attempt + 1} failed:`, lastError.message);
+    if (hasGeminiFallback) {
+      try {
+        const geminiResult = await tryGeminiText(promptWithRetry);
+        return {
+          success: true as const,
+          data: cleanAndParse(geminiResult.text, options.schema),
+          provider: geminiResult.provider,
+          attempts: attempt + 1,
+        };
+      } catch (error: unknown) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        lastGeminiError = lastError.message;
+        console.error(`[AI Orchestrator] Attempt ${attempt + 1} failed:`, lastError.message);
+      }
+    } else {
+      console.warn('[AI Orchestrator] Gemini fallback is disabled (no GEMINI_API_KEY configured).');
     }
   }
 
@@ -237,7 +242,7 @@ async function generateValidatedWithFallback<TSchema extends z.ZodTypeAny>(optio
     error:
       combinedError ||
       (lastError?.message ??
-        'No valid AI provider keys found. Set OPENROUTER_API_KEY/OPENROUTER_KEY_* or GEMINI_API_KEY.'),
+        'No valid OpenRouter provider keys found. Set OPENROUTER_API_KEY or OPENROUTER_KEY_* env vars.'),
     attempts: maxRetries + 1,
   };
 }
