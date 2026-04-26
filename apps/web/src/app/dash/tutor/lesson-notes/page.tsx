@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { BookOpen, CheckSquare, ClipboardList, FilePenLine, Pencil, PlusCircle, ShieldCheck, Target, Trash2 } from 'lucide-react';
+import { BookOpen, CheckSquare, ClipboardList, FilePenLine, Pencil, PlusCircle, ShieldCheck, Sparkles, Target, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -82,6 +82,17 @@ export default function TutorLessonNotesPage() {
   const [safeguarding, setSafeguarding] = useState('');
   const [reflection, setReflection] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [explainerMode, setExplainerMode] = useState<'simple' | 'harder_examples' | 'checks_for_understanding' | 'revision_notes'>('simple');
+  const [explainerPlanId, setExplainerPlanId] = useState<string | null>(basePlans[0]?.id ?? null);
+  const [explainerResult, setExplainerResult] = useState<{
+    title: string;
+    explanation: string;
+    examples: string[];
+    checks: Array<{ question: string; answerHint: string }>;
+    revisionNotes: string[];
+    nextStep: string;
+  } | null>(null);
+  const [isExplaining, setIsExplaining] = useState(false);
 
   const stats = useMemo(() => {
     const draftCount = plans.filter((plan) => plan.status === 'Draft').length;
@@ -200,7 +211,67 @@ export default function TutorLessonNotesPage() {
       setEditingPlanId(null);
       setShowForm(false);
     }
+    if (explainerPlanId === planId) {
+      setExplainerPlanId(plans.find((item) => item.id !== planId)?.id ?? null);
+      setExplainerResult(null);
+    }
     setFeedback('Lesson note deleted.');
+  };
+
+  const selectedExplainerPlan =
+    plans.find((item) => item.id === explainerPlanId) ?? plans[0] ?? null;
+
+  const buildLessonNarrative = (plan: LessonPlan) =>
+    [
+      `Class: ${plan.className}`,
+      `Topic: ${plan.topic}`,
+      `Objective: ${plan.objective}`,
+      `Prior knowledge: ${plan.priorKnowledge}`,
+      `Key vocabulary: ${plan.keyVocabulary}`,
+      `Resources: ${plan.resources}`,
+      `Differentiation: ${plan.differentiation}`,
+      `Formative assessment: ${plan.formativeAssessment}`,
+      `Homework: ${plan.homework}`,
+      `Teacher reflection: ${plan.reflection}`,
+    ].join('\n');
+
+  const runLessonExplainer = async () => {
+    if (!selectedExplainerPlan) {
+      setFeedback('Create a lesson note first before using the explainer.');
+      return;
+    }
+
+    setIsExplaining(true);
+    setExplainerResult(null);
+    setFeedback('Edvoura AI is transforming this lesson note...');
+
+    try {
+      const response = await fetch('/api/ai/explain-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: explainerMode,
+          topic: selectedExplainerPlan.topic,
+          subject: selectedExplainerPlan.className,
+          gradeLevel: selectedExplainerPlan.className,
+          lessonText: buildLessonNarrative(selectedExplainerPlan),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setFeedback(data.detail || data.error || 'Unable to explain this lesson.');
+        return;
+      }
+
+      setExplainerResult(data.explanation);
+      setFeedback(`Lesson explainer ready for ${selectedExplainerPlan.topic}.`);
+    } catch (error: unknown) {
+      setFeedback(error instanceof Error ? error.message : 'Unable to explain this lesson.');
+    } finally {
+      setIsExplaining(false);
+    }
   };
 
   return (
@@ -411,6 +482,109 @@ export default function TutorLessonNotesPage() {
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">At least two formative checks during delivery.</div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Plan remediation for struggling learners.</div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">End lesson with reflection and next-step plan.</div>
+                </div>
+              </div>
+
+              <div className="border-[3px] border-dark rounded-3xl bg-yellow/20 p-6 shadow-[5px_5px_0px_#060E1C] space-y-4">
+                <h3 className="text-xl font-black text-dark flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-dark" />
+                  Lesson Explainer
+                </h3>
+                <p className="text-sm font-semibold text-dark/70">
+                  Rework any lesson note into a simpler explanation, harder examples, quick checks, or revision notes.
+                </p>
+                <select
+                  value={explainerPlanId ?? ''}
+                  onChange={(event) => {
+                    setExplainerPlanId(event.target.value);
+                    setExplainerResult(null);
+                  }}
+                  className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                >
+                  {plans.map((plan) => (
+                    <option key={plan.id} value={plan.id}>
+                      {plan.className} - {plan.topic}
+                    </option>
+                  ))}
+                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { value: 'simple', label: 'Explain Simply' },
+                    { value: 'harder_examples', label: 'Harder Examples' },
+                    { value: 'checks_for_understanding', label: '5 Checks' },
+                    { value: 'revision_notes', label: 'Revision Notes' },
+                  ].map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => setExplainerMode(item.value as typeof explainerMode)}
+                      className={`rounded-xl border-[3px] px-3 py-3 text-left text-[11px] font-black uppercase tracking-widest transition-all ${
+                        explainerMode === item.value
+                          ? 'border-dark bg-dark text-white shadow-[3px_3px_0px_#F5C518]'
+                          : 'border-dark bg-white text-dark shadow-[3px_3px_0px_#060E1C]'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <Button
+                  className="w-full bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] h-auto py-4"
+                  disabled={!selectedExplainerPlan || isExplaining}
+                  onClick={() => void runLessonExplainer()}
+                >
+                  {isExplaining ? 'Explaining...' : 'Run Edvoura AI Explainer'}
+                </Button>
+
+                <div className="rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[3px_3px_0px_#060E1C]">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/50">
+                    Explainer Output
+                  </p>
+                  {explainerResult ? (
+                    <div className="mt-4 space-y-3 text-sm font-semibold text-dark/80">
+                      <p className="text-lg font-black text-dark">{explainerResult.title}</p>
+                      <p>{explainerResult.explanation}</p>
+                      {explainerResult.examples.length > 0 ? (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">Examples</p>
+                          {explainerResult.examples.map((item) => (
+                            <div key={item} className="rounded-xl border-[2px] border-dark bg-off-white p-3">
+                              {item}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {explainerResult.checks.length > 0 ? (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">Checks for Understanding</p>
+                          {explainerResult.checks.map((item) => (
+                            <div key={item.question} className="rounded-xl border-[2px] border-dark bg-off-white p-3">
+                              <p className="font-black text-dark">{item.question}</p>
+                              <p className="mt-1 text-xs font-semibold text-dark/70">Hint: {item.answerHint}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                      {explainerResult.revisionNotes.length > 0 ? (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">Revision Notes</p>
+                          {explainerResult.revisionNotes.map((item) => (
+                            <div key={item} className="rounded-xl border-[2px] border-dark bg-off-white p-3">
+                              {item}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                      <div className="rounded-xl border-[2px] border-dark bg-yellow/20 p-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">Next Step</p>
+                        <p className="mt-1 font-black text-dark">{explainerResult.nextStep}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-3 text-sm font-semibold text-dark/60">
+                      Select a lesson note and let Edvoura AI reframe it for delivery or revision.
+                    </p>
+                  )}
                 </div>
               </div>
 

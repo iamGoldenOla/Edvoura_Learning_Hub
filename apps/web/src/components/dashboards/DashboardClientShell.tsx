@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
   BarChart3,
   ArrowLeft,
@@ -271,6 +271,7 @@ const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon
 
 function TutorSidebarNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const tutorNav = [
     { href: '/dash/tutor/schedule', label: "Today's Classes", icon: CalendarClock },
     { href: '/dash/tutor/roster', label: 'Students', icon: Users },
@@ -282,7 +283,7 @@ function TutorSidebarNav() {
     { href: '/dash/tutor/messages', label: 'Messages', icon: MessageCircle },
     { href: '/dash/tutor/builder?tool=resources', label: 'Resources', icon: BookOpen },
     { href: '/dash/tutor/earnings', label: 'Invoice and Payment', icon: DollarSign },
-    { href: '/dash/profile', label: 'Profile and Availability', icon: Settings2 },
+    { href: '/dash/tutor/profile', label: 'Profile and Availability', icon: Settings2 },
   ];
   const toolsNav = [
     { href: '/dash/tutor/schedule', label: 'Start or Join Lesson', icon: PanelTop },
@@ -290,8 +291,19 @@ function TutorSidebarNav() {
     { href: '/dash/tutor/builder?tool=ai-generator', label: 'Edvoura AI Generator', icon: Sparkles },
   ];
   const isActive = (href: string) => {
-    const basePath = href.split('?')[0];
-    return pathname === basePath || pathname.startsWith(`${basePath}/`);
+    const [basePath, queryString] = href.split('?');
+    if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
+      return false;
+    }
+
+    if (!queryString) {
+      return true;
+    }
+
+    const hrefParams = new URLSearchParams(queryString);
+    return Array.from(hrefParams.entries()).every(
+      ([key, value]) => searchParams.get(key) === value,
+    );
   };
   return (
     <div className="space-y-1.5">

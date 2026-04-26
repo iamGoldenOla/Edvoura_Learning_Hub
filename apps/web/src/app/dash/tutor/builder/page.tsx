@@ -58,6 +58,68 @@ type AssignmentCard = {
   }>;
 };
 
+type QuizRow = {
+  id: string;
+  title: string;
+  instructions: string | null;
+  time_limit_minutes: number | null;
+  status: string | null;
+  classes:
+    | {
+        title: string;
+      }
+    | Array<{
+        title: string;
+      }>
+    | null;
+};
+
+type QuizCard = {
+  id: string;
+  title: string;
+  instructions: string;
+  className: string;
+  timeLimitLabel: string;
+  status: string;
+};
+
+type ResourceEventRow = {
+  id: string;
+  created_at: string;
+  payload:
+    | {
+        title?: string;
+        description?: string | null;
+      }
+    | null;
+  classes:
+    | {
+        title: string;
+      }
+    | Array<{
+        title: string;
+      }>
+    | null;
+};
+
+type ResourceCard = {
+  id: string;
+  title: string;
+  description: string;
+  className: string;
+  createdLabel: string;
+};
+
+const TOOL_OPTIONS = [
+  "assignment",
+  "quiz",
+  "resources",
+  "spelling-bee",
+  "ai-generator",
+] as const;
+
+type BuilderTool = (typeof TOOL_OPTIONS)[number];
+
 const formatDueLabel = (value: string | null) => {
   if (!value) {
     return "No due date";
@@ -79,11 +141,22 @@ const getRelatedClass = (entry: AssignmentRow) => {
     : entry.classes;
 };
 
+const getToolFromSearchParam = (value: string | null): BuilderTool =>
+  TOOL_OPTIONS.includes((value ?? "") as BuilderTool)
+    ? ((value ?? "assignment") as BuilderTool)
+    : "assignment";
+
+const formatCreatedLabel = (value: string) =>
+  new Date(value).toLocaleString([], {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
 export default function TutorBuilderPage() {
   const searchParams = useSearchParams();
-  const preselectTool = searchParams.get("tool");
+  const preselectTool = getToolFromSearchParam(searchParams.get("tool"));
 
-  const [activeTool, setActiveTool] = useState(preselectTool ?? "assignment");
+  const [activeTool, setActiveTool] = useState<BuilderTool>(preselectTool);
   const [feedback, setFeedback] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingAssignment, setIsSavingAssignment] = useState(false);
@@ -91,6 +164,8 @@ export default function TutorBuilderPage() {
   const [subjects, setSubjects] = useState<SubjectOption[]>([]);
   const [gradeLevels, setGradeLevels] = useState<GradeOption[]>([]);
   const [assignments, setAssignments] = useState<AssignmentCard[]>([]);
+  const [quizzes, setQuizzes] = useState<QuizCard[]>([]);
+  const [resources, setResources] = useState<ResourceCard[]>([]);
 
   const [showAssignmentForm, setShowAssignmentForm] = useState(true);
   const [formTitle, setFormTitle] = useState("");
@@ -111,6 +186,10 @@ export default function TutorBuilderPage() {
   const [aiContentId, setAiContentId] = useState<string | null>(null);
   const [isPublishingAi, setIsPublishingAi] = useState(false);
 
+  useEffect(() => {
+    setActiveTool(preselectTool);
+  }, [preselectTool]);
+
   const loadBuilderData = async () => {
     const supabase = createClient();
     setIsLoading(true);
@@ -125,14 +204,17 @@ export default function TutorBuilderPage() {
       return;
     }
 
-    if (membership.data?.user_id) {
-      setUserId(membership.data.user_id);
+    const resolvedUserId = membership.data?.user_id ?? "";
+    if (resolvedUserId) {
+      setUserId(resolvedUserId);
     }
 
     const [
       { data: subjectRows, error: subjectsError },
       { data: gradeRows, error: gradesError },
       { data: assignmentRows, error: assignmentsError },
+      { data: quizRows, error: quizzesError },
+      { data: resourceRows, error: resourcesError },
     ] = await Promise.all([
       supabase
         .from("subjects")
@@ -148,13 +230,30 @@ export default function TutorBuilderPage() {
         .select("id, title, due_at, status, classes!inner(title, subject_id)")
         .neq("status", "archived")
         .order("created_at", { ascending: false }),
+      supabase
+        .from("quizzes")
+        .select("id, title, instructions, time_limit_minutes, status, classes!inner(title)")
+        .order("created_at", { ascending: false }),
+      resolvedUserId
+        ? supabase
+            .from("learning_activity_events")
+            .select("id, created_at, payload, classes(title)")
+            .eq("event_type", "lesson_resource_uploaded")
+            .eq("actor_user_id", resolvedUserId)
+            .order("created_at", { ascending: false })
+        : Promise.resolve({
+            data: [] as ResourceEventRow[],
+            error: null,
+          }),
     ]);
 
-    if (subjectsError || gradesError || assignmentsError) {
+    if (subjectsError || gradesError || assignmentsError || quizzesError || resourcesError) {
       setFeedback(
         subjectsError?.message ??
           gradesError?.message ??
           assignmentsError?.message ??
+          quizzesError?.message ??
+          resourcesError?.message ??
           "Unable to load builder data.",
       );
       setIsLoading(false);
@@ -216,6 +315,41 @@ export default function TutorBuilderPage() {
     });
 
     setAssignments(normalizedAssignments);
+    setQuizzes(
+      ((quizRows ?? []) as QuizRow[]).map((entry) => {
+        const relatedClass = entry.classes
+          ? Array.isArray(entry.classes)
+            ? (entry.classes[0] ?? null)
+            : entry.classes
+          : null;
+
+        return {
+          id: entry.id,
+          title: entry.title,
+          instructions: entry.instructions?.trim() || "No instructions added yet.",
+          className: relatedClass?.title ?? "Unassigned class",
+          timeLimitLabel: entry.time_limit_minutes ? `${entry.time_limit_minutes} mins` : "No time limit",
+          status: entry.status ?? "published",
+        };
+      }),
+    );
+    setResources(
+      ((resourceRows ?? []) as ResourceEventRow[]).map((entry) => {
+        const relatedClass = entry.classes
+          ? Array.isArray(entry.classes)
+            ? (entry.classes[0] ?? null)
+            : entry.classes
+          : null;
+
+        return {
+          id: entry.id,
+          title: entry.payload?.title?.trim() || "Untitled resource",
+          description: entry.payload?.description?.trim() || "No description supplied.",
+          className: relatedClass?.title ?? "General library",
+          createdLabel: formatCreatedLabel(entry.created_at),
+        };
+      }),
+    );
 
     if (!formSubject && subjectRows?.[0]?.name) {
       setFormSubject(subjectRows[0].name);
@@ -311,11 +445,31 @@ export default function TutorBuilderPage() {
   const builderStats = useMemo(
     () => ({
       assignments: String(assignments.length),
-      quizzes: "Pending phase",
-      resources: "Storage next",
-      gamification: "Planned",
+      quizzes: String(quizzes.length),
+      resources: String(resources.length),
+      gamification: String(
+        assignments.filter((item) => item.title.startsWith("Spelling Bee:")).length,
+      ),
     }),
-    [assignments.length],
+    [assignments, quizzes.length, resources.length],
+  );
+
+  const showCreateForm = activeTool !== "ai-generator";
+  const livePanelTitle =
+    activeTool === "assignment"
+      ? "Live Assignment Builder"
+      : activeTool === "quiz"
+        ? "Quiz & Test Builder"
+        : activeTool === "resources"
+          ? "Lesson Resource Library"
+          : activeTool === "spelling-bee"
+            ? "Spelling Bee Challenge"
+            : "Edvoura AI Generator";
+  const standardAssignments = assignments.filter(
+    (item) => !item.title.startsWith("Spelling Bee:"),
+  );
+  const spellingBeeAssignments = assignments.filter((item) =>
+    item.title.startsWith("Spelling Bee:"),
   );
 
   return (
@@ -412,24 +566,22 @@ export default function TutorBuilderPage() {
               <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
                 <div className="p-6 border-b-[3px] border-dark bg-off-white flex flex-row items-center justify-between">
                   <h2 className="text-2xl font-black text-dark tracking-tight">
-                    {activeTool === "assignment" && "Live Assignment Builder"}
-                    {activeTool === "quiz" && "Quiz & Test Builder"}
-                    {activeTool === "resources" && "Lesson Resource Library"}
-                    {activeTool === "spelling-bee" && "Spelling Bee Challenge"}
-                    {activeTool === "ai-generator" && "Edvoura AI Generator"}
+                    {livePanelTitle}
                   </h2>
-                  <Button
-                    className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2"
-                    onClick={() => setShowAssignmentForm((value) => !value)}
-                  >
-                    {showAssignmentForm
-                      ? "Close Form"
-                      : `New ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Challenge"}`}
-                  </Button>
+                  {activeTool !== "ai-generator" ? (
+                    <Button
+                      className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2"
+                      onClick={() => setShowAssignmentForm((value) => !value)}
+                    >
+                      {showAssignmentForm
+                        ? "Close Form"
+                        : `New ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Challenge"}`}
+                    </Button>
+                  ) : null}
                 </div>
 
                 <div className="p-6 space-y-6">
-                  {showAssignmentForm ? (
+                  {showCreateForm && showAssignmentForm ? (
                     <div className="rounded-2xl border-[3px] border-dark bg-blue-50 p-6 shadow-[5px_5px_0px_#060E1C]">
                       <h3 className="text-xl font-black text-dark tracking-tight">
                         Create{" "}
@@ -748,11 +900,16 @@ export default function TutorBuilderPage() {
 
                   {isLoading ? (
                     <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 text-center text-sm font-semibold text-dark/60">
-                      Loading live assignment data...
+                      Loading live workspace data...
                     </div>
-                  ) : assignments.length > 0 ? (
+                  ) : activeTool === "assignment" || activeTool === "spelling-bee" ? (
+                    (activeTool === "assignment"
+                      ? standardAssignments
+                      : spellingBeeAssignments).length > 0 ? (
                     <div className="grid gap-4">
-                      {assignments.map((item) => (
+                      {(activeTool === "assignment"
+                        ? standardAssignments
+                        : spellingBeeAssignments).map((item) => (
                         <div
                           key={item.id}
                           className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]"
@@ -833,11 +990,73 @@ export default function TutorBuilderPage() {
                     </div>
                   ) : (
                     <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
-                      No live assignments yet. Publish one above and it will
-                      appear here, in the grading queue, and on matching student
-                      dashboards.
+                      {activeTool === "assignment"
+                        ? "No live assignments yet. Publish one above and it will appear here, in the grading queue, and on matching student dashboards."
+                        : "No spelling bee challenges yet. Create one above and it will show up in this workspace."}
                     </div>
-                  )}
+                  )
+                  ) : activeTool === "quiz" ? (
+                    quizzes.length > 0 ? (
+                      <div className="grid gap-4">
+                        {quizzes.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-2xl border-[3px] border-dark bg-blue-50 p-5 shadow-[4px_4px_0px_#060E1C]"
+                          >
+                            <div className="flex flex-wrap items-start justify-between gap-3">
+                              <div className="space-y-2">
+                                <p className="text-xl font-black tracking-tight text-dark">{item.title}</p>
+                                <p className="text-sm font-bold leading-relaxed text-dark/70">{item.instructions}</p>
+                              </div>
+                              <span className="rounded-lg border-[2px] border-blue-300 bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-900">
+                                {item.status}
+                              </span>
+                            </div>
+                            <div className="mt-4 flex flex-wrap items-center gap-3">
+                              <span className="rounded-lg border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark">
+                                {item.className}
+                              </span>
+                              <span className="rounded-lg border-[2px] border-dark/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark/70">
+                                {item.timeLimitLabel}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
+                        No quizzes or challenges have been published yet. Create one above and it will appear here only.
+                      </div>
+                    )
+                  ) : activeTool === "resources" ? (
+                    resources.length > 0 ? (
+                      <div className="grid gap-4">
+                        {resources.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-2xl border-[3px] border-dark bg-amber-50 p-5 shadow-[4px_4px_0px_#060E1C]"
+                          >
+                            <div className="space-y-2">
+                              <p className="text-xl font-black tracking-tight text-dark">{item.title}</p>
+                              <p className="text-sm font-bold leading-relaxed text-dark/70">{item.description}</p>
+                            </div>
+                            <div className="mt-4 flex flex-wrap items-center gap-3">
+                              <span className="rounded-lg border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark">
+                                {item.className}
+                              </span>
+                              <span className="rounded-lg border-[2px] border-dark/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark/70">
+                                Added {item.createdLabel}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
+                        No lesson resources have been shared yet. Upload one above and it will appear here only.
+                      </div>
+                    )
+                  ) : null}
 
                   {activeTool === "ai-generator" && (
                     <div className="rounded-2xl border-[3px] border-dark bg-yellow/5 p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
