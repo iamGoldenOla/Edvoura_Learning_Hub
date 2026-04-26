@@ -93,27 +93,27 @@ export default function Navbar() {
             href="/"
             className="group flex min-w-0 max-w-[calc(100%-4.5rem)] items-center gap-2.5 perspective-[1000px] sm:gap-3"
           >
-            <div className="kinetic-logo relative h-9 w-9 flex-shrink-0 sm:h-10 sm:w-10 xl:h-11 xl:w-11">
+            <div className="kinetic-logo relative h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10 xl:h-11 xl:w-11">
               <div className="absolute inset-0 rotate-12 rounded-xl bg-yellow shadow-[4px_4px_0px_rgba(0,0,0,0.2)] transition-transform duration-500 group-hover:rotate-[30deg]" />
               <div className="absolute inset-0 flex items-center justify-center rounded-xl border-2 border-yellow bg-navy shadow-xl transition-transform duration-500 group-hover:rotate-0 -rotate-6">
-                <span className="font-heading text-lg font-black text-yellow sm:text-xl xl:text-2xl">E</span>
+                <span className="font-heading text-base font-black text-yellow sm:text-xl xl:text-2xl">E</span>
               </div>
               <div className="absolute -right-1 -top-1 h-3.5 w-3.5 animate-pulse rounded-full border-2 border-navy bg-success shadow-lg" />
             </div>
 
             <div className="flex min-w-0 flex-col justify-center">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="premium-shimmer-text truncate font-heading text-[1.45rem] font-black leading-none tracking-[-0.06em] uppercase text-white sm:text-[1.75rem] lg:text-[1.95rem] xl:text-[2.2rem]">
+                <span className="premium-shimmer-text truncate font-heading text-[clamp(1.1rem,7.8vw,1.75rem)] font-black leading-none tracking-[-0.06em] uppercase text-white lg:text-[1.95rem] xl:text-[2.2rem]">
                   EDVOURA
                 </span>
                 <div className="hidden h-[2px] w-6 bg-yellow/50 lg:block xl:w-8" />
               </div>
               <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2 xl:gap-3">
-                <span className="mt-0.5 font-heading text-[8px] font-black leading-none tracking-[0.18em] uppercase text-white shadow-sm sm:text-[9px] xl:text-[10px]">
+                <span className="mt-0.5 font-heading text-[7px] font-black leading-none tracking-[0.14em] uppercase text-white shadow-sm sm:text-[9px] xl:text-[10px]">
                   LEARNING <span className="text-yellow">HUB</span>
                   <span className="text-yellow">.</span>
                 </span>
-                <span className="hidden text-[8px] font-black uppercase tracking-[0.08em] text-yellow/90 sm:block lg:hidden">
+                <span className="hidden text-[8px] font-black uppercase tracking-[0.08em] text-yellow/90 min-[375px]:block lg:hidden">
                   Where learners&apos; dreams come true
                 </span>
                 <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 xl:block">

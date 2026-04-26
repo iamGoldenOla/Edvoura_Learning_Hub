@@ -24,18 +24,18 @@ export default function Home() {
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
             
             {/* Left Column — Copy */}
-            <div className="relative max-w-2xl">
+            <div className="relative max-w-2xl min-w-0">
               <div className="marketing-eyebrow mb-6 rotate-[-2deg] transition-transform hover:rotate-0">
                 <Star className="w-5 h-5 fill-navy" />
                 Premium K-12 Global Learning
               </div>
 
-              <h1 className="marketing-display font-heading font-black tracking-tight text-navy drop-shadow-[4px_4px_0px_#FFFFFF]">
+              <h1 className="marketing-display max-w-full break-words font-heading font-black tracking-tight text-navy drop-shadow-[3px_3px_0px_#FFFFFF] sm:drop-shadow-[4px_4px_0px_#FFFFFF]">
                 Unlock Your
                 <br />
                 Child&apos;s{' '}
-                <span className="relative inline-block mt-2">
-                  <span className="relative z-10 inline-block rotate-2 border-4 border-white bg-navy px-2 text-white shadow-[6px_6px_0px_rgba(255,255,255,0.4)]">Potential</span>
+                <span className="relative mt-2 block max-w-full sm:inline-block">
+                  <span className="relative z-10 inline-block max-w-full -rotate-1 border-4 border-white bg-navy px-2 py-0.5 text-white shadow-[4px_4px_0px_rgba(255,255,255,0.4)] sm:rotate-2 sm:shadow-[6px_6px_0px_rgba(255,255,255,0.4)]">Potential</span>
                 </span>
               </h1>
 
@@ -61,7 +61,7 @@ export default function Home() {
             </div>
 
             {/* Right Column — 3D Image composition */}
-            <div className="order-first relative z-10 w-full lg:order-none lg:h-[600px] lg:perspective-[1500px]">
+            <div className="order-first relative z-10 w-full min-w-0 lg:order-none lg:h-[600px] lg:perspective-[1500px]">
               <div className="relative overflow-hidden rounded-[2rem] border-[6px] border-navy bg-white shadow-[10px_10px_0px_#0A1628] lg:hidden">
                 <Image
                   src="/images/hero_student.png"
