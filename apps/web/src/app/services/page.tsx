@@ -20,18 +20,18 @@ export default function ServicesPage() {
         <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
         
         <div className="marketing-container relative z-10 py-6 text-center">
-          <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
+          <div className="inline-block max-w-full bg-yellow border-4 border-navy text-navy font-heading font-black px-4 py-2 text-base sm:px-6 rounded-xl mb-6 sm:mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
             OUR SERVICES
           </div>
-          <h1 className="font-heading font-black text-white max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#0A1628]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+          <h1 className="font-heading font-black text-white max-w-4xl mx-auto break-words leading-[1.06] mb-6 sm:mb-8 drop-shadow-[2px_2px_0px_#0A1628] sm:drop-shadow-[4px_4px_0px_#0A1628]" style={{ fontSize: 'clamp(2rem, 11vw, 5rem)' }}>
             A Complete Learning Ecosystem Built to Win
           </h1>
-          <p className="text-white text-xl max-w-3xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#F5C518] transform rotate-1">
-            From live tutoring to exam preparation, Edvoura brings everything under one roof — designed for students, parents, and educators.
+          <p className="text-white text-base sm:text-xl max-w-3xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-4 sm:p-6 rounded-2xl border-4 border-navy shadow-[4px_4px_0px_#F5C518] sm:shadow-[6px_6px_0px_#F5C518] transform rotate-1">
+            From live tutoring to exam preparation, Edvoura brings everything under one roof - designed for students, parents, and educators.
           </p>
           
           <div className="mt-12 flex justify-center">
-            <Link href="/signup" className="inline-flex items-center gap-2 bg-success text-white border-4 border-navy font-heading font-black px-12 py-5 rounded-xl transition-all shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none text-2xl transform hover:scale-105">
+            <Link href="/signup" className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-success text-white border-4 border-navy font-heading font-black px-6 sm:px-12 py-4 sm:py-5 rounded-xl transition-all shadow-[6px_6px_0px_#0A1628] sm:shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none text-base sm:text-2xl transform hover:scale-105">
               Start Learning <ArrowRight className="w-6 h-6" />
             </Link>
           </div>
@@ -86,11 +86,11 @@ export default function ServicesPage() {
                     </div>
                     <span className="font-black uppercase tracking-widest text-navy bg-white border-4 border-navy px-4 py-2 rounded-xl shadow-[4px_4px_0px_#0A1628] rotate-2">{service.tag}</span>
                   </div>
-                  <h3 className="font-heading font-black text-navy text-4xl mb-6">{service.title}</h3>
-                  <p className="text-navy font-bold text-xl leading-relaxed mb-8">{service.desc}</p>
+                  <h3 className="font-heading font-black text-navy text-3xl sm:text-4xl mb-6 break-words">{service.title}</h3>
+                  <p className="text-navy font-bold text-base sm:text-xl leading-relaxed mb-8">{service.desc}</p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {service.features.map((f) => (
-                      <li key={f} className="flex items-start gap-4 text-lg font-bold text-navy">
+                      <li key={f} className="flex items-start gap-3 sm:gap-4 text-base sm:text-lg font-bold text-navy">
                         <div className="w-8 h-8 rounded-lg bg-white border-2 border-navy flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#0A1628] mt-0.5">
                           <CheckCircle2 className="w-5 h-5 text-success" />
                         </div>
@@ -136,8 +136,8 @@ export default function ServicesPage() {
                 <div className={`w-16 h-16 ${service.color} border-4 border-navy rounded-xl flex items-center justify-center mb-6 shadow-[4px_4px_0px_#0A1628] -rotate-3`}>
                   <service.icon className={`w-8 h-8 ${service.color === 'bg-yellow' ? 'text-navy' : 'text-white'}`} />
                 </div>
-                <h3 className="font-heading font-black text-navy text-2xl mb-4">{service.title}</h3>
-                <p className="text-navy font-bold text-lg leading-relaxed">{service.desc}</p>
+                <h3 className="font-heading font-black text-navy text-xl sm:text-2xl mb-4 break-words">{service.title}</h3>
+                <p className="text-navy font-bold text-base sm:text-lg leading-relaxed">{service.desc}</p>
               </div>
             ))}
           </div>
@@ -148,16 +148,16 @@ export default function ServicesPage() {
       <section className="bg-navy py-24 md:py-32 relative border-b-8 border-navy">
         <div className="marketing-container">
           <div className="text-center mb-20">
-            <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-6 drop-shadow-[4px_4px_0px_#F5C518] transform rotate-[-1deg]">
+            <h2 className="font-heading font-black text-white text-3xl sm:text-5xl md:text-6xl mb-6 drop-shadow-[3px_3px_0px_#F5C518] sm:drop-shadow-[4px_4px_0px_#F5C518] transform rotate-[-1deg] break-words">
               Three Roles. One Platform.
             </h2>
-            <p className="bg-white/10 backdrop-blur-md border-4 border-white inline-block text-white font-bold text-xl px-6 py-3 rounded-xl shadow-[6px_6px_0px_#F5C518] transform rotate-1">
+            <p className="bg-white/10 backdrop-blur-md border-4 border-white inline-block text-white font-bold text-base sm:text-xl px-4 sm:px-6 py-3 rounded-xl shadow-[4px_4px_0px_#F5C518] sm:shadow-[6px_6px_0px_#F5C518] transform rotate-1">
               Customized environments for everyone involved.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { icon: BookOpen, role: 'Students', desc: 'Live sessions, gamified quizzes, assignments, exam prep — everything you need to succeed.', color: 'bg-info' },
+              { icon: BookOpen, role: 'Students', desc: 'Live sessions, gamified quizzes, assignments, exam prep - everything you need to succeed.', color: 'bg-info' },
               { icon: Shield, role: 'Parents', desc: 'Full visibility. Monitor sessions, track progress, and communicate seamlessly.', color: 'bg-success' },
               { icon: Monitor, role: 'Tutors', desc: 'Create content, manage your roster, track earnings, and grow your career.', color: 'bg-yellow' },
             ].map((item, i) => (
@@ -165,8 +165,8 @@ export default function ServicesPage() {
                 <div className={`w-24 h-24 ${item.color} border-4 border-navy rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-[6px_6px_0px_#0A1628] rotate-6`}>
                   <item.icon className={`w-10 h-10 ${item.color === 'bg-yellow' ? 'text-navy' : 'text-white'}`} />
                 </div>
-                <h3 className="font-heading font-black text-navy text-3xl mb-4">{item.role}</h3>
-                <p className="text-navy font-bold text-lg leading-relaxed mb-8">{item.desc}</p>
+                <h3 className="font-heading font-black text-navy text-2xl sm:text-3xl mb-4">{item.role}</h3>
+                <p className="text-navy font-bold text-base sm:text-lg leading-relaxed mb-8">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -177,12 +177,12 @@ export default function ServicesPage() {
       <section className="bg-error relative py-24 md:py-32 border-b-8 border-navy z-10">
          <div className="absolute w-full h-[200%] top-0 left-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
         <div className="marketing-container relative z-10 max-w-4xl text-center">
-          <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-2">
+          <h2 className="font-heading font-black text-white text-3xl sm:text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[4px_4px_0px_#0A1628] sm:drop-shadow-[6px_6px_0px_#0A1628] transform rotate-2 break-words">
             EXPERIENCE THE DIFFERENCE
           </h2>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center gap-3 bg-yellow text-navy font-heading font-black px-12 py-6 rounded-2xl border-4 border-navy shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-2xl transform -rotate-1 w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-3 bg-yellow text-navy font-heading font-black px-6 sm:px-12 py-4 sm:py-6 rounded-2xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] sm:shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-base sm:text-2xl transform -rotate-1 w-full sm:w-auto"
           >
             START LEARNING TODAY <ArrowRight className="w-6 h-6" />
           </Link>

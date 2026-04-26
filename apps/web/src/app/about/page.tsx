@@ -17,14 +17,14 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-yellow/90 backdrop-blur-sm" />
         
         <div className="marketing-container relative z-10 py-6 text-center md:py-10">
-          <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
+          <div className="inline-block max-w-full bg-white border-4 border-navy text-navy font-heading font-black px-4 sm:px-5 py-2 rounded-xl mb-6 sm:mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
             OUR STORY
           </div>
-          <h1 className="font-heading font-black text-navy max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#FFFFFF]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+          <h1 className="font-heading font-black text-navy max-w-4xl mx-auto break-words leading-[1.06] mb-6 sm:mb-8 drop-shadow-[2px_2px_0px_#FFFFFF] sm:drop-shadow-[4px_4px_0px_#FFFFFF]" style={{ fontSize: 'clamp(2rem, 11vw, 5rem)' }}>
             Building the Future of Education in Nigeria
           </h1>
-          <p className="text-navy text-xl max-w-3xl mx-auto font-bold bg-white/60 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
-            Edvoura was founded with a single belief: every Nigerian child deserves access to world-class tutoring — regardless of location, income, or background.
+          <p className="text-navy text-base sm:text-xl max-w-3xl mx-auto font-bold bg-white/60 backdrop-blur-md p-4 sm:p-6 rounded-2xl border-4 border-navy shadow-[4px_4px_0px_#0A1628] sm:shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
+            Edvoura was founded with a single belief: every Nigerian child deserves access to world-class tutoring - regardless of location, income, or background.
           </p>
         </div>
 
@@ -126,12 +126,12 @@ export default function AboutPage() {
       <section className="bg-success relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.1)_50%,transparent_75%,transparent_100%)] bg-[length:150px_150px]" />
         <div className="marketing-container relative z-10 max-w-4xl text-center">
-          <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-8 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-[-2deg]">
+          <h2 className="font-heading font-black text-white text-3xl sm:text-5xl md:text-7xl mb-8 tracking-tight drop-shadow-[4px_4px_0px_#0A1628] sm:drop-shadow-[6px_6px_0px_#0A1628] transform rotate-[-2deg] break-words">
             WANT TO JOIN THE TEAM?
           </h2>
           <Link
             href="/careers"
-            className="inline-flex items-center justify-center gap-2 bg-yellow text-navy font-heading font-black px-12 py-6 rounded-2xl border-4 border-navy shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-2xl transform rotate-2 w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 bg-yellow text-navy font-heading font-black px-6 sm:px-12 py-4 sm:py-6 rounded-2xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] sm:shadow-[12px_12px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-3 active:translate-y-3 active:shadow-none transition-all text-base sm:text-2xl transform rotate-2 w-full sm:w-auto"
           >
             VIEW OPENINGS <ArrowRight className="w-6 h-6" />
           </Link>

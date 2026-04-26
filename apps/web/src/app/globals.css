@@ -180,12 +180,24 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .marketing-display {
-  font-size: clamp(2.5rem, 10vw, 5.5rem);
+  font-size: clamp(1.9rem, 10.5vw, 5.5rem);
   line-height: 0.95;
 }
 
 .marketing-kicker {
   @apply rounded-2xl border-4 border-navy bg-white/70 p-4 text-base font-bold leading-relaxed text-navy shadow-[6px_6px_0px_#0A1628] backdrop-blur-md sm:p-6 sm:text-lg md:text-xl;
+}
+
+@media (max-width: 280px) {
+  .marketing-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  .marketing-container-wide {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
 }
 
 /* Neo-Brutalist Utility classes */
