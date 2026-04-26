@@ -225,8 +225,8 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <main className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-7 lg:p-10 xl:p-12">
+            <div className="mx-auto w-full max-w-[1760px]">{children}</div>
           </main>
         </div>
 

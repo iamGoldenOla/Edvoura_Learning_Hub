@@ -79,6 +79,13 @@ type ChildSummary = {
   }>;
 };
 
+type ParentInsight = {
+  summary: string;
+  praisePoints: string[];
+  improvementAreas: string[];
+  suggestedConversationStarter: string;
+};
+
 const formatPercent = (value: number | null) => (value != null ? `${Math.round(value)}%` : '--');
 
 export default function ParentDashboardClient({
@@ -94,7 +101,7 @@ export default function ParentDashboardClient({
 }) {
   const [activeChildId, setActiveChildId] = useState<string>(linkedChildren[0]?.userId ?? '');
   const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
-  const [insightData, setInsightData] = useState<any>(null);
+  const [insightData, setInsightData] = useState<ParentInsight | null>(null);
   const [insightError, setInsightError] = useState('');
 
   const activeChild = useMemo(
@@ -112,7 +119,7 @@ export default function ParentDashboardClient({
   const latestInvoice = invoices[0] ?? null;
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
       
       {/* Header Section */}
       <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
@@ -176,9 +183,9 @@ export default function ParentDashboardClient({
         </div>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 xl:grid-cols-12">
         {/* Child Snapshot */}
-        <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="xl:col-span-8 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-amber-100">
             <h2 className="text-2xl font-black text-dark tracking-tight">Child Snapshot</h2>
           </div>
@@ -211,7 +218,7 @@ export default function ParentDashboardClient({
         </div>
 
         {/* Alerts & Activity Sidebar */}
-        <div className="lg:col-span-1 space-y-8">
+        <div className="xl:col-span-4 space-y-8">
           {/* Notifications (Alerts) */}
           <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
             <div className="p-6 border-b-[4px] border-dark bg-rose-100 flex items-center justify-between">
@@ -300,8 +307,8 @@ export default function ParentDashboardClient({
                   } else {
                     setInsightError(data.error || 'Failed to generate insight.');
                   }
-                } catch (err: any) {
-                  setInsightError(err.message || 'Unknown error');
+                } catch (err: unknown) {
+                  setInsightError(err instanceof Error ? err.message : 'Unknown error');
                 } finally {
                   setIsGeneratingInsight(false);
                 }
@@ -341,7 +348,7 @@ export default function ParentDashboardClient({
                   </div>
                   <div className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-3">Suggested Question to ask your child</p>
-                    <p className="font-bold text-dark italic">"{insightData.suggestedConversationStarter}"</p>
+                    <p className="font-bold text-dark italic">&quot;{insightData.suggestedConversationStarter}&quot;</p>
                   </div>
                 </div>
               ) : null}

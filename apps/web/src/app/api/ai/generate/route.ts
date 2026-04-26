@@ -85,8 +85,10 @@ export async function POST(request: NextRequest) {
   });
 
   if (!result.success) {
+    const isProviderAvailabilityIssue =
+      /openrouter|gemini|provider|api key|user not found|unauthorized|no valid/i.test(result.error ?? '');
     const status =
-      result.error?.includes('No valid AI provider keys found')
+      isProviderAvailabilityIssue
         ? 503
         : 422;
 

@@ -96,6 +96,7 @@ export default function StudentBandClientWrapper({
       return new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime();
     })
     .slice(0, 5);
+  const featuredAssignments = dashboard.assignments.slice(0, 2);
   const [uploadedSubmissions, setUploadedSubmissions] = useState<Record<string, string>>({});
   const dailyWords = getDailyWords(band, new Date().toISOString().split('T')[0]);
   const [spellingInput, setSpellingInput] = useState('');
@@ -172,12 +173,12 @@ export default function StudentBandClientWrapper({
            {/* Active Missions */}
            <div className="lg:col-span-2 space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Today's Missions</h2>
+                <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Today&apos;s Missions</h2>
                 <Link href="/dash/student/homework" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">See All</Link>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {dashboard.assignments.slice(0, 2).map((hw: any) => (
+                {featuredAssignments.map((hw) => (
                   <div key={hw.id} className="bg-white border-[4px] border-dark rounded-[40px] p-8 shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col">
                      <div className="h-14 w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-3xl mb-6">
                         📚
@@ -238,7 +239,7 @@ export default function StudentBandClientWrapper({
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 pb-12">
+    <div className="mx-auto max-w-[1680px] space-y-10 pb-14">
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 border-b-[4px] border-dark bg-yellow/20">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-2">{copy.label}</p>
