@@ -103,7 +103,7 @@ export default function Navbar() {
 
             <div className="flex min-w-0 flex-col justify-center">
               <div className="flex min-w-0 items-center gap-2">
-                <span className="premium-shimmer-text truncate font-heading text-[clamp(1.1rem,7.8vw,1.75rem)] font-black leading-none tracking-[-0.06em] uppercase text-white lg:text-[1.95rem] xl:text-[2.2rem]">
+                <span className="premium-shimmer-text font-heading text-[clamp(0.96rem,6.8vw,1.55rem)] font-black leading-none tracking-[-0.045em] uppercase text-white lg:text-[1.8rem] xl:text-[2rem]">
                   EDVOURA
                 </span>
                 <div className="hidden h-[2px] w-6 bg-yellow/50 lg:block xl:w-8" />
@@ -113,10 +113,10 @@ export default function Navbar() {
                   LEARNING <span className="text-yellow">HUB</span>
                   <span className="text-yellow">.</span>
                 </span>
-                <span className="hidden text-[8px] font-black uppercase tracking-[0.08em] text-yellow/90 min-[375px]:block lg:hidden">
+                <span className="hidden text-[8px] font-black uppercase tracking-[0.08em] text-yellow min-[320px]:block lg:hidden">
                   Where learners&apos; dreams come true
                 </span>
-                <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 xl:block">
+                <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 lg:block">
                   <span className="text-[8px] font-black uppercase leading-none tracking-[0.1em] text-navy">
                     Where Learners&apos; Dreams Come True
                   </span>

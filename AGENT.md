@@ -6,7 +6,21 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-24)
+## Last Session Handoff (2026-04-26)
+
+### Current Status: Main Branch Synced + Mobile Hardening + Tutor UX Fixes
+
+- `main` is now the deployment source of truth and has been fast-forwarded with the full AI/dashboard branch history.
+- Marketing pages were hardened for ultra-small screens (down to `253px` width class) by tightening typography minimums and container spacing.
+- Tutor workflow fixes were applied:
+  - Roster KPI now uses real counts (`lesson_attendance`, `progress_snapshots`) instead of placeholder labels.
+  - AI Generator reliability improved:
+    - increased orchestrator retries,
+    - reduced schema over-strictness that caused unnecessary validation failures,
+    - route now returns generated content even when draft save fails,
+    - builder now shows inline AI status/error messages in the generator panel.
+  - Tutor Messages UI was redesigned to a modern threaded chat layout while keeping role/channel safety constraints.
+- Marketing navbar branding was adjusted so `EDVOURA` renders fully (no clipped `RA`) and slogan visibility/contrast is preserved.
 
 ### Current Status: Dashboards Overhauled & Live Data Integrated
 

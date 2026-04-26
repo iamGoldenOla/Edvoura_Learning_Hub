@@ -19,7 +19,7 @@ export const LessonNoteSchema = z.object({
     .min(3, 'At least 3 learning objectives required'),
   explanation: z
     .string()
-    .min(300, 'Explanation must be comprehensive'),
+    .min(120, 'Explanation must be comprehensive'),
   examples: z
     .array(
       z.object({
@@ -36,7 +36,7 @@ export const LessonNoteSchema = z.object({
         difficulty: z.enum(['easy', 'medium', 'hard']),
       }),
     )
-    .min(5, 'At least 5 practice questions required'),
+    .min(4, 'At least 4 practice questions required'),
   teacherNotes: z.string().optional(),
 });
 
@@ -51,7 +51,7 @@ export const StorySchema = z.object({
   ageSuitability: z.string(), // e.g. "6-8", "9-12"
   content: z
     .string()
-    .min(400, 'Story must be rich and immersive'),
+    .min(180, 'Story must be rich and immersive'),
   vocabulary: z
     .array(
       z.object({
@@ -71,7 +71,7 @@ export const ComprehensionSchema = z.object({
   title: z.string().min(5),
   passage: z
     .string()
-    .min(400, 'Passage must be thorough'),
+    .min(180, 'Passage must be thorough'),
   vocabulary: z
     .array(
       z.object({
@@ -88,7 +88,7 @@ export const ComprehensionSchema = z.object({
         type: z.enum(['factual', 'inferential', 'evaluative']),
       }),
     )
-    .min(5, 'At least 5 comprehension questions required'),
+    .min(4, 'At least 4 comprehension questions required'),
 });
 
 export type Comprehension = z.infer<typeof ComprehensionSchema>;
@@ -110,7 +110,7 @@ export const QuizSchema = z.object({
         difficulty: z.enum(['easy', 'medium', 'hard']),
       }),
     )
-    .min(15, 'At least 15 quiz questions required'),
+    .min(8, 'At least 8 quiz questions required'),
 });
 
 export type Quiz = z.infer<typeof QuizSchema>;
@@ -134,7 +134,7 @@ export const SpellingBeeSchema = z.object({
         difficulty: z.enum(['easy', 'medium', 'hard']),
       }),
     )
-    .min(10, 'At least 10 spelling bee words required'),
+    .min(8, 'At least 8 spelling bee words required'),
 });
 
 export type SpellingBee = z.infer<typeof SpellingBeeSchema>;

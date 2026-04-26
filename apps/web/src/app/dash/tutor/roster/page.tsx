@@ -47,6 +47,10 @@ type LearnerCard = {
   personalMeetHostUrl: string | null;
 };
 
+type ProgressRow = {
+  average_score: number | null;
+};
+
 export default async function TutorRosterPage(props: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
@@ -83,6 +87,21 @@ export default async function TutorRosterPage(props: {
   ]);
 
   const gradeLevelIds = [...new Set(((studentProfileRows ?? []) as StudentProfileRow[]).map((row) => row.grade_level_id))];
+  const [{ count: attendanceMarkedCount }, { data: progressRows }] = await Promise.all([
+    studentIds.length
+      ? supabase
+          .from('lesson_attendance')
+          .select('id', { count: 'exact', head: true })
+          .in('student_user_id', studentIds)
+      : Promise.resolve({ count: 0 }),
+    studentIds.length
+      ? supabase
+          .from('progress_snapshots')
+          .select('average_score')
+          .in('student_user_id', studentIds)
+      : Promise.resolve({ data: [] as ProgressRow[] }),
+  ]);
+
   const { data: gradeLevelRows } = gradeLevelIds.length
     ? await supabase.from('grade_levels').select('id, display_name').in('id', gradeLevelIds)
     : { data: [] as GradeLevelRow[] };
@@ -114,6 +133,9 @@ export default async function TutorRosterPage(props: {
     name: learner.name,
   }));
   const classesCovered = new Set(learners.map((learner) => learner.className)).size;
+  const weakEngagementCount = ((progressRows ?? []) as ProgressRow[]).filter(
+    (row) => Number(row.average_score ?? 0) > 0 && Number(row.average_score ?? 0) < 50,
+  ).length;
 
   return (
     <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
@@ -146,8 +168,8 @@ export default async function TutorRosterPage(props: {
 
           <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
             <Stat title="Active Students" value={String(learners.length)} icon={Users} bgColor="bg-emerald-200" />
-            <Stat title="Attendance Marked" value="Phase next" icon={CheckCircle2} bgColor="bg-blue-200" />
-            <Stat title="Weak Engagement" value={learners.length === 0 ? '0' : 'Review'} icon={AlertTriangle} bgColor="bg-rose-200" />
+            <Stat title="Attendance Marked" value={String(attendanceMarkedCount ?? 0)} icon={CheckCircle2} bgColor="bg-blue-200" />
+            <Stat title="Weak Engagement" value={String(weakEngagementCount)} icon={AlertTriangle} bgColor="bg-rose-200" />
             <Stat title="Classes Covered" value={String(classesCovered)} icon={Trophy} bgColor="bg-amber-200" />
           </section>
 

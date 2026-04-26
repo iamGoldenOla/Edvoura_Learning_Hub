@@ -185,6 +185,12 @@ export default function TutorBuilderPage() {
   const [aiResult, setAiResult] = useState<unknown>(null);
   const [aiContentId, setAiContentId] = useState<string | null>(null);
   const [isPublishingAi, setIsPublishingAi] = useState(false);
+  const aiFeedbackTone =
+    feedback.startsWith("SUCCESS") || feedback.toLowerCase().includes("successful")
+      ? "success"
+      : feedback.toLowerCase().includes("failed") || feedback.toLowerCase().includes("error")
+        ? "error"
+        : "info";
 
   useEffect(() => {
     setActiveTool(preselectTool);
@@ -380,9 +386,12 @@ export default function TutorBuilderPage() {
     setFeedback("Edvoura AI is composing your content...");
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
       const res = await fetch("/api/ai/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           contentType: aiType,
           topic: aiTopic.trim(),
@@ -390,20 +399,36 @@ export default function TutorBuilderPage() {
           gradeLevel: formGradeCode,
         }),
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
 
       if (res.ok) {
-        setAiResult(data.content);
+        setAiResult(data.content ?? null);
         setAiContentId(data.record?.id || null);
-        setFeedback("AI generation successful. Review and publish to students below.");
+        if (data.warning) {
+          setFeedback(`${data.warning}. You can still review the generated content below.`);
+        } else if (!data.record?.id) {
+          setFeedback("AI generation successful. Preview is available below, but draft save is pending.");
+        } else {
+          setFeedback("AI generation successful. Review and publish to students below.");
+        }
         return;
       }
 
+      if (data.content) {
+        setAiResult(data.content);
+      }
       const detail = data.detail ? ` ${data.detail}` : "";
       const attempts = data.attempts ? ` Attempts: ${data.attempts}.` : "";
       setFeedback(`${data.error || "Failed to generate content."}${detail}${attempts}`);
     } catch (err: unknown) {
-      setFeedback(err instanceof Error ? err.message : "Unknown error occurred.");
+      const message =
+        err instanceof Error && err.name === "AbortError"
+          ? "AI request timed out. Try a shorter topic title or retry."
+          : err instanceof Error
+            ? err.message
+            : "Unknown error occurred.";
+      setFeedback(message);
     } finally {
       setIsGeneratingAi(false);
     }
@@ -1075,6 +1100,7 @@ export default function TutorBuilderPage() {
                             >
                               <option value="lesson_note">Lesson Note</option>
                               <option value="story">Story</option>
+                              <option value="comprehension">Comprehension</option>
                               <option value="quiz">Quiz</option>
                               <option value="worksheet">Worksheet</option>
                               <option value="spelling_bee">Spelling Bee</option>
@@ -1096,6 +1122,19 @@ export default function TutorBuilderPage() {
                           >
                             {isGeneratingAi ? "Thinking..." : "Generate with Edvoura AI"}
                           </Button>
+                          {feedback ? (
+                            <div
+                              className={`rounded-xl border-[3px] p-3 text-xs font-black shadow-[3px_3px_0px_#060E1C] ${
+                                aiFeedbackTone === "success"
+                                  ? "border-emerald-400 bg-emerald-100 text-emerald-900"
+                                  : aiFeedbackTone === "error"
+                                    ? "border-rose-400 bg-rose-100 text-rose-900"
+                                    : "border-dark bg-blue-100 text-dark"
+                              }`}
+                            >
+                              {feedback}
+                            </div>
+                          ) : null}
                         </div>
                         <div className="rounded-2xl border-[3px] border-dark bg-white p-6 shadow-[4px_4px_0px_#060E1C] min-h-[300px]">
                            <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-4 border-b-2 border-dark pb-2">AI Output Preview</p>
@@ -1197,6 +1236,19 @@ export default function TutorBuilderPage() {
                   >
                     {isGeneratingAi ? "Thinking..." : "Generate Now"}
                   </Button>
+                  {feedback ? (
+                    <div
+                      className={`rounded-xl border-[3px] p-3 text-xs font-black shadow-[3px_3px_0px_#060E1C] ${
+                        aiFeedbackTone === "success"
+                          ? "border-emerald-400 bg-emerald-100 text-emerald-900"
+                          : aiFeedbackTone === "error"
+                            ? "border-rose-400 bg-rose-100 text-rose-900"
+                            : "border-dark bg-blue-100 text-dark"
+                      }`}
+                    >
+                      {feedback}
+                    </div>
+                  ) : null}
 
                   {Boolean(aiResult) && (
                     <div className="mt-4 space-y-4">

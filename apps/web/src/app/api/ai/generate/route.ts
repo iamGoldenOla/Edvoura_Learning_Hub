@@ -114,10 +114,14 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (saveError) {
-    return NextResponse.json(
-      { error: 'Content generated but failed to save', detail: saveError.message },
-      { status: 500 },
-    );
+    return NextResponse.json({
+      message: 'Content generated successfully, but draft save failed',
+      warning: `Draft save failed: ${saveError.message}`,
+      content: result.data,
+      record: null,
+      attempts: result.attempts,
+      provider: result.provider ?? null,
+    });
   }
 
   return NextResponse.json({
@@ -125,5 +129,6 @@ export async function POST(request: NextRequest) {
     content: result.data,
     record: savedContent,
     attempts: result.attempts,
+    provider: result.provider ?? null,
   });
 }
