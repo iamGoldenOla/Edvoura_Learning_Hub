@@ -5,7 +5,7 @@ import { ShieldCheck, TrendingUp, LayoutGrid, Clock } from 'lucide-react';
 
 export default function SessionsPage() {
   return (
-    <div className="p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8">
+    <div className="max-w-[1680px] mx-auto animate-in fade-in duration-500 space-y-10 p-6 sm:p-8 pb-24">
       
       {/* Action Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-edvoura-navy rounded-2xl p-8 text-white shadow-md">

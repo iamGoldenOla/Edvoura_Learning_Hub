@@ -7,7 +7,7 @@ export default async function SettingsPage() {
   await requireSuperAdminAccess();
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
       
       {/* Action Header */}
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">

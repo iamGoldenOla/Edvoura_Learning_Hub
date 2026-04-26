@@ -24,7 +24,7 @@ export default async function AdminAnalyticsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
+    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 border-b-[4px] border-dark bg-yellow">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
