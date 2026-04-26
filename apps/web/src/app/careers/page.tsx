@@ -63,12 +63,12 @@ export default function CareersPage() {
 
       {/* Hero (Parallax) */}
       <section 
-        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px] z-10"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1510172951991-856a654063f9?q=80&w=1974&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
         
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 text-center pt-10 z-10">
+        <div className="marketing-container relative z-10 pt-6 text-center">
           <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
              JOIN THE HUB
           </div>
@@ -83,7 +83,7 @@ export default function CareersPage() {
 
       {/* Become a Tutor Process */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
            <div className="text-center mb-24">
               <h2 className="font-heading font-black text-navy text-5xl md:text-6xl mb-6">Become a Vetted Tutor</h2>
               <p className="text-navy text-xl font-bold opacity-70">Our rigorous 4-step process ensures only the top 3% of educators join our hub.</p>
@@ -107,7 +107,7 @@ export default function CareersPage() {
       {/* Tutor Application Form (Brutalist) */}
       <section className="bg-navy py-24 md:py-32 border-b-8 border-navy relative overflow-hidden">
          <div className="absolute inset-x-0 top-0 h-px bg-white/10" />
-         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10 flex flex-col lg:flex-row gap-20 items-center">
+         <div className="marketing-container relative z-10 flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
             <div className="lg:w-1/2">
                 <div className="inline-block bg-success border-4 border-white text-white font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_rgba(255,255,255,0.3)] rotate-[-2deg]">
                    APPLICATION HUB
@@ -171,7 +171,7 @@ export default function CareersPage() {
 
       {/* Open Positions Grid */}
       <section className="bg-off-white py-24 md:py-32 border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="text-center mb-24">
             <div className="inline-block bg-navy border-4 border-navy text-white font-heading font-black px-8 py-3 rounded-2xl mb-8 shadow-[6px_6px_0px_#F5C518] transform -rotate-1">
                <h2 className="text-4xl md:text-5xl uppercase tracking-tight">Open Internal Roles</h2>

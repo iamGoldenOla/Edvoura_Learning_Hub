@@ -11,12 +11,12 @@ export default function ContactPage() {
 
       {/* Hero (Parallax + Brutalist) */}
       <section 
-        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px] z-10"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=2070&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-success/85 backdrop-blur-sm" />
         
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-10 text-center z-10">
+        <div className="marketing-container relative z-10 py-6 text-center">
           <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
             CONTACT US
           </div>
@@ -31,7 +31,7 @@ export default function ContactPage() {
 
       {/* Contact Grid */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
 
             {/* Contact Info Cards */}
@@ -182,7 +182,7 @@ export default function ContactPage() {
 
       {/* Solid Brutalist CTA */}
       <section className="bg-yellow relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
           <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[6px_6px_0px_#FFFFFF] transform rotate-[-2deg]">
              READY TO ACING IT?
           </h2>

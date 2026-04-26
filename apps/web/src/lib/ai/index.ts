@@ -3,6 +3,7 @@ export {
   analyzeStudentPerformance,
   generateParentReport,
   generateFlashcards,
+  explainLessonContent,
   extractJsonPayload,
 } from './orchestrator';
 export { CONTENT_TYPES, getSchemaForType } from './schemas';
@@ -15,4 +16,5 @@ export type {
   SpellingBee,
   StudentAnalysis,
   ParentReport,
+  LessonExplainer,
 } from './schemas';

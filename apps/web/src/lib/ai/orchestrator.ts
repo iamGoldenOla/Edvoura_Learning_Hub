@@ -20,12 +20,14 @@ import {
   getSchemaForType,
   StudentAnalysisSchema,
   ParentReportSchema,
+  LessonExplainerSchema,
 } from './schemas';
 import {
   SYSTEM_IDENTITY,
   buildGenerationPrompt,
   buildStudentAnalysisPrompt,
   buildParentReportPrompt,
+  buildLessonExplainerPrompt,
 } from './prompts';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
@@ -264,6 +266,26 @@ export async function generateParentReport(params: {
     prompt: buildParentReportPrompt(params),
     schema: ParentReportSchema,
     temperature: 0.6,
+  });
+
+  if (!result.success) {
+    return { success: false as const, error: result.error, attempts: result.attempts };
+  }
+
+  return { success: true as const, data: result.data, attempts: result.attempts, provider: result.provider };
+}
+
+export async function explainLessonContent(params: {
+  mode: 'simple' | 'harder_examples' | 'checks_for_understanding' | 'revision_notes';
+  topic: string;
+  subject: string;
+  gradeLevel: string;
+  lessonText: string;
+}) {
+  const result = await generateValidatedWithFallback({
+    prompt: buildLessonExplainerPrompt(params),
+    schema: LessonExplainerSchema,
+    temperature: 0.55,
   });
 
   if (!result.success) {

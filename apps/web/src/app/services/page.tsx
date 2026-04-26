@@ -14,12 +14,12 @@ export default function ServicesPage() {
 
       {/* Hero (Parallax + Brutalist) */}
       <section 
-        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px] z-10"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
         
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-10 text-center z-10">
+        <div className="marketing-container relative z-10 py-6 text-center">
           <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
             OUR SERVICES
           </div>
@@ -38,7 +38,7 @@ export default function ServicesPage() {
         </div>
 
         {/* Dashboard 3D Preview Image */}
-        <div className="relative max-w-6xl mx-auto px-6 mt-16 perspective-[2000px] z-10">
+        <div className="marketing-container relative z-10 mt-12 max-w-6xl perspective-[2000px]">
           <div className="relative rounded-[2rem] overflow-hidden border-8 border-navy shadow-[20px_20px_0px_#F5C518] transform rotate-x-[8deg] rotate-y-[-2deg] hover:rotate-x-0 hover:rotate-y-0 transition-transform duration-700 bg-white group cursor-pointer">
             <div className="absolute inset-0 bg-yellow/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
             <Image
@@ -54,7 +54,7 @@ export default function ServicesPage() {
 
       {/* Core Services */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="text-center mb-24">
             <div className="inline-block bg-info border-4 border-navy text-white font-heading font-black px-8 py-3 rounded-2xl mb-8 shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
               <h2 className="text-4xl md:text-5xl uppercase tracking-tight">Core Offerings</h2>
@@ -146,7 +146,7 @@ export default function ServicesPage() {
 
       {/* Role Segmentation */}
       <section className="bg-navy py-24 md:py-32 relative border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="text-center mb-20">
             <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-6 drop-shadow-[4px_4px_0px_#F5C518] transform rotate-[-1deg]">
               Three Roles. One Platform.
@@ -176,7 +176,7 @@ export default function ServicesPage() {
       {/* Solid Brutalist CTA */}
       <section className="bg-error relative py-24 md:py-32 border-b-8 border-navy z-10">
          <div className="absolute w-full h-[200%] top-0 left-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
           <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-2">
             EXPERIENCE THE DIFFERENCE
           </h2>

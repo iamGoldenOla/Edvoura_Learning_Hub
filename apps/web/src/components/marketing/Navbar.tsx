@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 
@@ -18,12 +17,17 @@ const navLinks = [
   { label: 'Contact', href: '/contact' },
 ];
 
+const portalLinks = [
+  { label: 'Student Portal', role: 'student', icon: 'S', desc: 'Learning and dashboard' },
+  { label: 'Tutor Portal', role: 'tutor', icon: 'T', desc: 'Teaching and schedule' },
+  { label: 'Parent Portal', role: 'parent', icon: 'P', desc: 'Monitoring and growth' },
+];
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const pathname = usePathname();
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,7 +38,8 @@ export default function Navbar() {
       } = await supabase.auth.getUser();
       setUser(user);
     };
-    checkUser();
+
+    void checkUser();
 
     const {
       data: { subscription },
@@ -44,16 +49,12 @@ export default function Navbar() {
 
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       subscription.unsubscribe();
     };
   }, []);
-
-  useEffect(() => {
-    setMobileOpen(false);
-    setSignInOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -62,9 +63,17 @@ export default function Navbar() {
         setSignInOpen(false);
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    document.body.dataset.mobileMenu = mobileOpen ? 'open' : 'closed';
+    return () => {
+      delete document.body.dataset.mobileMenu;
+    };
+  }, [mobileOpen]);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -75,34 +84,40 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-dark/98 border-b border-yellow/10 shadow-lg' : 'bg-navy/95 backdrop-blur-xl'
+        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
+          scrolled ? 'border-b border-yellow/10 bg-dark/98 shadow-lg' : 'bg-navy/95 backdrop-blur-xl'
         }`}
       >
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 md:px-6 xl:px-8">
-          <Link href="/" className="flex min-w-0 items-center gap-3 group perspective-[1000px]">
-            <div className="kinetic-logo relative h-10 w-10 flex-shrink-0 xl:h-11 xl:w-11">
+        <div className="marketing-container flex h-16 items-center justify-between gap-3 sm:h-[72px]">
+          <Link
+            href="/"
+            className="group flex min-w-0 max-w-[calc(100%-4.5rem)] items-center gap-2.5 perspective-[1000px] sm:gap-3"
+          >
+            <div className="kinetic-logo relative h-9 w-9 flex-shrink-0 sm:h-10 sm:w-10 xl:h-11 xl:w-11">
               <div className="absolute inset-0 rotate-12 rounded-xl bg-yellow shadow-[4px_4px_0px_rgba(0,0,0,0.2)] transition-transform duration-500 group-hover:rotate-[30deg]" />
-              <div className="absolute inset-0 -rotate-6 rounded-xl border-2 border-yellow bg-navy shadow-xl transition-transform duration-500 group-hover:rotate-0 flex items-center justify-center">
-                <span className="font-heading text-xl font-black text-yellow xl:text-2xl">E</span>
+              <div className="absolute inset-0 flex items-center justify-center rounded-xl border-2 border-yellow bg-navy shadow-xl transition-transform duration-500 group-hover:rotate-0 -rotate-6">
+                <span className="font-heading text-lg font-black text-yellow sm:text-xl xl:text-2xl">E</span>
               </div>
-              <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-navy bg-success shadow-lg animate-pulse" />
+              <div className="absolute -right-1 -top-1 h-3.5 w-3.5 animate-pulse rounded-full border-2 border-navy bg-success shadow-lg" />
             </div>
 
-            <div className="flex min-w-0 flex-col -space-y-1 pt-1">
-              <div className="flex items-center gap-2">
-                <span className="premium-shimmer-text font-heading text-[2rem] font-black leading-none tracking-[-0.06em] uppercase text-white xl:text-[2.35rem]">
+            <div className="flex min-w-0 flex-col justify-center">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="premium-shimmer-text truncate font-heading text-[1.45rem] font-black leading-none tracking-[-0.06em] uppercase text-white sm:text-[1.75rem] lg:text-[1.95rem] xl:text-[2.2rem]">
                   EDVOURA
                 </span>
                 <div className="hidden h-[2px] w-6 bg-yellow/50 lg:block xl:w-8" />
               </div>
-              <div className="flex items-center gap-2 xl:gap-3">
-                <span className="mt-1 font-heading text-[9px] font-black leading-none tracking-[0.24em] uppercase text-white shadow-sm xl:text-[10px]">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2 xl:gap-3">
+                <span className="mt-0.5 font-heading text-[8px] font-black leading-none tracking-[0.18em] uppercase text-white shadow-sm sm:text-[9px] xl:text-[10px]">
                   LEARNING <span className="text-yellow">HUB</span>
                   <span className="text-yellow">.</span>
                 </span>
-                <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 2xl:block">
-                  <span className="text-[8px] font-black leading-none tracking-[0.1em] text-navy uppercase">
+                <span className="hidden text-[8px] font-black uppercase tracking-[0.08em] text-yellow/90 sm:block lg:hidden">
+                  Where learners&apos; dreams come true
+                </span>
+                <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 xl:block">
+                  <span className="text-[8px] font-black uppercase leading-none tracking-[0.1em] text-navy">
                     Where Learners&apos; Dreams Come True
                   </span>
                 </div>
@@ -110,7 +125,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <div className="hidden items-center gap-6 lg:flex xl:gap-8">
             <div className="flex items-center gap-4 xl:gap-6">
               {navLinks.map((link) => (
                 <Link
@@ -133,6 +148,7 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                   <button
+                    type="button"
                     onClick={handleSignOut}
                     className="rounded-lg border-2 border-white/20 px-4 py-2 text-[10px] font-heading font-black uppercase tracking-widest text-white transition-all hover:border-yellow hover:text-yellow"
                   >
@@ -143,11 +159,12 @@ export default function Navbar() {
                 <div className="flex items-center gap-2 xl:gap-4">
                   <div className="group relative">
                     <button
-                      onClick={() => setSignInOpen(!signInOpen)}
+                      type="button"
+                      onClick={() => setSignInOpen((open) => !open)}
                       className={`flex items-center gap-2 rounded-lg border-2 px-2.5 py-2 text-[10px] font-black uppercase tracking-widest transition-all xl:px-3 ${
                         signInOpen
-                          ? 'bg-white/5 border-yellow text-yellow'
-                          : 'bg-transparent border-transparent text-white hover:text-yellow'
+                          ? 'border-yellow bg-white/5 text-yellow'
+                          : 'border-transparent bg-transparent text-white hover:text-yellow'
                       }`}
                     >
                       Sign In
@@ -163,14 +180,15 @@ export default function Navbar() {
 
                     {signInOpen && (
                       <>
-                        <div className="fixed inset-0 z-10" onClick={() => setSignInOpen(false)} />
-                        <div className="reveal-luxury absolute right-0 top-full z-20 mt-3 w-64 rounded-2xl border-2 border-white/10 bg-navy p-3 shadow-[12px_12px_0px_#000] animate-in fade-in slide-in-from-top-2 duration-200">
+                        <button
+                          type="button"
+                          className="fixed inset-0 z-10"
+                          onClick={() => setSignInOpen(false)}
+                          aria-label="Close sign in menu"
+                        />
+                        <div className="reveal-luxury absolute right-0 top-full z-20 mt-3 w-64 animate-in rounded-2xl border-2 border-white/10 bg-navy p-3 shadow-[12px_12px_0px_#000] duration-200 fade-in slide-in-from-top-2">
                           <div className="flex flex-col gap-1">
-                            {[
-                              { label: 'Student Portal', role: 'student', icon: '🎓', desc: 'Learning & Dashboard' },
-                              { label: 'Tutor Portal', role: 'tutor', icon: '👨‍🏫', desc: 'Teaching & Schedule' },
-                              { label: 'Parent Portal', role: 'parent', icon: '👪', desc: 'Monitoring & Growth' },
-                            ].map((item) => (
+                            {portalLinks.map((item) => (
                               <Link
                                 key={item.role}
                                 href={`/login?role=${item.role}`}
@@ -198,7 +216,7 @@ export default function Navbar() {
 
                   <Link
                     href="/signup"
-                    className="whitespace-nowrap rounded-lg bg-yellow px-4 py-2.5 text-[10px] font-heading font-black uppercase tracking-[0.16em] text-navy transition-all duration-200 hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-light hover:shadow-none active:scale-95 xl:px-5 xl:py-3 shadow-[4px_4px_0px_rgba(0,0,0,0.5)]"
+                    className="whitespace-nowrap rounded-lg bg-yellow px-4 py-2.5 text-[10px] font-heading font-black uppercase tracking-[0.16em] text-navy shadow-[4px_4px_0px_rgba(0,0,0,0.5)] transition-all duration-200 hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-light hover:shadow-none active:scale-95 xl:px-5 xl:py-3"
                   >
                     Get Started
                   </Link>
@@ -208,9 +226,12 @@ export default function Navbar() {
           </div>
 
           <button
+            type="button"
             onClick={() => setMobileOpen(true)}
-            className="text-white transition-colors hover:text-yellow lg:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-white/10 bg-white/5 text-white transition-colors hover:border-yellow hover:text-yellow lg:hidden"
             aria-label="Open menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-nav-panel"
           >
             <Menu className="h-6 w-6" />
           </button>
@@ -218,68 +239,98 @@ export default function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-navy">
-          <button
-            onClick={() => setMobileOpen(false)}
-            className="absolute top-6 right-6 text-white transition-colors hover:text-yellow"
-            aria-label="Close menu"
+        <div className="fixed inset-0 z-[100] bg-navy/75 backdrop-blur-md">
+          <button type="button" className="absolute inset-0" onClick={() => setMobileOpen(false)} aria-label="Close menu overlay" />
+          <div
+            id="mobile-nav-panel"
+            className="absolute right-0 top-0 flex h-full w-[min(88vw,380px)] flex-col border-l-4 border-navy bg-dark px-5 pb-8 pt-5 shadow-[-12px_0_0_#F5C518]"
           >
-            <X className="h-7 w-7" />
-          </button>
-
-          <div className="flex flex-col items-center gap-6">
-            {navLinks.map((link, i) => (
-              <Link
-                key={link.href}
-                href={link.href}
+            <div className="mb-8 flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="font-heading text-xl font-black uppercase tracking-tight text-white">Menu</p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-yellow/90">
+                  Explore Edvoura
+                </p>
+              </div>
+              <button
+                type="button"
                 onClick={() => setMobileOpen(false)}
-                className="animate-fade-up font-heading text-2xl font-bold text-white transition-colors hover:text-yellow"
-                style={{ animationDelay: `${i * 0.08}s` }}
+                className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-white/10 bg-white/5 text-white transition-colors hover:border-yellow hover:text-yellow"
+                aria-label="Close menu"
               >
-                {link.label}
-              </Link>
-            ))}
+                <X className="h-6 w-6" />
+              </button>
+            </div>
 
-            <div className="mt-8 flex w-full max-w-xs flex-col items-center gap-4 border-t border-navy-light pt-8">
-              {!user ? (
-                <>
-                  <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-grey opacity-50">Portal Selection</p>
-                  <div className="grid w-full grid-cols-1 gap-2">
-                    {[
-                      { label: 'Student Portal', role: 'student', icon: '🎓' },
-                      { label: 'Tutor Portal', role: 'tutor', icon: '👨‍🏫' },
-                      { label: 'Parent Portal', role: 'parent', icon: '👪' },
-                    ].map((item) => (
-                      <Link
-                        key={item.role}
-                        href={`/login?role=${item.role}`}
-                        onClick={() => setMobileOpen(false)}
-                        className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/5 p-4 transition-all hover:border-yellow"
-                      >
-                        <span className="text-xl">{item.icon}</span>
-                        <span className="text-xs font-black uppercase tracking-widest text-white">{item.label}</span>
-                      </Link>
-                    ))}
-                  </div>
+            <div className="mb-6 rounded-2xl border-2 border-white/10 bg-navy px-4 py-3">
+              <p className="font-heading text-lg font-black uppercase text-white">Edvoura Learning Hub</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-yellow">
+                Where learners&apos; dreams come true
+              </p>
+            </div>
+
+            <div className="flex flex-1 flex-col overflow-y-auto pr-1">
+              <div className="flex flex-col gap-2">
+                {navLinks.map((link, i) => (
                   <Link
-                    href="/signup"
+                    key={link.href}
+                    href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className="mt-4 w-full rounded-xl bg-yellow px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-navy transition-all hover:bg-yellow-light shadow-[4px_4px_0px_#000]"
+                    className="animate-fade-up rounded-2xl border-2 border-white/10 bg-white/5 px-4 py-4 font-heading text-lg font-bold text-white transition-colors hover:border-yellow hover:text-yellow"
+                    style={{ animationDelay: `${i * 0.08}s` }}
                   >
-                    Get Started →
+                    {link.label}
                   </Link>
-                </>
-              ) : (
-                <button
-                  onClick={() => {
-                    handleSignOut();
-                    setMobileOpen(false);
-                  }}
-                  className="w-full rounded-xl border-2 border-white/10 bg-white/5 px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-white transition-colors hover:border-yellow hover:text-yellow"
-                >
-                  Sign Out
-                </button>
-              )}
+                ))}
+              </div>
+
+              <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-8">
+                {!user ? (
+                  <>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-grey opacity-80">Portal Selection</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {portalLinks.map((item) => (
+                        <Link
+                          key={item.role}
+                          href={`/login?role=${item.role}`}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex items-center gap-4 rounded-xl border border-white/5 bg-white/5 p-4 transition-all hover:border-yellow"
+                        >
+                          <span className="text-xl">{item.icon}</span>
+                          <span className="text-xs font-black uppercase tracking-widest text-white">{item.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <Link
+                      href="/signup"
+                      onClick={() => setMobileOpen(false)}
+                      className="mt-2 w-full rounded-xl bg-yellow px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-navy shadow-[4px_4px_0px_#000] transition-all hover:bg-yellow-light"
+                    >
+                      Get Started →
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/dash"
+                      onClick={() => setMobileOpen(false)}
+                      className="w-full rounded-xl bg-yellow px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-navy shadow-[4px_4px_0px_#000] transition-all hover:bg-yellow-light"
+                    >
+                      Go to Dashboard
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        void handleSignOut();
+                        setMobileOpen(false);
+                      }}
+                      className="w-full rounded-xl border-2 border-white/10 bg-white/5 px-8 py-4 text-center font-heading font-black uppercase tracking-widest text-white transition-colors hover:border-yellow hover:text-yellow"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

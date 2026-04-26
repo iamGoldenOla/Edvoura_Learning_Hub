@@ -15,52 +15,66 @@ export default function Home() {
 
       {/* ===== HERO SECTION (PARALLAX + 3D NEO-BRUTALIST) ===== */}
       <section 
-        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px] z-10"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1427504494785-3a9a2753cd0e?q=80&w=2070&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-yellow/90 backdrop-blur-sm" />
         
-        <div className="relative max-w-[1400px] mx-auto px-6 md:px-8 z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div className="marketing-container-wide relative z-10">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
             
             {/* Left Column — Copy */}
-            <div className="max-w-2xl relative">
-              <div className="inline-flex items-center gap-2 bg-white border-4 border-navy text-navy font-heading font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
+            <div className="relative max-w-2xl">
+              <div className="marketing-eyebrow mb-6 rotate-[-2deg] transition-transform hover:rotate-0">
                 <Star className="w-5 h-5 fill-navy" />
                 Premium K-12 Global Learning
               </div>
 
-              <h1 className="font-heading font-black text-navy leading-[1] tracking-tight drop-shadow-[4px_4px_0px_#FFFFFF]" style={{ fontSize: 'clamp(3.5rem, 6vw, 5.5rem)' }}>
+              <h1 className="marketing-display font-heading font-black tracking-tight text-navy drop-shadow-[4px_4px_0px_#FFFFFF]">
                 Unlock Your
                 <br />
                 Child&apos;s{' '}
                 <span className="relative inline-block mt-2">
-                  <span className="relative z-10 bg-navy text-white px-2 border-4 border-white shadow-[6px_6px_0px_rgba(255,255,255,0.4)] rotate-2 inline-block">Potential</span>
+                  <span className="relative z-10 inline-block rotate-2 border-4 border-white bg-navy px-2 text-white shadow-[6px_6px_0px_rgba(255,255,255,0.4)]">Potential</span>
                 </span>
               </h1>
 
-              <p className="mt-10 text-navy text-xl leading-relaxed max-w-xl font-bold bg-white/50 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#0A1628]">
+              <p className="marketing-kicker mt-8 max-w-xl bg-white/80">
                 Expert tutors from around the world. Private 1-on-1 sessions. Highly interactive 3D learning tools. The gamified platform built for international academic excellence.
               </p>
 
               {/* Neo-brutalist CTAs */}
-              <div className="flex flex-col sm:flex-row gap-6 mt-10">
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:gap-6">
                 <Link
                   href="/signup"
-                  className="group inline-flex items-center justify-center gap-2 bg-success text-white font-heading font-black px-10 py-5 rounded-2xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl"
+                  className="group inline-flex items-center justify-center gap-2 rounded-2xl border-4 border-navy bg-success px-6 py-4 text-lg font-heading font-black text-white shadow-[8px_8px_0px_#0A1628] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none sm:px-8 sm:py-5 sm:text-xl"
                 >
                   Start Free Trial <ArrowRight className="w-6 h-6 group-hover:rotate-45 transition-transform" />
                 </Link>
-                <button className="inline-flex items-center justify-center gap-2 bg-white text-navy font-heading font-black px-10 py-5 rounded-2xl border-4 border-navy shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border-4 border-navy bg-white px-6 py-4 text-lg font-heading font-black text-navy shadow-[8px_8px_0px_#0A1628] transition-all hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none sm:px-8 sm:py-5 sm:text-xl"
+                >
                   <Play className="w-6 h-6 fill-navy" /> Watch Demo
                 </button>
               </div>
             </div>
 
             {/* Right Column — 3D Image composition */}
-            <div className="hidden lg:block relative z-10 w-full h-[600px] perspective-[1500px]">
+            <div className="order-first relative z-10 w-full lg:order-none lg:h-[600px] lg:perspective-[1500px]">
+              <div className="relative overflow-hidden rounded-[2rem] border-[6px] border-navy bg-white shadow-[10px_10px_0px_#0A1628] lg:hidden">
+                <Image
+                  src="/images/hero_student.png"
+                  alt="Student learning online"
+                  width={900}
+                  height={720}
+                  className="h-auto w-full object-cover object-center"
+                  priority
+                />
+              </div>
+
               {/* 3D Tilted Card */}
-              <div className="absolute inset-0 bg-white border-8 border-navy rounded-[2rem] shadow-[20px_20px_0px_#0A1628] overflow-hidden transform rotate-x-[5deg] rotate-y-[-15deg] rotate-z-[2deg] hover:rotate-x-0 hover:rotate-y-0 hover:rotate-z-0 hover:shadow-[10px_10px_0px_#0A1628] hover:translate-x-2 hover:translate-y-2 transition-all duration-700 ease-out z-10">
+              <div className="absolute inset-0 hidden overflow-hidden rounded-[2rem] border-8 border-navy bg-white shadow-[20px_20px_0px_#0A1628] transition-all duration-700 ease-out z-10 lg:block lg:rotate-x-[5deg] lg:rotate-y-[-15deg] lg:rotate-z-[2deg] lg:hover:translate-x-2 lg:hover:translate-y-2 lg:hover:rotate-x-0 lg:hover:rotate-y-0 lg:hover:rotate-z-0 lg:hover:shadow-[10px_10px_0px_#0A1628]">
                 <Image
                   src="/images/hero_student.png"
                   alt="Student learning online"
@@ -71,7 +85,7 @@ export default function Home() {
               </div>
 
               {/* Overlapping Info Card */}
-              <div className="absolute bottom-10 -left-10 bg-white border-4 border-navy rounded-2xl p-4 shadow-[8px_8px_0px_#0A1628] z-30 transform -rotate-3 hover:rotate-0 transition-transform cursor-pointer">
+              <div className="mt-4 rounded-2xl border-4 border-navy bg-white p-4 shadow-[8px_8px_0px_#0A1628] z-30 lg:absolute lg:bottom-10 lg:-left-10 lg:mt-0 lg:-rotate-3 lg:transition-transform lg:hover:rotate-0">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-xl overflow-hidden border-4 border-navy flex-shrink-0 bg-yellow flex items-center justify-center">
                     <Image src="/images/tutor_session.png" alt="Tutor" width={64} height={64} className="object-cover h-full" />
@@ -95,7 +109,7 @@ export default function Home() {
 
       {/* ===== EXPLORER BAND (GRADES 1-3) ===== */}
       <section className="bg-info py-24 relative overflow-hidden border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Image Box */}
             <div className="relative group perspective-[2000px]">
@@ -153,7 +167,7 @@ export default function Home() {
 
       {/* ===== BUILDER BAND (GRADES 4-6) - NEW SECTION ===== */}
       <section className="bg-success py-24 relative overflow-hidden border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="flex flex-col lg:flex-row-reverse gap-16 items-center">
             {/* Image Box */}
             <div className="relative group perspective-[2000px] flex-1">
@@ -211,7 +225,7 @@ export default function Home() {
       {/* ===== ACHIEVER BAND (GRADES 7-12) ===== */}
       <section className="bg-navy py-32 border-b-8 border-navy relative overflow-hidden">
         <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
-        <div className="max-w-[1400px] mx-auto px-6 md:px-8 text-center pb-20 relative z-10">
+        <div className="marketing-container-wide relative z-10 pb-20 text-center">
           <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#F5C518] rotate-2">
             GRADES 7—12
           </div>
@@ -221,7 +235,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 z-10 perspective-[2000px]">
+        <div className="marketing-container relative z-10 perspective-[2000px]">
           <div className="relative bg-navy border-8 border-white rounded-[2rem] shadow-[20px_20px_0px_#F5C518] overflow-hidden transform rotate-x-[12deg] rotate-y-[-5deg] hover:rotate-x-0 hover:rotate-y-0 transition-transform duration-700 mx-auto group">
             <Image 
               src="/images/learning_dashboard_ui.png" 
@@ -240,7 +254,7 @@ export default function Home() {
          <div className="absolute -top-20 -left-20 w-64 h-64 bg-info/5 rounded-full blur-3xl" />
          <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-yellow/5 rounded-full blur-3xl" />
          
-         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+         <div className="marketing-container relative z-10">
             <div className="text-center mb-24">
                <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-6">Global Stories</h2>
                <p className="text-navy text-xl font-bold max-w-2xl mx-auto">See how students from around the world are excelling with Edvoura.</p>
@@ -274,12 +288,12 @@ export default function Home() {
                  }
                ].map((client, i) => (
                  <div key={client.name} className={`bg-white border-4 border-navy rounded-[2.5rem] p-10 shadow-[10px_10px_0px_#0A1628] hover:-translate-y-2 transition-all duration-300 relative ${i % 2 === 0 ? 'rotate-1' : '-rotate-1'}`}>
-                    <div className="absolute -top-8 -left-2 text-9xl text-navy opacity-5 font-serif select-none pointer-events-none">"</div>
+                    <div className="absolute -top-8 -left-2 text-9xl text-navy opacity-5 font-serif select-none pointer-events-none">&ldquo;</div>
                     <div className="relative z-10">
                        <div className="flex gap-1 mb-8">
                           {[1,2,3,4,5].map(s => <Star key={s} className="w-5 h-5 fill-yellow text-navy border-2 border-navy rounded-sm" />)}
                        </div>
-                       <p className="text-navy text-lg font-bold italic mb-10 leading-relaxed">"{client.quote}"</p>
+                       <p className="text-navy text-lg font-bold italic mb-10 leading-relaxed">&ldquo;{client.quote}&rdquo;</p>
                        <div className="flex items-center gap-4 border-t-4 border-navy/10 pt-8">
                           <div className="w-16 h-16 rounded-2xl border-4 border-navy overflow-hidden bg-white shadow-[4px_4px_0px_#0A1628]">
                              <Image src={client.img} alt={client.name} width={64} height={64} className="object-cover h-full" />
@@ -302,7 +316,7 @@ export default function Home() {
 
       {/* ===== FEATURED BLOG (NEO-BRUTALIST) ===== */}
       <section className="bg-yellow py-32 border-b-8 border-navy relative overflow-hidden">
-         <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+         <div className="marketing-container relative z-10">
             <div className="flex flex-col md:flex-row items-end justify-between mb-20 gap-8">
                <div className="text-left">
                   <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-6">Latest Insights</h2>
@@ -348,7 +362,7 @@ export default function Home() {
 
       {/* ===== SOLID BRUTALIST CTA BANNER ===== */}
       <section className="bg-error relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
           <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-8 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-[-2deg]">
             READY TO JOIN THE ELITE?
           </h2>

@@ -59,12 +59,12 @@ export default function BlogPage() {
 
       {/* Hero (Parallax) */}
       <section 
-        className="relative pt-[140px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy z-10"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px] z-10"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1497633762265-9a177c809dd3?q=80&w=2070&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
         
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 text-center pt-10 z-10">
+        <div className="marketing-container relative z-10 pt-6 text-center">
           <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
             INSIGHTS & UPDATES
           </div>
@@ -88,7 +88,7 @@ export default function BlogPage() {
 
       {/* Featured Grid */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
               {blogPosts.map((post, i) => (
                 <Link
@@ -136,7 +136,7 @@ export default function BlogPage() {
 
       {/* Newsletter (Brutalist) */}
       <section className="bg-error py-24 border-b-8 border-navy relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
            <h2 className="font-heading font-black text-white text-4xl md:text-6xl mb-8 drop-shadow-[4px_4px_0px_#0A1628]">Stay in the Loop</h2>
            <p className="text-white text-xl font-bold mb-10">Get the latest academic insights and platform updates delivered to your inbox.</p>
            <div className="flex flex-col sm:flex-row gap-4 items-stretch justify-center">

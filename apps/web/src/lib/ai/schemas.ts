@@ -236,6 +236,29 @@ export const ParentReportSchema = z.object({
 export type ParentReport = z.infer<typeof ParentReportSchema>;
 
 // ---------------------------------------------------------------------------
+// 8. LESSON EXPLAINER
+// ---------------------------------------------------------------------------
+export const LessonExplainerSchema = z.object({
+  mode: z.enum(['simple', 'harder_examples', 'checks_for_understanding', 'revision_notes']),
+  title: z.string().min(5),
+  explanation: z.string().min(120),
+  examples: z.array(z.string().min(12)).max(5).default([]),
+  checks: z
+    .array(
+      z.object({
+        question: z.string().min(8),
+        answerHint: z.string().min(5),
+      }),
+    )
+    .max(5)
+    .default([]),
+  revisionNotes: z.array(z.string().min(8)).max(8).default([]),
+  nextStep: z.string().min(12),
+});
+
+export type LessonExplainer = z.infer<typeof LessonExplainerSchema>;
+
+// ---------------------------------------------------------------------------
 // Content type union for the generation API
 // ---------------------------------------------------------------------------
 export const CONTENT_TYPES = [

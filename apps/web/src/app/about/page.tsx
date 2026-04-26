@@ -11,12 +11,12 @@ export default function AboutPage() {
 
       {/* Hero */}
       <section 
-        className="relative pt-[120px] pb-32 md:pt-[180px] md:pb-40 overflow-hidden border-b-8 border-navy z-10 bg-fixed bg-cover bg-center"
+        className="relative overflow-hidden border-b-8 border-navy z-10 bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px]"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=2132&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-yellow/90 backdrop-blur-sm" />
         
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-10 md:py-16 text-center z-10">
+        <div className="marketing-container relative z-10 py-6 text-center md:py-10">
           <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
             OUR STORY
           </div>
@@ -29,7 +29,7 @@ export default function AboutPage() {
         </div>
 
         {/* Hero Image */}
-        <div className="relative max-w-5xl mx-auto px-6 mt-12 perspective-[2000px] z-10">
+        <div className="marketing-container relative z-10 mt-10 max-w-5xl perspective-[2000px]">
           <div className="relative rounded-[2rem] overflow-hidden border-8 border-navy shadow-[20px_20px_0px_#0A1628] transform rotate-x-[5deg] rotate-y-[-5deg] hover:rotate-x-0 hover:rotate-y-0 transition-all duration-700 bg-white">
             <Image
               src="/images/hero_student.png"
@@ -44,7 +44,7 @@ export default function AboutPage() {
 
       {/* Mission & Vision */}
       <section className="bg-white py-24 md:py-32 relative border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
             <div className="bg-white border-4 border-navy shadow-[12px_12px_0px_#0A1628] rounded-[2rem] p-10 md:p-14 hover:-translate-y-2 hover:shadow-[8px_8px_0px_#0A1628] transition-all duration-300 transform -rotate-1">
               <div className="w-20 h-20 bg-yellow border-4 border-navy rounded-2xl flex items-center justify-center mb-8 shadow-[4px_4px_0px_#0A1628] rotate-3">
@@ -71,7 +71,7 @@ export default function AboutPage() {
 
       {/* Values */}
       <section className="bg-off-white py-24 md:py-32 relative border-b-8 border-navy">
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container relative">
           <div className="text-center mb-20 bg-info border-4 border-navy p-8 rounded-[2rem] shadow-[10px_10px_0px_#0A1628] inline-block mx-auto transform -rotate-2">
             <h2 className="font-heading font-black text-white" style={{ fontSize: 'clamp(2.5rem, 4vw, 4rem)' }}>
               What Drives Us
@@ -98,7 +98,7 @@ export default function AboutPage() {
 
       {/* Team */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="text-center mb-20">
             <h2 className="font-heading font-black text-navy" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}>
               The Team Behind Edvoura
@@ -125,7 +125,7 @@ export default function AboutPage() {
       {/* Brutalist CTA */}
       <section className="bg-success relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.1)_50%,transparent_75%,transparent_100%)] bg-[length:150px_150px]" />
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
           <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-8 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-[-2deg]">
             WANT TO JOIN THE TEAM?
           </h2>

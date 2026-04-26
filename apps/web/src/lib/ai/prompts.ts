@@ -246,3 +246,44 @@ The report must:
 
 Output only valid JSON with: childName, reportPeriod, summary, highlights[], areasForImprovement[], suggestionsForHome[], tone`;
 }
+
+export function buildLessonExplainerPrompt(params: {
+  mode: 'simple' | 'harder_examples' | 'checks_for_understanding' | 'revision_notes';
+  topic: string;
+  subject: string;
+  gradeLevel: string;
+  lessonText: string;
+}) {
+  const modeInstructionMap = {
+    simple:
+      'Explain the lesson simply, clearly, and warmly as if reteaching a confused student. Break down the concept in easier language without sounding childish.',
+    harder_examples:
+      'Keep the core explanation concise, then give stronger, more challenging worked examples that stretch the student beyond the original lesson.',
+    checks_for_understanding:
+      'Explain the lesson briefly, then generate 5 checks for understanding with answer hints that help the student think without giving away the full answer.',
+    revision_notes:
+      'Turn the lesson into compact but high-quality revision notes with memory cues, key facts, and exam-ready reminders.',
+  } as const;
+
+  return `You are explaining a published lesson for a ${params.gradeLevel} student.
+Subject: ${params.subject}
+Topic: ${params.topic}
+Mode: ${params.mode}
+
+Lesson source:
+${params.lessonText}
+
+Instruction:
+${modeInstructionMap[params.mode]}
+
+Return ONLY valid JSON with:
+- mode
+- title
+- explanation
+- examples: array of short example strings (empty array if not needed)
+- checks: array of {question, answerHint} (empty array if not needed)
+- revisionNotes: array of short bullet-note strings (empty array if not needed)
+- nextStep: one concrete next action for the student
+
+Make the response precise, student-friendly, and curriculum-aware.`;
+}

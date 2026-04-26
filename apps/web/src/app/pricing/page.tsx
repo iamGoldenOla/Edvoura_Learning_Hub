@@ -83,12 +83,12 @@ export default function PricingPage() {
 
       {/* Hero (Parallax) */}
       <section 
-        className="relative pt-[120px] pb-32 md:pt-[160px] md:pb-52 overflow-hidden bg-fixed bg-cover bg-center border-b-8 border-navy"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-20 pt-[104px] sm:pb-24 sm:pt-[120px] md:pb-40 md:pt-[148px]"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1427504494785-3a9a2753cd0e?q=80&w=2070&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-info/85 backdrop-blur-sm" />
         
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 text-center pt-10 z-10">
+        <div className="marketing-container relative z-10 pt-6 text-center">
           <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
             GLOBAL PRICING
           </div>
@@ -103,7 +103,7 @@ export default function PricingPage() {
 
       {/* Pricing Cards */}
       <section className="relative z-20 -mt-24 md:-mt-40 pb-24 border-b-8 border-navy bg-off-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 items-center lg:items-stretch">
             {plans.map((plan, i) => (
               <div
@@ -139,7 +139,7 @@ export default function PricingPage() {
                 </Link>
 
                 <div className="pt-8 border-t-4 border-white/20">
-                  <p className={`text-sm font-black uppercase tracking-widest mb-6 ${plan.popular ? 'text-yellow' : 'text-navy'}`}>What's included</p>
+                  <p className={`text-sm font-black uppercase tracking-widest mb-6 ${plan.popular ? 'text-yellow' : 'text-navy'}`}>What&apos;s included</p>
                   <ul className="space-y-4">
                     {plan.features.map((f) => (
                       <li key={f} className="flex items-start gap-4 text-base font-bold">
@@ -165,7 +165,7 @@ export default function PricingPage() {
 
       {/* Weekend Support Section */}
       <section className="bg-white py-24 border-b-8 border-navy relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="marketing-container">
           <div className="bg-error border-4 border-navy shadow-[15px_15px_0px_#0A1628] rounded-[3rem] p-12 text-white relative overflow-hidden transform rotate-1">
              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -188,7 +188,7 @@ export default function PricingPage() {
       {/* FAQ */}
       <section className="bg-success py-24 md:py-32 border-b-8 border-navy relative">
         <div className="absolute w-full h-[200%] top-0 left-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        <div className="max-w-4xl mx-auto px-6 md:px-8 relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl">
           <div className="text-center mb-16">
             <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-6 shadow-[4px_4px_0px_#0A1628] rotate-2">
               QUESTIONS?
@@ -219,7 +219,7 @@ export default function PricingPage() {
 
       {/* Solid Brutalist CTA */}
       <section className="bg-yellow relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
           <h2 className="font-heading font-black text-navy text-5xl md:text-7xl mb-12 tracking-tight drop-shadow-[6px_6px_0px_#FFFFFF] transform rotate-[-2deg]">
             STILL DECIDING?
           </h2>
