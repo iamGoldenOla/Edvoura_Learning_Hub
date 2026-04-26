@@ -63,7 +63,24 @@ export async function createQuizOrResource(formData: FormData) {
     .limit(1)
     .single();
 
-  if (!tutorClass) {
+  if (tutorClass) {
+    // Even if class exists, ensure all current students of this grade are enrolled
+    const { data: students } = await supabaseAdmin
+      .from('student_profiles')
+      .select('user_id')
+      .eq('grade_level_id', grade.id);
+      
+    if (students && students.length > 0) {
+      const enrollments = students.map(s => ({
+        class_id: tutorClass!.id,
+        student_user_id: s.user_id,
+        status: 'active'
+      }));
+      await supabaseAdmin.from('class_enrollments').upsert(enrollments, {
+        onConflict: 'class_id,student_user_id'
+      });
+    }
+  } else {
     const { data: newClass } = await supabaseAdmin
       .from('classes')
       .insert({
@@ -135,17 +152,48 @@ export async function createQuizOrResource(formData: FormData) {
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Also log to activity events so it shows up in the Library/Feed
+    await supabaseAdmin.from('learning_activity_events').insert({
+      event_type: 'spelling_bee_created',
+      actor_user_id: tutorId,
+      class_id: tutorClass!.id,
+      payload: {
+        assignment_id: data.id,
+        title: `Spelling Bee: ${title.trim()}`,
+        description: description?.trim() || 'New spelling bee challenge available!'
+      }
+    });
+
     return { success: true, id: data.id };
   } else if (type === 'resource') {
-    // Log as a learning activity event for the Resource Library
+    // Resources are primarily events, but if they have files, they need a backing assignment
     const description = formData.get('description') as string;
     
+    // Create a "Resource" assignment (non-graded/published)
+    const { data: assignment, error: assignError } = await supabaseAdmin
+      .from('assignments')
+      .insert({
+        class_id: tutorClass!.id,
+        title: title.trim(),
+        instructions: description?.trim() || null,
+        status: 'published',
+        points_possible: 0, // Resource, not for points
+        created_by_user_id: tutorId,
+        due_at: null
+      })
+      .select('id')
+      .single();
+
+    if (assignError) throw new Error(assignError.message);
+
     const { data, error } = await supabaseAdmin
       .from('learning_activity_events')
       .insert({
         event_type: 'lesson_resource_uploaded',
         actor_user_id: tutorId,
         class_id: tutorClass!.id,
+        assignment_id: assignment.id,
         payload: {
           title: title.trim(),
           description: description?.trim() || null
@@ -155,7 +203,8 @@ export async function createQuizOrResource(formData: FormData) {
       .single();
 
     if (error) throw new Error(error.message);
-    return { success: true, id: data.id };
+    // Return assignment ID so the frontend can attach files to it
+    return { success: true, id: assignment.id };
   }
 
   revalidatePath('/dash/tutor/builder');
