@@ -103,6 +103,9 @@ The platform has successfully transitioned its core management interfaces (Admin
 2. Complete `Phase 0` through `Phase 5` of the cutover on the hosted Supabase instance (applying all schema migrations and verifying buckets).
 3. Validate student assignment submissions, grading, and direct Live Session creation via the new UI workflows.
 4. Keep `AGENT.md`, `README.md`, `VERCEL_SUPABASE_CUTOVER.md`, and GitHub in sync after each completed phase.
+5. Enforce dashboard quality gates in `apps/web`:
+   - `pnpm --dir apps/web run qa:dashboard-copy` (blocks banned placeholder KPI copy),
+   - `pnpm --dir apps/web run qa:smoke:prod` (mobile/public route smoke against production).
 
 ## Working Rules
 
