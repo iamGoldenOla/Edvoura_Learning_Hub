@@ -1228,7 +1228,7 @@ export default function TutorBuilderPage() {
                               <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">
                                 AI Output Preview
                               </p>
-                              {aiResult && (
+                              {aiResult !== null && (
                                 <button
                                   onClick={() => {
                                     setAiResult(null);
@@ -1241,7 +1241,7 @@ export default function TutorBuilderPage() {
                                 </button>
                               )}
                             </div>
-                            {aiResult ? (
+                            {aiResult !== null ? (
                               <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[400px]">
                                 {JSON.stringify(aiResult, null, 2)}
                               </pre>
