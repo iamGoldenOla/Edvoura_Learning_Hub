@@ -54,7 +54,7 @@ export default function SuperAdminAIControlClient() {
     }
   }
 
-  async function onImproveWithAI(record: RecordItem) {
+  async function onImproveWithAI(record: PendingReviewRecord) {
     setIsGenerating(true);
     setFeedback("Improving selected content with Edvoura AI...");
     try {
