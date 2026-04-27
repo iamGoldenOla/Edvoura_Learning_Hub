@@ -488,7 +488,7 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   const displayAvatar = avatarPreview ?? avatarPersistedUrl;
 
   return (
-    <div className="mx-auto max-w-[1000px] space-y-8 p-6 sm:p-8 pb-20">
+    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
       <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark mb-8">
         Profile Settings
       </h1>

@@ -12,7 +12,7 @@ export default async function StudentDashboard() {
 
   if (!viewer.currentUser.learnerProfile) {
     return (
-      <div className="max-w-3xl mx-auto bg-white border-[4px] border-dark rounded-[28px] p-10 shadow-[10px_10px_0px_#060E1C]">
+      <div className="max-w-5xl mx-auto bg-white border-[4px] border-dark rounded-[28px] p-10 shadow-[10px_10px_0px_#060E1C]">
         <h1 className="text-3xl font-heading font-black text-dark mb-4">Complete your student profile</h1>
         <p className="text-sm text-dark/70 font-semibold normal-case mb-6">
           Your account does not have a student profile yet, so the dashboard cannot load. Finish
@@ -48,7 +48,7 @@ export default async function StudentDashboard() {
     const message = error instanceof Error ? error.message : 'Unable to load student dashboard.';
 
     return (
-      <div className="max-w-3xl mx-auto bg-white border-[4px] border-dark rounded-[28px] p-10 shadow-[10px_10px_0px_#060E1C]">
+      <div className="max-w-5xl mx-auto bg-white border-[4px] border-dark rounded-[28px] p-10 shadow-[10px_10px_0px_#060E1C]">
         <h1 className="text-3xl font-heading font-black text-dark mb-4">Student dashboard unavailable</h1>
         <p className="text-sm text-dark/70 font-semibold normal-case mb-6">
           {message}

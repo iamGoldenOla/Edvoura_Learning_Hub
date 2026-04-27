@@ -21,7 +21,7 @@ export default async function StudentClassesPage() {
   }));
 
   return (
-    <div className="space-y-8 max-w-[1400px] mx-auto pb-20">
+    <div className="space-y-8 max-w-[1680px] mx-auto pb-20">
       <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 md:p-12 border-b-[4px] border-dark bg-blue-50">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">

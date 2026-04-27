@@ -13,7 +13,7 @@ export default function StudentFeatureStubPage({
   targetPath: string;
 }) {
   return (
-    <div className="p-6 sm:p-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 space-y-8 pb-20">
+    <div className="p-6 sm:p-8 max-w-[1680px] mx-auto animate-in fade-in duration-500 space-y-8 pb-20">
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 border-b-[4px] border-dark bg-dark flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>

@@ -7,7 +7,7 @@ export default async function LivePage() {
   const band = gradeBandCodeToUiBand(viewer.currentUser.learnerProfile?.gradeBandCode);
 
   return (
-    <div className="max-w-[1400px] mx-auto">
+    <div className="max-w-[1680px] mx-auto">
       <StudentLiveWaitingRoom dashboard={dashboard} band={band} />
     </div>
   );
