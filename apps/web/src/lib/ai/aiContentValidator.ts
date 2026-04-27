@@ -79,12 +79,18 @@ const communicationSchema = z.object({
   improvement_tips: z.array(z.string().min(4)).min(3),
 });
 
+const lenientContentSchema = z.record(z.unknown()).refine(
+  (obj) => Object.keys(obj).length >= 2,
+  { message: "AI response must contain at least 2 fields" },
+);
+
 function getSchema(taskType: EdvouraTaskType) {
   switch (taskType) {
     case "GENERATE_LESSON":
+      return lessonSchema;
     case "IMPROVE_CONTENT":
     case "REGENERATE_CONTENT":
-      return lessonSchema;
+      return lenientContentSchema;
     case "GENERATE_QUIZ":
       return quizSchema;
     case "ADAPT_LEARNING":

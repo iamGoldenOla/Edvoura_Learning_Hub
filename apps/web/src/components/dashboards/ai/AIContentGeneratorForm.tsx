@@ -36,6 +36,10 @@ const SUBJECT_OPTIONS = [
   "Literature",
   "History",
   "Geography",
+  "Spelling",
+  "Financial Literacy",
+  "Communication Skills",
+  "General Life Skills",
 ];
 
 export default function AIContentGeneratorForm({
