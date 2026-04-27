@@ -36,6 +36,8 @@ import {
   CreditCard,
   Shield,
   Sparkles,
+  Menu,
+  X,
 } from 'lucide-react';
 
 import { BandProvider, useBand } from '@/components/dashboards/BandContext';
@@ -87,6 +89,7 @@ export default function DashboardClientShell({
   viewerAvatarPath?: string | null;
   children: React.ReactNode;
 }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const isSuperAdmin = role === 'super_admin';
   
@@ -149,12 +152,27 @@ export default function DashboardClientShell({
     return () => { cancelled = true; };
   }, [viewerAvatarPath, viewerName]);
 
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   return (
     <BandProvider initialBand={initialBand}>
       <DashboardToastViewport />
       <DashboardQueryActionBridge />
       <div className="flex min-h-screen bg-off-white text-dark">
-        <aside className="sticky top-0 hidden h-screen w-72 flex-col bg-dark p-6 lg:flex shadow-[4px_0_0_#060E1C] z-30">
+        {/* Mobile Sidebar Overlay */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-dark/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
+        <aside className={`sticky top-0 z-50 flex h-screen w-72 flex-col bg-dark p-6 transition-transform lg:translate-x-0 lg:flex shadow-[4px_0_0_#060E1C] ${
+          isMobileMenuOpen ? 'fixed translate-x-0' : 'fixed -translate-x-full lg:sticky'
+        }`}>
           <div className="mb-8 flex items-center gap-4 rounded-2xl border-[3px] border-dark bg-yellow px-4 py-4 shadow-[4px_4px_0px_#ffffff]">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[3px] border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C]">
               <Crown className="h-6 w-6" />
@@ -204,6 +222,15 @@ export default function DashboardClientShell({
           <header className="border-b-[4px] border-dark bg-white px-5 py-4 sm:px-8 z-20">
             <div className="flex items-center justify-between gap-4">
               <div className="flex min-w-0 items-center gap-4">
+                {/* Mobile Menu Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="rounded-xl border-[3px] border-dark bg-white p-2 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none lg:hidden"
+                >
+                  {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                </button>
+
                 <div className="hidden items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 sm:flex shadow-[2px_2px_0px_#060E1C]">
                   <Search className="h-4 w-4 text-dark/50" />
                   <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>

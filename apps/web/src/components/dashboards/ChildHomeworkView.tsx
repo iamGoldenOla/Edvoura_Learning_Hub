@@ -157,7 +157,7 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                 <div className="space-y-4">
                    <h4 className="text-xs font-black uppercase tracking-widest text-dark/40">Your Mission Report</h4>
                    <textarea 
                      value={note}
@@ -166,6 +166,35 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
                      className="w-full min-h-[120px] p-6 border-[3px] border-dark rounded-3xl focus:outline-none focus:ring-4 focus:ring-indigo-100 text-dark font-semibold"
                    />
                 </div>
+
+                {activeMission.resources && activeMission.resources.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-black uppercase tracking-widest text-dark/40">Mission Materials</h4>
+                    <div className="grid gap-3">
+                      {activeMission.resources.map((res) => (
+                        res.downloadUrl ? (
+                          <a 
+                            key={res.id}
+                            href={res.downloadUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-between gap-4 p-4 border-[3px] border-dark bg-yellow/10 rounded-2xl hover:bg-yellow/20 transition-all"
+                          >
+                            <div className="flex items-center gap-3">
+                              <BookOpen className="h-5 w-5 text-dark" />
+                              <span className="text-sm font-black text-dark truncate max-w-[200px]">{res.fileName}</span>
+                            </div>
+                            <span className="px-3 py-1 bg-dark text-white text-[9px] font-black uppercase rounded-lg">View Material</span>
+                          </a>
+                        ) : (
+                          <div key={res.id} className="p-4 border-[3px] border-dark/10 bg-slate-50 rounded-2xl text-xs font-bold text-dark/30 italic">
+                            {res.fileName} (Preparing...)
+                          </div>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex-1">
