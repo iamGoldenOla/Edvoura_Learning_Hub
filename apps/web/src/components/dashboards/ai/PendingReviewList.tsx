@@ -9,6 +9,7 @@ type RecordItem = {
   subject: string;
   topic: string;
   grade: string;
+  skill_type?: string;
   task_type: string;
   status: string;
   review_note: string | null;
@@ -20,6 +21,7 @@ export default function PendingReviewList({
   records,
   superAdminMode = false,
   onReviewAction,
+  onImproveWithAI,
   onPreview,
 }: {
   title: string;
@@ -30,6 +32,7 @@ export default function PendingReviewList({
     contentId: string;
     reviewNote?: string;
   }) => Promise<void>;
+  onImproveWithAI?: (record: RecordItem) => Promise<void>;
   onPreview: (content: unknown) => void;
 }) {
   return (
@@ -55,13 +58,24 @@ export default function PendingReviewList({
                 Review note: {record.review_note}
               </p>
             ) : null}
-            <button
-              type="button"
-              onClick={() => onPreview(record.content_json)}
-              className="mt-3 rounded-lg border-[2px] border-dark bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-            >
-              Preview JSON
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => onPreview(record.content_json)}
+                className="rounded-lg border-[2px] border-dark bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+              >
+                Preview JSON
+              </button>
+              {superAdminMode && onImproveWithAI ? (
+                <button
+                  type="button"
+                  onClick={() => void onImproveWithAI(record)}
+                  className="rounded-lg border-[2px] border-dark bg-yellow px-3 py-2 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                >
+                  Improve with AI
+                </button>
+              ) : null}
+            </div>
             {superAdminMode && onReviewAction ? (
               <div className="mt-3">
                 <AIContentReviewActions

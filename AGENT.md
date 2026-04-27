@@ -42,6 +42,10 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
   - Admin sidebar AI link now points to `/dash/admin/ai`.
 - Workflow rule now enforced in API:
   - Publish requires super_admin and prior `APPROVED` status.
+- Follow-up completion:
+  - Tutor draft cards now support direct `Improve with AI` and `Regenerate` actions.
+  - Super Admin review lists now include `Improve with AI` per item.
+  - Legacy `builder?tool=ai-generator` entry now forwards to `/dash/tutor/ai` to keep all Puter generation in the dedicated protected workspace.
 
 ### Current Status: Main Branch Synced + Mobile Hardening + Tutor UX Fixes
 

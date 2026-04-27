@@ -65,6 +65,35 @@ export default function SuperAdminAIControlClient() {
     }
   }
 
+  async function onImproveWithAI(record: RecordItem) {
+    setIsGenerating(true);
+    setFeedback("Improving selected content with Edvoura AI...");
+    try {
+      const generated = await generateEdvouraContent({
+        userRole: "super_admin",
+        taskType: "IMPROVE_CONTENT",
+        subject: record.subject,
+        topic: record.topic,
+        grade: record.grade,
+        skillType: record.skill_type,
+        existingContent: JSON.stringify(record.content_json),
+        extraInstruction:
+          "Improve clarity, structure, and originality. Keep grade appropriateness and educational objective intact.",
+      });
+      setPreviewContent(generated.content);
+      setFeedback("Improved draft generated and saved.");
+      await loadRecords();
+    } catch (error) {
+      setFeedback(
+        error instanceof Error
+          ? error.message
+          : "Unable to improve content right now.",
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
   async function onReviewAction(params: {
     action: "APPROVE" | "REJECT" | "REQUEST_CHANGES" | "PUBLISH";
     contentId: string;
@@ -118,6 +147,7 @@ export default function SuperAdminAIControlClient() {
         records={pending}
         superAdminMode
         onReviewAction={onReviewAction}
+        onImproveWithAI={onImproveWithAI}
         onPreview={setPreviewContent}
       />
       <PendingReviewList
@@ -125,6 +155,7 @@ export default function SuperAdminAIControlClient() {
         records={approved}
         superAdminMode
         onReviewAction={onReviewAction}
+        onImproveWithAI={onImproveWithAI}
         onPreview={setPreviewContent}
       />
       <PendingReviewList

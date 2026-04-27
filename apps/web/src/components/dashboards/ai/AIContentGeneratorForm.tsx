@@ -14,6 +14,9 @@ export type GeneratorPayload = {
   grade: string;
   skillType: string;
   extraInstruction?: string;
+  existingContent?: string;
+  score?: number;
+  history?: string;
 };
 
 const SUBJECT_OPTIONS = [
@@ -48,6 +51,9 @@ export default function AIContentGeneratorForm({
   const [grade, setGrade] = useState("Grade 4");
   const [skillType, setSkillType] = useState("Core Academic");
   const [extraInstruction, setExtraInstruction] = useState("");
+  const [existingContent, setExistingContent] = useState("");
+  const [score, setScore] = useState("");
+  const [history, setHistory] = useState("");
 
   return (
     <section className="rounded-2xl border-[3px] border-dark bg-yellow/20 p-5 shadow-[4px_4px_0px_#060E1C]">
@@ -144,6 +150,44 @@ export default function AIContentGeneratorForm({
         />
       </label>
 
+      <label className="mt-3 block space-y-1">
+        <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+          Existing Content (for Improve / Regenerate)
+        </span>
+        <textarea
+          value={existingContent}
+          onChange={(event) => setExistingContent(event.target.value)}
+          placeholder="Paste existing JSON/content for improve or regenerate tasks."
+          rows={4}
+          className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-semibold outline-none"
+        />
+      </label>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
+        <label className="space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+            Score (ADAPT_LEARNING)
+          </span>
+          <input
+            value={score}
+            onChange={(event) => setScore(event.target.value)}
+            placeholder="e.g. 58"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-bold outline-none"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+            History (ADAPT_LEARNING)
+          </span>
+          <input
+            value={history}
+            onChange={(event) => setHistory(event.target.value)}
+            placeholder="Recent weak topics or trend notes"
+            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-bold outline-none"
+          />
+        </label>
+      </div>
+
       <Button
         type="button"
         disabled={disabled || !topic.trim()}
@@ -155,6 +199,9 @@ export default function AIContentGeneratorForm({
             grade,
             skillType,
             extraInstruction: extraInstruction || undefined,
+            existingContent: existingContent || undefined,
+            score: score ? Number(score) : undefined,
+            history: history || undefined,
           })
         }
         className="mt-4 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl px-5 py-3 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"

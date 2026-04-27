@@ -79,6 +79,56 @@ export default function TutorAIWorkspaceClient() {
     }
   }
 
+  async function onRegenerate(record: TutorRecord) {
+    setIsGenerating(true);
+    setFeedback("Regenerating a fresh draft...");
+    try {
+      const generated = await generateEdvouraContent({
+        userRole: "tutor",
+        taskType: "REGENERATE_CONTENT",
+        subject: record.subject,
+        topic: record.topic,
+        grade: record.grade,
+        skillType: record.skill_type,
+        existingContent: JSON.stringify(record.content_json),
+        extraInstruction:
+          "Regenerate with new examples and non-repetitive question structure while preserving topic coverage.",
+      });
+      setPreviewContent(generated.content);
+      setFeedback("Regenerated draft saved.");
+      await loadRecords();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to regenerate content.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
+  async function onImprove(record: TutorRecord) {
+    setIsGenerating(true);
+    setFeedback("Improving draft with Edvoura AI...");
+    try {
+      const generated = await generateEdvouraContent({
+        userRole: "tutor",
+        taskType: "IMPROVE_CONTENT",
+        subject: record.subject,
+        topic: record.topic,
+        grade: record.grade,
+        skillType: record.skill_type,
+        existingContent: JSON.stringify(record.content_json),
+        extraInstruction:
+          "Improve clarity, flow, and pedagogical quality without changing grade appropriateness.",
+      });
+      setPreviewContent(generated.content);
+      setFeedback("Improved draft saved.");
+      await loadRecords();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to improve content.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }
+
   const draftRecords = records.filter((entry) => entry.status.toUpperCase() === "DRAFT");
   const reviewRecords = records.filter((entry) =>
     ["PENDING_REVIEW", "APPROVED", "REJECTED", "PUBLISHED"].includes(entry.status.toUpperCase()),
@@ -128,6 +178,22 @@ export default function TutorAIWorkspaceClient() {
                   className="bg-white border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
                 >
                   Preview
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void onImprove(record)}
+                  disabled={isGenerating}
+                  className="bg-blue-200 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                >
+                  Improve with AI
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void onRegenerate(record)}
+                  disabled={isGenerating}
+                  className="bg-amber-200 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                >
+                  Regenerate
                 </Button>
                 <Button
                   type="button"
