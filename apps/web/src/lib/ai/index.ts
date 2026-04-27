@@ -18,3 +18,5 @@ export type {
   ParentReport,
   LessonExplainer,
 } from './schemas';
+export { generateEdvouraContent } from './contentGenerationService';
+export { buildEdvouraPrompt, EDVOURA_TASK_TYPES } from './edvouraPromptBuilder';

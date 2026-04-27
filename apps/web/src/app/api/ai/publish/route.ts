@@ -12,6 +12,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { data: roles } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', user.id);
+  const isSuperAdmin = (roles ?? []).some((entry) => entry.role === 'super_admin');
+  if (!isSuperAdmin) {
+    return NextResponse.json(
+      { error: 'Only super admins can publish AI content to students.' },
+      { status: 403 },
+    );
+  }
+
   const body = await request.json().catch(() => null);
 
   if (!body?.contentId) {
@@ -24,6 +36,8 @@ export async function POST(request: NextRequest) {
     .select(`
       id,
       content_type,
+      status,
+      generated_by_user_id,
       raw_output,
       curriculum_map:curriculum_map_id (
         subject_id,
@@ -46,7 +60,7 @@ export async function POST(request: NextRequest) {
   let { data: tutorClass } = await supabase
     .from('classes')
     .select('id')
-    .eq('primary_tutor_user_id', user.id)
+    .eq('primary_tutor_user_id', (content as any).generated_by_user_id ?? user.id)
     .eq('subject_id', cmap.subject_id)
     .eq('grade_level_id', cmap.grade_level_id)
     .in('status', ['draft', 'active'])
@@ -66,7 +80,7 @@ export async function POST(request: NextRequest) {
         grade_level_id: cmap.grade_level_id,
         title: `${grade?.display_name || 'Grade'} ${subject?.name || 'Subject'}`,
         status: 'active',
-        primary_tutor_user_id: user.id,
+        primary_tutor_user_id: (content as any).generated_by_user_id ?? user.id,
         created_by_user_id: user.id,
         starts_on: new Date().toISOString()
       })
@@ -140,12 +154,19 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // 5. Update AI status to published
+  // 5. Update AI status to published (only from approved)
+  const currentStatus = String((content as any).status ?? '').toUpperCase();
+  if (currentStatus !== 'APPROVED') {
+    return NextResponse.json(
+      { error: 'Content must be APPROVED before publishing.' },
+      { status: 409 },
+    );
+  }
+
   const { data, error } = await supabase
     .from('ai_generated_content')
-    .update({ status: 'published' })
+    .update({ status: 'PUBLISHED', reviewed_by_user_id: user.id, published_at: new Date().toISOString() })
     .eq('id', body.contentId)
-    .eq('generated_by_user_id', user.id)
     .select()
     .single();
 

@@ -315,7 +315,7 @@ function TutorSidebarNav() {
   const toolsNav = [
     { href: '/dash/tutor/schedule', label: 'Start or Join Lesson', icon: PanelTop },
     { href: '/dash/tutor/roster', label: 'Attendance and Performance', icon: BookCheck },
-    { href: '/dash/tutor/builder?tool=ai-generator', label: 'Edvoura AI Generator', icon: Sparkles },
+    { href: '/dash/tutor/ai', label: 'Edvoura AI Generator', icon: Sparkles },
   ];
   const isActive = (href: string) => {
     const [basePath, queryString] = href.split('?');
@@ -380,7 +380,7 @@ function AdminSidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
     { href: '/dash/admin/engagement', label: 'Engagement & Rewards', icon: Gift, superAdminOnly: false },
     { href: '/dash/admin/finance', label: 'Billing & Revenue', icon: DollarSign, superAdminOnly: false },
     { href: '/dash/admin/finance/plans', label: 'Subscription Plans', icon: CreditCard, superAdminOnly: true },
-    { href: '/dash/admin/content?ai-center=true', label: 'AI Control Center', icon: Sparkles, superAdminOnly: false },
+    { href: '/dash/admin/ai', label: 'AI Control Center', icon: Sparkles, superAdminOnly: false },
     { href: '/dash/admin/notifications', label: 'Notification Center', icon: Bell, superAdminOnly: false },
     { href: '/dash/admin/support', label: 'Support & Moderation', icon: LifeBuoy, superAdminOnly: false },
     { href: '/dash/admin/analytics', label: 'Reports & Analytics', icon: BarChart3, superAdminOnly: false },

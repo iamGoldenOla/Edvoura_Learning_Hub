@@ -8,6 +8,41 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 
 ## Last Session Handoff (2026-04-26)
 
+### Current Status: Puter Dashboard AI Workflow (2026-04-27)
+
+- Puter.js integration is now architected as **dashboard-only** generation tooling:
+  - Tutor AI workspace: `/dash/tutor/ai`
+  - Super Admin AI control center: `/dash/admin/ai`
+  - Puter CDN script is loaded only in those two pages via `next/script`.
+- New Edvoura AI module set added in `apps/web/src/lib/ai/`:
+  - `puterClient.ts` (safe Puter wrapper, browser guard, optional streaming helper)
+  - `edvouraPromptBuilder.ts` (master Edvoura prompt composer + task contracts)
+  - `aiContentValidator.ts` (task-specific JSON validation)
+  - `antiRepetitionService.ts` (extract/hash prior items to reduce repetition)
+  - `aiContentRepository.ts` (dashboard API client)
+  - `contentGenerationService.ts` (end-to-end Puter generation + validation + draft save)
+- New dashboard UI components added:
+  - `AIContentGeneratorForm`
+  - `AIContentPreview`
+  - `PendingReviewList`
+  - `AIContentReviewActions`
+  - `AIStatusBadge`
+- New role-protected API routes added:
+  - `GET/POST /api/ai/dashboard/content`
+    - tutor/admin/super_admin can save draft + submit review
+    - super_admin can approve/reject/request_changes/publish
+  - `GET /api/ai/dashboard/previous-items` for anti-repetition memory injection.
+- New migration added:
+  - `supabase/migrations/20260427190000_puter_dashboard_ai_workflow.sql`
+  - Extends `ai_generated_content` with richer workflow fields and status model.
+  - Adds `anti_repetition_items` table with RLS + indexes.
+  - Expands RLS so super_admin can manage all AI content rows.
+- Navigation updated:
+  - Tutor sidebar AI link now points to `/dash/tutor/ai`.
+  - Admin sidebar AI link now points to `/dash/admin/ai`.
+- Workflow rule now enforced in API:
+  - Publish requires super_admin and prior `APPROVED` status.
+
 ### Current Status: Main Branch Synced + Mobile Hardening + Tutor UX Fixes
 
 - `main` is now the deployment source of truth and has been fast-forwarded with the full AI/dashboard branch history.

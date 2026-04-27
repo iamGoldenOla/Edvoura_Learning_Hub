@@ -18,7 +18,7 @@ export default async function QuizPage() {
     .from('ai_generated_content')
     .select('id, raw_output, created_at')
     .eq('content_type', 'quiz')
-    .eq('status', 'published')
+    .in('status', ['published', 'PUBLISHED'])
     .order('created_at', { ascending: false });
 
   // Map AI quizzes to a common format

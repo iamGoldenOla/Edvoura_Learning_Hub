@@ -1150,7 +1150,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       { count: chatMessages24hCount },
       { data: activeChatChannelsData = [] },
     ] = await Promise.all([
-      supabase.from('ai_generated_content').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
+      supabase.from('ai_generated_content').select('*', { count: 'exact', head: true }).in('status', ['draft', 'DRAFT']),
       supabase
         .from('learning_activity_events')
         .select('*', { count: 'exact', head: true })

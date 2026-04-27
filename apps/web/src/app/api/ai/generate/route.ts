@@ -108,9 +108,20 @@ export async function POST(request: NextRequest) {
     .insert({
       content_type: body.contentType,
       curriculum_map_id: body.curriculumMapId ?? null,
+      title: result.data && typeof result.data === 'object' && 'title' in result.data ? (result.data as { title?: string }).title ?? `${body.subject} - ${body.topic}` : `${body.subject} - ${body.topic}`,
+      subject: body.subject,
+      topic: body.topic,
+      grade: body.gradeLevel,
+      skill_type: body.subject,
+      task_type: body.contentType === 'lesson_note' ? 'GENERATE_LESSON' : body.contentType === 'quiz' ? 'GENERATE_QUIZ' : body.contentType === 'spelling_bee' ? 'GENERATE_SPELLING' : 'IMPROVE_CONTENT',
+      content_json: result.data,
+      content_text: JSON.stringify(result.data, null, 2),
       generated_by_user_id: user.id,
+      generated_by_role: roles?.[0]?.role ?? 'tutor',
       raw_output: result.data,
-      status: 'draft',
+      status: 'DRAFT',
+      ai_provider: result.provider?.split(':')?.[0] ?? 'legacy',
+      model_used: result.provider ?? 'legacy',
     })
     .select('id, content_type, status, created_at')
     .single();

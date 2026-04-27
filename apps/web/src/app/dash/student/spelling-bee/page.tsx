@@ -14,7 +14,7 @@ export default async function SpellingBeePage() {
     .from('ai_generated_content')
     .select('id, raw_output')
     .eq('content_type', 'spelling_bee')
-    .eq('status', 'published')
+    .in('status', ['published', 'PUBLISHED'])
     .order('created_at', { ascending: false });
 
   const challenges = ((data ?? []) as ChallengeRow[])
