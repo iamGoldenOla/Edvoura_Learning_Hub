@@ -3,7 +3,7 @@
 import AIStatusBadge from "./AIStatusBadge";
 import AIContentReviewActions from "./AIContentReviewActions";
 
-type RecordItem = {
+export type PendingReviewRecord = {
   id: string;
   title: string;
   subject: string;
@@ -14,6 +14,8 @@ type RecordItem = {
   status: string;
   review_note: string | null;
   content_json: unknown;
+  content_text?: string | null;
+  created_at?: string;
 };
 
 export default function PendingReviewList({
@@ -25,14 +27,14 @@ export default function PendingReviewList({
   onPreview,
 }: {
   title: string;
-  records: RecordItem[];
+  records: PendingReviewRecord[];
   superAdminMode?: boolean;
   onReviewAction?: (params: {
     action: "APPROVE" | "REJECT" | "REQUEST_CHANGES" | "PUBLISH";
     contentId: string;
     reviewNote?: string;
   }) => Promise<void>;
-  onImproveWithAI?: (record: RecordItem) => Promise<void>;
+  onImproveWithAI?: (record: PendingReviewRecord) => Promise<void>;
   onPreview: (content: unknown) => void;
 }) {
   return (

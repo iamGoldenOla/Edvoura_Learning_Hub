@@ -5,7 +5,7 @@ import AIContentGeneratorForm, {
   type GeneratorPayload,
 } from "./AIContentGeneratorForm";
 import AIContentPreview from "./AIContentPreview";
-import PendingReviewList from "./PendingReviewList";
+import PendingReviewList, { type PendingReviewRecord } from "./PendingReviewList";
 import { generateEdvouraContent } from "@/lib/ai/contentGenerationService";
 import {
   listDashboardAiContent,
@@ -13,19 +13,8 @@ import {
   type DashboardAiStatus,
 } from "@/lib/ai/aiContentRepository";
 
-type RecordItem = {
-  id: string;
-  title: string;
-  subject: string;
-  topic: string;
-  grade: string;
-  skill_type: string;
-  task_type: string;
+type RecordItem = PendingReviewRecord & {
   status: DashboardAiStatus;
-  content_json: unknown;
-  content_text: string | null;
-  review_note: string | null;
-  created_at: string;
 };
 
 export default function SuperAdminAIControlClient() {
