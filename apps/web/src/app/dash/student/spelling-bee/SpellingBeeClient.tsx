@@ -1,7 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Mic2, PlayCircle, RefreshCw, Volume2, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Mic2, PlayCircle, RefreshCw, Volume2, XCircle } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 type SpellingBeeWord = {
@@ -104,7 +105,18 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
   if (activeChallenge && !isFinished && gameState === 'playing' && currentWord) {
     return (
       <div className="space-y-8">
-        <header className="text-center space-y-4">
+        <header className="flex flex-col items-center space-y-4">
+          <div className="w-full flex justify-start">
+            <button 
+              onClick={() => {
+                setGameState('idle');
+                setActiveChallenge(null);
+              }}
+              className="flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white rounded-xl font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+            >
+              <ArrowLeft className="h-4 w-4" /> Exit Challenge
+            </button>
+          </div>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 border-[3px] border-dark font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_#060E1C]">
             <Mic2 className="h-4 w-4" />
             {activeChallenge.theme}
@@ -236,7 +248,14 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
 
   return (
     <div className="space-y-8">
-      <header className="text-center space-y-4">
+      <header className="flex flex-col items-center space-y-4">
+        <div className="w-full flex justify-start">
+          <Link href="/dash/student">
+            <Button variant="outline" className="flex items-center gap-2 border-[3px] border-dark bg-white rounded-xl font-black text-xs uppercase tracking-widest shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all h-auto py-2">
+              <ArrowLeft className="h-4 w-4" /> Back to Overview
+            </Button>
+          </Link>
+        </div>
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 border-[3px] border-dark font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_#060E1C]">
           <Mic2 className="h-4 w-4" />
           Tutor-Published Spelling Bee
