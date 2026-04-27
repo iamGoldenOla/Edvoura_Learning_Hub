@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Star, CheckCircle2, PlayCircle, Clock, X, Upload, Send } from 'lucide-react';
+import { BookOpen, Star, CheckCircle2, PlayCircle, Clock, X, Upload, Send, ArrowLeft } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 type Assignment = {
@@ -133,15 +133,21 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
       {/* Mission Modal */}
       {activeMission && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white border-[6px] border-dark rounded-[60px] w-full max-w-2xl overflow-hidden shadow-[20px_20px_0px_#000] animate-in zoom-in-95 duration-300">
-             <div className="bg-indigo-600 p-8 border-b-[4px] border-dark flex items-center justify-between text-white">
+          <div className="bg-white border-[6px] border-dark rounded-[60px] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-[20px_20px_0px_#000] animate-in zoom-in-95 duration-300">
+             <div className="bg-indigo-600 p-8 border-b-[4px] border-dark flex items-center justify-between text-white shrink-0">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                    <Rocket className="h-6 w-6" />
+                  <button 
+                    onClick={() => setActiveMission(null)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all mr-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </button>
+                  <div className="hidden sm:flex h-10 w-10 rounded-2xl bg-white/20 items-center justify-center">
+                    <Rocket className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black uppercase tracking-tight">Mission Briefing</h2>
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-60">{activeMission.subjectName}</p>
+                    <h2 className="text-xl font-black uppercase tracking-tight">Mission Briefing</h2>
+                    <p className="text-[9px] font-black uppercase tracking-widest opacity-60">{activeMission.subjectName}</p>
                   </div>
                 </div>
                 <button onClick={() => setActiveMission(null)} className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20">
@@ -149,7 +155,7 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
                 </button>
              </div>
 
-             <div className="p-10 space-y-8">
+             <div className="p-8 md:p-10 space-y-8 overflow-y-auto custom-scrollbar">
                 <div className="space-y-4">
                   <h3 className="text-3xl font-black text-dark">{activeMission.title}</h3>
                   <div className="p-6 bg-slate-50 border-[3px] border-dark rounded-3xl">
