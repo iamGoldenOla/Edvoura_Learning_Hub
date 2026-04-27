@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   FileUp,
   NotebookPen,
@@ -153,6 +153,7 @@ const formatCreatedLabel = (value: string) =>
   });
 
 export default function TutorBuilderPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const preselectTool = getToolFromSearchParam(searchParams.get("tool"));
 
@@ -195,6 +196,12 @@ export default function TutorBuilderPage() {
   useEffect(() => {
     setActiveTool(preselectTool);
   }, [preselectTool]);
+
+  useEffect(() => {
+    if (preselectTool === "ai-generator") {
+      router.replace("/dash/tutor/ai");
+    }
+  }, [preselectTool, router]);
 
   const loadBuilderData = async () => {
     const supabase = createClient();
@@ -556,10 +563,10 @@ export default function TutorBuilderPage() {
             />
             <ToolCard
               title="AI Generator"
-              subtitle="Generate notes & quizzes"
+              subtitle="Open Puter AI workspace"
               icon={Sparkles}
               active={activeTool === "ai-generator"}
-              onClick={() => setActiveTool("ai-generator")}
+              onClick={() => router.push("/dash/tutor/ai")}
             />
           </section>
 
