@@ -16,7 +16,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { createQuizOrResource, deleteAssignment } from "./actions";
+import { createQuizOrResource, deleteAssignment, deleteQuiz, deleteResource } from "./actions";
 
 type SubjectOption = {
   id: string;
@@ -563,7 +563,7 @@ export default function TutorBuilderPage() {
             />
             <ToolCard
               title="AI Generator"
-              subtitle="Open Puter AI workspace"
+              subtitle="Generate notes & quizzes"
               icon={Sparkles}
               active={activeTool === "ai-generator"}
               onClick={() => router.push("/dash/tutor/ai")}
@@ -938,95 +938,95 @@ export default function TutorBuilderPage() {
                     (activeTool === "assignment"
                       ? standardAssignments
                       : spellingBeeAssignments).length > 0 ? (
-                    <div className="grid gap-4">
-                      {(activeTool === "assignment"
-                        ? standardAssignments
-                        : spellingBeeAssignments).map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]"
-                        >
-                          <div className="flex items-center justify-between mb-4">
-                            <p className="text-xl font-black text-dark tracking-tight">
-                              {item.title}
-                            </p>
-                            <div className="flex gap-2">
-                              <Button
-                                className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-                                onClick={() => {
-                                  setFormTitle(item.title);
-                                  setShowAssignmentForm(true);
-                                  setFeedback(
-                                    `Editing "${item.title}". Update the fields and publish again.`,
-                                  );
-                                }}
-                              >
-                                <Edit3 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-rose-500 hover:text-white text-rose-500 shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-colors"
-                                onClick={async () => {
-                                  if (
-                                    confirm(
-                                      "Are you sure you want to delete this assignment?",
-                                    )
-                                  ) {
-                                    try {
-                                      await deleteAssignment(item.id);
-                                      setFeedback("Assignment deleted.");
-                                      await loadBuilderData();
-                                    } catch (err: unknown) {
-                                      setFeedback(
-                                        err instanceof Error
-                                          ? err.message
-                                          : "Unable to delete assignment.",
-                                      );
-                                    }
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-3">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-dark bg-white px-3 py-1.5 rounded-lg border-[2px] border-dark">
-                              {item.className}
-                            </span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 border-[2px] border-dark/20 px-3 py-1.5 rounded-lg">
-                              Due: {item.due}
-                            </span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 border-[2px] border-emerald-300 px-3 py-1.5 rounded-lg ml-auto">
-                              {item.status}
-                            </span>
-                          </div>
-
-                          {item.resources.length > 0 ? (
-                            <div className="mt-4 space-y-2 rounded-xl border-[2px] border-dark/20 bg-white p-3">
-                              <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">
-                                Attached resources
+                      <div className="grid gap-4">
+                        {(activeTool === "assignment"
+                          ? standardAssignments
+                          : spellingBeeAssignments).map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]"
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                              <p className="text-xl font-black text-dark tracking-tight">
+                                {item.title}
                               </p>
-                              {item.resources.map((resource) => (
-                                <div
-                                  key={resource.id}
-                                  className="text-xs font-bold text-dark"
+                              <div className="flex gap-2">
+                                <Button
+                                  className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                                  onClick={() => {
+                                    setFormTitle(item.title);
+                                    setShowAssignmentForm(true);
+                                    setFeedback(
+                                      `Editing "${item.title}". Update the fields and publish again.`,
+                                    );
+                                  }}
                                 >
-                                  {resource.fileName}
-                                </div>
-                              ))}
+                                  <Edit3 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-rose-500 hover:text-white text-rose-500 shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-colors"
+                                  onClick={async () => {
+                                    if (
+                                      confirm(
+                                        "Are you sure you want to delete this assignment?",
+                                      )
+                                    ) {
+                                      try {
+                                        await deleteAssignment(item.id);
+                                        setFeedback("Assignment deleted.");
+                                        await loadBuilderData();
+                                      } catch (err: unknown) {
+                                        setFeedback(
+                                          err instanceof Error
+                                            ? err.message
+                                            : "Unable to delete assignment.",
+                                        );
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
-                          ) : null}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
-                      {activeTool === "assignment"
-                        ? "No live assignments yet. Publish one above and it will appear here, in the grading queue, and on matching student dashboards."
-                        : "No spelling bee challenges yet. Create one above and it will show up in this workspace."}
-                    </div>
-                  )
+
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-dark bg-white px-3 py-1.5 rounded-lg border-[2px] border-dark">
+                                {item.className}
+                              </span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 border-[2px] border-dark/20 px-3 py-1.5 rounded-lg">
+                                Due: {item.due}
+                              </span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 border-[2px] border-emerald-300 px-3 py-1.5 rounded-lg ml-auto">
+                                {item.status}
+                              </span>
+                            </div>
+
+                            {item.resources.length > 0 ? (
+                              <div className="mt-4 space-y-2 rounded-xl border-[2px] border-dark/20 bg-white p-3">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">
+                                  Attached resources
+                                </p>
+                                {item.resources.map((resource) => (
+                                  <div
+                                    key={resource.id}
+                                    className="text-xs font-bold text-dark"
+                                  >
+                                    {resource.fileName}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
+                        {activeTool === "assignment"
+                          ? "No live assignments yet. Publish one above and it will appear here, in the grading queue, and on matching student dashboards."
+                          : "No spelling bee challenges yet. Create one above and it will show up in this workspace."}
+                      </div>
+                    )
                   ) : activeTool === "quiz" ? (
                     quizzes.length > 0 ? (
                       <div className="grid gap-4">
@@ -1037,12 +1037,42 @@ export default function TutorBuilderPage() {
                           >
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <div className="space-y-2">
-                                <p className="text-xl font-black tracking-tight text-dark">{item.title}</p>
-                                <p className="text-sm font-bold leading-relaxed text-dark/70">{item.instructions}</p>
+                                <p className="text-xl font-black tracking-tight text-dark">
+                                  {item.title}
+                                </p>
+                                <p className="text-sm font-bold leading-relaxed text-dark/70">
+                                  {item.instructions}
+                                </p>
                               </div>
-                              <span className="rounded-lg border-[2px] border-blue-300 bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-900">
-                                {item.status}
-                              </span>
+                              <div className="flex gap-2 shrink-0">
+                                <span className="rounded-lg border-[2px] border-blue-300 bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-900 h-fit">
+                                  {item.status}
+                                </span>
+                                <Button
+                                  className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-rose-500 hover:text-white text-rose-500 shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-colors"
+                                  onClick={async () => {
+                                    if (
+                                      confirm(
+                                        "Are you sure you want to delete this quiz?",
+                                      )
+                                    ) {
+                                      try {
+                                        await deleteQuiz(item.id);
+                                        setFeedback("Quiz deleted.");
+                                        await loadBuilderData();
+                                      } catch (err: unknown) {
+                                        setFeedback(
+                                          err instanceof Error
+                                            ? err.message
+                                            : "Unable to delete quiz.",
+                                        );
+                                      }
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                             <div className="mt-4 flex flex-wrap items-center gap-3">
                               <span className="rounded-lg border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark">
@@ -1057,7 +1087,8 @@ export default function TutorBuilderPage() {
                       </div>
                     ) : (
                       <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
-                        No quizzes or challenges have been published yet. Create one above and it will appear here only.
+                        No quizzes or challenges have been published yet. Create
+                        one above and it will appear here only.
                       </div>
                     )
                   ) : activeTool === "resources" ? (
@@ -1068,9 +1099,39 @@ export default function TutorBuilderPage() {
                             key={item.id}
                             className="rounded-2xl border-[3px] border-dark bg-amber-50 p-5 shadow-[4px_4px_0px_#060E1C]"
                           >
-                            <div className="space-y-2">
-                              <p className="text-xl font-black tracking-tight text-dark">{item.title}</p>
-                              <p className="text-sm font-bold leading-relaxed text-dark/70">{item.description}</p>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="space-y-2">
+                                <p className="text-xl font-black tracking-tight text-dark">
+                                  {item.title}
+                                </p>
+                                <p className="text-sm font-bold leading-relaxed text-dark/70">
+                                  {item.description}
+                                </p>
+                              </div>
+                              <Button
+                                className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-rose-500 hover:text-white text-rose-500 shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-colors shrink-0"
+                                onClick={async () => {
+                                  if (
+                                    confirm(
+                                      "Are you sure you want to delete this resource?",
+                                    )
+                                  ) {
+                                    try {
+                                      await deleteResource(item.id);
+                                      setFeedback("Resource deleted.");
+                                      await loadBuilderData();
+                                    } catch (err: unknown) {
+                                      setFeedback(
+                                        err instanceof Error
+                                          ? err.message
+                                          : "Unable to delete resource.",
+                                      );
+                                    }
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                             <div className="mt-4 flex flex-wrap items-center gap-3">
                               <span className="rounded-lg border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark">
@@ -1085,108 +1146,158 @@ export default function TutorBuilderPage() {
                       </div>
                     ) : (
                       <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
-                        No lesson resources have been shared yet. Upload one above and it will appear here only.
+                        No lesson resources have been shared yet. Upload one
+                        above and it will appear here only.
                       </div>
                     )
                   ) : null}
 
                   {activeTool === "ai-generator" && (
                     <div className="space-y-6">
-                    <div className="rounded-2xl border-[3px] border-dark bg-yellow/5 p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
-                      <div className="flex items-center gap-3">
-                        <Sparkles className="w-8 h-8 text-yellow-600" />
-                        <h3 className="text-2xl font-black text-dark">Quick AI Generator</h3>
-                      </div>
-                      <div className="grid gap-6 md:grid-cols-2">
-                        <div className="space-y-4">
-                          <div>
-                            <label className="text-xs font-black uppercase tracking-widest text-dark/60">I want to create a...</label>
-                            <select 
-                              value={aiType} 
-                              onChange={(e) => setAiType(e.target.value)}
-                              className="w-full mt-2 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-                            >
-                              <option value="lesson_note">Lesson Note</option>
-                              <option value="story">Story</option>
-                              <option value="comprehension">Comprehension</option>
-                              <option value="quiz">Quiz</option>
-                              <option value="worksheet">Worksheet</option>
-                              <option value="spelling_bee">Spelling Bee</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="text-xs font-black uppercase tracking-widest text-dark/60">About this topic...</label>
-                            <input 
-                              value={aiTopic}
-                              onChange={(e) => setAiTopic(e.target.value)}
-                              placeholder="e.g. Photosynthesis"
-                              className="w-full mt-2 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-                            />
-                          </div>
-                          <Button 
-                            className="w-full bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] h-auto py-4"
-                            disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
-                            onClick={() => void runAiGeneration()}
-                          >
-                            {isGeneratingAi ? "Thinking..." : "Generate with Edvoura AI"}
-                          </Button>
-                          {feedback ? (
-                            <div
-                              className={`rounded-xl border-[3px] p-3 text-xs font-black shadow-[3px_3px_0px_#060E1C] ${
-                                aiFeedbackTone === "success"
-                                  ? "border-emerald-400 bg-emerald-100 text-emerald-900"
-                                  : aiFeedbackTone === "error"
-                                    ? "border-rose-400 bg-rose-100 text-rose-900"
-                                    : "border-dark bg-blue-100 text-dark"
-                              }`}
-                            >
-                              {feedback}
+                      <div className="rounded-2xl border-[3px] border-dark bg-yellow/5 p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
+                        <div className="flex items-center gap-3">
+                          <Sparkles className="w-8 h-8 text-yellow-600" />
+                          <h3 className="text-2xl font-black text-dark">
+                            Quick AI Generator
+                          </h3>
+                        </div>
+                        <div className="grid gap-6 md:grid-cols-2">
+                          <div className="space-y-4">
+                            <div>
+                              <label className="text-xs font-black uppercase tracking-widest text-dark/60">
+                                I want to create a...
+                              </label>
+                              <select
+                                value={aiType}
+                                onChange={(e) => setAiType(e.target.value)}
+                                className="w-full mt-2 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+                              >
+                                <option value="lesson_note">Lesson Note</option>
+                                <option value="story">Story</option>
+                                <option value="comprehension">
+                                  Comprehension
+                                </option>
+                                <option value="quiz">Quiz</option>
+                                <option value="worksheet">Worksheet</option>
+                                <option value="spelling_bee">
+                                  Spelling Bee
+                                </option>
+                              </select>
                             </div>
-                          ) : null}
-                        </div>
-                        <div className="rounded-2xl border-[3px] border-dark bg-white p-6 shadow-[4px_4px_0px_#060E1C] min-h-[300px]">
-                           <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-4 border-b-2 border-dark pb-2">AI Output Preview</p>
-                           {aiResult ? (
-                             <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[400px]">
-                               {JSON.stringify(aiResult, null, 2)}
-                             </pre>
-                           ) : (
-                             <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
-                               <Sparkles className="w-12 h-12 text-dark/10" />
-                               <p className="text-xs font-bold text-dark/40">Results will appear here after generation.</p>
-                             </div>
-                           )}
+                            <div>
+                              <label className="text-xs font-black uppercase tracking-widest text-dark/60">
+                                About this topic...
+                              </label>
+                              <input
+                                value={aiTopic}
+                                onChange={(e) => setAiTopic(e.target.value)}
+                                placeholder="e.g. Photosynthesis"
+                                className="w-full mt-2 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+                              />
+                            </div>
+                            <Button
+                              className="w-full bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] h-auto py-4"
+                              disabled={
+                                isGeneratingAi ||
+                                !aiTopic ||
+                                !formSubject ||
+                                !formGradeCode
+                              }
+                              onClick={() => void runAiGeneration()}
+                            >
+                              {isGeneratingAi
+                                ? "Thinking..."
+                                : "Generate with Edvoura AI"}
+                            </Button>
+                            {feedback ? (
+                              <div
+                                className={`rounded-xl border-[3px] p-3 text-xs font-black shadow-[3px_3px_0px_#060E1C] ${
+                                  aiFeedbackTone === "success"
+                                    ? "border-emerald-400 bg-emerald-100 text-emerald-900"
+                                    : aiFeedbackTone === "error"
+                                      ? "border-rose-400 bg-rose-100 text-rose-900"
+                                      : "border-dark bg-blue-100 text-dark"
+                                }`}
+                              >
+                                {feedback}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="rounded-2xl border-[3px] border-dark bg-white p-6 shadow-[4px_4px_0px_#060E1C] min-h-[300px]">
+                            <div className="flex items-center justify-between mb-4 border-b-2 border-dark pb-2">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">
+                                AI Output Preview
+                              </p>
+                              {aiResult && (
+                                <button
+                                  onClick={() => {
+                                    setAiResult(null);
+                                    setAiContentId(null);
+                                    setFeedback("");
+                                  }}
+                                  className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors"
+                                >
+                                  Clear Result
+                                </button>
+                              )}
+                            </div>
+                            {aiResult ? (
+                              <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[400px]">
+                                {JSON.stringify(aiResult, null, 2)}
+                              </pre>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
+                                <Sparkles className="w-12 h-12 text-dark/10" />
+                                <p className="text-xs font-bold text-dark/40">
+                                  Results will appear here after generation.
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="rounded-2xl border-[3px] border-dark bg-white p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
-                      <div className="flex flex-col gap-4 border-b-[3px] border-dark pb-5 md:flex-row md:items-center md:justify-between">
-                        <div className="space-y-2">
-                          <h3 className="text-3xl font-black tracking-tight text-dark">Edvoura AI Content Assistant</h3>
-                          <p className="text-sm font-bold text-dark/70">
-                            Expanded workspace for lesson notes, stories, quizzes, spelling bees, and publish-ready classroom content.
-                          </p>
+                      <div className="rounded-2xl border-[3px] border-dark bg-white p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
+                        <div className="flex flex-col gap-4 border-b-[3px] border-dark pb-5 md:flex-row md:items-center md:justify-between">
+                          <div className="space-y-2">
+                            <h3 className="text-3xl font-black tracking-tight text-dark">
+                              Edvoura AI Content Assistant
+                            </h3>
+                            <p className="text-sm font-bold text-dark/70">
+                              Expanded workspace for lesson notes, stories,
+                              quizzes, spelling bees, and publish-ready
+                              classroom content.
+                            </p>
+                          </div>
+                          <div className="inline-flex h-fit items-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0px_#060E1C]">
+                            <Sparkles className="h-4 w-4" />
+                            Tutor-Controlled AI
+                          </div>
                         </div>
-                        <div className="inline-flex h-fit items-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0px_#060E1C]">
-                          <Sparkles className="h-4 w-4" />
-                          Tutor-Controlled AI
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <div className="rounded-xl border-[3px] border-dark bg-emerald-100 p-4 shadow-[3px_3px_0px_#060E1C]">
+                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/70">
+                              Generation Status
+                            </p>
+                            <p className="mt-2 text-sm font-bold text-dark">
+                              {isGeneratingAi
+                                ? "Generation in progress..."
+                                : aiResult
+                                  ? "Draft generated and ready for review."
+                                  : "Awaiting prompt."}
+                            </p>
+                          </div>
+                          <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 shadow-[3px_3px_0px_#060E1C]">
+                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/70">
+                              Publish Readiness
+                            </p>
+                            <p className="mt-2 text-sm font-bold text-dark">
+                              {aiContentId
+                                ? "Draft saved in database. One click to publish."
+                                : "Generate content to enable publish."}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <div className="rounded-xl border-[3px] border-dark bg-emerald-100 p-4 shadow-[3px_3px_0px_#060E1C]">
-                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/70">Generation Status</p>
-                          <p className="mt-2 text-sm font-bold text-dark">
-                            {isGeneratingAi ? "Generation in progress..." : aiResult ? "Draft generated and ready for review." : "Awaiting prompt."}
-                          </p>
-                        </div>
-                        <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 shadow-[3px_3px_0px_#060E1C]">
-                          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/70">Publish Readiness</p>
-                          <p className="mt-2 text-sm font-bold text-dark">
-                            {aiContentId ? "Draft saved in database. One click to publish." : "Generate content to enable publish."}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
                     </div>
                   )}
                 </div>
@@ -1210,14 +1321,18 @@ export default function TutorBuilderPage() {
                 </div>
 
                 <p className="max-w-4xl text-sm font-bold text-dark/70 leading-relaxed">
-                  Automate your curriculum with Edvoura AI. Generate lesson notes, quizzes, spelling bees, and tutor-ready study content in seconds.
+                  Automate your curriculum with Edvoura AI. Generate lesson
+                  notes, quizzes, spelling bees, and tutor-ready study content
+                  in seconds.
                 </p>
 
                 <div className="grid gap-6 xl:grid-cols-3">
                   <div className="space-y-4 xl:col-span-2">
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Content Type</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                          Content Type
+                        </label>
                         <select
                           value={aiType}
                           onChange={(e) => setAiType(e.target.value)}
@@ -1233,7 +1348,9 @@ export default function TutorBuilderPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Topic</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                          Topic
+                        </label>
                         <input
                           value={aiTopic}
                           onChange={(e) => setAiTopic(e.target.value)}
@@ -1244,26 +1361,36 @@ export default function TutorBuilderPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">Subject & Grade</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                        Subject & Grade
+                      </label>
                       <div className="grid grid-cols-2 gap-2">
                         <select
                           value={formSubject}
-                          onChange={(event) => setFormSubject(event.target.value)}
+                          onChange={(event) =>
+                            setFormSubject(event.target.value)
+                          }
                           className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
                         >
                           <option value="">Subject</option>
                           {subjects.map((s) => (
-                            <option key={s.id} value={s.name}>{s.name}</option>
+                            <option key={s.id} value={s.name}>
+                              {s.name}
+                            </option>
                           ))}
                         </select>
                         <select
                           value={formGradeCode}
-                          onChange={(event) => setFormGradeCode(event.target.value)}
+                          onChange={(event) =>
+                            setFormGradeCode(event.target.value)
+                          }
                           className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C]"
                         >
                           <option value="">Grade</option>
                           {gradeLevels.map((g) => (
-                            <option key={g.id} value={g.code}>{g.display_name}</option>
+                            <option key={g.id} value={g.code}>
+                              {g.display_name}
+                            </option>
                           ))}
                         </select>
                       </div>
@@ -1272,7 +1399,12 @@ export default function TutorBuilderPage() {
 
                   <div className="space-y-4">
                     <Button
-                      disabled={isGeneratingAi || !aiTopic || !formSubject || !formGradeCode}
+                      disabled={
+                        isGeneratingAi ||
+                        !aiTopic ||
+                        !formSubject ||
+                        !formGradeCode
+                      }
                       onClick={() => void runAiGeneration()}
                       className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-4 w-full text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
                     >
@@ -1283,7 +1415,9 @@ export default function TutorBuilderPage() {
                       onClick={() => void publishAiContent()}
                       className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-4 text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
                     >
-                      {isPublishingAi ? "Publishing..." : "Publish to Student Hubs"}
+                      {isPublishingAi
+                        ? "Publishing..."
+                        : "Publish to Student Hubs"}
                     </Button>
                     {feedback ? (
                       <div
@@ -1304,8 +1438,24 @@ export default function TutorBuilderPage() {
                 {Boolean(aiResult) ? (
                   <div className="rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[4px_4px_0px_#060E1C]">
                     <div className="flex items-center justify-between mb-2 border-b-[2px] border-dark pb-1">
-                      <h4 className="font-black text-sm uppercase tracking-widest">Result Preview</h4>
-                      <span className="text-[10px] font-bold text-dark/40">ID: {aiContentId?.split('-')[0]}...</span>
+                      <div className="flex items-center gap-3">
+                        <h4 className="font-black text-sm uppercase tracking-widest">
+                          Result Preview
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setAiResult(null);
+                            setAiContentId(null);
+                            setFeedback("");
+                          }}
+                          className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors ml-auto h-fit"
+                        >
+                          Discard Draft
+                        </button>
+                      </div>
+                      <span className="text-[10px] font-bold text-dark/40">
+                        ID: {aiContentId?.split("-")[0]}...
+                      </span>
                     </div>
                     <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[320px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
                       {JSON.stringify(aiResult, null, 2)}

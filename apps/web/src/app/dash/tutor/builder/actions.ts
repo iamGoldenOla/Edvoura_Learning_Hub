@@ -222,3 +222,41 @@ export async function deleteAssignment(assignmentId: string) {
   revalidatePath('/dash/tutor/builder');
   return { success: true };
 }
+
+export async function deleteQuiz(quizId: string) {
+  const { error } = await supabaseAdmin
+    .from('quizzes')
+    .delete()
+    .eq('id', quizId);
+
+  if (error) throw new Error(error.message);
+  
+  revalidatePath('/dash/tutor/builder');
+  return { success: true };
+}
+
+export async function deleteResource(eventId: string) {
+  // First find if there's a backing assignment
+  const { data: event } = await supabaseAdmin
+    .from('learning_activity_events')
+    .select('assignment_id')
+    .eq('id', eventId)
+    .single();
+
+  if (event?.assignment_id) {
+    await supabaseAdmin
+      .from('assignments')
+      .update({ status: 'archived' })
+      .eq('id', event.assignment_id);
+  }
+
+  const { error } = await supabaseAdmin
+    .from('learning_activity_events')
+    .delete()
+    .eq('id', eventId);
+
+  if (error) throw new Error(error.message);
+  
+  revalidatePath('/dash/tutor/builder');
+  return { success: true };
+}

@@ -64,7 +64,7 @@ export default function SuperAdminAIControlClient() {
         subject: record.subject,
         topic: record.topic,
         grade: record.grade,
-        skillType: record.skill_type,
+        skillType: record.skill_type ?? "Core Academic",
         existingContent: JSON.stringify(record.content_json),
         extraInstruction:
           "Improve clarity, structure, and originality. Keep grade appropriateness and educational objective intact.",
