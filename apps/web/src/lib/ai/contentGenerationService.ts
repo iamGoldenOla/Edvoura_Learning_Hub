@@ -423,35 +423,16 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   try {
     parsed = parseAndValidateAIResponse(generatedText, input.taskType);
   } catch (error) {
+    console.warn("First validation failed, attempting repair. Error:", error);
     const repairPrompt = buildRepairPrompt(prompt, input.taskType, error);
     try {
       const repairResponse = await generateWithPuterAI(repairPrompt, { model });
       parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
     } catch (repairError) {
-      try {
-        const fallbackResult = await generateViaServerFallback(input);
-        if (fallbackResult) {
-          parsed = fallbackResult;
-          providerUsed = "server_fallback";
-          modelUsed = "legacy_orchestrator";
-        } else {
-          const emergency = buildEmergencyCanonicalContent(input);
-          if (!emergency) {
-            throw (repairError instanceof Error ? repairError : error);
-          }
-          parsed = emergency;
-          providerUsed = "emergency_template";
-          modelUsed = "dashboard_template";
-        }
-      } catch (fallbackError) {
-        const emergency = buildEmergencyCanonicalContent(input);
-        if (!emergency) {
-          throw (fallbackError instanceof Error ? fallbackError : repairError);
-        }
-        parsed = emergency;
-        providerUsed = "emergency_template";
-        modelUsed = "dashboard_template";
-      }
+      console.error("AI Repair failed. Original text from Puter:", generatedText);
+      throw new Error(
+        `AI generated content could not be parsed into the required format. The AI responded with: ${generatedText.substring(0, 100)}...`
+      );
     }
   }
 

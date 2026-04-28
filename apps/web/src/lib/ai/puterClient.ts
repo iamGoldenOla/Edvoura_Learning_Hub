@@ -1,5 +1,5 @@
 export const DEFAULT_EDVOURA_AI_MODEL =
-  process.env.NEXT_PUBLIC_EDVOURA_AI_MODEL || "gpt-5-nano";
+  process.env.NEXT_PUBLIC_EDVOURA_AI_MODEL || "claude-3-5-sonnet";
 
 const PUTER_LOAD_TIMEOUT_MS = 15000;
 const PUTER_POLL_INTERVAL_MS = 250;
