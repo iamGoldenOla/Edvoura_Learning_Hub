@@ -178,7 +178,7 @@ function normalizeResourceArray(
         url,
       };
     })
-    .filter((item): item is z.infer<typeof resourceSchema> => Boolean(item));
+    .filter((item): item is { title: string; search_query: string; why_it_helps: string; url: string } => Boolean(item));
 }
 
 function buildDefaultInstructionalMaterials(topic: string, subject: string, grade: string) {
