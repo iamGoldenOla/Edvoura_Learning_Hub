@@ -64,7 +64,7 @@ CORE RULES
 - Return structured output
 - Keep student learning quality high`;
 
-function buildOutputContract(taskType: EdvouraTaskType) {
+export function buildOutputContract(taskType: EdvouraTaskType) {
   switch (taskType) {
     case "GENERATE_LESSON":
       return `TASK: GENERATE_LESSON

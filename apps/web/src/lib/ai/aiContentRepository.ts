@@ -18,6 +18,7 @@ export type SaveDraftInput = {
   contentJson: unknown;
   contentText: string;
   modelUsed: string;
+  aiProvider?: string;
   previousContentHashes: string[];
   antiRepetitionItems: AntiRepetitionItemDraft[];
 };

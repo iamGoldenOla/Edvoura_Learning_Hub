@@ -14,6 +14,7 @@ type DraftPayload = {
   contentJson: unknown;
   contentText: string;
   modelUsed: string;
+  aiProvider?: string;
   previousContentHashes: string[];
   antiRepetitionItems: Array<{
     itemType: string;
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
         generated_by_user_id: user.id,
         generated_by_role: role,
         model_used: payload.modelUsed,
-        ai_provider: "puter",
+        ai_provider: payload.aiProvider || "puter",
         previous_content_hashes: payload.previousContentHashes ?? [],
         content_type: mapTaskTypeToLegacyContentType(payload.taskType),
         raw_output: payload.contentJson,

@@ -197,6 +197,136 @@ function normalizeLessonPayload(parsed: unknown) {
   };
 }
 
+function normalizeQuizPayload(parsed: unknown) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  const source = parsed as Record<string, unknown>;
+  if (typeof source.title === "string" && Array.isArray(source.questions)) {
+    const questions = (source.questions as Array<Record<string, unknown>>)
+      .map((item) => {
+        const question = typeof item.question === "string" ? item.question.trim() : "";
+        const options = Array.isArray(item.options)
+          ? item.options.filter((option): option is string => typeof option === "string")
+          : null;
+        const correctAnswer = typeof item.correct_answer === "string"
+          ? item.correct_answer.trim()
+          : typeof item.correctAnswer === "string"
+            ? item.correctAnswer.trim()
+            : "";
+        const difficultyRaw = typeof item.difficulty === "string" ? item.difficulty.trim().toLowerCase() : "";
+        const difficulty =
+          difficultyRaw === "easy" || difficultyRaw === "medium" || difficultyRaw === "hard"
+            ? difficultyRaw
+            : "medium";
+        const explanation = typeof item.explanation === "string" ? item.explanation.trim() : "";
+
+        if (question && options && options.length === 4 && correctAnswer && explanation) {
+          return {
+            question,
+            options,
+            correct_answer: correctAnswer,
+            difficulty,
+            explanation,
+          };
+        }
+
+        const questionText = typeof item.questionText === "string" ? item.questionText.trim() : "";
+        const legacyOptions = Array.isArray(item.options)
+          ? item.options.filter((option): option is string => typeof option === "string")
+          : null;
+        if (!questionText || !legacyOptions || legacyOptions.length !== 4 || !correctAnswer || !explanation) {
+          return null;
+        }
+
+        return {
+          question: questionText,
+          options: legacyOptions,
+          correct_answer: correctAnswer,
+          difficulty,
+          explanation,
+        };
+      })
+      .filter(
+        (
+          item,
+        ): item is {
+          question: string;
+          options: string[];
+          correct_answer: string;
+          difficulty: "easy" | "medium" | "hard";
+          explanation: string;
+        } => Boolean(item),
+      )
+      .slice(0, 5);
+
+    return {
+      title: source.title,
+      questions,
+    };
+  }
+
+  return parsed;
+}
+
+function normalizeSpellingPayload(parsed: unknown) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  const source = parsed as Record<string, unknown>;
+  const alreadyCanonical =
+    Array.isArray(source.easy) && Array.isArray(source.medium) && Array.isArray(source.difficult);
+  if (alreadyCanonical) {
+    return parsed;
+  }
+
+  if (!Array.isArray(source.words)) {
+    return parsed;
+  }
+
+  const buckets = {
+    easy: [] as Array<{ word: string; meaning: string; example_sentence: string }>,
+    medium: [] as Array<{ word: string; meaning: string; example_sentence: string }>,
+    difficult: [] as Array<{ word: string; meaning: string; example_sentence: string }>,
+  };
+
+  for (const item of source.words as Array<Record<string, unknown>>) {
+    const word = typeof item.word === "string" ? item.word.trim() : "";
+    const meaning = typeof item.definition === "string"
+      ? item.definition.trim()
+      : typeof item.meaning === "string"
+        ? item.meaning.trim()
+        : "";
+    const exampleSentence = typeof item.exampleSentence === "string"
+      ? item.exampleSentence.trim()
+      : typeof item.example_sentence === "string"
+        ? item.example_sentence.trim()
+        : "";
+    const difficulty = typeof item.difficulty === "string" ? item.difficulty.trim().toLowerCase() : "medium";
+
+    if (!word || !meaning || !exampleSentence) {
+      continue;
+    }
+
+    const normalizedItem = { word, meaning, example_sentence: exampleSentence };
+    if (difficulty === "easy" && buckets.easy.length < 10) buckets.easy.push(normalizedItem);
+    else if (difficulty === "hard" && buckets.difficult.length < 10) buckets.difficult.push(normalizedItem);
+    else if (buckets.medium.length < 10) buckets.medium.push(normalizedItem);
+  }
+
+  return {
+    easy: buckets.easy,
+    medium: buckets.medium,
+    difficult: buckets.difficult,
+    exercise:
+      (typeof source.instructions === "string" && source.instructions.trim()) ||
+      (typeof source.exercise === "string" && source.exercise.trim()) ||
+      "Spell the words, define them, and use them in sentences.",
+  };
+}
+
 function extractJsonPayload(text: string) {
   const cleaned = text
     .replace(/^```(?:json)?\s*/i, "")
@@ -218,6 +348,13 @@ function extractJsonPayload(text: string) {
 export function parseAndValidateAIResponse(rawText: string, taskType: EdvouraTaskType) {
   const schema = getSchema(taskType);
   const parsed = extractJsonPayload(rawText);
-  const normalized = taskType === "GENERATE_LESSON" ? normalizeLessonPayload(parsed) : parsed;
+  const normalized =
+    taskType === "GENERATE_LESSON"
+      ? normalizeLessonPayload(parsed)
+      : taskType === "GENERATE_QUIZ"
+        ? normalizeQuizPayload(parsed)
+        : taskType === "GENERATE_SPELLING"
+          ? normalizeSpellingPayload(parsed)
+          : parsed;
   return schema.parse(normalized);
 }
