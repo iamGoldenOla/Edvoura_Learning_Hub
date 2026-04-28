@@ -10,6 +10,8 @@ import { generateEdvouraContent } from "@/lib/ai/contentGenerationService";
 import {
   listDashboardAiContent,
   submitForReview,
+  deleteDraft,
+  publishDirectly,
 } from "@/lib/ai/aiContentRepository";
 import AIStatusBadge from "./AIStatusBadge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,8 @@ export default function TutorAIWorkspaceClient() {
   const [feedback, setFeedback] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState<string | null>(null);
   const [puterUserLabel, setPuterUserLabel] = useState<string | null>(null);
   const [isConnectingPuter, setIsConnectingPuter] = useState(false);
 
@@ -122,6 +126,35 @@ export default function TutorAIWorkspaceClient() {
       setFeedback(error instanceof Error ? error.message : "Unable to submit for review.");
     } finally {
       setIsSubmitting(null);
+    }
+  }
+
+  async function onDeleteDraft(contentId: string) {
+    if (!confirm("Are you sure you want to delete this draft?")) return;
+    setIsDeleting(contentId);
+    try {
+      await deleteDraft(contentId);
+      setFeedback("Draft deleted successfully.");
+      setPreviewContent(null);
+      await loadRecords();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to delete draft.");
+    } finally {
+      setIsDeleting(null);
+    }
+  }
+
+  async function onPublishDirectly(contentId: string) {
+    if (!confirm("Are you sure you want to push this directly to the student dashboard?")) return;
+    setIsPublishing(contentId);
+    try {
+      await publishDirectly(contentId);
+      setFeedback("Content published directly to student dashboard.");
+      await loadRecords();
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to publish directly.");
+    } finally {
+      setIsPublishing(null);
     }
   }
 
@@ -240,6 +273,7 @@ export default function TutorAIWorkspaceClient() {
               <p className="mt-1 text-xs font-bold text-dark/70">
                 {record.subject} | {record.topic} | {record.grade} | {EDVOURA_TASK_TYPE_LABELS[record.task_type as EdvouraTaskType] ?? record.task_type}
               </p>
+
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button
                   type="button"
@@ -271,6 +305,22 @@ export default function TutorAIWorkspaceClient() {
                   className="bg-yellow border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
                 >
                   {isSubmitting === record.id ? "Submitting..." : "Submit for Review"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void onPublishDirectly(record.id)}
+                  disabled={isPublishing === record.id}
+                  className="bg-green-400 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                >
+                  {isPublishing === record.id ? "Publishing..." : "Publish to Student"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void onDeleteDraft(record.id)}
+                  disabled={isDeleting === record.id}
+                  className="bg-red-400 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black ml-auto"
+                >
+                  {isDeleting === record.id ? "Deleting..." : "Delete"}
                 </Button>
               </div>
             </article>

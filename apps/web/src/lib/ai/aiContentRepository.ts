@@ -70,6 +70,30 @@ export async function submitForReview(contentId: string) {
   return parseJsonResponse<{ record: { id: string; status: string } }>(res);
 }
 
+export async function deleteDraft(contentId: string) {
+  const res = await fetch("/api/ai/dashboard/content", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "DELETE_DRAFT",
+      contentId,
+    }),
+  });
+  return parseJsonResponse<{ success: boolean }>(res);
+}
+
+export async function publishDirectly(contentId: string) {
+  const res = await fetch("/api/ai/dashboard/content", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "PUBLISH_DIRECTLY",
+      contentId,
+    }),
+  });
+  return parseJsonResponse<{ record: { id: string; status: string } }>(res);
+}
+
 export async function reviewContent(params: {
   action: "APPROVE" | "REJECT" | "REQUEST_CHANGES" | "PUBLISH";
   contentId: string;

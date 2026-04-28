@@ -212,6 +212,50 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ record: updated });
   }
 
+  if (action === "DELETE_DRAFT") {
+    if (!body.contentId) return NextResponse.json({ error: "Missing contentId" }, { status: 400 });
+
+    const { data: target, error: targetError } = await supabase
+      .from("ai_generated_content")
+      .select("id,generated_by_user_id,status")
+      .eq("id", body.contentId)
+      .single();
+
+    if (targetError || !target) return NextResponse.json({ error: "Content not found." }, { status: 404 });
+    if (role === "tutor" && target.generated_by_user_id !== user.id) return forbidden();
+
+    const { error: deleteError } = await supabase
+      .from("ai_generated_content")
+      .delete()
+      .eq("id", body.contentId);
+
+    if (deleteError) return NextResponse.json({ error: "Failed to delete draft." }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+
+  if (action === "PUBLISH_DIRECTLY") {
+    if (!body.contentId) return NextResponse.json({ error: "Missing contentId" }, { status: 400 });
+
+    const { data: target, error: targetError } = await supabase
+      .from("ai_generated_content")
+      .select("id,generated_by_user_id,status")
+      .eq("id", body.contentId)
+      .single();
+
+    if (targetError || !target) return NextResponse.json({ error: "Content not found." }, { status: 404 });
+    if (role === "tutor" && target.generated_by_user_id !== user.id) return forbidden();
+
+    const { data: updated, error: updateError } = await supabase
+      .from("ai_generated_content")
+      .update({ status: "PUBLISHED", published_at: new Date().toISOString() })
+      .eq("id", body.contentId)
+      .select("id,status")
+      .single();
+
+    if (updateError || !updated) return NextResponse.json({ error: "Failed to publish." }, { status: 500 });
+    return NextResponse.json({ record: updated });
+  }
+
   if (!["APPROVE", "REJECT", "REQUEST_CHANGES", "PUBLISH"].includes(action)) {
     return NextResponse.json({ error: "Unsupported action." }, { status: 400 });
   }
