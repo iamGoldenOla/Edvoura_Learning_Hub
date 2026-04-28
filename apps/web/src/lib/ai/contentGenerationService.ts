@@ -44,6 +44,36 @@ function getValidationMessage(error: unknown) {
   return "Unknown validation failure";
 }
 
+async function generateLessonViaServerFallback(input: GenerateEdvouraInput) {
+  const response = await fetch("/api/ai/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contentType: "lesson_note",
+      topic: input.topic,
+      subject: input.subject,
+      gradeLevel: input.grade,
+      curriculumSystem: "WAEC",
+      studentContext: input.extraInstruction,
+      skipSave: true,
+    }),
+  });
+
+  const data = (await response.json().catch(() => ({}))) as {
+    content?: unknown;
+    error?: string;
+    detail?: string;
+  };
+
+  if (!response.ok || !data.content) {
+    throw new Error(data.detail || data.error || "Server AI fallback failed.");
+  }
+
+  return parseAndValidateAIResponse(JSON.stringify(data.content), "GENERATE_LESSON");
+}
+
 export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   validateRole(input.userRole);
 
@@ -93,8 +123,16 @@ Validation error:
 ${getValidationMessage(error)}
 
 Return strict valid JSON only. Do not include commentary.`;
-    const repairResponse = await generateWithPuterAI(repairPrompt, { model });
-    parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
+    try {
+      const repairResponse = await generateWithPuterAI(repairPrompt, { model });
+      parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
+    } catch (repairError) {
+      if (input.taskType === "GENERATE_LESSON") {
+        parsed = await generateLessonViaServerFallback(input);
+      } else {
+        throw (repairError instanceof Error ? repairError : error);
+      }
+    }
   }
 
   const antiRepetitionItems = extractAntiRepetitionItems({

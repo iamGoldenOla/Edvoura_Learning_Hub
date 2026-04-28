@@ -102,6 +102,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (body.skipSave === true) {
+    return NextResponse.json({
+      message: 'Content generated successfully',
+      content: result.data,
+      record: null,
+      attempts: result.attempts,
+      provider: result.provider ?? null,
+    });
+  }
+
   // 5. Store validated content in the database
   const { data: savedContent, error: saveError } = await supabase
     .from('ai_generated_content')
