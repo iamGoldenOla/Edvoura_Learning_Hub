@@ -164,7 +164,7 @@ export default function SuperAdminAIControlClient() {
       <section className="rounded-[24px] border-[4px] border-dark bg-white p-6 shadow-[8px_8px_0px_#060E1C]">
         <h1 className="text-3xl font-black tracking-tight text-dark">Super Admin AI Control Center</h1>
         <p className="mt-2 text-sm font-bold text-dark/70">
-          Review all tutor-generated drafts, improve quality, approve, reject, request changes, and publish.
+          Review teacher lesson plans, student lesson notes, quizzes, and other tutor-generated drafts before publishing.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <div className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2 text-xs font-black text-dark">

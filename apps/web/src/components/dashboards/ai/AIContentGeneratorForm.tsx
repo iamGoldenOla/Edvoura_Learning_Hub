@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  EDVOURA_TASK_TYPES,
+  EDVOURA_TASK_TYPE_LABELS,
+  EDVOURA_VISIBLE_TASK_TYPES,
   type EdvouraTaskType,
 } from "@/lib/ai/edvouraPromptBuilder";
 
@@ -49,7 +50,7 @@ export default function AIContentGeneratorForm({
   disabled?: boolean;
   onGenerate: (payload: GeneratorPayload) => Promise<void> | void;
 }) {
-  const [taskType, setTaskType] = useState<EdvouraTaskType>("GENERATE_LESSON");
+  const [taskType, setTaskType] = useState<EdvouraTaskType>("GENERATE_LESSON_NOTE");
   const [subject, setSubject] = useState("Basic Science");
   const [topic, setTopic] = useState("");
   const [grade, setGrade] = useState("Grade 4");
@@ -79,9 +80,9 @@ export default function AIContentGeneratorForm({
             onChange={(event) => setTaskType(event.target.value as EdvouraTaskType)}
             className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold outline-none"
           >
-            {EDVOURA_TASK_TYPES.map((entry) => (
+            {EDVOURA_VISIBLE_TASK_TYPES.map((entry) => (
               <option key={entry} value={entry}>
-                {entry}
+                {EDVOURA_TASK_TYPE_LABELS[entry]}
               </option>
             ))}
           </select>
@@ -148,7 +149,7 @@ export default function AIContentGeneratorForm({
         <textarea
           value={extraInstruction}
           onChange={(event) => setExtraInstruction(event.target.value)}
-          placeholder="Extra tutor/admin instruction"
+          placeholder="Extra tutor/admin instruction, preferred teaching approach, or material preference"
           rows={3}
           className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-semibold outline-none"
         />

@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       topic: body.topic,
       grade: body.gradeLevel,
       skill_type: body.subject,
-      task_type: body.contentType === 'lesson_note' ? 'GENERATE_LESSON' : body.contentType === 'quiz' ? 'GENERATE_QUIZ' : body.contentType === 'spelling_bee' ? 'GENERATE_SPELLING' : 'IMPROVE_CONTENT',
+      task_type: body.contentType === 'lesson_note' ? 'GENERATE_LESSON_NOTE' : body.contentType === 'quiz' ? 'GENERATE_QUIZ' : body.contentType === 'spelling_bee' ? 'GENERATE_SPELLING' : 'IMPROVE_CONTENT',
       content_json: result.data,
       content_text: JSON.stringify(result.data, null, 2),
       generated_by_user_id: user.id,

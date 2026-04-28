@@ -14,6 +14,7 @@ import {
 import AIStatusBadge from "./AIStatusBadge";
 import { Button } from "@/components/ui/button";
 import { getPuterUserIfSignedIn, signInToPuter } from "@/lib/ai/puterClient";
+import { EDVOURA_TASK_TYPE_LABELS, type EdvouraTaskType } from "@/lib/ai/edvouraPromptBuilder";
 
 type TutorRecord = {
   id: string;
@@ -190,8 +191,8 @@ export default function TutorAIWorkspaceClient() {
       <section className="rounded-[24px] border-[4px] border-dark bg-white p-6 shadow-[8px_8px_0px_#060E1C]">
         <h1 className="text-3xl font-black tracking-tight text-dark">Tutor AI Content Generator</h1>
         <p className="mt-2 text-sm font-bold text-dark/70">
-          Generate lessons, quizzes, spelling, financial literacy, and communication skill drafts.
-          Human review stays mandatory before student publishing.
+          Generate teacher-facing lesson plans, student-facing lesson notes, quizzes, spelling content,
+          and adaptive draft content. Human review stays mandatory before student publishing.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <div className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2 text-xs font-black text-dark">
@@ -237,7 +238,7 @@ export default function TutorAIWorkspaceClient() {
                 <AIStatusBadge status={record.status} />
               </div>
               <p className="mt-1 text-xs font-bold text-dark/70">
-                {record.subject} | {record.topic} | {record.grade} | {record.task_type}
+                {record.subject} | {record.topic} | {record.grade} | {EDVOURA_TASK_TYPE_LABELS[record.task_type as EdvouraTaskType] ?? record.task_type}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button

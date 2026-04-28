@@ -2,6 +2,7 @@
 
 import AIStatusBadge from "./AIStatusBadge";
 import AIContentReviewActions from "./AIContentReviewActions";
+import { EDVOURA_TASK_TYPE_LABELS, type EdvouraTaskType } from "@/lib/ai/edvouraPromptBuilder";
 
 export type PendingReviewRecord = {
   id: string;
@@ -53,7 +54,7 @@ export default function PendingReviewList({
               <AIStatusBadge status={record.status} />
             </div>
             <p className="text-xs font-bold text-dark/70">
-              {record.subject} | {record.topic} | {record.grade} | {record.task_type}
+              {record.subject} | {record.topic} | {record.grade} | {EDVOURA_TASK_TYPE_LABELS[record.task_type as EdvouraTaskType] ?? record.task_type}
             </p>
             {record.review_note ? (
               <p className="mt-2 rounded-lg border border-dark/30 bg-white p-2 text-xs font-semibold text-dark/80">

@@ -48,6 +48,13 @@ export function extractAntiRepetitionItems(params: {
     }
   }
 
+  if (Array.isArray(source.worked_examples)) {
+    for (const row of source.worked_examples as Array<Record<string, unknown>>) {
+      const text = String(row.title ?? row.explanation ?? "").trim();
+      if (text) collected.push({ itemType: "worked_example", text });
+    }
+  }
+
   if (Array.isArray(source.practice_questions)) {
     for (const row of source.practice_questions as Array<Record<string, unknown>>) {
       const text = String(row.question ?? "").trim();
@@ -55,11 +62,45 @@ export function extractAntiRepetitionItems(params: {
     }
   }
 
-  if (typeof source.story_based_explanation === "string" && source.story_based_explanation.trim()) {
-    collected.push({
-      itemType: "story_example",
-      text: source.story_based_explanation.trim(),
-    });
+  if (Array.isArray(source.evaluation_questions)) {
+    for (const row of source.evaluation_questions as string[]) {
+      const text = String(row).trim();
+      if (text) collected.push({ itemType: "evaluation_question", text });
+    }
+  }
+
+  if (Array.isArray(source.lesson_objectives)) {
+    for (const row of source.lesson_objectives as string[]) {
+      const text = String(row).trim();
+      if (text) collected.push({ itemType: "lesson_objective", text });
+    }
+  }
+
+  if (source.instructional_materials && typeof source.instructional_materials === "object") {
+    const materials = source.instructional_materials as Record<string, unknown>;
+    const youtube = materials.youtube_videos;
+    if (Array.isArray(youtube)) {
+      for (const row of youtube as Array<Record<string, unknown>>) {
+        const text = String(row.search_query ?? row.title ?? "").trim();
+        if (text) collected.push({ itemType: "youtube_material", text });
+      }
+    }
+
+    const images = materials.image_resources;
+    if (Array.isArray(images)) {
+      for (const row of images as Array<Record<string, unknown>>) {
+        const text = String(row.search_query ?? row.title ?? "").trim();
+        if (text) collected.push({ itemType: "image_material", text });
+      }
+    }
+
+    const classroom = materials.classroom_materials;
+    if (Array.isArray(classroom)) {
+      for (const row of classroom as string[]) {
+        const text = String(row).trim();
+        if (text) collected.push({ itemType: "classroom_material", text });
+      }
+    }
   }
 
   const spellingBuckets = ["easy", "medium", "difficult"];

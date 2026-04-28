@@ -33,8 +33,11 @@ function mapTaskTypeToLegacyContentType(taskType: EdvouraTaskType) {
       return "quiz";
     case "GENERATE_SPELLING":
       return "spelling_bee";
+    case "GENERATE_LESSON_NOTE":
     case "GENERATE_LESSON":
       return "lesson_note";
+    case "GENERATE_LESSON_PLAN":
+      return "worksheet";
     case "GENERATE_FINANCIAL_LITERACY":
     case "GENERATE_COMMUNICATION_SKILL":
     case "ADAPT_LEARNING":
