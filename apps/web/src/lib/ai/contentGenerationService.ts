@@ -36,6 +36,14 @@ function stringifyForReading(content: unknown) {
   return JSON.stringify(content, null, 2);
 }
 
+function getValidationMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unknown validation failure";
+}
+
 export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   validateRole(input.userRole);
 
@@ -77,8 +85,14 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   let parsed: unknown;
   try {
     parsed = parseAndValidateAIResponse(generatedText, input.taskType);
-  } catch {
-    const repairPrompt = `${prompt}\n\nYour previous answer failed JSON validation. Return strict valid JSON only.`;
+  } catch (error) {
+    const repairPrompt = `${prompt}
+
+Your previous answer failed JSON validation.
+Validation error:
+${getValidationMessage(error)}
+
+Return strict valid JSON only. Do not include commentary.`;
     const repairResponse = await generateWithPuterAI(repairPrompt, { model });
     parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
   }

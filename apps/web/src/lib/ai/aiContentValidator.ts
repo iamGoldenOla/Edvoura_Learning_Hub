@@ -104,6 +104,99 @@ function getSchema(taskType: EdvouraTaskType) {
   }
 }
 
+function joinTextParts(parts: Array<string | undefined>) {
+  return parts.map((part) => part?.trim()).filter((part): part is string => Boolean(part)).join("\n\n");
+}
+
+function normalizeLessonPayload(parsed: unknown) {
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  const source = parsed as Record<string, unknown>;
+
+  const hasDashboardLessonShape =
+    typeof source.title === "string" &&
+    typeof source.explanation === "string" &&
+    Array.isArray(source.practice_questions);
+
+  if (hasDashboardLessonShape) {
+    return parsed;
+  }
+
+  const topic = typeof source.topic === "string" ? source.topic.trim() : "";
+  const explanation = typeof source.explanation === "string" ? source.explanation.trim() : "";
+  const objectives = Array.isArray(source.objectives)
+    ? source.objectives.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
+  const teacherNotes = typeof source.teacherNotes === "string" ? source.teacherNotes.trim() : "";
+  const examples = Array.isArray(source.examples)
+    ? source.examples
+        .map((item) => {
+          if (!item || typeof item !== "object") return null;
+          const row = item as Record<string, unknown>;
+          const context = typeof row.context === "string" ? row.context.trim() : "";
+          const solution = typeof row.solution === "string" ? row.solution.trim() : "";
+          return joinTextParts([context, solution ? `Solution: ${solution}` : ""]);
+        })
+        .filter((item): item is string => Boolean(item && item.length > 0))
+    : [];
+  const practiceQuestions = Array.isArray(source.practiceQuestions)
+    ? source.practiceQuestions
+        .map((item) => {
+          if (!item || typeof item !== "object") return null;
+          const row = item as Record<string, unknown>;
+          const question = typeof row.question === "string" ? row.question.trim() : "";
+          const answer = typeof row.answer === "string" ? row.answer.trim() : "";
+          const difficultyRaw = typeof row.difficulty === "string" ? row.difficulty.trim().toLowerCase() : "";
+          const difficulty =
+            difficultyRaw === "easy" || difficultyRaw === "medium" || difficultyRaw === "hard"
+              ? difficultyRaw
+              : "medium";
+          if (!question || !answer) {
+            return null;
+          }
+
+          return {
+            question,
+            difficulty,
+            answer,
+            explanation: answer,
+          };
+        })
+        .filter(
+          (
+            item,
+          ): item is {
+            question: string;
+            difficulty: string;
+            answer: string;
+            explanation: string;
+          } => Boolean(item),
+        )
+    : [];
+
+  const legacySignalsPresent =
+    Boolean(topic) ||
+    objectives.length > 0 ||
+    examples.length > 0 ||
+    practiceQuestions.length > 0 ||
+    Boolean(teacherNotes);
+
+  if (!legacySignalsPresent) {
+    return parsed;
+  }
+
+  return {
+    title: typeof source.title === "string" && source.title.trim() ? source.title.trim() : topic || "Lesson Note",
+    explanation,
+    real_world_examples: examples,
+    story_based_explanation: teacherNotes || explanation,
+    key_points: objectives,
+    practice_questions: practiceQuestions,
+  };
+}
+
 function extractJsonPayload(text: string) {
   const cleaned = text
     .replace(/^```(?:json)?\s*/i, "")
@@ -125,5 +218,6 @@ function extractJsonPayload(text: string) {
 export function parseAndValidateAIResponse(rawText: string, taskType: EdvouraTaskType) {
   const schema = getSchema(taskType);
   const parsed = extractJsonPayload(rawText);
-  return schema.parse(parsed);
+  const normalized = taskType === "GENERATE_LESSON" ? normalizeLessonPayload(parsed) : parsed;
+  return schema.parse(normalized);
 }
