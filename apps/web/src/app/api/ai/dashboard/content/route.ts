@@ -37,9 +37,10 @@ function mapTaskTypeToLegacyContentType(taskType: EdvouraTaskType) {
     case "GENERATE_LESSON":
       return "lesson_note";
     case "GENERATE_LESSON_PLAN":
-      return "worksheet";
+      return "lesson_plan";
     case "GENERATE_FINANCIAL_LITERACY":
     case "GENERATE_COMMUNICATION_SKILL":
+      return "lesson_note";
     case "ADAPT_LEARNING":
     case "IMPROVE_CONTENT":
     case "REGENERATE_CONTENT":

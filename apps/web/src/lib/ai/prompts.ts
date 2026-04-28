@@ -1,5 +1,17 @@
 /**
- * EDVOURA AI ENGINE - Prompt Templates
+ * EDVOURA AI ENGINE - Prompt Templates (LEGACY)
+ *
+ * ⚠️ DEPRECATED: This prompt system is retained only for backward compatibility
+ * with the /api/ai/generate server-side fallback route.
+ *
+ * For all new AI content generation (lesson notes, lesson plans, quizzes, spelling),
+ * use the unified prompt system in:
+ *   - edvouraPromptBuilder.ts  (prompt construction)
+ *   - aiContentValidator.ts    (schema validation & normalization)
+ *   - contentGenerationService.ts (orchestration)
+ *
+ * The new system uses artifact-based taskType (GENERATE_LESSON_NOTE, GENERATE_LESSON_PLAN, etc.)
+ * instead of content-type-based generation (lesson_note, quiz, etc.).
  *
  * These prompts instruct the LLM to return curriculum-aligned, structured output.
  * The prompt defines what to write; the Zod schema enforces the contract.

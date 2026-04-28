@@ -30,6 +30,7 @@ const lessonNoteSchema = z.object({
     z.object({
       question: z.string().min(5),
       difficulty: difficultySchema,
+      answer_hint: z.string().optional(),
     }),
   ).min(3),
   learning_checks: z.array(z.string().min(5)).min(2),
@@ -300,9 +301,17 @@ function normalizeLessonNotePayload(parsed: unknown) {
             difficultyRaw === "easy" || difficultyRaw === "medium" || difficultyRaw === "hard"
               ? difficultyRaw
               : "medium";
-          return question ? { question, difficulty } : null;
+          const answerHint =
+            typeof row.answer_hint === "string" && row.answer_hint.trim()
+              ? row.answer_hint.trim()
+              : typeof row.answer === "string" && row.answer.trim()
+                ? row.answer.trim()
+                : typeof row.explanation === "string" && row.explanation.trim()
+                  ? row.explanation.trim()
+                  : undefined;
+          return question ? { question, difficulty, ...(answerHint ? { answer_hint: answerHint } : {}) } : null;
         })
-        .filter((item): item is { question: string; difficulty: "easy" | "medium" | "hard" } => Boolean(item))
+        .filter((item): item is { question: string; difficulty: "easy" | "medium" | "hard"; answer_hint?: string } => Boolean(item))
     : Array.isArray(source.practiceQuestions)
       ? source.practiceQuestions
           .map((item) => {
@@ -314,9 +323,17 @@ function normalizeLessonNotePayload(parsed: unknown) {
               difficultyRaw === "easy" || difficultyRaw === "medium" || difficultyRaw === "hard"
                 ? difficultyRaw
                 : "medium";
-            return question ? { question, difficulty } : null;
+            const answerHint =
+              typeof row.answer_hint === "string" && row.answer_hint.trim()
+                ? row.answer_hint.trim()
+                : typeof row.answer === "string" && row.answer.trim()
+                  ? row.answer.trim()
+                  : typeof row.explanation === "string" && row.explanation.trim()
+                    ? row.explanation.trim()
+                    : undefined;
+            return question ? { question, difficulty, ...(answerHint ? { answer_hint: answerHint } : {}) } : null;
           })
-          .filter((item): item is { question: string; difficulty: "easy" | "medium" | "hard" } => Boolean(item))
+          .filter((item): item is { question: string; difficulty: "easy" | "medium" | "hard"; answer_hint?: string } => Boolean(item))
       : [];
   const learningChecks = Array.isArray(source.learning_checks)
     ? source.learning_checks.filter((item): item is string => typeof item === "string" && item.trim().length > 0)

@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
+import { createClient } from '@/utils/supabase/server';
 import StudentNotesWorkspace from './StudentNotesWorkspace';
 
 export default async function NotesPage() {
   const viewer = await requireAppViewer();
+  const supabase = await createClient();
   let dashboard;
 
   try {
@@ -37,5 +39,30 @@ export default async function NotesPage() {
     note: entry.masteryNotes ?? 'Review latest class notes and solve practice questions.',
   }));
 
-  return <StudentNotesWorkspace resources={resources} revisionList={revisionList} />;
+  // Fetch published AI lesson notes for the student
+  const { data: publishedNotes } = await supabase
+    .from('ai_generated_content')
+    .select('id, title, subject, topic, grade, content_json, created_at')
+    .in('task_type', ['GENERATE_LESSON_NOTE', 'GENERATE_LESSON', 'GENERATE_FINANCIAL_LITERACY', 'GENERATE_COMMUNICATION_SKILL'])
+    .in('status', ['published', 'PUBLISHED'])
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  const aiLessonNotes = (publishedNotes ?? []).map((note) => ({
+    id: note.id,
+    title: note.title ?? `${note.subject}: ${note.topic}`,
+    subject: note.subject ?? 'General',
+    topic: note.topic ?? '',
+    grade: note.grade ?? '',
+    content: note.content_json as Record<string, unknown>,
+    createdAt: note.created_at,
+  }));
+
+  return (
+    <StudentNotesWorkspace
+      resources={resources}
+      revisionList={revisionList}
+      aiLessonNotes={aiLessonNotes}
+    />
+  );
 }

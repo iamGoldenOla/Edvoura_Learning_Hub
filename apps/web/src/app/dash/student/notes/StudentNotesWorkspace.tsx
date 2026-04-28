@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, BookOpen, ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -17,6 +17,16 @@ type RevisionCard = {
   id: string;
   subject: string;
   note: string;
+};
+
+type AILessonNote = {
+  id: string;
+  title: string;
+  subject: string;
+  topic: string;
+  grade: string;
+  content: Record<string, unknown>;
+  createdAt: string;
 };
 
 type LessonExplainerMode =
@@ -41,12 +51,201 @@ const EXPLAINER_OPTIONS: Array<{ value: LessonExplainerMode; label: string }> = 
   { value: 'revision_notes', label: 'Revision Notes' },
 ];
 
+function StudentLessonNoteView({ note }: { note: AILessonNote }) {
+  const [expanded, setExpanded] = useState(false);
+  const content = note.content;
+  const explanation = typeof content.explanation === 'string' ? content.explanation : '';
+  const lessonSummary = typeof content.lesson_summary === 'string' ? content.lesson_summary : '';
+  const keyPoints = Array.isArray(content.key_points) ? content.key_points : [];
+  const workedExamples = Array.isArray(content.worked_examples) ? content.worked_examples : [];
+  const realWorldExamples = Array.isArray(content.real_world_examples) ? content.real_world_examples : [];
+  const practiceQuestions = Array.isArray(content.practice_questions) ? content.practice_questions : [];
+  const learningChecks = Array.isArray(content.learning_checks) ? content.learning_checks : [];
+
+  // Instructional materials for student — YouTube and image search links
+  const materials = content.instructional_materials;
+  const hasMaterials = materials && typeof materials === 'object' && !Array.isArray(materials);
+  const youtubeVideos = hasMaterials && Array.isArray((materials as Record<string, unknown>).youtube_videos)
+    ? (materials as Record<string, unknown>).youtube_videos as Array<Record<string, unknown>>
+    : [];
+  const imageResources = hasMaterials && Array.isArray((materials as Record<string, unknown>).image_resources)
+    ? (materials as Record<string, unknown>).image_resources as Array<Record<string, unknown>>
+    : [];
+
+  return (
+    <article className="border-[3px] border-dark rounded-2xl bg-white overflow-hidden shadow-[4px_4px_0px_#060E1C]">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full p-5 text-left flex items-start justify-between gap-3 hover:bg-off-white/50 transition-colors"
+      >
+        <div className="flex-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">
+            {note.subject} · {note.grade}
+          </span>
+          <h3 className="text-lg font-black text-dark mt-1">{note.title}</h3>
+          {lessonSummary ? (
+            <p className="mt-1 text-sm font-semibold text-dark/60 line-clamp-2">{lessonSummary}</p>
+          ) : null}
+        </div>
+        <ChevronDown className={`h-5 w-5 mt-1 text-dark/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+      </button>
+
+      {/* Expanded content */}
+      {expanded ? (
+        <div className="border-t-[2px] border-dark p-5 space-y-5">
+          {/* Explanation */}
+          {explanation ? (
+            <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">📖 Explanation</p>
+              <p className="text-sm font-semibold leading-7 text-dark/80 whitespace-pre-line">{explanation}</p>
+            </div>
+          ) : null}
+
+          {/* Key Points */}
+          {keyPoints.length > 0 ? (
+            <div className="rounded-xl border-[2px] border-dark bg-green-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">💡 Key Points</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm font-semibold text-dark/80">
+                {keyPoints.map((item, index) => (
+                  <li key={`kp-${index}`}>{String(item)}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {/* Worked Examples */}
+          {workedExamples.length > 0 ? (
+            <div>
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">✏️ Worked Examples</p>
+              <div className="space-y-3">
+                {workedExamples.map((item, index) => {
+                  const row = item && typeof item === 'object' && !Array.isArray(item) ? item as Record<string, unknown> : {};
+                  return (
+                    <div key={`we-${index}`} className="rounded-xl border-[2px] border-dark bg-blue-50 p-4">
+                      <p className="text-sm font-black text-dark">{String(row.title ?? `Example ${index + 1}`)}</p>
+                      <p className="mt-2 text-sm font-semibold leading-7 text-dark/80 whitespace-pre-line">{String(row.explanation ?? '')}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Real-World Examples */}
+          {realWorldExamples.length > 0 ? (
+            <div className="rounded-xl border-[2px] border-dark bg-purple-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">🌍 Real-World Examples</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm font-semibold text-dark/80">
+                {realWorldExamples.map((item, index) => (
+                  <li key={`rwe-${index}`}>{String(item)}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {/* Practice Questions — NO answer hints shown to students */}
+          {practiceQuestions.length > 0 ? (
+            <div>
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">📝 Practice Questions</p>
+              <div className="space-y-2">
+                {practiceQuestions.map((item, index) => {
+                  const row = item && typeof item === 'object' && !Array.isArray(item) ? item as Record<string, unknown> : {};
+                  const difficulty = String(row.difficulty ?? 'medium');
+                  const diffColors: Record<string, string> = {
+                    easy: 'bg-green-100 text-green-800 border-green-300',
+                    medium: 'bg-amber-100 text-amber-800 border-amber-300',
+                    hard: 'bg-red-100 text-red-800 border-red-300',
+                  };
+                  return (
+                    <div key={`pq-${index}`} className="flex items-start gap-3 rounded-xl border-[2px] border-dark bg-off-white p-3">
+                      <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[2px] border-dark bg-white text-xs font-black text-dark">
+                        {index + 1}
+                      </span>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-dark">{String(row.question ?? '')}</p>
+                        <span className={`mt-1 inline-block rounded-lg border-[1.5px] px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${diffColors[difficulty] ?? diffColors.medium}`}>
+                          {difficulty}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Learning Checks */}
+          {learningChecks.length > 0 ? (
+            <div className="rounded-xl border-[2px] border-dark bg-cyan-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">🔍 Check Your Understanding</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm font-semibold text-dark/80">
+                {learningChecks.map((item, index) => (
+                  <li key={`lc-${index}`}>{String(item)}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {/* Study Videos and Images */}
+          {(youtubeVideos.length > 0 || imageResources.length > 0) ? (
+            <div>
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">📚 Study Resources</p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {youtubeVideos.length > 0 ? (
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
+                    <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-dark/50">📺 Videos</p>
+                    <div className="space-y-2">
+                      {youtubeVideos.map((item, index) => (
+                        <a
+                          key={`yt-${index}`}
+                          href={String(item.url ?? '#')}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-lg border border-dark/20 bg-white p-2 text-sm font-bold text-dark underline decoration-yellow underline-offset-2 hover:bg-yellow/10 transition-colors"
+                        >
+                          {String(item.title ?? 'Study video')}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {imageResources.length > 0 ? (
+                  <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
+                    <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-dark/50">🖼️ Images</p>
+                    <div className="space-y-2">
+                      {imageResources.map((item, index) => (
+                        <a
+                          key={`img-${index}`}
+                          href={String(item.url ?? '#')}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block rounded-lg border border-dark/20 bg-white p-2 text-sm font-bold text-dark underline decoration-yellow underline-offset-2 hover:bg-yellow/10 transition-colors"
+                        >
+                          {String(item.title ?? 'Study image')}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
 export default function StudentNotesWorkspace({
   resources,
   revisionList,
+  aiLessonNotes = [],
 }: {
   resources: ResourceCard[];
   revisionList: RevisionCard[];
+  aiLessonNotes?: AILessonNote[];
 }) {
   const [selectedResourceId, setSelectedResourceId] = useState<string>(resources[0]?.id ?? '');
   const [explainerMode, setExplainerMode] = useState<LessonExplainerMode>('simple');
@@ -122,9 +321,30 @@ export default function StudentNotesWorkspace({
       <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
         <h1 className="text-4xl font-heading tracking-tight text-dark">Notes and Resources</h1>
         <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
-          Keep study materials, tutor notes, revision references, and AI lesson support in one academic base.
+          Keep study materials, tutor notes, AI lesson notes, and revision references in one academic base.
         </p>
       </section>
+
+      {/* AI-generated published lesson notes */}
+      {aiLessonNotes.length > 0 ? (
+        <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <BookOpen className="h-6 w-6 text-dark" />
+            <h2 className="text-2xl font-black text-dark">AI Lesson Notes</h2>
+            <span className="rounded-lg border-[1.5px] border-dark bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-green-900">
+              {aiLessonNotes.length} Available
+            </span>
+          </div>
+          <p className="text-sm font-semibold text-dark/60 mb-4">
+            Published lesson notes reviewed and approved by your tutor. Tap to expand and study.
+          </p>
+          <div className="space-y-4">
+            {aiLessonNotes.map((note) => (
+              <StudentLessonNoteView key={note.id} note={note} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <section className="border-[4px] border-dark bg-off-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6 xl:col-span-2">
@@ -303,7 +523,7 @@ export default function StudentNotesWorkspace({
                 href="/dash/student/exam-prep"
                 className="inline-flex items-center justify-center px-4 py-2.5 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest"
               >
-                Test & Drill Center
+                Test &amp; Drill Center
               </Link>
               <Link
                 href="/dash/student/past-questions"

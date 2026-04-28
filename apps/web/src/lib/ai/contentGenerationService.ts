@@ -105,9 +105,9 @@ function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
           `${input.topic} can also be practiced through guided discussion, drawing, or a short hands-on classroom activity.`,
         ],
         practice_questions: [
-          { question: `What is ${input.topic}?`, difficulty: "easy" },
-          { question: `Give one real-life example of ${input.topic}.`, difficulty: "easy" },
-          { question: `How can a pupil practice ${input.topic}?`, difficulty: "medium" },
+          { question: `What is ${input.topic}?`, difficulty: "easy", answer_hint: `${input.topic} is a key concept in ${input.subject} that learners should be able to define in simple terms.` },
+          { question: `Give one real-life example of ${input.topic}.`, difficulty: "easy", answer_hint: `An everyday situation where ${input.topic} applies, such as at home or school.` },
+          { question: `How can a pupil practice ${input.topic}?`, difficulty: "medium", answer_hint: `Through guided exercises, classroom discussion, or hands-on activities related to ${input.topic}.` },
         ],
         learning_checks: [
           `Can the learner explain ${input.topic} in simple words?`,
@@ -255,9 +255,9 @@ function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
           "A learner compares prices before buying a classroom item or snack.",
         ],
         practice_questions: [
-          { question: `Why is saving useful?`, difficulty: "easy" },
-          { question: `What is a responsible money habit?`, difficulty: "medium" },
-          { question: `Why should learners compare prices?`, difficulty: "medium" },
+          { question: `Why is saving useful?`, difficulty: "easy", answer_hint: "Saving helps set aside money for future needs and unexpected expenses." },
+          { question: `What is a responsible money habit?`, difficulty: "medium", answer_hint: "Planning spending, comparing prices, and saving regularly are responsible money habits." },
+          { question: `Why should learners compare prices?`, difficulty: "medium", answer_hint: "Comparing prices helps choose the best value and avoid overspending." },
         ],
         learning_checks: [
           "Can the learner explain why saving matters?",
@@ -306,9 +306,9 @@ function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
           "Explaining an idea during a class discussion without interrupting others.",
         ],
         practice_questions: [
-          { question: `What makes communication clear?`, difficulty: "easy" },
-          { question: `Why is listening important?`, difficulty: "easy" },
-          { question: `How can a learner speak more confidently?`, difficulty: "medium" },
+          { question: `What makes communication clear?`, difficulty: "easy", answer_hint: "Clear communication means speaking at the right pace, using simple words, and staying on topic." },
+          { question: `Why is listening important?`, difficulty: "easy", answer_hint: "Listening helps understand others, avoid misunderstandings, and respond thoughtfully." },
+          { question: `How can a learner speak more confidently?`, difficulty: "medium", answer_hint: "Practice regularly, prepare what to say, and start with small group discussions." },
         ],
         learning_checks: [
           "Can the learner identify one strong communication habit?",
