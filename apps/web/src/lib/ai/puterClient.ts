@@ -1,6 +1,9 @@
 export const DEFAULT_EDVOURA_AI_MODEL =
   process.env.NEXT_PUBLIC_EDVOURA_AI_MODEL || "gpt-5-nano";
 
+const PUTER_LOAD_TIMEOUT_MS = 15000;
+const PUTER_POLL_INTERVAL_MS = 250;
+
 function readPuterText(response: unknown): string {
   if (typeof response === "string") {
     return response;
@@ -31,11 +34,35 @@ export function getPuter() {
   return window.puter;
 }
 
+export async function waitForPuterToLoad(timeoutMs = PUTER_LOAD_TIMEOUT_MS) {
+  if (typeof window === "undefined") {
+    throw new Error("Puter.js is not available during server-side rendering");
+  }
+
+  const startedAt = Date.now();
+
+  while (!window.puter) {
+    if (Date.now() - startedAt >= timeoutMs) {
+      throw new Error(
+        "Puter.js did not finish loading. Check your connection, disable strict script blockers, and try again.",
+      );
+    }
+
+    await new Promise((resolve) => window.setTimeout(resolve, PUTER_POLL_INTERVAL_MS));
+  }
+
+  return window.puter;
+}
+
 export async function ensurePuterReady() {
-  const puter = getPuter();
+  const puter = await waitForPuterToLoad();
 
   if (!puter.ai || !puter.ai.chat) {
     throw new Error("Puter AI is not available");
+  }
+
+  if (!puter.auth?.isSignedIn?.()) {
+    throw new Error("Sign in to Puter before generating AI content.");
   }
 
   return puter;
@@ -88,7 +115,7 @@ export async function streamWithPuterAI(
 }
 
 export async function getPuterUserIfSignedIn() {
-  const puter = getPuter();
+  const puter = await waitForPuterToLoad();
 
   try {
     const isSignedIn = puter.auth?.isSignedIn?.();
@@ -101,5 +128,25 @@ export async function getPuterUserIfSignedIn() {
   } catch (error) {
     console.warn("Unable to get Puter user:", error);
     return null;
+  }
+}
+
+export async function signInToPuter() {
+  const puter = await waitForPuterToLoad();
+
+  if (puter.auth?.isSignedIn?.()) {
+    return await puter.auth?.getUser?.();
+  }
+
+  if (!puter.auth?.signIn) {
+    throw new Error("Puter sign-in is not available yet. Reload this page and try again.");
+  }
+
+  try {
+    await puter.auth.signIn();
+    return await puter.auth?.getUser?.();
+  } catch (error) {
+    console.error("Puter sign-in failed:", error);
+    throw new Error("Puter sign-in did not complete. Try again and allow the popup window.");
   }
 }

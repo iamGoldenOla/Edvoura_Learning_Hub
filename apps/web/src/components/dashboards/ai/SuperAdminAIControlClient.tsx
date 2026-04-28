@@ -12,6 +12,8 @@ import {
   reviewContent,
   type DashboardAiStatus,
 } from "@/lib/ai/aiContentRepository";
+import { Button } from "@/components/ui/button";
+import { getPuterUserIfSignedIn, signInToPuter } from "@/lib/ai/puterClient";
 
 type RecordItem = PendingReviewRecord & {
   status: DashboardAiStatus;
@@ -22,20 +24,64 @@ export default function SuperAdminAIControlClient() {
   const [previewContent, setPreviewContent] = useState<unknown>(null);
   const [feedback, setFeedback] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [puterUserLabel, setPuterUserLabel] = useState<string | null>(null);
+  const [isConnectingPuter, setIsConnectingPuter] = useState(false);
 
   async function loadRecords() {
     const data = await listDashboardAiContent("SUPER_ADMIN");
     setRecords(data.records as RecordItem[]);
   }
 
+  async function refreshPuterSession() {
+    try {
+      const user = await getPuterUserIfSignedIn();
+      const label =
+        user && typeof user === "object" && "username" in user && typeof user.username === "string"
+          ? user.username
+          : user && typeof user === "object" && "email" in user && typeof user.email === "string"
+            ? user.email
+            : null;
+      setPuterUserLabel(label);
+    } catch {
+      setPuterUserLabel(null);
+    }
+  }
+
+  async function connectPuter() {
+    setIsConnectingPuter(true);
+    setFeedback("Opening Puter sign-in...");
+    try {
+      const user = await signInToPuter();
+      const label =
+        user && typeof user === "object" && "username" in user && typeof user.username === "string"
+          ? user.username
+          : user && typeof user === "object" && "email" in user && typeof user.email === "string"
+            ? user.email
+            : "connected user";
+      setPuterUserLabel(label);
+      setFeedback(`Puter connected as ${label}.`);
+      return label;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to sign in to Puter.";
+      setFeedback(message);
+      throw new Error(message);
+    } finally {
+      setIsConnectingPuter(false);
+    }
+  }
+
   useEffect(() => {
     void loadRecords();
+    void refreshPuterSession();
   }, []);
 
   async function onGenerate(payload: GeneratorPayload) {
     setIsGenerating(true);
     setFeedback("Generating super-admin draft...");
     try {
+      if (!puterUserLabel) {
+        await connectPuter();
+      }
       const generated = await generateEdvouraContent({
         userRole: "super_admin",
         ...payload,
@@ -58,6 +104,9 @@ export default function SuperAdminAIControlClient() {
     setIsGenerating(true);
     setFeedback("Improving selected content with Edvoura AI...");
     try {
+      if (!puterUserLabel) {
+        await connectPuter();
+      }
       const generated = await generateEdvouraContent({
         userRole: "super_admin",
         taskType: "IMPROVE_CONTENT",
@@ -117,6 +166,23 @@ export default function SuperAdminAIControlClient() {
         <p className="mt-2 text-sm font-bold text-dark/70">
           Review all tutor-generated drafts, improve quality, approve, reject, request changes, and publish.
         </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2 text-xs font-black text-dark">
+            Puter Session: {puterUserLabel ? `Connected as ${puterUserLabel}` : "Not connected"}
+          </div>
+          <Button
+            type="button"
+            onClick={() => void connectPuter()}
+            disabled={isConnectingPuter}
+            className="bg-white border-[2px] border-dark text-dark px-4 py-2 text-xs font-black"
+          >
+            {isConnectingPuter
+              ? "Connecting..."
+              : puterUserLabel
+                ? "Reconnect Puter"
+                : "Connect Puter"}
+          </Button>
+        </div>
       </section>
 
       {feedback ? (

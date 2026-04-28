@@ -1,6 +1,11 @@
 export {};
 
 declare global {
+  type PuterUser = {
+    username?: string;
+    email?: string;
+  };
+
   interface Window {
     puter?: {
       ai?: {
@@ -14,7 +19,11 @@ declare global {
       };
       auth?: {
         isSignedIn?: () => boolean;
-        getUser?: () => Promise<unknown>;
+        getUser?: () => Promise<PuterUser | null>;
+        signIn?: (options?: {
+          attempt_temp_user_creation?: boolean;
+        }) => Promise<unknown>;
+        signOut?: () => Promise<void> | void;
       };
     };
   }
