@@ -178,8 +178,8 @@ export default function DashboardClientShell({
           />
         )}
 
-        <aside className={`sticky top-0 z-50 flex h-screen w-[86vw] max-w-[320px] flex-col bg-dark p-5 transition-transform lg:w-72 lg:translate-x-0 lg:flex lg:p-6 shadow-[4px_0_0_#060E1C] ${
-          isMobileMenuOpen ? 'fixed translate-x-0' : 'fixed -translate-x-full lg:sticky'
+        <aside className={`fixed top-0 z-50 flex h-screen w-[86vw] max-w-[320px] flex-col bg-dark p-5 transition-transform lg:sticky lg:w-72 lg:translate-x-0 lg:p-6 shadow-[4px_0_0_#060E1C] ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}>
           <div className="mb-8 flex items-center gap-4 rounded-2xl border-[3px] border-dark bg-yellow px-4 py-4 shadow-[4px_4px_0px_#ffffff]">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border-[3px] border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C]">
