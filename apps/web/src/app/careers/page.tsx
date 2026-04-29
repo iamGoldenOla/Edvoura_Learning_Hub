@@ -209,9 +209,9 @@ export default function CareersPage() {
             ))}
           </div>
 
-          <div className="text-center mt-20 p-10 bg-white border-4 border-navy rounded-[2rem] shadow-[10px_10px_0px_#0A1628]">
-             <p className="text-navy text-xl font-bold mb-6">Don&apos;t see your role? Reach out to our talent acquisition team.</p>
-             <Link href="/contact" className="text-navy font-black text-lg underline decoration-4 underline-offset-8 decoration-yellow hover:text-info transition-colors">
+          <div className="text-center mt-20 p-6 sm:p-10 bg-white border-4 border-navy rounded-[2rem] shadow-[10px_10px_0px_#0A1628] max-w-full overflow-hidden">
+             <p className="text-navy text-xl font-bold mb-6 break-words">Don&apos;t see your role? Reach out to our talent acquisition team.</p>
+             <Link href="/contact" className="text-navy font-black text-base sm:text-lg underline decoration-4 underline-offset-8 decoration-yellow hover:text-info transition-colors break-all">
                {siteContact.email.careers}
              </Link>
           </div>

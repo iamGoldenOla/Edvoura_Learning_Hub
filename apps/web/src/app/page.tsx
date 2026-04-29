@@ -190,7 +190,7 @@ export default function Home() {
               <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] -rotate-2">
                 GRADES 4—6
               </div>
-              <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628]">
+              <h2 className="font-heading font-black text-white text-4xl sm:text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628] break-words">
                 Building Mastery & Confidence.
               </h2>
               <div className="bg-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform rotate-1">
@@ -199,7 +199,7 @@ export default function Home() {
                 </p>
               </div>
               
-              <ul className="space-y-4 mb-10 bg-navy text-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#F5C518] transform -rotate-1">
+              <ul className="space-y-4 mb-10 bg-navy text-white border-4 border-navy rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_#F5C518] transform -rotate-1 max-w-full break-words">
                 {[
                   'Subject-level Badge Walls & Milestones',
                   'Structured Homework & Quiz Hubs',
@@ -229,8 +229,8 @@ export default function Home() {
           <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#F5C518] rotate-2">
             GRADES 7—12
           </div>
-          <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-6 drop-shadow-[4px_4px_0px_#060E1C]">The Achiever View</h2>
-          <p className="bg-white text-navy font-bold text-xl px-6 py-4 rounded-xl border-4 border-navy shadow-[6px_6px_0px_#F5C518] max-w-2xl mx-auto transform -rotate-1">
+          <h2 className="font-heading font-black text-white text-4xl sm:text-5xl md:text-7xl mb-6 drop-shadow-[4px_4px_0px_#060E1C] break-words">The Achiever View</h2>
+          <p className="bg-white text-navy font-bold text-base sm:text-xl px-4 sm:px-6 py-4 rounded-xl border-4 border-navy shadow-[6px_6px_0px_#F5C518] max-w-2xl mx-auto transform -rotate-1 break-words">
             A high-performance command center for SAT, WAEC, NECO, and JAMB prep across the globe.
           </p>
         </div>

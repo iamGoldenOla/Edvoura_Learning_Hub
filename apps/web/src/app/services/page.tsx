@@ -56,8 +56,8 @@ export default function ServicesPage() {
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy">
         <div className="marketing-container">
           <div className="text-center mb-24">
-            <div className="inline-block bg-info border-4 border-navy text-white font-heading font-black px-8 py-3 rounded-2xl mb-8 shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
-              <h2 className="text-4xl md:text-5xl uppercase tracking-tight">Core Offerings</h2>
+            <div className="inline-block max-w-full bg-info border-4 border-navy text-white font-heading font-black px-4 sm:px-8 py-3 rounded-2xl mb-8 shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight break-words">Core Offerings</h2>
             </div>
           </div>
 
