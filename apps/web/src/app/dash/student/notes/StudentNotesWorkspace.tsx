@@ -80,13 +80,13 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full p-5 text-left flex items-start justify-between gap-3 hover:bg-off-white/50 transition-colors"
+        className="flex w-full items-start justify-between gap-3 p-4 text-left transition-colors hover:bg-off-white/50 sm:p-5"
       >
         <div className="flex-1">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">
             {note.subject} · {note.grade}
           </span>
-          <h3 className="text-lg font-black text-dark mt-1">{note.title}</h3>
+          <h3 className="mt-1 text-base font-black text-dark break-words sm:text-lg">{note.title}</h3>
           {lessonSummary ? (
             <p className="mt-1 text-sm font-semibold text-dark/60 line-clamp-2">{lessonSummary}</p>
           ) : null}
@@ -341,9 +341,9 @@ export default function StudentNotesWorkspace({
   };
 
   return (
-    <div className="space-y-8 max-w-[1320px]">
-      <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
-        <h1 className="text-4xl font-heading tracking-tight text-dark">Notes and Resources</h1>
+    <div className="w-full max-w-[1320px] space-y-6 sm:space-y-8">
+      <section className="rounded-[24px] border-[4px] border-dark bg-white p-5 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-8">
+        <h1 className="text-3xl font-heading tracking-tight text-dark sm:text-4xl">Notes and Resources</h1>
         <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
           Keep study materials, tutor notes, AI lesson notes, and revision references in one academic base.
         </p>
@@ -351,10 +351,10 @@ export default function StudentNotesWorkspace({
 
       {/* AI-generated published lesson notes */}
       {aiLessonNotes.length > 0 ? (
-        <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
-          <div className="flex items-center gap-3 mb-4">
+        <section className="rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <BookOpen className="h-6 w-6 text-dark" />
-            <h2 className="text-2xl font-black text-dark">AI Lesson Notes</h2>
+            <h2 className="text-xl font-black text-dark sm:text-2xl">AI Lesson Notes</h2>
             <span className="rounded-lg border-[1.5px] border-dark bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-green-900">
               {aiLessonNotes.length} Available
             </span>
@@ -370,9 +370,9 @@ export default function StudentNotesWorkspace({
         </section>
       ) : null}
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <section className="border-[4px] border-dark bg-off-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6 xl:col-span-2">
-          <h2 className="text-2xl font-black text-dark">Tutor Notes and Study Guides</h2>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="rounded-[24px] border-[4px] border-dark bg-off-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6 xl:col-span-2">
+          <h2 className="text-xl font-black text-dark sm:text-2xl">Tutor Notes and Study Guides</h2>
           <div className="mt-4 space-y-3">
             {resources.length > 0 ? (
               resources.map((resource) => (
@@ -405,8 +405,8 @@ export default function StudentNotesWorkspace({
         </section>
 
         <section className="space-y-6">
-          <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
-            <h2 className="text-2xl font-black text-dark">Revision Focus</h2>
+          <section className="rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
+            <h2 className="text-xl font-black text-dark sm:text-2xl">Revision Focus</h2>
             <div className="mt-4 space-y-2">
               {revisionList.length > 0 ? (
                 revisionList.map((item) => (
@@ -423,10 +423,10 @@ export default function StudentNotesWorkspace({
             </div>
           </section>
 
-          <section className="border-[4px] border-dark bg-yellow/20 rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
+          <section className="rounded-[24px] border-[4px] border-dark bg-yellow/20 p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-dark" />
-              <h2 className="text-2xl font-black text-dark">Edvoura AI Explainer</h2>
+              <h2 className="text-xl font-black text-dark sm:text-2xl">Edvoura AI Explainer</h2>
             </div>
             <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
               Turn tutor notes into simpler teaching, harder examples, quick checks, or revision-ready summaries.
@@ -452,7 +452,7 @@ export default function StudentNotesWorkspace({
                 )}
               </select>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {EXPLAINER_OPTIONS.map((item) => (
                   <button
                     key={item.value}
@@ -540,8 +540,8 @@ export default function StudentNotesWorkspace({
             </div>
           </section>
 
-          <section className="border-[4px] border-dark bg-off-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6">
-            <h2 className="text-2xl font-black text-dark">Exam Prep Quick Links</h2>
+          <section className="rounded-[24px] border-[4px] border-dark bg-off-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
+            <h2 className="text-xl font-black text-dark sm:text-2xl">Exam Prep Quick Links</h2>
             <div className="mt-4 grid grid-cols-1 gap-2">
               <Link
                 href="/dash/student/exam-prep"

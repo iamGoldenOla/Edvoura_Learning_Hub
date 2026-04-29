@@ -64,6 +64,30 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 - Remaining follow-up for mobile phase:
   - continue the same narrow-screen cleanup across secondary subpages like notes, quiz, parent notifications, admin section pages, and tutor tools until all role dashboards behave consistently below `360px`
 
+### Current Status: Secondary Dashboard Mobile Sweep + Interaction Matrix Scaffold (2026-04-29)
+
+- Mobile-first cleanup has now been extended into secondary role surfaces:
+  - `apps/web/src/app/dash/student/notes/StudentNotesWorkspace.tsx`
+  - `apps/web/src/app/dash/student/quiz/page.tsx`
+  - `apps/web/src/app/dash/student/quiz/PracticeQuizClient.tsx`
+  - `apps/web/src/app/dash/student/spelling-bee/SpellingBeeClient.tsx`
+  - `apps/web/src/app/dash/admin/notifications/page.tsx`
+  - `apps/web/src/app/dash/parent/notifications/page.tsx`
+  - `apps/web/src/components/dashboards/ai/TutorAIWorkspaceClient.tsx`
+- Improvements in this slice:
+  - reduced oversized paddings and card radii on mobile
+  - stacked action/button rows for narrow screens
+  - improved quiz and spelling interaction layouts for handheld use
+  - tightened tutor AI draft action layouts so publish/review buttons do not overflow on mobile
+  - hardened student notes plus admin/parent notification surfaces for smaller widths
+- Interaction matrix scaffolding is now explicit:
+  - code artifact: `apps/web/src/lib/dashboard/interactionMatrix.ts`
+  - working contract doc: `DASHBOARD_INTERACTION_MATRIX.md`
+- Regression foothold added:
+  - `apps/web/e2e/dashboard-actions.spec.ts` now includes narrow-screen checks for student navigation and the student subjects landing page
+- Current architectural rule:
+  - when a new dashboard-to-dashboard delivery flow is introduced, define it in the interaction matrix and implement its side effects through the shared dashboard delivery layer rather than page-local mutations
+
 ### Current Status: Puter Dashboard AI Workflow (2026-04-27)
 
 - Puter.js integration is now architected as **dashboard-only** generation tooling:

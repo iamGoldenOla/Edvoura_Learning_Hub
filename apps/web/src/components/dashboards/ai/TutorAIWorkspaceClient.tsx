@@ -231,14 +231,14 @@ export default function TutorAIWorkspaceClient() {
   );
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-8 p-6 sm:p-8 pb-24">
-      <section className="rounded-[24px] border-[4px] border-dark bg-white p-6 shadow-[8px_8px_0px_#060E1C]">
-        <h1 className="text-3xl font-black tracking-tight text-dark">Tutor AI Content Generator</h1>
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-6 p-4 pb-24 sm:space-y-8 sm:p-8">
+      <section className="rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:p-6">
+        <h1 className="text-2xl font-black tracking-tight text-dark sm:text-3xl">Tutor AI Content Generator</h1>
         <p className="mt-2 text-sm font-bold text-dark/70">
           Generate teacher-facing lesson plans, student-facing lesson notes, quizzes, spelling content,
           and adaptive draft content. Tutors can publish directly or submit for super admin review.
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <div className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2 text-xs font-black text-dark">
             Puter Session: {puterUserLabel ? `Connected as ${puterUserLabel}` : "Not connected"}
           </div>
@@ -267,8 +267,8 @@ export default function TutorAIWorkspaceClient() {
 
       {previewContent ? <AIContentPreview content={previewContent} /> : null}
 
-      <section className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
-        <h2 className="mb-4 text-xl font-black text-dark">Drafts Ready For Submission</h2>
+      <section className="rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[4px_4px_0px_#060E1C] sm:p-5">
+        <h2 className="mb-4 text-lg font-black text-dark sm:text-xl">Drafts Ready For Submission</h2>
         <div className="space-y-3">
           {draftRecords.length === 0 ? (
             <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 text-sm font-semibold text-dark/70">
@@ -277,19 +277,19 @@ export default function TutorAIWorkspaceClient() {
           ) : null}
           {draftRecords.map((record) => (
             <article key={record.id} className="rounded-xl border-[2px] border-dark bg-off-white p-4">
-              <div className="flex items-center justify-between gap-2">
-                <p className="font-black text-dark">{record.title}</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="font-black text-dark break-words">{record.title}</p>
                 <AIStatusBadge status={record.status} />
               </div>
               <p className="mt-1 text-xs font-bold text-dark/70">
                 {record.subject} | {record.topic} | {record.grade} | {EDVOURA_TASK_TYPE_LABELS[record.task_type as EdvouraTaskType] ?? record.task_type}
               </p>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                 <Button
                   type="button"
                   onClick={() => setPreviewContent(record.content_json)}
-                  className="bg-white border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                  className="border-[2px] border-dark bg-white px-3 py-2 text-xs font-black text-dark"
                 >
                   Preview
                 </Button>
@@ -297,7 +297,7 @@ export default function TutorAIWorkspaceClient() {
                   type="button"
                   onClick={() => void onImprove(record)}
                   disabled={isGenerating}
-                  className="bg-blue-200 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                  className="border-[2px] border-dark bg-blue-200 px-3 py-2 text-xs font-black text-dark"
                 >
                   Improve with AI
                 </Button>
@@ -305,7 +305,7 @@ export default function TutorAIWorkspaceClient() {
                   type="button"
                   onClick={() => void onRegenerate(record)}
                   disabled={isGenerating}
-                  className="bg-amber-200 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                  className="border-[2px] border-dark bg-amber-200 px-3 py-2 text-xs font-black text-dark"
                 >
                   Regenerate
                 </Button>
@@ -313,7 +313,7 @@ export default function TutorAIWorkspaceClient() {
                   type="button"
                   onClick={() => void onSubmitForReview(record.id)}
                   disabled={isSubmitting === record.id}
-                  className="bg-yellow border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                  className="border-[2px] border-dark bg-yellow px-3 py-2 text-xs font-black text-dark"
                 >
                   {isSubmitting === record.id ? "Submitting..." : "Submit for Review"}
                 </Button>
@@ -321,7 +321,7 @@ export default function TutorAIWorkspaceClient() {
                   type="button"
                   onClick={() => void onPublishDirectly(record.id)}
                   disabled={isPublishing === record.id}
-                  className="bg-green-400 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black"
+                  className="border-[2px] border-dark bg-green-400 px-3 py-2 text-xs font-black text-dark"
                 >
                   {isPublishing === record.id ? "Publishing..." : "Publish to Student"}
                 </Button>
@@ -329,7 +329,7 @@ export default function TutorAIWorkspaceClient() {
                   type="button"
                   onClick={() => void onDeleteDraft(record.id)}
                   disabled={isDeleting === record.id}
-                  className="bg-red-400 border-[2px] border-dark text-dark px-3 py-2 text-xs font-black ml-auto"
+                  className="border-[2px] border-dark bg-red-400 px-3 py-2 text-xs font-black text-dark sm:ml-auto"
                 >
                   {isDeleting === record.id ? "Deleting..." : "Delete"}
                 </Button>

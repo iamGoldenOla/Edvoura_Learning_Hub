@@ -2,22 +2,17 @@ import { createClient } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { Target, Clock, ArrowRight } from 'lucide-react';
-import { PracticeQuizClient } from './PracticeQuizClient';
+import { PracticeQuizClient, type QuizCard, type QuizPayload } from './PracticeQuizClient';
 import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-type AiQuizPayload = {
-  title?: string;
-  description?: string;
-};
-
 type AiQuizRow = {
   id: string;
   subject: string | null;
   grade: string | null;
-  content_json: Record<string, unknown> | null;
+  content_json: QuizPayload | null;
   created_at: string;
 };
 
@@ -50,13 +45,17 @@ export default async function QuizPage() {
     },
   );
 
-  const normalizedAiQuizzes = filteredAiQuizzes.map(q => ({
-    id: q.id,
-    title: ((q.content_json as AiQuizPayload | null)?.title) || 'AI Practice Challenge',
-    instructions: ((q.content_json as AiQuizPayload | null)?.description) || 'Master this topic with Edvoura AI.',
-    isAi: true,
-    data: q.content_json
-  }));
+  const normalizedAiQuizzes: QuizCard[] = filteredAiQuizzes
+    .filter((q): q is AiQuizRow & { content_json: QuizPayload } => {
+      const payload = q.content_json;
+      return Boolean(payload && Array.isArray(payload.questions) && typeof payload.title === 'string');
+    })
+    .map((q) => ({
+      id: q.id,
+      title: q.content_json.title || 'AI Practice Challenge',
+      instructions: q.content_json.description || 'Master this topic with Edvoura AI.',
+      data: q.content_json,
+    }));
 
   return (
     <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">

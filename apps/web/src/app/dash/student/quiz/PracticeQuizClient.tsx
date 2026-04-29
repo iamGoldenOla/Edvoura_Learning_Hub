@@ -1,20 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Brain, ArrowRight, CheckCircle2, XCircle, RefreshCcw, Play } from 'lucide-react';
+import { Sparkles, Brain, ArrowRight, CheckCircle2, XCircle, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
-  const [quizData, setQuizData] = useState<any>(null);
+export type QuizQuestion = {
+  questionText: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+};
+
+export type QuizPayload = {
+  title: string;
+  description?: string;
+  questions: QuizQuestion[];
+};
+
+export type QuizCard = {
+  id: string;
+  title: string;
+  instructions: string;
+  data: QuizPayload;
+};
+
+export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
+  const [quizData, setQuizData] = useState<QuizPayload | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  function startQuiz(data: any) {
+  function startQuiz(data: QuizPayload) {
     // Filter out any non-MCQ questions just in case to maintain the layout
-    const mcqs = data.questions.filter((q: any) => q.options && q.options.length >= 2);
+    const mcqs = data.questions.filter((q) => q.options && q.options.length >= 2);
     setQuizData({ ...data, questions: mcqs });
     setCurrentQuestionIndex(0);
     setScore(0);
@@ -30,7 +50,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
   }
 
   function handleSubmitAnswer() {
-    if (!selectedAnswer) return;
+    if (!selectedAnswer || !quizData) return;
     setHasSubmitted(true);
     const currentQuestion = quizData.questions[currentQuestionIndex];
     if (selectedAnswer === currentQuestion.correctAnswer) {
@@ -39,6 +59,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
   }
 
   function handleNextQuestion() {
+    if (!quizData) return;
     if (currentQuestionIndex < quizData.questions.length - 1) {
       setCurrentQuestionIndex(i => i + 1);
       setSelectedAnswer(null);
@@ -59,14 +80,14 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
     }
   }
 
-  if (quizFinished) {
+  if (quizFinished && quizData) {
     return (
-      <div className="rounded-[28px] border-[4px] border-dark bg-white p-8 md:p-12 shadow-[10px_10px_0px_#060E1C] flex flex-col items-center text-center">
+      <div className="flex flex-col items-center rounded-[24px] border-[4px] border-dark bg-white p-5 text-center shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-8 md:p-12 sm:shadow-[10px_10px_0px_#060E1C]">
         <div className="h-24 w-24 bg-yellow border-[4px] border-dark rounded-full flex items-center justify-center shadow-[4px_4px_0px_#060E1C] mb-6">
           <Sparkles className="h-12 w-12 text-dark" />
         </div>
-        <h2 className="text-4xl md:text-5xl font-black text-dark tracking-tight mb-4">Quiz Complete!</h2>
-        <p className="text-2xl font-bold text-dark/70 mb-8">
+        <h2 className="mb-4 text-3xl font-black tracking-tight text-dark sm:text-4xl md:text-5xl">Quiz Complete!</h2>
+        <p className="mb-8 text-xl font-bold text-dark/70 sm:text-2xl">
           You scored <span className="text-emerald-600 font-black">{score}</span> out of {quizData.questions.length}
         </p>
         <Button 
@@ -79,32 +100,64 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
     );
   }
 
-  if (quizData && quizData.questions && quizData.questions.length > 0) {
-    const currentQuestion = quizData.questions[currentQuestionIndex];
-    const letters = ['A', 'B', 'C', 'D'];
-
+  if (!quizData || !quizData.questions || quizData.questions.length === 0) {
     return (
-      <div className="rounded-[28px] border-[4px] border-dark bg-white p-6 md:p-10 shadow-[10px_10px_0px_#060E1C]">
-        <div className="flex items-center justify-between border-b-[4px] border-dark pb-6 mb-8">
-          <h2 className="text-2xl font-black text-dark tracking-tight">{quizData.title}</h2>
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {aiQuizzes.length > 0 ? (
+          aiQuizzes.map((q) => (
+            <div key={q.id} className="flex flex-col rounded-[24px] border-[4px] border-dark bg-indigo-50 p-4 shadow-[6px_6px_0px_#060E1C] transition-all hover:-translate-y-1 sm:rounded-[28px] sm:p-6 sm:shadow-[8px_8px_0px_#060E1C]">
+              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+                <Sparkles className="h-3 w-3" /> AI Challenge
+              </div>
+              <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-dark break-words sm:text-xl">
+                {q.title}
+              </h3>
+              <p className="mb-6 flex-1 text-sm font-bold text-dark/60">
+                {q.instructions}
+              </p>
+              <Button
+                onClick={() => startQuiz(q.data)}
+                className="w-full border-[3px] border-dark bg-white py-3 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+              >
+                Start Practice <Play className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full flex flex-col items-center rounded-[24px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-8 text-center sm:rounded-[28px] sm:p-12">
+            <Brain className="mb-4 h-10 w-10 text-dark/30" />
+            <p className="text-sm font-bold italic text-dark/60">No AI Study Hub challenges published yet by your tutors.</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const currentQuestion = quizData.questions[currentQuestionIndex];
+  const letters = ['A', 'B', 'C', 'D'];
+
+  return (
+      <div className="rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6 md:p-10 sm:shadow-[10px_10px_0px_#060E1C]">
+        <div className="mb-6 flex flex-col gap-3 border-b-[4px] border-dark pb-5 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
+          <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl break-words">{quizData.title}</h2>
           <div className="bg-dark text-white font-black px-4 py-2 rounded-xl text-sm border-[3px] border-dark shadow-[2px_2px_0px_#060E1C]">
             Question {currentQuestionIndex + 1} / {quizData.questions.length}
           </div>
         </div>
 
         <div className="mb-10">
-          <h3 className="text-2xl md:text-3xl font-black text-dark leading-snug">
+          <h3 className="text-xl font-black leading-snug text-dark sm:text-2xl md:text-3xl break-words">
             {currentQuestion.questionText}
           </h3>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 mb-10">
+        <div className="mb-10 grid gap-3 sm:gap-4 md:grid-cols-2">
           {currentQuestion.options?.map((opt: string, i: number) => {
             const isSelected = selectedAnswer === opt;
             const isCorrect = hasSubmitted && opt === currentQuestion.correctAnswer;
             const isWrongSelection = hasSubmitted && isSelected && opt !== currentQuestion.correctAnswer;
 
-            let btnClass = "text-left p-4 md:p-6 rounded-2xl border-[4px] font-bold text-lg md:text-xl transition-all ";
+            let btnClass = "text-left p-4 sm:p-5 md:p-6 rounded-2xl border-[4px] font-bold text-base sm:text-lg md:text-xl transition-all break-words ";
             
             if (!hasSubmitted) {
               btnClass += isSelected 
@@ -127,7 +180,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
                 disabled={hasSubmitted}
                 className={btnClass}
               >
-                <span className="inline-block bg-white border-[3px] border-dark rounded-lg px-3 py-1 mr-3 text-sm font-black shadow-[2px_2px_0px_#060E1C]">
+                <span className="mr-3 inline-block rounded-lg border-[3px] border-dark bg-white px-3 py-1 text-sm font-black shadow-[2px_2px_0px_#060E1C]">
                   {letters[i] || '?'}
                 </span>
                 {opt}
@@ -137,7 +190,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
         </div>
 
         {hasSubmitted && (
-          <div className={`p-6 rounded-2xl border-[3px] border-dark mb-8 flex gap-4 items-start ${selectedAnswer === currentQuestion.correctAnswer ? 'bg-emerald-100' : 'bg-rose-100'}`}>
+          <div className={`mb-8 flex flex-col gap-4 rounded-2xl border-[3px] border-dark p-4 sm:flex-row sm:items-start sm:p-6 ${selectedAnswer === currentQuestion.correctAnswer ? 'bg-emerald-100' : 'bg-rose-100'}`}>
             <div className="mt-1">
               {selectedAnswer === currentQuestion.correctAnswer ? (
                 <CheckCircle2 className="w-8 h-8 text-emerald-600" />
@@ -156,56 +209,24 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: any[] }) {
           </div>
         )}
 
-        <div className="flex justify-end pt-6 border-t-[3px] border-dark">
+        <div className="flex justify-stretch border-t-[3px] border-dark pt-6 sm:justify-end">
           {!hasSubmitted ? (
             <Button 
               onClick={handleSubmitAnswer}
               disabled={!selectedAnswer}
-              className="bg-yellow border-[3px] border-dark text-dark font-black px-8 py-4 text-lg rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto disabled:opacity-50"
+              className="h-auto w-full rounded-xl border-[3px] border-dark bg-yellow px-6 py-4 text-base font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 disabled:opacity-50 sm:w-auto sm:px-8 sm:text-lg"
             >
               Submit Answer
             </Button>
           ) : (
             <Button 
               onClick={handleNextQuestion}
-              className="bg-dark border-[3px] border-dark text-white font-black px-8 py-4 text-lg rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
+              className="h-auto w-full rounded-xl border-[3px] border-dark bg-dark px-6 py-4 text-base font-black text-white shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 sm:w-auto sm:px-8 sm:text-lg"
             >
               {currentQuestionIndex < quizData.questions.length - 1 ? 'Next Question' : 'Finish Quiz'} <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           )}
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {aiQuizzes.length > 0 ? (
-        aiQuizzes.map((q) => (
-          <div key={q.id} className="rounded-[28px] border-[4px] border-dark bg-indigo-50 p-6 shadow-[8px_8px_0px_#060E1C] flex flex-col hover:-translate-y-1 transition-all">
-            <div className="inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark mb-4 shadow-[2px_2px_0px_#060E1C]">
-              <Sparkles className="h-3 w-3" /> AI Challenge
-            </div>
-            <h3 className="text-xl font-black text-dark tracking-tight leading-tight mb-2">
-              {q.title}
-            </h3>
-            <p className="text-sm font-bold text-dark/60 flex-1 mb-6">
-              {q.instructions}
-            </p>
-            <Button 
-              onClick={() => startQuiz(q.data)}
-              className="bg-white border-[3px] border-dark text-dark font-black w-full shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all py-3"
-            >
-              Start Practice <Play className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        ))
-      ) : (
-        <div className="col-span-full rounded-[28px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-12 text-center flex flex-col items-center">
-          <Brain className="h-10 w-10 text-dark/30 mb-4" />
-          <p className="text-sm font-bold text-dark/60 italic">No AI Study Hub challenges published yet by your tutors.</p>
-        </div>
-      )}
-    </div>
   );
 }

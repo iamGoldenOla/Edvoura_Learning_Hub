@@ -104,7 +104,7 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
 
   if (activeChallenge && !isFinished && gameState === 'playing' && currentWord) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <header className="flex flex-col items-center space-y-4">
           <div className="w-full flex justify-start">
             <button 
@@ -121,16 +121,16 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
             <Mic2 className="h-4 w-4" />
             {activeChallenge.theme}
           </div>
-          <h1 className="text-4xl font-black text-dark tracking-tight">{activeChallenge.title}</h1>
-          <p className="text-dark/60 font-semibold max-w-2xl mx-auto">{activeChallenge.instructions}</p>
+          <h1 className="text-center text-3xl font-black tracking-tight text-dark sm:text-4xl break-words">{activeChallenge.title}</h1>
+          <p className="mx-auto max-w-2xl text-center font-semibold text-dark/60">{activeChallenge.instructions}</p>
         </header>
 
-        <div className="bg-white border-[6px] border-dark rounded-[50px] p-10 shadow-[16px_16px_0px_#060E1C] space-y-10">
-          <div className="flex items-center justify-between gap-6">
-            <div className="px-6 py-2 bg-slate-100 border-[3px] border-dark rounded-2xl font-black text-dark">
+        <div className="space-y-6 rounded-[28px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:space-y-10 sm:rounded-[50px] sm:border-[6px] sm:p-8 md:p-10 sm:shadow-[16px_16px_0px_#060E1C]">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="rounded-2xl border-[3px] border-dark bg-slate-100 px-4 py-2 text-center font-black text-dark sm:px-6">
               Word {currentIndex + 1} of {activeChallenge.words.length}
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 sm:justify-end">
               {activeChallenge.words.map((_, index) => (
                 <div
                   key={index}
@@ -142,7 +142,7 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-8 py-8">
+          <div className="flex flex-col items-center gap-6 py-4 sm:gap-8 sm:py-8">
             <button
               type="button"
               onClick={() => speak(currentWord.word)}
@@ -165,13 +165,13 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
               onChange={(event) => setUserInput(event.target.value)}
               onKeyDown={(event) => event.key === 'Enter' && userInput.trim() && handleNext()}
               placeholder="Type the word here..."
-              className="w-full max-w-lg px-8 py-6 text-3xl font-black text-center border-[4px] border-dark rounded-[32px] focus:outline-none focus:ring-4 focus:ring-indigo-100 placeholder:text-slate-200"
+              className="w-full max-w-lg rounded-[24px] border-[4px] border-dark px-4 py-4 text-center text-2xl font-black placeholder:text-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-100 sm:rounded-[32px] sm:px-8 sm:py-6 sm:text-3xl"
             />
 
             <Button
               disabled={!userInput.trim()}
               onClick={handleNext}
-              className="px-10 py-4 bg-green-500 text-white border-[4px] border-dark rounded-2xl font-black uppercase text-sm tracking-widest shadow-[6px_6px_0px_#060E1C] disabled:opacity-50 disabled:shadow-none h-auto"
+              className="h-auto w-full rounded-2xl border-[4px] border-dark bg-green-500 px-6 py-4 text-sm font-black uppercase tracking-widest text-white shadow-[4px_4px_0px_#060E1C] disabled:opacity-50 disabled:shadow-none sm:w-auto sm:px-10 sm:shadow-[6px_6px_0px_#060E1C]"
             >
               Submit Word
             </Button>
@@ -183,21 +183,21 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
 
   if (activeChallenge && isFinished) {
     return (
-      <div className="space-y-8">
-        <div className="bg-white border-[6px] border-dark rounded-[60px] p-12 shadow-[16px_16px_0px_#060E1C] text-center">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="rounded-[28px] border-[4px] border-dark bg-white p-5 text-center shadow-[8px_8px_0px_#060E1C] sm:rounded-[60px] sm:border-[6px] sm:p-12 sm:shadow-[16px_16px_0px_#060E1C]">
           <div className="h-24 w-24 rounded-full bg-yellow border-[4px] border-dark flex items-center justify-center text-5xl mx-auto mb-6">
             🏆
           </div>
-          <h2 className="text-4xl font-black text-dark mb-2">Challenge Complete!</h2>
-          <p className="text-xl font-bold text-dark/60">
+          <h2 className="mb-2 text-3xl font-black text-dark sm:text-4xl">Challenge Complete!</h2>
+          <p className="text-lg font-bold text-dark/60 sm:text-xl">
             You spelled {score} out of {activeChallenge.words.length} words correctly.
           </p>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+          <div className="mt-8 grid grid-cols-1 gap-4 text-left sm:mt-12 md:grid-cols-2">
             {results.map((result, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-[32px] border-[4px] border-dark flex items-start justify-between gap-4 ${
+                className={`flex flex-col gap-4 rounded-[24px] border-[4px] border-dark p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:rounded-[32px] sm:p-6 ${
                   result.correct ? 'bg-green-50' : 'bg-red-50'
                 }`}
               >
@@ -221,10 +221,10 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
             ))}
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-8 flex flex-col items-stretch justify-center gap-4 sm:mt-12 sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               onClick={() => startChallenge(activeChallenge)}
-              className="inline-flex items-center gap-3 px-10 py-4 bg-dark text-white rounded-2xl font-black uppercase text-sm tracking-widest hover:scale-105 transition-all h-auto"
+              className="inline-flex h-auto items-center justify-center gap-3 rounded-2xl bg-dark px-6 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:scale-105 sm:px-10"
             >
               <RefreshCw className="h-5 w-5" /> Try Again
             </Button>
@@ -236,7 +236,7 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
                 setUserInput('');
                 setIsFinished(false);
               }}
-              className="inline-flex items-center gap-3 px-10 py-4 bg-white text-dark border-[3px] border-dark rounded-2xl font-black uppercase text-sm tracking-widest h-auto"
+              className="inline-flex h-auto items-center justify-center gap-3 rounded-2xl border-[3px] border-dark bg-white px-6 py-4 text-sm font-black uppercase tracking-widest text-dark sm:px-10"
             >
               Back to Challenges
             </Button>
@@ -247,7 +247,7 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <header className="flex flex-col items-center space-y-4">
         <div className="w-full flex justify-start">
           <Link href="/dash/student">
@@ -260,20 +260,20 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
           <Mic2 className="h-4 w-4" />
           Tutor-Published Spelling Bee
         </div>
-        <h1 className="text-5xl font-black text-dark tracking-tight">Spelling Bee Arena</h1>
-        <p className="text-dark/60 font-semibold italic">
+        <h1 className="text-center text-3xl font-black tracking-tight text-dark sm:text-5xl">Spelling Bee Arena</h1>
+        <p className="text-center font-semibold italic text-dark/60">
           Listen, think, and spell your way through tutor-approved challenges.
         </p>
       </header>
 
       {challenges.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
           {challenges.map((challenge) => (
             <div
               key={challenge.id}
-              className="rounded-[32px] border-[4px] border-dark bg-white p-6 shadow-[10px_10px_0px_#060E1C] flex flex-col gap-5"
+              className="flex flex-col gap-5 rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[32px] sm:p-6 sm:shadow-[10px_10px_0px_#060E1C]"
             >
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
                   <Mic2 className="h-3 w-3" />
                   {challenge.theme}
@@ -284,7 +284,7 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
               </div>
 
               <div className="space-y-3">
-                <h2 className="text-2xl font-black text-dark tracking-tight">{challenge.title}</h2>
+                <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl break-words">{challenge.title}</h2>
                 <p className="text-sm font-bold text-dark/70 leading-relaxed">{challenge.instructions}</p>
               </div>
 
@@ -308,7 +308,7 @@ export function SpellingBeeClient({ challenges }: { challenges: SpellingBeeChall
           ))}
         </div>
       ) : (
-        <div className="bg-white border-[6px] border-dark rounded-[60px] p-20 shadow-[16px_16px_0px_#060E1C] flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center justify-center rounded-[28px] border-[4px] border-dark bg-white p-8 text-center shadow-[8px_8px_0px_#060E1C] sm:rounded-[60px] sm:border-[6px] sm:p-20 sm:shadow-[16px_16px_0px_#060E1C]">
           <div className="h-32 w-32 rounded-full bg-yellow border-[4px] border-dark flex items-center justify-center text-6xl mb-8">
             🐝
           </div>
