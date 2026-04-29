@@ -12,6 +12,7 @@ import {
 } from "./antiRepetitionService";
 import { fetchPreviousItems, saveAiDraft } from "./aiContentRepository";
 import { getLessonNoteBlueprint, normalizeSubjectName } from "./lessonNoteBlueprints";
+import { buildLocalLessonNote, buildLocalLessonPlan } from "./localLessonComposer";
 
 export type GenerateEdvouraInput = {
   userRole: "tutor" | "super_admin" | "admin";
@@ -500,6 +501,10 @@ function shouldQualityCheckLesson(taskType: EdvouraTaskType) {
   ].includes(taskType);
 }
 
+function shouldUseLocalBlueprintEngine(taskType: EdvouraTaskType) {
+  return ["GENERATE_LESSON", "GENERATE_LESSON_NOTE", "GENERATE_LESSON_PLAN"].includes(taskType);
+}
+
 export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   validateRole(input.userRole);
   const normalizedSubject = normalizeSubjectName(input.subject);
@@ -531,58 +536,68 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
 
   let parsed: unknown;
   let generatedText = "";
+
+  if (shouldUseLocalBlueprintEngine(input.taskType)) {
+    parsed =
+      input.taskType === "GENERATE_LESSON_PLAN"
+        ? buildLocalLessonPlan({ ...input, subject: normalizedSubject })
+        : buildLocalLessonNote({ ...input, subject: normalizedSubject });
+    providerUsed = "local_blueprint_engine";
+    modelUsed = "deterministic_blueprint_v1";
+  } else {
   
-  try {
-    const response = await generateWithPuterAI(prompt, { model });
-    generatedText = response.text;
-    
     try {
-      parsed = parseAndValidateAIResponse(generatedText, input.taskType);
-      if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(parsed)) {
-        throw new Error("Generated lesson note was too generic for student learning.");
+      const response = await generateWithPuterAI(prompt, { model });
+      generatedText = response.text;
+      
+      try {
+        parsed = parseAndValidateAIResponse(generatedText, input.taskType);
+        if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(parsed)) {
+          throw new Error("Generated lesson note was too generic for student learning.");
+        }
+      } catch (error) {
+        console.warn("First validation failed, attempting repair. Error:", error);
+        const repairPrompt = buildRepairPrompt(prompt, input.taskType, error);
+        try {
+          const repairResponse = await generateWithPuterAI(repairPrompt, { model });
+          parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
+          if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(parsed)) {
+            throw new Error("Repaired lesson note was still too generic for student learning.");
+          }
+        } catch {
+          console.error("AI Repair failed. Original text from Puter:", generatedText);
+          throw new Error(
+            `AI generated content could not be parsed into the required format. The AI responded with: ${generatedText.substring(0, 100)}...`
+          );
+        }
       }
     } catch (error) {
-      console.warn("First validation failed, attempting repair. Error:", error);
-      const repairPrompt = buildRepairPrompt(prompt, input.taskType, error);
+      console.warn("Puter AI generation failed, falling back to server API...", error);
       try {
-        const repairResponse = await generateWithPuterAI(repairPrompt, { model });
-        parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
-        if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(parsed)) {
-          throw new Error("Repaired lesson note was still too generic for student learning.");
-        }
-      } catch {
-        console.error("AI Repair failed. Original text from Puter:", generatedText);
-        throw new Error(
-          `AI generated content could not be parsed into the required format. The AI responded with: ${generatedText.substring(0, 100)}...`
-        );
-      }
-    }
-  } catch (error) {
-    console.warn("Puter AI generation failed, falling back to server API...", error);
-    try {
-      const serverResult = await generateViaServerFallback(input);
-      if (serverResult) {
-        if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(serverResult)) {
-          parsed = buildEmergencyCanonicalContent(input);
-          providerUsed = "emergency_template";
-          modelUsed = "dashboard_template";
+        const serverResult = await generateViaServerFallback(input);
+        if (serverResult) {
+          if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(serverResult)) {
+            parsed = buildEmergencyCanonicalContent(input);
+            providerUsed = "emergency_template";
+            modelUsed = "dashboard_template";
+          } else {
+            parsed = serverResult;
+            providerUsed = "server_api_fallback";
+            modelUsed = "gemini-1.5-pro-or-flash";
+          }
         } else {
-          parsed = serverResult;
-          providerUsed = "server_api_fallback";
-          modelUsed = "gemini-1.5-pro-or-flash";
+          throw new Error("Server fallback not supported for this task type.");
         }
-      } else {
-        throw new Error("Server fallback not supported for this task type.");
+      } catch (fallbackError) {
+        const emergencyContent = buildEmergencyCanonicalContent(input);
+        if (!emergencyContent) {
+          const errMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+          throw new Error(`AI generation failed on both Puter and Server API. Reason: ${errMessage}`);
+        }
+        parsed = emergencyContent;
+        providerUsed = "emergency_template";
+        modelUsed = "dashboard_template";
       }
-    } catch (fallbackError) {
-      const emergencyContent = buildEmergencyCanonicalContent(input);
-      if (!emergencyContent) {
-        const errMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-        throw new Error(`AI generation failed on both Puter and Server API. Reason: ${errMessage}`);
-      }
-      parsed = emergencyContent;
-      providerUsed = "emergency_template";
-      modelUsed = "dashboard_template";
     }
   }
 

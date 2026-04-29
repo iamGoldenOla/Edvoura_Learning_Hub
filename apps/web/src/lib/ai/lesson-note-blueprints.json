@@ -36,6 +36,13 @@
       "topic_overrides": {
         "air": {
           "hook": "Learners already feel air when the wind blows, when they fan themselves, or when they blow up a balloon.",
+          "summary": "In this lesson, learners discover that air is all around them even though they cannot see it. They learn what air is, how we know it is present, and why it is important for people, animals, plants, and daily life.",
+          "explanation_paragraphs": [
+            "Air is the invisible substance all around us. We cannot see air with our eyes, but it is everywhere. We feel it when the wind blows, when a fan cools us, and when we breathe in and out. Air may be invisible, but it is real and very important.",
+            "One way we know air exists is that it occupies space. When you blow air into a balloon, the balloon becomes bigger because the air fills it. When you pump air into a bicycle tyre or a football, it becomes firm. This shows that air takes up space.",
+            "Moving air is called wind. Wind can move leaves, fly kites, dry clothes, and push boats with sails. Air is also needed for breathing. Human beings and animals need air to stay alive, and plants also need air to grow well.",
+            "Air is useful in many parts of everyday life. It helps things burn, helps tyres carry vehicles properly, and helps us keep cool when it moves. So, even though we cannot see air, we can feel it, use it, and observe what it does."
+          ],
           "must_cover": [
             "air is all around us even though we cannot see it",
             "air occupies space",
@@ -75,6 +82,13 @@
       "topic_overrides": {
         "parts of speech": {
           "hook": "Every word in a sentence has a job to do.",
+          "summary": "This lesson helps learners understand that words do different jobs in a sentence. They learn the main parts of speech in simple language and see how each one helps us speak and write correctly.",
+          "explanation_paragraphs": [
+            "Parts of speech are the different jobs that words do in a sentence. Just as people in a school have different duties, words also have different duties when we speak or write. Some words name people, places, animals, or things. Some words show actions. Some words describe, while others join words or show feeling.",
+            "A noun is a naming word, such as boy, school, or mango. A pronoun takes the place of a noun, such as he, she, or they. A verb shows action or state of being, such as run, eat, is, or are. An adjective describes a noun, such as tall boy or red bag. An adverb describes how an action happens, such as quickly or softly.",
+            "Prepositions show position or relationship, such as in, on, under, and beside. Conjunctions join words or sentences, such as and, but, and because. Interjections show sudden feelings, such as wow!, oh!, or hurray! These parts of speech help us build correct and meaningful sentences.",
+            "Parts of speech are important because they help us speak and write correctly. When we understand the job a word is doing, it becomes easier to form good sentences, read with understanding, and express our ideas clearly."
+          ],
           "must_cover": [
             "meaning of parts of speech",
             "the eight parts of speech in simple language",
@@ -93,6 +107,52 @@
           "misconceptions": [
             "the same word can do different jobs in different sentences",
             "small words like prepositions and conjunctions are still important"
+          ]
+        }
+      }
+    },
+    "Social Studies": {
+      "display_name": "Social Studies",
+      "must_cover": [
+        "meaning of the topic in relation to community life",
+        "main types, examples, or categories",
+        "importance to people, work, movement, safety, or cooperation",
+        "real-life examples from home, school, roads, markets, and the community"
+      ],
+      "resource_search_terms": [
+        "social studies for primary school",
+        "community life pictures for children"
+      ],
+      "topic_overrides": {
+        "transportation": {
+          "hook": "Every day, people and goods move from one place to another.",
+          "summary": "In this lesson, learners understand transportation as the movement of people and goods from one place to another. They learn the main types of transportation and why transportation is important in family life, school life, and the community.",
+          "explanation_paragraphs": [
+            "Transportation means moving people, animals, or goods from one place to another. When a child goes to school by bus, a farmer carries food to the market, or a car takes a sick person to the hospital, transportation is taking place.",
+            "There are different types of transportation. Land transportation includes cars, buses, bicycles, motorcycles, lorries, and trains. Water transportation includes canoes, boats, ferries, and ships. Air transportation includes aeroplanes and helicopters. Each type of transportation helps people move in different places.",
+            "Transportation is important because it helps people travel for school, work, trade, health care, and family visits. It helps farmers take food to the market and helps families buy what they need. Without transportation, movement would be slow and many community activities would become difficult.",
+            "Good transportation also saves time and energy. However, people must use transportation safely. We should cross roads carefully, obey traffic rules, enter vehicles properly, and respect transport workers. Transportation is part of our daily life and helps communities stay connected."
+          ],
+          "must_cover": [
+            "transportation means movement of people and goods from one place to another",
+            "the three main types are land, water, and air transportation",
+            "examples such as bus, bicycle, canoe, ship, aeroplane, and train",
+            "importance of transportation for school, work, market, hospital, and family life",
+            "basic transport safety habits"
+          ],
+          "worked_examples": [
+            "Explain why a school bus is an example of land transportation and what work it does.",
+            "Compare a canoe and an aeroplane by explaining where each one moves and why people use it."
+          ],
+          "real_world_examples": [
+            "children going to school by bus, bicycle, or tricycle",
+            "farm produce taken to the market in a lorry or truck",
+            "people crossing water in a canoe or ferry",
+            "families travelling to another state by bus or aeroplane"
+          ],
+          "misconceptions": [
+            "transportation is not only about cars; it includes water and air travel too",
+            "walking is movement, but transportation usually refers to means used to move people or goods over distance"
           ]
         }
       }
