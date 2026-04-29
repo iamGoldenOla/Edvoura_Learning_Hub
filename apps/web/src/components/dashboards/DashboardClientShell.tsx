@@ -178,7 +178,7 @@ export default function DashboardClientShell({
           />
         )}
 
-        <aside className={`sticky top-0 z-50 flex h-screen w-72 flex-col bg-dark p-6 transition-transform lg:translate-x-0 lg:flex shadow-[4px_0_0_#060E1C] ${
+        <aside className={`sticky top-0 z-50 flex h-screen w-[86vw] max-w-[320px] flex-col bg-dark p-5 transition-transform lg:w-72 lg:translate-x-0 lg:flex lg:p-6 shadow-[4px_0_0_#060E1C] ${
           isMobileMenuOpen ? 'fixed translate-x-0' : 'fixed -translate-x-full lg:sticky'
         }`}>
           <div className="mb-8 flex items-center gap-4 rounded-2xl border-[3px] border-dark bg-yellow px-4 py-4 shadow-[4px_4px_0px_#ffffff]">
@@ -219,7 +219,9 @@ export default function DashboardClientShell({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black text-dark">{viewerName}</p>
-                <p className="truncate text-[10px] font-bold text-dark/60 uppercase tracking-widest">{effectiveRole}</p>
+                <p className="truncate text-[10px] font-bold text-dark/60 uppercase tracking-widest">
+                  {viewerSecondaryLabel || effectiveRole}
+                </p>
               </div>
             </div>
             <LogoutButton variant="brutalist" />
@@ -260,14 +262,14 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-7 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative">
+          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-7 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showGrade13BottomNav ? 'pb-32' : ''}`}>
             <div className="mx-auto w-full max-w-[1760px] min-w-0">{children}</div>
           </main>
         </div>
 
         {showGrade13BottomNav ? (
-          <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-1 py-2 backdrop-blur lg:hidden overflow-x-auto hide-scrollbar">
-            <div className="mx-auto flex min-w-max items-center justify-between gap-1 sm:justify-center sm:gap-2 px-1">
+          <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur lg:hidden">
+            <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
               <BottomNavItem href="/dash/student" label="Home" icon={Home} active={pathname === '/dash/student'} />
               <BottomNavItem href="/dash/student/classes" label="Lessons" icon={BookOpen} active={pathname === '/dash/student/classes'} />
               <BottomNavItem href="/dash/student/subjects" label="Subjects" icon={BookMarked} active={pathname === '/dash/student/subjects'} />
@@ -299,9 +301,9 @@ function StudentBandSwitcher() {
 }
 
 const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
-  <Link href={href} className={`flex flex-col items-center gap-1 rounded-lg px-1 py-1.5 text-[10px] font-semibold ${active ? 'bg-blue-100 text-blue-700' : 'text-slate-600'}`}>
+  <Link href={href} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[10px] font-semibold ${active ? 'bg-blue-100 text-blue-700' : 'text-slate-600'}`}>
     <Icon className="h-4 w-4" />
-    <span>{label}</span>
+    <span className="truncate">{label}</span>
   </Link>
 );
 

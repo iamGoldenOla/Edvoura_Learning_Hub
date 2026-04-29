@@ -12,7 +12,7 @@ export default async function ParentDashboardPage() {
 
   const childSummaries =
     childIds.length > 0
-      ? await buildChildSummaries(supabase, childIds)
+      ? await buildChildSummaries(supabase, viewer.currentUser.userId, childIds)
       : [];
 
   return (
@@ -25,7 +25,20 @@ export default async function ParentDashboardPage() {
   );
 }
 
-async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createClient>>, childIds: string[]) {
+type ChildAiPracticeScore = {
+  id: string;
+  subject_name: string;
+  topic: string;
+  score: number;
+  total_questions: number;
+  created_at: string;
+};
+
+async function buildChildSummaries(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parentUserId: string,
+  childIds: string[],
+) {
   const [{ data: enrollmentsData = [] }, { data: notificationsData = [] }, { data: snapshotsData = [] }, { data: aiScoresData = [] }] =
     await Promise.all([
       supabase
@@ -35,8 +48,8 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
         .eq('status', 'active'),
       supabase
         .from('notifications')
-        .select('id, recipient_user_id, title, body, status, created_at')
-        .in('recipient_user_id', childIds)
+        .select('id, recipient_user_id, title, body, status, created_at, data')
+        .eq('recipient_user_id', parentUserId)
         .eq('status', 'unread')
         .order('created_at', { ascending: false })
         .limit(30),
@@ -104,7 +117,7 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
       gradedSubmissions: number;
       averageScore: number | null;
       snapshotCount: number;
-      aiPracticeScores: any[];
+      aiPracticeScores: ChildAiPracticeScore[];
     }
   >();
 
@@ -189,13 +202,26 @@ async function buildChildSummaries(supabase: Awaited<ReturnType<typeof createCli
   }
 
   for (const notification of notificationsData ?? []) {
-    const summary = summaryByChildId.get(notification.recipient_user_id);
-    if (!summary || summary.alerts.length >= 3) continue;
-    summary.alerts.push({
-      id: notification.id,
-      title: notification.title,
-      detail: notification.body,
-    });
+    const payload =
+      notification.data && typeof notification.data === 'object' && !Array.isArray(notification.data)
+        ? (notification.data as { childUserId?: string; studentUserIds?: string[] })
+        : {};
+
+    const targetChildIds = Array.isArray(payload.studentUserIds)
+      ? payload.studentUserIds.filter((entry): entry is string => typeof entry === 'string')
+      : typeof payload.childUserId === 'string'
+        ? [payload.childUserId]
+        : childIds;
+
+    for (const childId of targetChildIds) {
+      const summary = summaryByChildId.get(childId);
+      if (!summary || summary.alerts.length >= 3) continue;
+      summary.alerts.push({
+        id: `${notification.id}-${childId}`,
+        title: notification.title,
+        detail: notification.body,
+      });
+    }
   }
 
   for (const childId of childIds) {

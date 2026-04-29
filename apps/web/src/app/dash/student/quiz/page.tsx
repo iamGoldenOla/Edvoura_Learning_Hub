@@ -1,8 +1,9 @@
 import { createClient } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
-import { requireAppViewer } from '@/lib/app-context';
+import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { Target, Clock, ArrowRight } from 'lucide-react';
 import { PracticeQuizClient } from './PracticeQuizClient';
+import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,9 +13,18 @@ type AiQuizPayload = {
   description?: string;
 };
 
+type AiQuizRow = {
+  id: string;
+  subject: string | null;
+  grade: string | null;
+  content_json: Record<string, unknown> | null;
+  created_at: string;
+};
+
 export default async function QuizPage() {
-  await requireAppViewer();
+  const viewer = await requireAppViewer();
   const supabase = await createClient();
+  const dashboard = await getStudentDashboardData(viewer.accessToken).catch(() => null);
 
   // 1. Fetch manual quizzes
   const { data: quizzes } = await supabase
@@ -25,13 +35,22 @@ export default async function QuizPage() {
   // 2. Fetch published AI quizzes
   const { data: aiQuizzes } = await supabaseAdmin
     .from('ai_generated_content')
-    .select('id, content_json, created_at')
+    .select('id, subject, grade, content_json, created_at')
     .in('task_type', ['GENERATE_QUIZ'])
     .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false });
 
   // Map AI quizzes to a common format
-  const normalizedAiQuizzes = (aiQuizzes || []).map(q => ({
+  const filteredAiQuizzes = filterPublishedContentForStudentAudience<AiQuizRow>(
+    (aiQuizzes ?? []) as AiQuizRow[],
+    {
+    gradeLevelName: dashboard?.profile.gradeLevelName ?? '',
+    gradeLevelCode: dashboard?.profile.gradeLevelCode ?? '',
+    subjectNames: dashboard?.enrollments.map((entry) => entry.subjectName) ?? [],
+    },
+  );
+
+  const normalizedAiQuizzes = filteredAiQuizzes.map(q => ({
     id: q.id,
     title: ((q.content_json as AiQuizPayload | null)?.title) || 'AI Practice Challenge',
     instructions: ((q.content_json as AiQuizPayload | null)?.description) || 'Master this topic with Edvoura AI.',

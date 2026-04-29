@@ -119,20 +119,20 @@ export default function ParentDashboardClient({
   const latestInvoice = invoices[0] ?? null;
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
       
       {/* Header Section */}
       <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             <div className="space-y-3 min-w-0">
               <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
                 PARENT PORTAL
               </span>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 Welcome, {parentName}
               </h1>
-              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl break-words">
                 Track each child with confidence, visibility, and control.
               </p>
             </div>

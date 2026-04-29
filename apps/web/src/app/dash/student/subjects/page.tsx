@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { requireAppViewer, getStudentDashboardData } from '@/lib/app-context';
 import StudentSubjectsClient from './components/StudentSubjectsClient';
+import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -23,7 +24,13 @@ export default async function SubjectsPage() {
     .order('created_at', { ascending: false });
 
   // Map and group them by subject
-  const contentItems = (publishedContent ?? []).map((note) => ({
+  const filteredContent = filterPublishedContentForStudentAudience(publishedContent ?? [], {
+    gradeLevelName: dashboard?.profile.gradeLevelName ?? '',
+    gradeLevelCode: dashboard?.profile.gradeLevelCode ?? '',
+    subjectNames: dashboard?.enrollments.map((entry) => entry.subjectName) ?? [],
+  });
+
+  const contentItems = filteredContent.map((note) => ({
     id: note.id,
     title: note.title ?? `${note.subject}: ${note.topic}`,
     subject: note.subject ?? 'General Studies',

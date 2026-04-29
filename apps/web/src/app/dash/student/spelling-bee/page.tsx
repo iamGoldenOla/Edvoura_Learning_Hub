@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/utils/supabase/admin';
-import { requireAppViewer } from '@/lib/app-context';
+import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { SpellingBeeClient } from './SpellingBeeClient';
+import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -52,16 +53,26 @@ type StudentSpellingBeeChallenge = {
 };
 
 export default async function SpellingBeePage() {
-  await requireAppViewer();
+  const viewer = await requireAppViewer();
+  const dashboard = await getStudentDashboardData(viewer.accessToken).catch(() => null);
 
   const { data } = await supabaseAdmin
     .from('ai_generated_content')
-    .select('id, content_json')
+    .select('id, subject, grade, content_json')
     .in('task_type', ['GENERATE_SPELLING'])
     .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false });
 
-  const challenges: StudentSpellingBeeChallenge[] = ((data ?? []) as Array<{ id: string; content_json: Record<string, unknown> | null }>)
+  const filteredChallenges = filterPublishedContentForStudentAudience(
+    (data ?? []) as Array<{ id: string; subject?: string | null; grade?: string | null; content_json: Record<string, unknown> | null }>,
+    {
+      gradeLevelName: dashboard?.profile.gradeLevelName ?? '',
+      gradeLevelCode: dashboard?.profile.gradeLevelCode ?? '',
+      subjectNames: dashboard?.enrollments.map((entry) => entry.subjectName) ?? [],
+    },
+  );
+
+  const challenges: StudentSpellingBeeChallenge[] = filteredChallenges
     .map((entry) => {
       const payload = entry.content_json;
       if (!payload || typeof payload !== 'object') return null;

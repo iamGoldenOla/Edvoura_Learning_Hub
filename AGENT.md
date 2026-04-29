@@ -6,7 +6,43 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-26)
+## Last Session Handoff (2026-04-29)
+
+### Current Status: Cross-Dashboard Delivery Contract + Mobile Shell Hardening (2026-04-29)
+
+- Dashboard publishing and review side effects are now being consolidated around a shared interaction contract instead of scattered route-specific behavior.
+- New shared delivery helpers now live in `apps/web/src/lib/dashboard/`:
+  - `distribution.ts`
+    - centralizes AI workflow notifications to super admins, tutors, and parents
+    - centralizes AI publish fan-out into student-facing class/event delivery
+    - creates in-app `notifications` plus queued `notification_deliveries` rows
+  - `studentAudience.ts`
+    - filters published AI content by the learner's actual grade and enrolled subjects before rendering it on student pages
+- AI workflow route updates:
+  - `POST /api/ai/dashboard/content`
+    - `SUBMIT_FOR_REVIEW` now notifies super admins
+    - `APPROVE`, `REJECT`, and `REQUEST_CHANGES` now notify the generating tutor
+    - `PUBLISH_DIRECTLY` and `PUBLISH` now use the shared publish-and-distribute helper so class creation, enrollment sync, parent notifications, and student delivery stay aligned
+  - `POST /api/ai/publish`
+    - now delegates to the same shared publish-and-distribute helper instead of maintaining a separate publish implementation
+- Tutor builder publication flow improvements:
+  - manual quiz, spelling, and resource publishing now also notifies parents through the same dashboard notification pipeline
+- Student visibility hardening:
+  - `/dash/student/subjects`
+  - `/dash/student/notes`
+  - `/dash/student/quiz`
+  - `/dash/student/spelling-bee`
+  now filter published AI content to the student's grade and enrolled subject audience instead of exposing all globally published AI rows
+- Parent dashboard alert wiring fix:
+  - parent notifications are parent-recipient notifications, not child-recipient notifications
+  - parent summary alerts now read the correct notification target and map alerts back onto the relevant linked child records
+- Shared mobile-shell fixes started:
+  - mobile sidebar width is constrained more safely
+  - Grade 1-3 bottom navigation now uses a wrapped grid instead of a width-forcing row
+  - main dashboard content adds extra bottom padding when that mobile nav is active
+- Important operating rule going forward:
+  - treat cross-dashboard delivery as a first-class backend contract
+  - do not add new publish/review surfaces that bypass `apps/web/src/lib/dashboard/distribution.ts`
 
 ### Current Status: Puter Dashboard AI Workflow (2026-04-27)
 

@@ -26,7 +26,7 @@ export default async function ParentNotificationsPage() {
       const { data } = await supabase
         .from('notifications')
         .select('id, kind, title, body, status, created_at')
-        .eq('user_id', session.user.id)
+        .eq('recipient_user_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(20);
       notifications = (data ?? []).map((n) => ({
@@ -43,7 +43,7 @@ export default async function ParentNotificationsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 border-b-[4px] border-dark bg-rose-100">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">

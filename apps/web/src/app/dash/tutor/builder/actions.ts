@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { notifyParentsOfClassroomPublication } from '@/lib/dashboard/distribution';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -132,6 +133,18 @@ export async function createQuizOrResource(formData: FormData) {
       .single();
 
     if (error) throw new Error(error.message);
+
+    await notifyParentsOfClassroomPublication({
+      actorUserId: tutorId,
+      classId: tutorClass!.id,
+      title: 'New quiz published',
+      body: `${title.trim()} is now available for your child to complete.`,
+      data: {
+        route: '/dash/student/quiz',
+        quizTitle: title.trim(),
+      },
+    });
+
     return { success: true, id: data.id };
   } else if (type === 'spelling-bee') {
     // Create an actual assignment so it shows up in "Home Work"
@@ -165,6 +178,17 @@ export async function createQuizOrResource(formData: FormData) {
       }
     });
 
+    await notifyParentsOfClassroomPublication({
+      actorUserId: tutorId,
+      classId: tutorClass!.id,
+      title: 'New spelling challenge published',
+      body: `A new spelling challenge, Spelling Bee: ${title.trim()}, is now available on your child dashboard.`,
+      data: {
+        route: '/dash/student/spelling-bee',
+        assignmentTitle: `Spelling Bee: ${title.trim()}`,
+      },
+    });
+
     return { success: true, id: data.id };
   } else if (type === 'resource') {
     // Resources are primarily events, but if they have files, they need a backing assignment
@@ -187,7 +211,7 @@ export async function createQuizOrResource(formData: FormData) {
 
     if (assignError) throw new Error(assignError.message);
 
-    const { data, error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('learning_activity_events')
       .insert({
         event_type: 'lesson_resource_uploaded',
@@ -198,11 +222,21 @@ export async function createQuizOrResource(formData: FormData) {
           title: title.trim(),
           description: description?.trim() || null
         }
-      })
-      .select('id')
-      .single();
+      });
 
     if (error) throw new Error(error.message);
+
+    await notifyParentsOfClassroomPublication({
+      actorUserId: tutorId,
+      classId: tutorClass!.id,
+      title: 'New lesson resource published',
+      body: `${title.trim()} is now available on your child dashboard.`,
+      data: {
+        route: '/dash/student/library',
+        resourceTitle: title.trim(),
+      },
+    });
+
     // Return assignment ID so the frontend can attach files to it
     return { success: true, id: assignment.id };
   }

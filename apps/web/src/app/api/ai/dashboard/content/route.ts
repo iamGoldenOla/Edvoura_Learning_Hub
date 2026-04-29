@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { EdvouraTaskType } from "@/lib/ai/edvouraPromptBuilder";
 import { normalizeSubjectName } from "@/lib/ai/lessonNoteBlueprints";
+import {
+  notifyAiWorkflowEvent,
+  publishAiContentAndDistribute,
+} from "@/lib/dashboard/distribution";
 
 type AllowedRole = "tutor" | "admin" | "super_admin";
 
@@ -212,6 +216,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: updateError?.message || "Failed to submit review." }, { status: 500 });
     }
 
+    await notifyAiWorkflowEvent({
+      event: "SUBMITTED_FOR_REVIEW",
+      contentId: body.contentId,
+      actorUserId: user.id,
+    });
+
     return NextResponse.json({ record: updated });
   }
 
@@ -250,18 +260,18 @@ export async function POST(request: NextRequest) {
       return forbidden();
     }
 
-    const { data: updated, error: updateError } = await supabase
-      .from("ai_generated_content")
-      .update({
-        status: "PUBLISHED",
-        published_at: new Date().toISOString(),
-      })
-      .eq("id", body.contentId)
-      .select("id,status")
-      .single();
-
-    if (updateError || !updated) return NextResponse.json({ error: "Failed to publish." }, { status: 500 });
-    return NextResponse.json({ record: updated });
+    try {
+      const result = await publishAiContentAndDistribute(body.contentId, {
+        actorUserId: user.id,
+        allowedStatuses: ["DRAFT", "PENDING_REVIEW", "APPROVED"],
+      });
+      return NextResponse.json({ record: result.record });
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to publish." },
+        { status: 500 },
+      );
+    }
   }
 
   if (!["APPROVE", "REJECT", "REQUEST_CHANGES", "PUBLISH"].includes(action)) {
@@ -301,8 +311,21 @@ export async function POST(request: NextRequest) {
     if (currentStatus !== "APPROVED") {
       return NextResponse.json({ error: "Only APPROVED content can be published." }, { status: 409 });
     }
-    nextStatus = "PUBLISHED";
-    updatePayload.published_at = now;
+    try {
+      const result = await publishAiContentAndDistribute(body.contentId, {
+        actorUserId: user.id,
+        allowedStatuses: ["APPROVED"],
+      });
+      return NextResponse.json({ record: result.record });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to publish approved content.",
+        },
+        { status: 500 },
+      );
+    }
   }
 
   updatePayload.status = nextStatus;
@@ -316,6 +339,21 @@ export async function POST(request: NextRequest) {
 
   if (updateError || !updated) {
     return NextResponse.json({ error: updateError?.message || "Failed to update content status." }, { status: 500 });
+  }
+
+  if (action === "APPROVE" || action === "REJECT" || action === "REQUEST_CHANGES") {
+    const eventMap = {
+      APPROVE: "APPROVED",
+      REJECT: "REJECTED",
+      REQUEST_CHANGES: "REQUEST_CHANGES",
+    } as const;
+
+    await notifyAiWorkflowEvent({
+      event: eventMap[action as keyof typeof eventMap],
+      contentId: body.contentId,
+      actorUserId: user.id,
+      reviewNote,
+    });
   }
 
   return NextResponse.json({ record: updated });

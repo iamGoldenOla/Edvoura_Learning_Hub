@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import StudentNotesWorkspace from './StudentNotesWorkspace';
+import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -50,7 +51,13 @@ export default async function NotesPage() {
     .order('created_at', { ascending: false })
     .limit(20);
 
-  const aiLessonNotes = (publishedNotes ?? []).map((note) => ({
+  const filteredNotes = filterPublishedContentForStudentAudience(publishedNotes ?? [], {
+    gradeLevelName: dashboard.profile.gradeLevelName,
+    gradeLevelCode: dashboard.profile.gradeLevelCode,
+    subjectNames: dashboard.enrollments.map((entry) => entry.subjectName),
+  });
+
+  const aiLessonNotes = filteredNotes.map((note) => ({
     id: note.id,
     title: note.title ?? `${note.subject}: ${note.topic}`,
     subject: note.subject ?? 'General',
