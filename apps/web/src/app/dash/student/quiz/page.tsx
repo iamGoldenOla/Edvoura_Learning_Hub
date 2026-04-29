@@ -16,18 +16,18 @@ export default async function QuizPage() {
   // 2. Fetch published AI quizzes
   const { data: aiQuizzes } = await supabase
     .from('ai_generated_content')
-    .select('id, raw_output, created_at')
-    .eq('content_type', 'quiz')
+    .select('id, content_json, created_at')
+    .in('task_type', ['GENERATE_QUIZ'])
     .in('status', ['published', 'PUBLISHED'])
     .order('created_at', { ascending: false });
 
   // Map AI quizzes to a common format
   const normalizedAiQuizzes = (aiQuizzes || []).map(q => ({
     id: q.id,
-    title: (q.raw_output as any).title || 'AI Practice Challenge',
-    instructions: (q.raw_output as any).description || 'Master this topic with Edvoura AI.',
+    title: (q.content_json as any)?.title || 'AI Practice Challenge',
+    instructions: (q.content_json as any)?.description || 'Master this topic with Edvoura AI.',
     isAi: true,
-    data: q.raw_output
+    data: q.content_json
   }));
 
   return (

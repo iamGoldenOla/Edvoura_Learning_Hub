@@ -12,19 +12,19 @@ export default async function SpellingBeePage() {
 
   const { data } = await supabase
     .from('ai_generated_content')
-    .select('id, raw_output')
-    .eq('content_type', 'spelling_bee')
+    .select('id, content_json')
+    .in('task_type', ['GENERATE_SPELLING'])
     .in('status', ['published', 'PUBLISHED'])
     .order('created_at', { ascending: false });
 
-  const challenges = ((data ?? []) as ChallengeRow[])
-    .filter((entry) => entry.raw_output && Array.isArray(entry.raw_output.words))
+  const challenges = ((data ?? []) as any[])
+    .filter((entry) => entry.content_json && Array.isArray(entry.content_json.words))
     .map((entry) => ({
       id: entry.id,
-      title: entry.raw_output!.title,
-      instructions: entry.raw_output!.instructions,
-      theme: entry.raw_output!.theme,
-      words: entry.raw_output!.words,
+      title: entry.content_json!.title,
+      instructions: entry.content_json!.instructions,
+      theme: entry.content_json!.theme,
+      words: entry.content_json!.words,
     }));
 
   return <SpellingBeeClient challenges={challenges} />;
