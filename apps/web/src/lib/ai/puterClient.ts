@@ -110,21 +110,38 @@ export async function generateWithPuterAI(
 ) {
   const puter = await ensurePuterReady();
 
-  try {
-    const response = await puter.ai!.chat!(prompt, {
-      model: options?.model || DEFAULT_EDVOURA_AI_MODEL,
-      stream: options?.stream || false,
-    });
+  const FALLBACK_MODELS = [
+    DEFAULT_EDVOURA_AI_MODEL,
+    "gemini-3.1-pro-preview",
+    "meta-llama/llama-4-maverick",
+    "deepseek/deepseek-v4-pro",
+    "claude-sonnet-4-6",
+    "gpt-5-nano",
+  ];
 
-    return {
-      raw: response,
-      text: readPuterText(response),
-    };
-  } catch (error) {
-    console.error("Puter AI generation failed:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Puter AI Error: ${errorMessage}`);
+  const modelsToTry = options?.model ? [options.model] : [...FALLBACK_MODELS];
+  let lastError: unknown;
+
+  for (const currentModel of modelsToTry) {
+    try {
+      const response = await puter.ai!.chat!(prompt, {
+        model: currentModel,
+        stream: options?.stream || false,
+      });
+
+      return {
+        raw: response,
+        text: readPuterText(response),
+      };
+    } catch (error) {
+      console.warn(`Puter AI generation failed for model ${currentModel}:`, error);
+      lastError = error;
+    }
   }
+
+  console.error("All Puter AI fallback models failed.");
+  const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`Puter AI Error: ${errorMessage}`);
 }
 
 export async function streamWithPuterAI(
@@ -138,6 +155,7 @@ export async function streamWithPuterAI(
     model,
     stream: true,
   })) as AsyncIterable<{ text?: string }>;
+
 
   for await (const part of response) {
     if (part?.text) {

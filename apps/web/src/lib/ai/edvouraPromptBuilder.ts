@@ -116,7 +116,7 @@ QUALITY RULES:
 - "learning_checks" are quick self-assessment prompts the student can use to test their own understanding.
 - Recommend at least 2 YouTube search queries and 2 image search queries relevant to the topic and grade level.
 
-Return JSON:
+You MUST return your response as raw, valid JSON. Do NOT include markdown code blocks (e.g. \`\`\`json). Do NOT include any introductory or concluding text. ONLY output the JSON object.
 {
   "title": "clear descriptive lesson title",
   "lesson_summary": "2-3 sentence overview of what the student will learn (min 80 chars)",
