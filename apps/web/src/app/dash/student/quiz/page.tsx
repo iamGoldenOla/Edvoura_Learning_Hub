@@ -1,13 +1,19 @@
 import { createClient } from '@/utils/supabase/server';
+import { supabaseAdmin } from '@/utils/supabase/admin';
 import { requireAppViewer } from '@/lib/app-context';
-import { Target, Sparkles, Clock, ArrowRight } from 'lucide-react';
+import { Target, Clock, ArrowRight } from 'lucide-react';
 import { PracticeQuizClient } from './PracticeQuizClient';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+type AiQuizPayload = {
+  title?: string;
+  description?: string;
+};
+
 export default async function QuizPage() {
-  const viewer = await requireAppViewer();
+  await requireAppViewer();
   const supabase = await createClient();
 
   // 1. Fetch manual quizzes
@@ -17,18 +23,18 @@ export default async function QuizPage() {
     .order('created_at', { ascending: false });
 
   // 2. Fetch published AI quizzes
-  const { data: aiQuizzes } = await supabase
+  const { data: aiQuizzes } = await supabaseAdmin
     .from('ai_generated_content')
     .select('id, content_json, created_at')
     .in('task_type', ['GENERATE_QUIZ'])
-    .in('status', ['published', 'PUBLISHED'])
+    .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false });
 
   // Map AI quizzes to a common format
   const normalizedAiQuizzes = (aiQuizzes || []).map(q => ({
     id: q.id,
-    title: (q.content_json as any)?.title || 'AI Practice Challenge',
-    instructions: (q.content_json as any)?.description || 'Master this topic with Edvoura AI.',
+    title: ((q.content_json as AiQuizPayload | null)?.title) || 'AI Practice Challenge',
+    instructions: ((q.content_json as AiQuizPayload | null)?.description) || 'Master this topic with Edvoura AI.',
     isAi: true,
     data: q.content_json
   }));

@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { supabaseAdmin } from '@/utils/supabase/admin';
 import { requireAppViewer, getStudentDashboardData } from '@/lib/app-context';
 import StudentSubjectsClient from './components/StudentSubjectsClient';
 
@@ -7,20 +7,19 @@ export const revalidate = 0;
 
 export default async function SubjectsPage() {
   const viewer = await requireAppViewer();
-  const supabase = await createClient();
   let dashboard;
 
   try {
     dashboard = await getStudentDashboardData(viewer.accessToken);
-  } catch (error) {
+  } catch {
     // ignore
   }
 
   // Fetch ALL published AI content
-  const { data: publishedContent } = await supabase
+  const { data: publishedContent } = await supabaseAdmin
     .from('ai_generated_content')
     .select('id, title, subject, topic, grade, task_type, content_json, created_at')
-    .in('status', ['published', 'PUBLISHED'])
+    .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false });
 
   // Map and group them by subject

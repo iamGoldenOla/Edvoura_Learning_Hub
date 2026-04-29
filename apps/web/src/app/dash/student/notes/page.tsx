@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
-import { createClient } from '@/utils/supabase/server';
+import { supabaseAdmin } from '@/utils/supabase/admin';
 import StudentNotesWorkspace from './StudentNotesWorkspace';
 
 export const dynamic = 'force-dynamic';
@@ -8,7 +8,6 @@ export const revalidate = 0;
 
 export default async function NotesPage() {
   const viewer = await requireAppViewer();
-  const supabase = await createClient();
   let dashboard;
 
   try {
@@ -43,11 +42,11 @@ export default async function NotesPage() {
   }));
 
   // Fetch published AI lesson notes for the student
-  const { data: publishedNotes } = await supabase
+  const { data: publishedNotes } = await supabaseAdmin
     .from('ai_generated_content')
     .select('id, title, subject, topic, grade, content_json, created_at')
     .in('task_type', ['GENERATE_LESSON_NOTE', 'GENERATE_LESSON', 'GENERATE_FINANCIAL_LITERACY', 'GENERATE_COMMUNICATION_SKILL'])
-    .in('status', ['published', 'PUBLISHED'])
+    .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false })
     .limit(20);
 
