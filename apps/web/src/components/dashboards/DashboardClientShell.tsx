@@ -154,8 +154,16 @@ export default function DashboardClientShell({
 
   // Close mobile menu on navigation
   useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
+    if (!isMobileMenuOpen) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      setIsMobileMenuOpen(false);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [pathname, isMobileMenuOpen]);
 
   return (
     <BandProvider initialBand={initialBand}>
@@ -262,9 +270,10 @@ export default function DashboardClientShell({
             <div className="mx-auto grid max-w-3xl grid-cols-7 gap-1">
               <BottomNavItem href="/dash/student" label="Home" icon={Home} active={pathname === '/dash/student'} />
               <BottomNavItem href="/dash/student/classes" label="Lessons" icon={BookOpen} active={pathname === '/dash/student/classes'} />
+              <BottomNavItem href="/dash/student/subjects" label="Subjects" icon={BookMarked} active={pathname === '/dash/student/subjects'} />
               <BottomNavItem href="/dash/student/homework" label="Homework" icon={CheckCircle2} active={pathname === '/dash/student/homework' || pathname === '/dash/student/assignments'} />
               <BottomNavItem href="/dash/student/games" label="Play" icon={Gamepad2} active={pathname === '/dash/student/games'} />
-              <BottomNavItem href="/dash/student/rewards" label="Rewards" icon={Star} active={pathname === '/dash/student/rewards'} />
+              <BottomNavItem href="/dash/student/notes" label="Notes" icon={NotebookPen} active={pathname === '/dash/student/notes'} />
               <BottomNavItem href="/dash/student/tracker" label="Progress" icon={TrendingUp} active={pathname === '/dash/student/tracker'} />
               <BottomNavItem href="/dash/profile" label="Profile" icon={User} active={pathname === '/dash/profile'} />
             </div>

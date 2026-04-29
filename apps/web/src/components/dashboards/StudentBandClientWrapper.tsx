@@ -162,7 +162,9 @@ export default function StudentBandClientWrapper({
         </header>
 
         {/* Quick Fun Links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <FunCard icon="📚" label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />
+          <FunCard icon="📝" label="Notes" href="/dash/student/notes" color="bg-indigo-300" />
           <FunCard icon="🐝" label="Spelling Bee" href="/dash/student/spelling-bee" color="bg-yellow" />
           <FunCard icon="🎮" label="Play Zone" href="/dash/student/games" color="bg-green-400" />
           <FunCard icon="📖" label="Read Corner" href="/dash/student/read" color="bg-blue-400" />
