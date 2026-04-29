@@ -124,7 +124,7 @@ export default function ParentDashboardClient({
       {/* Header Section */}
       <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8">
             <div className="space-y-3 min-w-0">
               <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
                 PARENT PORTAL
@@ -136,7 +136,7 @@ export default function ParentDashboardClient({
                 Track each child with confidence, visibility, and control.
               </p>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto">
               <Link href="/dash/parent/messages">
                 <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
                   Message Tutor
@@ -151,7 +151,7 @@ export default function ParentDashboardClient({
           </div>
         </div>
 
-        <div className="p-6 bg-off-white flex flex-wrap items-center gap-4">
+        <div className="p-4 sm:p-6 bg-off-white flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center">
           <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
             <Users className="h-4 w-4" />
             Switch Child
@@ -183,7 +183,7 @@ export default function ParentDashboardClient({
         </div>
       </section>
 
-      <div className="grid gap-8 xl:grid-cols-12">
+      <div className="grid gap-6 sm:gap-8 xl:grid-cols-12">
         {/* Child Snapshot */}
         <div className="xl:col-span-8 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-amber-100">
@@ -357,7 +357,7 @@ export default function ParentDashboardClient({
         </div>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* Lessons & Attendance */}
         <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
@@ -407,7 +407,7 @@ export default function ParentDashboardClient({
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
         {/* Rewards & Engagement */}
         <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
@@ -480,7 +480,7 @@ export default function ParentDashboardClient({
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* Messages */}
         <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
           <div className="p-6 border-b-[4px] border-dark bg-sky-100 flex items-center gap-3">

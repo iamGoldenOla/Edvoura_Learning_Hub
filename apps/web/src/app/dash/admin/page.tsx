@@ -83,17 +83,17 @@ export default async function AdminDashboard() {
   ];
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
       
       {/* Header Section */}
       <section className="border-[4px] border-dark rounded-[28px] bg-dark text-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-8 md:p-12">
+        <div className="p-5 sm:p-8 md:p-12">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             <div className="space-y-4 min-w-0">
               <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-white bg-dark text-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#ffffff]">
                 COMMAND CENTER
               </span>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] flex items-center gap-4">
+              <h1 className="flex items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] break-words">
                 {title}
                 <div className="hidden md:flex h-12 w-12 rounded-2xl border-[3px] border-dark bg-yellow items-center justify-center shadow-[4px_4px_0px_#ffffff] rotate-6">
                   <Activity className="h-6 w-6 text-dark" />
@@ -103,7 +103,7 @@ export default async function AdminDashboard() {
                 {subtitle}
               </p>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto">
               <Link
                 href="/dash/admin/analytics"
                 className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#ffffff] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto inline-flex items-center"
@@ -124,7 +124,7 @@ export default async function AdminDashboard() {
       </section>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
         {statCards.map(({ label, value, bg }) => (
           <div key={label} className={`rounded-3xl border-[4px] border-dark ${bg} p-6 shadow-[6px_6px_0px_#060E1C]`}>
             <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">{label}</p>
@@ -134,13 +134,13 @@ export default async function AdminDashboard() {
       </div>
 
       <section className="overflow-hidden rounded-[24px] border-[4px] border-dark bg-white shadow-[8px_8px_0px_#060E1C]">
-        <div className="border-b-[4px] border-dark bg-dark p-5 text-white">
-          <h2 className="text-2xl font-black tracking-tight">System Health Panel</h2>
+        <div className="border-b-[4px] border-dark bg-dark p-4 sm:p-5 text-white">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight">System Health Panel</h2>
           <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-white/70">
             AI providers, generation queue, and chat delivery pulse
           </p>
         </div>
-        <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-2 xl:grid-cols-3">
           {healthCards.map((card) => (
             <div key={card.label} className={`rounded-2xl border-[3px] border-dark ${card.bg} p-4 shadow-[4px_4px_0px_#060E1C]`}>
               <p className="text-[10px] font-black uppercase tracking-widest text-dark/70">{card.label}</p>
@@ -152,7 +152,7 @@ export default async function AdminDashboard() {
 
       {dashboard.pendingTutorApprovals > 0 && (
         <div className="border-[4px] border-dark rounded-[24px] bg-rose-100 shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-          <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="p-5 sm:p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-start md:items-center gap-4">
               <div className="h-14 w-14 bg-white border-[3px] border-dark rounded-2xl flex items-center justify-center shadow-[3px_3px_0px_#060E1C] shrink-0">
                 <ShieldCheck className="h-7 w-7 text-rose-600" />
@@ -175,14 +175,14 @@ export default async function AdminDashboard() {
       )}
 
       {/* Sections Grid */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
         {sectionCards.map((item) => (
           <div key={item.title} className="border-[4px] border-dark rounded-[24px] bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden flex flex-col">
-            <div className={`p-6 border-b-[4px] border-dark ${item.bg} flex items-center gap-3`}>
+            <div className={`p-4 sm:p-6 border-b-[4px] border-dark ${item.bg} flex items-center gap-3`}>
               <item.icon className="h-6 w-6 text-dark" />
-              <h2 className="text-xl font-black text-dark tracking-tight">{item.title}</h2>
+              <h2 className="text-lg sm:text-xl font-black text-dark tracking-tight break-words">{item.title}</h2>
             </div>
-            <div className="p-6 flex-1 flex flex-col">
+            <div className="p-4 sm:p-6 flex-1 flex flex-col">
               <p className="mb-6 text-sm font-bold text-dark/70 flex-1">{item.description}</p>
               <Link
                 href={item.href}
@@ -198,11 +198,11 @@ export default async function AdminDashboard() {
 
       {dashboard.recentSignups.length > 0 && (
         <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-          <div className="p-6 border-b-[4px] border-dark bg-off-white flex items-center gap-3">
+          <div className="p-4 sm:p-6 border-b-[4px] border-dark bg-off-white flex items-center gap-3">
             <UserPlus className="h-6 w-6 text-dark" />
-            <h2 className="text-2xl font-black text-dark tracking-tight">Recent Signups</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">Recent Signups</h2>
           </div>
-          <div className="p-0">
+          <div className="hidden md:block p-0">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="border-b-[4px] border-dark bg-slate-50 text-[10px] font-black uppercase tracking-widest text-dark/50">
@@ -229,6 +229,20 @@ export default async function AdminDashboard() {
                 </tbody>
               </table>
             </div>
+          </div>
+          <div className="space-y-3 p-4 md:hidden">
+            {dashboard.recentSignups.map((u) => (
+              <article key={u.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-4 shadow-[4px_4px_0px_#060E1C]">
+                <p className="text-base font-black text-dark break-words">{u.fullName ?? '--'}</p>
+                <p className="mt-1 text-sm font-bold text-dark/70 break-all">{u.email}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex rounded-lg border-[2px] border-dark bg-white px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+                    {u.role.replace('_', ' ')}
+                  </span>
+                  <span className="text-xs font-bold text-dark/60">{formatDate(u.createdAt)}</span>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       )}

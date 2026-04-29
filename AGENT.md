@@ -44,6 +44,26 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
   - treat cross-dashboard delivery as a first-class backend contract
   - do not add new publish/review surfaces that bypass `apps/web/src/lib/dashboard/distribution.ts`
 
+### Current Status: Mobile-First Role Surface Hardening (2026-04-29)
+
+- The shared shell fix was followed by a page-level mobile pass across the highest-traffic dashboards:
+  - `apps/web/src/components/dashboards/StudentBandClientWrapper.tsx`
+  - `apps/web/src/app/dash/tutor/page.tsx`
+  - `apps/web/src/app/dash/admin/page.tsx`
+  - `apps/web/src/components/dashboards/ParentDashboardClient.tsx`
+- Mobile-first improvements applied:
+  - reduced oversized desktop padding on narrow screens
+  - stacked header CTA rows into single-column mobile actions where needed
+  - tightened card radii, shadows, and section spacing for small viewports
+  - made schedule, summary, and navigation rows wrap instead of overflowing
+  - added a mobile card presentation for `Recent Signups` instead of forcing a wide table
+  - improved narrow-screen readability for student quick links, tutor schedule cards, and admin summary blocks
+- Verification status:
+  - targeted `eslint` completed with warnings only in the student band wrapper for legacy unused helper state
+  - `tsc --noEmit` passed
+- Remaining follow-up for mobile phase:
+  - continue the same narrow-screen cleanup across secondary subpages like notes, quiz, parent notifications, admin section pages, and tutor tools until all role dashboards behave consistently below `360px`
+
 ### Current Status: Puter Dashboard AI Workflow (2026-04-27)
 
 - Puter.js integration is now architected as **dashboard-only** generation tooling:

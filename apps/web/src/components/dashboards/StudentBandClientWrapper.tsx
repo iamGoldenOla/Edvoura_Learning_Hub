@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, Languages, BrainCircuit, Volume2, Mic2, PlayCircle, Star, Flame, ArrowRight } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import StudentLiveContentPanel from './StudentLiveContentPanel';
 import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
-import { getDailyWords } from '@/lib/daily-words';
 
 const bandCopy = {
   '1-3': {
@@ -98,9 +97,11 @@ export default function StudentBandClientWrapper({
     .slice(0, 5);
   const featuredAssignments = dashboard.assignments.slice(0, 2);
   const [uploadedSubmissions, setUploadedSubmissions] = useState<Record<string, string>>({});
-  const dailyWords = getDailyWords(band, new Date().toISOString().split('T')[0]);
   const [spellingInput, setSpellingInput] = useState('');
-  const [spellingFeedback, setSpellingFeedback] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+  const [, setSpellingFeedback] = useState<{ type: 'success' | 'error' | null; message: string }>({
+    type: null,
+    message: '',
+  });
 
   const speakWord = (word: string) => {
     if ('speechSynthesis' in window) {
@@ -142,7 +143,7 @@ export default function StudentBandClientWrapper({
 
     return (
       <div className="space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-700 w-full min-w-0">
-        <header className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-6 sm:p-8 md:p-12 shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 max-w-full w-full min-w-0">
+        <header className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 max-w-full w-full min-w-0">
           <div className="text-center md:text-left min-w-0">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-heading font-black text-dark tracking-tight leading-none break-words">
               Hi, {dashboard.profile.fullName?.split(' ')[0] || 'Explorer'}! 👋
@@ -162,7 +163,7 @@ export default function StudentBandClientWrapper({
         </header>
 
         {/* Quick Fun Links */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
           <FunCard icon="📚" label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />
           <FunCard icon="📝" label="Notes" href="/dash/student/notes" color="bg-indigo-300" />
           <FunCard icon="🐝" label="Spelling Bee" href="/dash/student/spelling-bee" color="bg-yellow" />
@@ -171,17 +172,17 @@ export default function StudentBandClientWrapper({
           <FunCard icon="📺" label="Stories" href="/dash/student/stories" color="bg-red-400" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+        <div className="grid grid-cols-1 gap-6 pt-2 sm:gap-8 lg:grid-cols-3 sm:pt-4">
            {/* Active Missions */}
            <div className="lg:col-span-2 space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Today&apos;s Missions</h2>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Today&apos;s Missions</h2>
                 <Link href="/dash/student/homework" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">See All</Link>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
                 {featuredAssignments.map((hw) => (
-                  <div key={hw.id} className="bg-white border-[4px] border-dark rounded-[40px] p-8 shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col">
+                  <div key={hw.id} className="bg-white border-[4px] border-dark rounded-[28px] sm:rounded-[40px] p-5 sm:p-8 shadow-[6px_6px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col">
                      <div className="h-14 w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-3xl mb-6">
                         📚
                      </div>
@@ -200,15 +201,15 @@ export default function StudentBandClientWrapper({
 
            {/* Live Now / Next */}
            <div className="space-y-6">
-              <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Live Class</h2>
+              <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Live Class</h2>
               {nextLesson ? (
-                <div className="bg-white border-[4px] border-dark rounded-[40px] shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+                <div className="bg-white border-[4px] border-dark rounded-[28px] sm:rounded-[40px] shadow-[6px_6px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden">
                    <div className="bg-red-500 p-4 border-b-[4px] border-dark text-center">
                       <span className="text-xs font-black text-white uppercase tracking-widest animate-pulse">
                          Live in {countdownText(nextLesson.scheduledStartAt)}
                       </span>
                    </div>
-                   <div className="p-8 text-center space-y-4">
+                   <div className="p-5 sm:p-8 text-center space-y-4">
                       <div className="h-20 w-20 rounded-full bg-slate-50 border-[3px] border-dark flex items-center justify-center text-4xl mx-auto">
                          👨‍🏫
                       </div>
@@ -230,7 +231,7 @@ export default function StudentBandClientWrapper({
                    </div>
                 </div>
               ) : (
-                <div className="bg-slate-50 border-[4px] border-dark border-dashed rounded-[40px] p-12 text-center">
+                <div className="bg-slate-50 border-[4px] border-dark border-dashed rounded-[28px] sm:rounded-[40px] p-8 sm:p-12 text-center">
                    <p className="font-bold text-dark/30 italic">No classes today. Take a break!</p>
                 </div>
               )}
@@ -241,11 +242,11 @@ export default function StudentBandClientWrapper({
   }
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 pb-14">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 pb-14 sm:space-y-10">
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-8 border-b-[4px] border-dark bg-yellow/20">
+        <div className="p-5 sm:p-8 border-b-[4px] border-dark bg-yellow/20">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-2">{copy.label}</p>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
             Hello, {dashboard.profile.fullName ?? 'Student'}
           </h1>
           <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
@@ -253,7 +254,7 @@ export default function StudentBandClientWrapper({
           </p>
         </div>
         
-        <div className="p-6 sm:p-8 bg-off-white grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="p-4 sm:p-8 bg-off-white grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard label="Upcoming lessons" value={String(dashboard.stats.upcomingLessons)} icon={Clock3} color="bg-emerald-100" />
           <StatCard label="Pending tasks" value={String(dashboard.stats.pendingAssignments)} icon={CheckCircle2} color="bg-blue-100" />
           <StatCard label="Average score" value={formatPercent(dashboard.stats.averageScore)} icon={TrendingUp} color="bg-rose-100" />
@@ -261,8 +262,8 @@ export default function StudentBandClientWrapper({
         </div>
       </div>
 
-      <section className="grid grid-cols-1 gap-8 xl:grid-cols-12">
-        <div className="space-y-8 xl:col-span-8">
+      <section className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12">
+        <div className="space-y-6 sm:space-y-8 xl:col-span-8">
           <Panel title="Live from tutor" icon={Video} color="bg-rose-100">
             <StudentLiveContentPanel />
           </Panel>
@@ -361,7 +362,7 @@ export default function StudentBandClientWrapper({
           </Panel>
         </div>
 
-        <div className="space-y-8 xl:col-span-4 flex flex-col">
+        <div className="space-y-6 sm:space-y-8 xl:col-span-4 flex flex-col">
           <Panel title="Subject progress" icon={TrendingUp} color="bg-emerald-100">
             <div className="space-y-4">
               {progressRows.length > 0 ? (
@@ -423,10 +424,10 @@ function FunCard({ icon, label, href, color }: { icon: string; label: string; hr
   return (
     <Link 
       href={href}
-      className={`${color} border-[4px] border-dark rounded-[32px] p-6 shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex flex-col items-center text-center group`}
+      className={`${color} border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex flex-col items-center text-center group min-w-0`}
     >
-       <div className="text-4xl mb-2 group-hover:scale-125 transition-transform">{icon}</div>
-       <span className="text-[10px] font-black uppercase tracking-widest text-dark">{label}</span>
+       <div className="text-3xl sm:text-4xl mb-2 group-hover:scale-125 transition-transform">{icon}</div>
+       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark break-words">{label}</span>
     </Link>
   );
 }function Panel({
@@ -443,12 +444,12 @@ function FunCard({ icon, label, href, color }: { icon: string; label: string; hr
   className?: string;
 }) {
   return (
-    <section className={`rounded-[28px] border-[4px] border-dark bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col ${className}`}>
-      <div className={`p-6 border-b-[4px] border-dark ${color} flex items-center gap-3`}>
+    <section className={`rounded-[24px] sm:rounded-[28px] border-[4px] border-dark bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col ${className}`}>
+      <div className={`p-4 sm:p-6 border-b-[4px] border-dark ${color} flex items-center gap-3`}>
         <Icon className="h-6 w-6 text-dark" />
-        <h2 className="text-2xl font-black text-dark tracking-tight">{title}</h2>
+        <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">{title}</h2>
       </div>
-      <div className="p-6 sm:p-8 flex-1 flex flex-col">
+      <div className="p-4 sm:p-8 flex-1 flex flex-col min-w-0">
         {children}
       </div>
     </section>

@@ -42,17 +42,17 @@ export default async function TutorDashboard() {
   const dashboard = await getTutorDashboardData();
 
   return (
-    <div className="space-y-8 max-w-[1400px] mx-auto pb-20">
+    <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-6 pb-20 sm:space-y-8">
       
       {/* Header Section */}
       <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="space-y-3 min-w-0">
               <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
                 TUTOR COMMAND CENTER
               </span>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark [overflow-wrap:anywhere]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark [overflow-wrap:anywhere]">
                 Welcome back, {dashboard.tutorName}
               </h1>
               <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-3xl">
@@ -60,7 +60,7 @@ export default async function TutorDashboard() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-4 w-full lg:w-auto">
+            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto">
               <Link href="/dash/tutor/schedule" className="flex-1 lg:flex-none">
                 <Button className="w-full h-14 px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
                   <CalendarClock className="mr-2 h-5 w-5" />
@@ -77,13 +77,13 @@ export default async function TutorDashboard() {
           </div>
         </div>
 
-        <div className="p-8 md:p-12">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <div className="p-4 sm:p-8 md:p-12">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12">
             
             {/* Live Today Section */}
-            <section className="xl:col-span-8 space-y-8">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-black text-dark tracking-tight">Today's Schedule</h2>
+            <section className="xl:col-span-8 space-y-6 sm:space-y-8">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">Today&apos;s Schedule</h2>
                 <Link href="/dash/tutor/schedule" className="text-xs font-black text-blue-600 hover:underline border-[2px] border-dark px-4 py-2 rounded-xl bg-white shadow-[2px_2px_0px_#060E1C]">
                   View Full Week
                 </Link>
@@ -93,10 +93,10 @@ export default async function TutorDashboard() {
                 {dashboard.todayLessons.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4">
                     {dashboard.todayLessons.map((item) => (
-                      <div key={item.id} className="border-[3px] border-dark rounded-2xl bg-off-white p-6 shadow-[5px_5px_0px_#060E1C]">
-                        <div className="flex flex-col sm:flex-row justify-between gap-6">
+                      <div key={item.id} className="border-[3px] border-dark rounded-2xl bg-off-white p-4 sm:p-6 shadow-[5px_5px_0px_#060E1C] min-w-0">
+                        <div className="flex flex-col justify-between gap-5 lg:flex-row">
                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                  <span className="px-3 py-1 bg-dark text-white border-[2px] border-dark text-[9px] font-black uppercase tracking-widest rounded-md">
                                    {item.subjectName}
                                  </span>
@@ -106,7 +106,7 @@ export default async function TutorDashboard() {
                                    </span>
                                  )}
                               </div>
-                              <h3 className="text-2xl md:text-3xl font-black text-dark tracking-tight">
+                              <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-dark tracking-tight break-words">
                                 {item.title}
                               </h3>
                               <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-dark/60">
@@ -115,7 +115,7 @@ export default async function TutorDashboard() {
                               </div>
                            </div>
 
-                           <div className="flex items-center gap-3">
+                           <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
                               {item.status !== 'live' ? (
                                 <TutorLessonStartButton lessonId={item.id} status={item.status} />
                               ) : (
@@ -153,7 +153,7 @@ export default async function TutorDashboard() {
             {/* Sidebar Navigation & Tools */}
             <aside className="xl:col-span-4 space-y-8">
               {/* Broadcast Quick Action */}
-              <div className="border-[3px] border-dark rounded-3xl bg-blue-50 p-8 shadow-[5px_5px_0px_#060E1C]">
+              <div className="border-[3px] border-dark rounded-3xl bg-blue-50 p-5 sm:p-8 shadow-[5px_5px_0px_#060E1C]">
                 <h3 className="text-xl font-black text-dark mb-2 flex items-center gap-2">
                   <Rocket className="h-5 w-5 text-dark" /> Quick Broadcast
                 </h3>
@@ -162,8 +162,8 @@ export default async function TutorDashboard() {
               </div>
 
               {/* Grading Queue Mini */}
-              <div className="border-[3px] border-dark rounded-3xl bg-white p-8 shadow-[5px_5px_0px_#060E1C]">
-                <div className="flex items-center justify-between mb-6">
+              <div className="border-[3px] border-dark rounded-3xl bg-white p-5 sm:p-8 shadow-[5px_5px_0px_#060E1C]">
+                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                    <h3 className="text-xl font-black text-dark flex items-center gap-2">
                      <ClipboardCheck className="h-5 w-5" /> Grading Queue
                    </h3>
@@ -187,7 +187,7 @@ export default async function TutorDashboard() {
               </div>
 
               {/* Navigation Grid */}
-              <div className="border-[3px] border-dark rounded-3xl bg-white p-8 shadow-[5px_5px_0px_#060E1C]">
+              <div className="border-[3px] border-dark rounded-3xl bg-white p-5 sm:p-8 shadow-[5px_5px_0px_#060E1C]">
                  <h3 className="text-lg font-black text-dark mb-6 flex items-center gap-2">
                    <LayoutDashboard className="h-5 w-5" />
                    Quick Navigation
@@ -197,15 +197,15 @@ export default async function TutorDashboard() {
                      <Link
                        key={section.title}
                        href={section.href}
-                       className="group flex items-center justify-between p-4 rounded-xl border-[2px] border-transparent hover:border-dark hover:bg-off-white hover:shadow-[3px_3px_0px_#060E1C] transition-all"
+                       className="group flex items-start justify-between gap-3 p-4 rounded-xl border-[2px] border-transparent hover:border-dark hover:bg-off-white hover:shadow-[3px_3px_0px_#060E1C] transition-all min-w-0"
                      >
-                       <div className="flex items-center gap-4">
+                       <div className="flex min-w-0 items-center gap-4">
                           <div className={`h-12 w-12 flex items-center justify-center border-[2px] border-dark rounded-xl font-black ${section.color}`}>
                              <section.icon className="h-6 w-6" />
                           </div>
-                          <div>
-                             <p className="text-sm font-black text-dark">{section.title}</p>
-                             <p className="text-[10px] font-bold text-dark/60 uppercase tracking-widest">{section.description}</p>
+                          <div className="min-w-0">
+                             <p className="text-sm font-black text-dark break-words">{section.title}</p>
+                             <p className="text-[10px] font-bold text-dark/60 uppercase tracking-widest break-words">{section.description}</p>
                           </div>
                        </div>
                        <ArrowRight className="h-4 w-4 text-dark/40 transition-transform group-hover:translate-x-1 group-hover:text-dark" />
@@ -215,7 +215,7 @@ export default async function TutorDashboard() {
               </div>
 
               {/* Support Box */}
-              <div className="border-[4px] border-dark rounded-3xl p-10 bg-yellow shadow-[5px_5px_0px_#060E1C] relative overflow-hidden">
+              <div className="border-[4px] border-dark rounded-3xl p-6 sm:p-10 bg-yellow shadow-[5px_5px_0px_#060E1C] relative overflow-hidden">
                  <Trophy className="h-10 w-10 text-dark mb-6" />
                  <h3 className="text-2xl font-black mb-2 tracking-tight text-dark">Tutor Elite</h3>
                  <p className="text-dark/80 text-sm font-semibold leading-relaxed">
