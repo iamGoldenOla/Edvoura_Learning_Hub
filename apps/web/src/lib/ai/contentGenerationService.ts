@@ -407,32 +407,42 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   let providerUsed = "puter";
   let modelUsed = model;
 
+  let parsed: unknown;
   let generatedText = "";
+  
   try {
     const response = await generateWithPuterAI(prompt, { model });
     generatedText = response.text;
-  } catch (error) {
-    throw error instanceof Error
-      ? error
-      : new Error(
-          "AI generation is temporarily unavailable. You can still create or edit this content manually.",
-        );
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = parseAndValidateAIResponse(generatedText, input.taskType);
-  } catch (error) {
-    console.warn("First validation failed, attempting repair. Error:", error);
-    const repairPrompt = buildRepairPrompt(prompt, input.taskType, error);
+    
     try {
-      const repairResponse = await generateWithPuterAI(repairPrompt, { model });
-      parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
-    } catch (repairError) {
-      console.error("AI Repair failed. Original text from Puter:", generatedText);
-      throw new Error(
-        `AI generated content could not be parsed into the required format. The AI responded with: ${generatedText.substring(0, 100)}...`
-      );
+      parsed = parseAndValidateAIResponse(generatedText, input.taskType);
+    } catch (error) {
+      console.warn("First validation failed, attempting repair. Error:", error);
+      const repairPrompt = buildRepairPrompt(prompt, input.taskType, error);
+      try {
+        const repairResponse = await generateWithPuterAI(repairPrompt, { model });
+        parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
+      } catch (repairError) {
+        console.error("AI Repair failed. Original text from Puter:", generatedText);
+        throw new Error(
+          `AI generated content could not be parsed into the required format. The AI responded with: ${generatedText.substring(0, 100)}...`
+        );
+      }
+    }
+  } catch (error) {
+    console.warn("Puter AI generation failed, falling back to server API...", error);
+    try {
+      const serverResult = await generateViaServerFallback(input);
+      if (serverResult) {
+        parsed = serverResult;
+        providerUsed = "server_api_fallback";
+        modelUsed = "gemini-1.5-pro-or-flash";
+      } else {
+        throw new Error("Server fallback not supported for this task type.");
+      }
+    } catch (fallbackError) {
+      const errMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+      throw new Error(`AI generation failed on both Puter and Server API. Reason: ${errMessage}`);
     }
   }
 

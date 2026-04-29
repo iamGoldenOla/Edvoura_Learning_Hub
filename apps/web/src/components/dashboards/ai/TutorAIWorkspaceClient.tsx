@@ -332,6 +332,7 @@ export default function TutorAIWorkspaceClient() {
         title="Submitted and Reviewed Content"
         records={reviewRecords}
         onPreview={(content) => setPreviewContent(content)}
+        onPublishDirectly={onPublishDirectly}
       />
     </div>
   );

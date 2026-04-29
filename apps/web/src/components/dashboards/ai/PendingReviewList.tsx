@@ -25,6 +25,7 @@ export default function PendingReviewList({
   superAdminMode = false,
   onReviewAction,
   onImproveWithAI,
+  onPublishDirectly,
   onPreview,
 }: {
   title: string;
@@ -36,6 +37,7 @@ export default function PendingReviewList({
     reviewNote?: string;
   }) => Promise<void>;
   onImproveWithAI?: (record: PendingReviewRecord) => Promise<void>;
+  onPublishDirectly?: (contentId: string) => Promise<void>;
   onPreview: (content: unknown) => void;
 }) {
   return (
@@ -76,6 +78,15 @@ export default function PendingReviewList({
                   className="rounded-lg border-[2px] border-dark bg-yellow px-3 py-2 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                 >
                   Improve with AI
+                </button>
+              ) : null}
+              {onPublishDirectly ? (
+                <button
+                  type="button"
+                  onClick={() => void onPublishDirectly(record.id)}
+                  className="rounded-lg border-[2px] border-dark bg-green-400 px-3 py-2 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                >
+                  {record.status.toUpperCase() === 'PUBLISHED' ? 'Re-Publish' : 'Publish Directly'}
                 </button>
               ) : null}
             </div>
