@@ -111,6 +111,7 @@ export default function DashboardClientShell({
     `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(viewerName)}`,
   );
   const showStudentBottomNav = effectiveRole === 'student';
+  const showTutorBottomNav = effectiveRole === 'tutor';
   const roleLabel =
     effectiveRole === 'tutor'
       ? 'Tutor teaching dashboard'
@@ -266,13 +267,16 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showStudentBottomNav ? 'pb-28' : ''}`}>
+          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showStudentBottomNav || showTutorBottomNav ? 'pb-28' : ''}`}>
             <div className="mx-auto w-full max-w-[1760px] min-w-0">{children}</div>
           </main>
         </div>
 
         {showStudentBottomNav ? (
           <StudentBottomNav initialBand={initialBand} />
+        ) : null}
+        {showTutorBottomNav ? (
+          <TutorBottomNav />
         ) : null}
       </div>
     </BandProvider>
@@ -340,6 +344,60 @@ function TutorSidebarNav() {
         {toolsNav.map((item) => <NavItem key={item.label} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />)}
       </div>
     </div>
+  );
+}
+
+const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
+  <Link href={href} className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-wider transition-all shrink-0 min-w-[52px] ${
+    active
+      ? 'bg-yellow border-[2px] border-dark text-dark shadow-[2px_2px_0px_#060E1C]'
+      : 'text-dark/40 hover:text-dark/70 border-[2px] border-transparent'
+  }`}>
+    <Icon className="h-4 w-4" />
+    <span className="whitespace-nowrap">{label}</span>
+  </Link>
+);
+
+function TutorBottomNav() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  const allItems = [
+    { href: '/dash/tutor', label: "Home", icon: Crown },
+    { href: '/dash/tutor/schedule', label: "Classes", icon: CalendarClock },
+    { href: '/dash/tutor/roster', label: 'Students', icon: Users },
+    { href: '/dash/tutor/lesson-notes', label: 'Notes', icon: ScrollText },
+    { href: '/dash/tutor/builder?tool=assignment', label: 'Assign', icon: NotebookPen },
+    { href: '/dash/tutor/builder?tool=quiz', label: 'Quizzes', icon: Star },
+    { href: '/dash/tutor/grading', label: 'Grading', icon: ClipboardCheck },
+    { href: '/dash/tutor/messages', label: 'Messages', icon: MessageCircle },
+    { href: '/dash/tutor/earnings', label: 'Invoice', icon: DollarSign },
+    { href: '/dash/tutor/profile', label: 'Profile', icon: Settings2 },
+    { href: '/dash/tutor/ai', label: 'AI Gen', icon: Sparkles },
+  ];
+
+  const isActive = (href: string) => {
+    const [basePath, queryString] = href.split('?');
+    if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
+      return false;
+    }
+    if (!queryString) {
+      return true;
+    }
+    const hrefParams = new URLSearchParams(queryString);
+    return Array.from(hrefParams.entries()).every(
+      ([key, value]) => searchParams.get(key) === value,
+    );
+  };
+  
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+        {allItems.map((item) => (
+          <BottomNavItem key={`${item.href}-${item.label}`} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />
+        ))}
+      </div>
+    </nav>
   );
 }
 
