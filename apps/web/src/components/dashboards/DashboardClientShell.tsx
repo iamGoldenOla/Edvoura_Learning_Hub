@@ -228,56 +228,78 @@ export default function DashboardClientShell({
           </div>
         </aside>
 
-        <div className="flex h-screen flex-1 flex-col overflow-hidden bg-off-white w-full min-w-0">
-          <header className="border-b-[4px] border-dark bg-white px-4 py-4 sm:px-8 z-20 w-full min-w-0">
-            <div className="flex items-center justify-between gap-2 sm:gap-4 w-full min-w-0">
-              <div className="flex min-w-0 items-center gap-2 sm:gap-4 flex-shrink">
-                {/* Mobile Menu Toggle */}
+        <div className="flex h-screen flex-1 flex-col overflow-hidden bg-slate-50 w-full min-w-0">
+          {/* ── Mobile-first header (LinkedIn-inspired) ── */}
+          <header className="bg-white border-b border-slate-200 lg:border-b-[3px] lg:border-dark z-20 w-full min-w-0">
+            <div className="flex items-center justify-between h-14 lg:h-auto lg:py-4 px-4 sm:px-6 lg:px-8 w-full min-w-0">
+              {/* Left: Avatar / Menu */}
+              <div className="flex min-w-0 items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="rounded-xl border-[3px] border-dark bg-white p-2 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none lg:hidden shrink-0"
+                  className="shrink-0 lg:hidden"
                 >
-                  {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                  <div className="h-8 w-8 overflow-hidden rounded-full ring-2 ring-indigo-500/30">
+                    <img src={avatarUrl} alt="You" className="w-full h-full object-cover" />
+                  </div>
                 </button>
-
-                <div className="hidden items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 sm:flex shadow-[2px_2px_0px_#060E1C] shrink-0">
+                {/* Desktop: full search + label */}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="hidden lg:flex items-center rounded-xl border-[3px] border-dark bg-white p-2 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none shrink-0"
+                >
+                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </button>
+                <div className="hidden lg:flex items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 shadow-[2px_2px_0px_#060E1C] shrink-0">
                   <Search className="h-4 w-4 text-dark/50" />
                   <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>
                 </div>
-                <p className="truncate text-xs sm:text-sm font-black text-dark/60 min-w-0">{roleLabel}</p>
+                <p className="hidden lg:block truncate text-sm font-black text-dark/60 min-w-0">{roleLabel}</p>
                 {effectiveRole === 'student' ? <StudentBandSwitcher /> : null}
               </div>
 
-              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                <div className="hidden sm:block rounded-xl border-[3px] border-dark bg-white px-4 py-2 text-right shadow-[2px_2px_0px_#060E1C]">
+              {/* Center: Brand (mobile only) */}
+              <div className="lg:hidden flex items-center gap-1.5">
+                <div className="h-7 w-7 rounded-lg bg-indigo-600 flex items-center justify-center">
+                  <Crown className="h-4 w-4 text-white" />
+                </div>
+                <span className="text-base font-black tracking-tight text-slate-800">Edvoura</span>
+              </div>
+
+              {/* Right: Actions */}
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                {/* Mobile search icon */}
+                <button type="button" className="lg:hidden relative rounded-full p-2 text-slate-600 hover:bg-slate-100 active:scale-95 transition-all" aria-label="Search">
+                  <Search className="h-5 w-5" />
+                </button>
+                <div className="hidden lg:block rounded-xl border-[3px] border-dark bg-white px-4 py-2 text-right shadow-[2px_2px_0px_#060E1C]">
                   <p suppressHydrationWarning className="text-sm font-black text-dark">{timeLabel}</p>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-dark/50">Local Time</p>
                 </div>
-                <button type="button" className="relative rounded-xl border-[3px] border-dark bg-white p-2 sm:p-3 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95 shrink-0" aria-label="Notifications">
+                <button type="button" className="relative rounded-full p-2 text-slate-600 hover:bg-slate-100 lg:rounded-xl lg:border-[3px] lg:border-dark lg:bg-white lg:p-2.5 lg:text-dark lg:shadow-[2px_2px_0px_#060E1C] lg:hover:translate-x-[1px] lg:hover:translate-y-[1px] lg:hover:shadow-none active:scale-95 transition-all shrink-0" aria-label="Notifications">
                   <Bell className="h-5 w-5" />
-                  <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-rose-500" />
+                  <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
                 </button>
               </div>
             </div>
           </header>
 
-          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-7 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showGrade13BottomNav ? 'pb-32' : ''}`}>
+          <main className={`custom-scrollbar flex-1 overflow-y-auto w-full min-w-0 overflow-x-hidden relative ${
+            showGrade13BottomNav ? 'pb-24 p-0 sm:p-5 lg:p-10 xl:p-12' : 'p-4 sm:p-7 lg:p-10 xl:p-12'
+          }`}>
             <div className="mx-auto w-full max-w-[1760px] min-w-0">{children}</div>
           </main>
         </div>
 
         {showGrade13BottomNav ? (
-          <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur lg:hidden">
-            <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+          <nav className="fixed inset-x-0 bottom-0 z-40 bg-white border-t border-slate-200 lg:hidden safe-bottom">
+            <div className="mx-auto grid max-w-lg grid-cols-5 px-1">
               <BottomNavItem href="/dash/student" label="Home" icon={Home} active={pathname === '/dash/student'} />
-              <BottomNavItem href="/dash/student/classes" label="Lessons" icon={BookOpen} active={pathname === '/dash/student/classes'} />
               <BottomNavItem href="/dash/student/subjects" label="Subjects" icon={BookMarked} active={pathname === '/dash/student/subjects'} />
-              <BottomNavItem href="/dash/student/homework" label="Homework" icon={CheckCircle2} active={pathname === '/dash/student/homework' || pathname === '/dash/student/assignments'} />
-              <BottomNavItem href="/dash/student/games" label="Play" icon={Gamepad2} active={pathname === '/dash/student/games'} />
+              <BottomNavItem href="/dash/student/homework" label="Tasks" icon={CheckCircle2} active={pathname === '/dash/student/homework' || pathname === '/dash/student/assignments'} />
               <BottomNavItem href="/dash/student/notes" label="Notes" icon={NotebookPen} active={pathname === '/dash/student/notes'} />
               <BottomNavItem href="/dash/student/tracker" label="Progress" icon={TrendingUp} active={pathname === '/dash/student/tracker'} />
-              <BottomNavItem href="/dash/profile" label="Profile" icon={User} active={pathname === '/dash/profile'} />
             </div>
           </nav>
         ) : null}
@@ -301,9 +323,12 @@ function StudentBandSwitcher() {
 }
 
 const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
-  <Link href={href} className={`flex min-w-0 flex-col items-center gap-1 rounded-lg px-1 py-2 text-[10px] font-semibold ${active ? 'bg-blue-100 text-blue-700' : 'text-slate-600'}`}>
-    <Icon className="h-4 w-4" />
-    <span className="truncate">{label}</span>
+  <Link href={href} className={`relative flex flex-col items-center justify-center gap-0.5 py-2 transition-colors ${
+    active ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+  }`}>
+    {active && <span className="absolute top-0 left-1/2 -translate-x-1/2 h-[3px] w-8 rounded-full bg-indigo-600" />}
+    <Icon className={`h-[22px] w-[22px] ${active ? 'stroke-[2.5]' : ''}`} />
+    <span className={`text-[10px] leading-tight ${active ? 'font-bold' : 'font-medium'}`}>{label}</span>
   </Link>
 );
 
