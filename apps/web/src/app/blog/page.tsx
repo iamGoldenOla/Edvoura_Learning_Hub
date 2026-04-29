@@ -64,24 +64,24 @@ export default function BlogPage() {
       >
         <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
         
-        <div className="marketing-container relative z-10 pt-6 text-center">
-          <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
+        <div className="marketing-container relative z-10 pt-6 text-center w-full min-w-0">
+          <div className="inline-block bg-yellow border-4 border-navy text-navy font-heading font-black px-4 sm:px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0 max-w-full break-words">
             INSIGHTS & UPDATES
           </div>
-          <h1 className="font-heading font-black text-white max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#0A1628]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+          <h1 className="font-heading font-black text-white max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#0A1628] break-words" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
             The Science of Global Learning
           </h1>
-          <p className="text-white text-xl max-w-2xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-6 rounded-2xl border-4 border-white shadow-[6px_6px_0px_#F5C518] transform rotate-1">
+          <p className="text-white text-base sm:text-xl max-w-2xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-4 sm:p-6 rounded-2xl border-4 border-white shadow-[6px_6px_0px_#F5C518] transform rotate-1 max-w-full break-words">
             Practical advice for students, parents, and educators — straight from the Edvoura academic board.
           </p>
           
-          <div className="mt-12 flex justify-center max-w-md mx-auto relative group">
+          <div className="mt-12 flex justify-center max-w-md mx-auto relative group px-2 sm:px-0 w-full">
              <input 
                type="text" 
                placeholder="Search articles..." 
                className="w-full bg-white border-4 border-navy rounded-2xl px-12 py-4 font-bold shadow-[8px_8px_0px_#0A1628] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
              />
-             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-navy" />
+             <Search className="absolute left-6 sm:left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-navy" />
           </div>
         </div>
       </section>

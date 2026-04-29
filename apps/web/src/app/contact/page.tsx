@@ -16,88 +16,88 @@ export default function ContactPage() {
       >
         <div className="absolute inset-0 bg-success/85 backdrop-blur-sm" />
         
-        <div className="marketing-container relative z-10 py-6 text-center">
-          <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0">
+        <div className="marketing-container relative z-10 py-6 text-center w-full min-w-0">
+          <div className="inline-block bg-white border-4 border-navy text-navy font-heading font-black px-4 sm:px-6 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2 transition-transform hover:rotate-0 max-w-full break-words">
             CONTACT US
           </div>
-          <h1 className="font-heading font-black text-navy max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#FFFFFF]" style={{ fontSize: 'clamp(3rem, 6vw, 5rem)' }}>
+          <h1 className="font-heading font-black text-navy max-w-4xl mx-auto leading-[1.1] mb-8 drop-shadow-[4px_4px_0px_#FFFFFF] break-words" style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
             We&apos;re Here to Support Your Journey
           </h1>
-          <p className="text-navy text-xl max-w-3xl mx-auto font-bold bg-white/70 backdrop-blur-md p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#0A1628] transform -rotate-1">
+          <p className="text-navy text-base sm:text-xl max-w-3xl mx-auto font-bold bg-white/70 backdrop-blur-md p-4 sm:p-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#0A1628] transform -rotate-1 max-w-full break-words">
             Have a question about our global tutors or want to book a free introductory session? Our team typically responds within 24 hours.
           </p>
         </div>
       </section>
 
       {/* Contact Grid */}
-      <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
-        <div className="marketing-container">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16">
+      <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative w-full">
+        <div className="marketing-container w-full min-w-0">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-16 items-stretch">
 
             {/* Contact Info Cards */}
-            <div className="lg:col-span-2 space-y-10">
-              <div className="bg-navy rounded-[2.5rem] p-10 text-white border-8 border-navy-mid shadow-[15px_15px_0px_#F5C518] transform -rotate-1">
-                <h3 className="font-heading font-black text-3xl mb-10 flex items-center gap-4">
-                   <Globe className="w-8 h-8 text-yellow" /> Get in Touch
+            <div className="lg:col-span-2 space-y-10 w-full min-w-0">
+              <div className="bg-navy rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 text-white border-4 sm:border-8 border-navy-mid shadow-[8px_8px_0px_#F5C518] sm:shadow-[15px_15px_0px_#F5C518] transform -rotate-1 max-w-full min-w-0">
+                <h3 className="font-heading font-black text-2xl sm:text-3xl mb-8 sm:mb-10 flex items-center gap-4 break-words">
+                   <Globe className="w-8 h-8 text-yellow shrink-0" /> Get in Touch
                 </h3>
-                <div className="space-y-8">
-                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
-                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
-                      <Mail className="w-7 h-7 text-navy" />
+                <div className="space-y-8 w-full min-w-0">
+                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
+                      <Mail className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">General Email</p>
-                      <p className="text-xl text-white font-bold">{siteContact.email.info}</p>
-                      <p className="mt-1 text-sm text-white/70 font-bold">Support: {siteContact.email.support}</p>
+                      <p className="text-base sm:text-xl text-white font-bold break-all">{siteContact.email.info}</p>
+                      <p className="mt-1 text-xs sm:text-sm text-white/70 font-bold break-all">Support: {siteContact.email.support}</p>
                     </div>
                   </div>
                   
-                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
-                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
-                      <Phone className="w-7 h-7 text-navy" />
+                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
+                      <Phone className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Support Line</p>
-                      <p className="text-xl text-white font-bold">{siteContact.phone.support}</p>
+                      <p className="text-base sm:text-xl text-white font-bold break-words">{siteContact.phone.support}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
-                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
-                      <MessageSquare className="w-7 h-7 text-navy" />
+                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
+                      <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">WhatsApp</p>
                       <a
                         href={`https://wa.me/${siteContact.phone.whatsappIntl}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xl text-white font-bold hover:text-yellow transition-colors"
+                        className="text-base sm:text-xl text-white font-bold hover:text-yellow transition-colors break-words block"
                       >
                         {siteContact.phone.whatsapp}
                       </a>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-6 group cursor-pointer hover:translate-x-2 transition-transform">
-                    <div className="w-14 h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
-                      <MapPin className="w-7 h-7 text-navy" />
+                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
+                      <MapPin className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Address</p>
-                      <p className="text-xl text-white font-bold">{siteContact.address}</p>
+                      <p className="text-base sm:text-xl text-white font-bold break-words">{siteContact.address}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Quick Help Card */}
-              <div className="bg-yellow border-4 border-navy rounded-[2.5rem] p-10 shadow-[10px_10px_0px_#0A1628] transform rotate-1">
+              <div className="bg-yellow border-4 border-navy rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-[8px_8px_0px_#0A1628] sm:shadow-[10px_10px_0px_#0A1628] transform rotate-1 max-w-full min-w-0">
                 <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-white border-4 border-navy rounded-xl flex items-center justify-center shadow-[4px_4px_0px_#0A1628]">
-                    <HelpCircle className="w-6 h-6 text-navy" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white border-4 border-navy rounded-xl flex items-center justify-center shadow-[4px_4px_0px_#0A1628] shrink-0">
+                    <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-navy" />
                   </div>
-                  <h3 className="font-heading font-black text-2xl text-navy">Quick Resources</h3>
+                  <h3 className="font-heading font-black text-xl sm:text-2xl text-navy break-words">Quick Resources</h3>
                 </div>
                 <ul className="space-y-4">
                   {[
@@ -106,11 +106,11 @@ export default function ContactPage() {
                     'Becoming a vetted Global Tutor',
                     'Parent dashboard setup'
                   ].map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-3 font-bold text-navy hover:translate-x-2 transition-transform cursor-pointer group">
-                      <div className="w-6 h-6 rounded bg-navy text-white flex items-center justify-center text-[10px] font-black group-hover:bg-info">
+                    <li key={idx} className="flex items-start gap-3 font-bold text-navy hover:translate-x-2 transition-transform cursor-pointer group">
+                      <div className="w-6 h-6 rounded bg-navy text-white flex items-center justify-center text-[10px] font-black group-hover:bg-info shrink-0 mt-0.5">
                          {idx + 1}
                       </div>
-                      {item}
+                      <span className="break-words leading-tight">{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -118,36 +118,36 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="lg:col-span-3">
-              <div className="bg-off-white border-8 border-navy rounded-[2.5rem] p-8 md:p-14 shadow-[20px_20px_0px_#22C55E] -rotate-1">
-                <div className="mb-10 text-center md:text-left">
-                  <h2 className="font-heading font-black text-navy text-4xl mb-4">Send Us a Message</h2>
-                  <p className="text-navy/60 text-lg font-bold">Fill out the form and our global team will be in touch shortly.</p>
+            <div className="lg:col-span-3 w-full min-w-0">
+              <div className="bg-off-white border-4 sm:border-8 border-navy rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 md:p-14 shadow-[10px_10px_0px_#22C55E] sm:shadow-[20px_20px_0px_#22C55E] -rotate-1 max-w-full min-w-0 overflow-hidden">
+                <div className="mb-8 sm:mb-10 text-center md:text-left">
+                  <h2 className="font-heading font-black text-navy text-3xl sm:text-4xl mb-4 break-words">Send Us a Message</h2>
+                  <p className="text-navy/60 text-base sm:text-lg font-bold break-words">Fill out the form and our global team will be in touch shortly.</p>
                 </div>
 
-                <form className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form className="space-y-6 sm:space-y-8 w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                     <div>
-                      <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Full Name</label>
+                      <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Full Name</label>
                       <input
                         type="text"
                         placeholder="Sarah Jenkins"
-                        className="w-full px-6 py-5 rounded-2xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
+                        className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Email Address</label>
+                      <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Email Address</label>
                       <input
                         type="email"
                         placeholder="sarah@example.com"
-                        className="w-full px-6 py-5 rounded-2xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
+                        className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Subject</label>
-                    <select className="w-full px-6 py-5 rounded-2xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all appearance-none cursor-pointer">
+                    <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Subject</label>
+                    <select className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all appearance-none cursor-pointer text-ellipsis overflow-hidden">
                       <option value="">Select a topic</option>
                       <option value="general">Book Free Introductory Session</option>
                       <option value="support">Academic Support Enquiry</option>
@@ -158,19 +158,19 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-black text-navy uppercase tracking-widest mb-3">Message</label>
+                    <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Message</label>
                     <textarea
                       rows={5}
                       placeholder="Tell us how we can help..."
-                      className="w-full px-6 py-5 rounded-3xl border-4 border-navy bg-white text-navy font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all resize-none"
+                      className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-3xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="group w-full md:w-auto bg-navy text-white font-heading font-black px-16 py-6 rounded-2xl border-4 border-navy shadow-[10px_10px_0px_#22C55E] hover:translate-x-1 hover:translate-y-1 hover:shadow-[5px_5px_0px_#22C55E] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-2xl flex items-center justify-center gap-4"
+                    className="group w-full bg-navy text-white font-heading font-black px-8 sm:px-16 py-4 sm:py-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#22C55E] sm:shadow-[10px_10px_0px_#22C55E] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#22C55E] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl sm:text-2xl flex items-center justify-center gap-4 break-words"
                   >
-                    SEND MESSAGE <Send className="w-6 h-6 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" />
+                    SEND MESSAGE <Send className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform shrink-0" />
                   </button>
                 </form>
               </div>
