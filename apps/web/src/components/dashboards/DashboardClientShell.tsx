@@ -47,7 +47,7 @@ import {
 import { BandProvider, useBand } from '@/components/dashboards/BandContext';
 import DashboardQueryActionBridge from '@/components/dashboards/DashboardQueryActionBridge';
 import DashboardToastViewport from '@/components/dashboards/DashboardToastViewport';
-import StudentSidebarNav from '@/components/dashboards/StudentSidebarNav';
+import StudentSidebarNav, { StudentBottomNav } from '@/components/dashboards/StudentSidebarNav';
 import { LogoutButton } from '@/components/ui/logout-button';
 import type { LearnerBand } from '@/components/dashboards/BandContext';
 import { createClient } from '@/utils/supabase/client';
@@ -110,7 +110,7 @@ export default function DashboardClientShell({
   const [avatarUrl, setAvatarUrl] = useState<string>(
     `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(viewerName)}`,
   );
-  const showGrade13BottomNav = effectiveRole === 'student' && initialBand === '1-3';
+  const showStudentBottomNav = effectiveRole === 'student';
   const roleLabel =
     effectiveRole === 'tutor'
       ? 'Tutor teaching dashboard'
@@ -266,29 +266,13 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showGrade13BottomNav ? 'pb-28' : ''}`}>
+          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showStudentBottomNav ? 'pb-28' : ''}`}>
             <div className="mx-auto w-full max-w-[1760px] min-w-0">{children}</div>
           </main>
         </div>
 
-        {showGrade13BottomNav ? (
-          <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
-            <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
-              <BottomNavItem href="/dash/student" label="Home" icon={Home} active={pathname === '/dash/student'} />
-              <BottomNavItem href="/dash/student/classes" label="Classes" icon={BookOpen} active={pathname === '/dash/student/classes'} />
-              <BottomNavItem href="/dash/student/subjects" label="Subjects" icon={BookMarked} active={pathname === '/dash/student/subjects'} />
-              <BottomNavItem href="/dash/student/homework" label="Tasks" icon={CheckCircle2} active={pathname === '/dash/student/homework' || pathname === '/dash/student/assignments'} />
-              <BottomNavItem href="/dash/student/notes" label="Notes" icon={NotebookPen} active={pathname === '/dash/student/notes'} />
-              <BottomNavItem href="/dash/student/spelling-bee" label="Spelling" icon={Volume2} active={pathname === '/dash/student/spelling-bee'} />
-              <BottomNavItem href="/dash/student/games" label="Play" icon={Gamepad2} active={pathname === '/dash/student/games'} />
-              <BottomNavItem href="/dash/student/read" label="Read" icon={BookOpen} active={pathname === '/dash/student/read'} />
-              <BottomNavItem href="/dash/student/stories" label="Stories" icon={PlayCircle} active={pathname === '/dash/student/stories'} />
-              <BottomNavItem href="/dash/student/flashcards" label="Cards" icon={Layers} active={pathname === '/dash/student/flashcards'} />
-              <BottomNavItem href="/dash/student/tracker" label="Progress" icon={TrendingUp} active={pathname === '/dash/student/tracker'} />
-              <BottomNavItem href="/dash/student/streak" label="Streak" icon={Flame} active={pathname === '/dash/student/streak'} />
-              <BottomNavItem href="/dash/profile" label="Profile" icon={User} active={pathname === '/dash/profile'} />
-            </div>
-          </nav>
+        {showStudentBottomNav ? (
+          <StudentBottomNav initialBand={initialBand} />
         ) : null}
       </div>
     </BandProvider>
@@ -309,16 +293,7 @@ function StudentBandSwitcher() {
   );
 }
 
-const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
-  <Link href={href} className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-wider transition-all shrink-0 min-w-[52px] ${
-    active
-      ? 'bg-yellow border-[2px] border-dark text-dark shadow-[2px_2px_0px_#060E1C]'
-      : 'text-dark/40 hover:text-dark/70 border-[2px] border-transparent'
-  }`}>
-    <Icon className="h-4 w-4" />
-    <span className="whitespace-nowrap">{label}</span>
-  </Link>
-);
+
 
 function TutorSidebarNav() {
   const pathname = usePathname();
