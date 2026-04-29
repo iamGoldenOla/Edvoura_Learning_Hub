@@ -75,24 +75,24 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
   };
 
   return (
-    <div className="space-y-12 pb-20">
-      <header className="text-center bg-white border-[4px] border-dark rounded-[40px] p-10 shadow-[10px_10px_0px_#060E1C]">
-        <h1 className="text-5xl font-heading font-black text-dark">My Learning Missions</h1>
-        <p className="mt-4 text-xl text-dark/60 font-semibold italic">Finish your missions to grow your magic garden!</p>
+    <div className="space-y-8 sm:space-y-12 pb-20 w-full min-w-0">
+      <header className="text-center bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-10 shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] min-w-0">
+        <h1 className="text-3xl sm:text-5xl font-heading font-black text-dark break-words">My Learning Missions</h1>
+        <p className="mt-3 sm:mt-4 text-sm sm:text-xl text-dark/60 font-semibold italic break-words">Finish your missions to grow your magic garden!</p>
       </header>
 
       <section className="space-y-6">
-        <div className="flex items-center gap-3 mb-8">
-           <div className="h-10 w-10 rounded-full bg-yellow border-[3px] border-dark flex items-center justify-center shadow-[4px_4px_0px_#060E1C]">
-             <Star className="h-5 w-5" />
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+           <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-yellow border-[3px] border-dark flex items-center justify-center shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] shrink-0">
+             <Star className="h-4 w-4 sm:h-5 sm:w-5" />
            </div>
-           <h2 className="text-3xl font-black text-dark uppercase tracking-tight">Active Missions</h2>
+           <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Active Missions</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {pending.length > 0 ? (
             pending.map((item) => (
-              <div key={item.id} className="bg-white border-[4px] border-dark rounded-[32px] shadow-[8px_8px_0px_#060E1C] overflow-hidden flex flex-col hover:translate-y-[-4px] transition-all">
+              <div key={item.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden flex flex-col hover:translate-y-[-4px] transition-all min-w-0">
                 <div className="bg-blue-600 p-6 flex items-center justify-between border-b-[4px] border-dark">
                   <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center text-white">
                     <BookOpen className="h-6 w-6" />
@@ -101,10 +101,10 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
                     Ready!
                   </span>
                 </div>
-                <div className="p-8 flex-1 flex flex-col">
+                <div className="p-5 sm:p-8 flex-1 flex flex-col min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/30 mb-2">{item.subjectName}</p>
-                  <h3 className="text-2xl font-black text-dark mb-4">{item.title}</h3>
-                  <p className="text-sm text-dark/60 font-semibold mb-6 line-clamp-2">{item.instructions || 'No instructions provided.'}</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-dark mb-3 sm:mb-4 break-words">{item.title}</h3>
+                  <p className="text-xs sm:text-sm text-dark/60 font-semibold mb-4 sm:mb-6 line-clamp-2 break-words">{item.instructions || 'No instructions provided.'}</p>
                   
                   <div className="mt-auto pt-6 flex flex-col gap-3">
                     <button 
