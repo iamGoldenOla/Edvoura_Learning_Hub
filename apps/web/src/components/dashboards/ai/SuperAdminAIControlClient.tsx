@@ -6,7 +6,10 @@ import AIContentGeneratorForm, {
 } from "./AIContentGeneratorForm";
 import AIContentPreview from "./AIContentPreview";
 import PendingReviewList, { type PendingReviewRecord } from "./PendingReviewList";
-import { generateEdvouraContent } from "@/lib/ai/contentGenerationService";
+import {
+  generateEdvouraContent,
+  usesLocalBlueprintEngine,
+} from "@/lib/ai/contentGenerationService";
 import {
   listDashboardAiContent,
   reviewContent,
@@ -77,9 +80,13 @@ export default function SuperAdminAIControlClient() {
 
   async function onGenerate(payload: GeneratorPayload) {
     setIsGenerating(true);
-    setFeedback("Generating super-admin draft...");
+    setFeedback(
+      usesLocalBlueprintEngine(payload.taskType)
+        ? "Generating draft with the Edvoura lesson blueprint engine..."
+        : "Generating super-admin draft...",
+    );
     try {
-      if (!puterUserLabel) {
+      if (!usesLocalBlueprintEngine(payload.taskType) && !puterUserLabel) {
         await connectPuter();
       }
       const generated = await generateEdvouraContent({
@@ -87,7 +94,11 @@ export default function SuperAdminAIControlClient() {
         ...payload,
       });
       setPreviewContent(generated.content);
-      setFeedback("Draft generated and saved.");
+      setFeedback(
+        usesLocalBlueprintEngine(payload.taskType)
+          ? "Draft generated from the Edvoura lesson blueprint engine and saved."
+          : "Draft generated and saved.",
+      );
       await loadRecords();
     } catch (error) {
       setFeedback(

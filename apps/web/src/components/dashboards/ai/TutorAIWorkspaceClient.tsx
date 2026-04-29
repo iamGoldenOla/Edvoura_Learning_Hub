@@ -6,7 +6,10 @@ import AIContentGeneratorForm, {
 } from "./AIContentGeneratorForm";
 import AIContentPreview from "./AIContentPreview";
 import PendingReviewList from "./PendingReviewList";
-import { generateEdvouraContent } from "@/lib/ai/contentGenerationService";
+import {
+  generateEdvouraContent,
+  usesLocalBlueprintEngine,
+} from "@/lib/ai/contentGenerationService";
 import {
   listDashboardAiContent,
   submitForReview,
@@ -93,9 +96,13 @@ export default function TutorAIWorkspaceClient() {
 
   async function onGenerate(payload: GeneratorPayload) {
     setIsGenerating(true);
-    setFeedback("Generating content with Edvoura AI...");
+    setFeedback(
+      usesLocalBlueprintEngine(payload.taskType)
+        ? "Generating content with the Edvoura lesson blueprint engine..."
+        : "Generating content with Edvoura AI...",
+    );
     try {
-      if (!puterUserLabel) {
+      if (!usesLocalBlueprintEngine(payload.taskType) && !puterUserLabel) {
         await connectPuter();
       }
       const generated = await generateEdvouraContent({
@@ -103,7 +110,11 @@ export default function TutorAIWorkspaceClient() {
         ...payload,
       });
       setPreviewContent(generated.content);
-      setFeedback("Draft generated and saved. Submit it for super admin review.");
+      setFeedback(
+        usesLocalBlueprintEngine(payload.taskType)
+          ? "Draft generated from the Edvoura lesson blueprint engine and saved."
+          : "Draft generated and saved. Submit it for super admin review.",
+      );
       await loadRecords();
     } catch (error) {
       setFeedback(

@@ -505,6 +505,10 @@ function shouldUseLocalBlueprintEngine(taskType: EdvouraTaskType) {
   return ["GENERATE_LESSON", "GENERATE_LESSON_NOTE", "GENERATE_LESSON_PLAN"].includes(taskType);
 }
 
+export function usesLocalBlueprintEngine(taskType: EdvouraTaskType) {
+  return shouldUseLocalBlueprintEngine(taskType);
+}
+
 export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   validateRole(input.userRole);
   const normalizedSubject = normalizeSubjectName(input.subject);
