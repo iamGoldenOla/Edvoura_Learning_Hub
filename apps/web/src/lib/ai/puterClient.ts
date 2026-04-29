@@ -5,13 +5,21 @@ const PUTER_LOAD_TIMEOUT_MS = 15000;
 const PUTER_POLL_INTERVAL_MS = 250;
 
 function readPuterText(response: unknown): string {
-  if (typeof response === "string") {
-    return response;
+  let candidate = response as any;
+
+  // Sometimes Puter API returns the JSON envelope as a string
+  if (typeof candidate === "string") {
+    try {
+      const parsed = JSON.parse(candidate);
+      if (parsed && typeof parsed === "object") {
+        candidate = parsed;
+      }
+    } catch {
+      // It's just a raw text string, which is fine
+    }
   }
 
-  if (response && typeof response === "object") {
-    const candidate = response as any;
-
+  if (candidate && typeof candidate === "object") {
     // Claude shape: response.message.content[0].text
     if (
       candidate.message &&
@@ -42,7 +50,9 @@ function readPuterText(response: unknown): string {
     }
   }
 
-  return JSON.stringify(response);
+  // If we couldn't extract anything and it was originally a string, return the string.
+  // Otherwise, stringify the unknown object.
+  return typeof response === "string" ? response : JSON.stringify(response);
 }
 
 export function getPuter() {
