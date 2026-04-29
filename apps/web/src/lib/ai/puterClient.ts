@@ -1,5 +1,5 @@
 export const DEFAULT_EDVOURA_AI_MODEL =
-  process.env.NEXT_PUBLIC_EDVOURA_AI_MODEL || "claude-3-5-sonnet";
+  process.env.NEXT_PUBLIC_EDVOURA_AI_MODEL || "claude-sonnet-4-6";
 
 const PUTER_LOAD_TIMEOUT_MS = 15000;
 const PUTER_POLL_INTERVAL_MS = 250;
@@ -89,9 +89,8 @@ export async function generateWithPuterAI(
     };
   } catch (error) {
     console.error("Puter AI generation failed:", error);
-    throw new Error(
-      "AI generation is temporarily unavailable. You can still create or edit this content manually.",
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Puter AI Error: ${errorMessage}`);
   }
 }
 
