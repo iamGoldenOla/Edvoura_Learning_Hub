@@ -112,7 +112,7 @@ export default function Home() {
         <div className="marketing-container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Image Box */}
-            <div className="relative group perspective-[2000px]">
+            <div className="relative group perspective-[2000px] w-full min-w-0">
               <div className="relative bg-white border-8 border-navy rounded-[3rem] shadow-[15px_15px_0px_#0A1628] overflow-hidden transform rotate-y-12 rotate-z-[-3deg] group-hover:rotate-y-0 group-hover:rotate-z-0 group-hover:translate-x-2 group-hover:translate-y-2 group-hover:shadow-[5px_5px_0px_#0A1628] transition-all duration-500 z-20">
                 <Image 
                   src="/images/teddy.png" 
@@ -123,21 +123,21 @@ export default function Home() {
                 />
               </div>
               
-              <div className="absolute -top-10 -right-10 w-24 h-24 bg-yellow border-4 border-navy rounded-3xl flex items-center justify-center rotate-12 shadow-[6px_6px_0px_#0A1628] z-30 animate-[bounce_3s_infinite]">
+              <div className="absolute -top-10 -right-4 sm:-right-10 w-24 h-24 bg-yellow border-4 border-navy rounded-3xl flex items-center justify-center rotate-12 shadow-[6px_6px_0px_#0A1628] z-30 animate-[bounce_3s_infinite]">
                 <Star className="w-12 h-12 text-navy fill-navy" />
               </div>
             </div>
 
             {/* Text Box */}
-            <div className="lg:pl-8">
+            <div className="lg:pl-8 w-full min-w-0">
               <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] rotate-2">
                 GRADES 1—3
               </div>
-              <h2 className="font-heading font-black text-white text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628]">
+              <h2 className="font-heading font-black text-white text-4xl sm:text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628] break-words">
                 Learning that feels like Playtime.
               </h2>
-              <div className="bg-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform -rotate-1">
-                <p className="text-navy text-xl font-bold leading-relaxed">
+              <div className="bg-white border-4 border-navy rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform -rotate-1 max-w-full break-words">
+                <p className="text-navy text-base sm:text-xl font-bold leading-relaxed">
                   For our youngest learners (The Explorer Band), we replace rigid tables with vibrant sticker books, engaging subject games, and visual reward gardens.
                 </p>
               </div>
@@ -170,7 +170,7 @@ export default function Home() {
         <div className="marketing-container">
           <div className="flex flex-col lg:flex-row-reverse gap-16 items-center">
             {/* Image Box */}
-            <div className="relative group perspective-[2000px] flex-1">
+            <div className="relative group perspective-[2000px] flex-1 w-full min-w-0">
               <div className="relative bg-white border-8 border-navy rounded-[3rem] shadow-[15px_15px_0px_#0A1628] overflow-hidden transform -rotate-y-12 rotate-z-[3deg] group-hover:rotate-y-0 group-hover:rotate-z-0 transition-all duration-500 z-20">
                 <Image 
                   src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?q=80&w=2070&auto=format&fit=crop" 
@@ -180,21 +180,21 @@ export default function Home() {
                   className="w-full h-[500px] object-cover"
                 />
               </div>
-              <div className="absolute -bottom-10 -right-4 w-24 h-24 bg-navy border-4 border-white rounded-3xl flex items-center justify-center -rotate-6 shadow-[6px_6px_0px_#F5C518] z-30">
-                <Hammer className="w-12 h-12 text-yellow" />
+              <div className="absolute -bottom-4 sm:-bottom-10 -right-2 sm:-right-4 w-20 h-20 sm:w-24 sm:h-24 bg-navy border-4 border-white rounded-3xl flex items-center justify-center -rotate-6 shadow-[6px_6px_0px_#F5C518] z-30">
+                <Hammer className="w-10 h-10 sm:w-12 sm:h-12 text-yellow" />
               </div>
             </div>
 
             {/* Text Box */}
-            <div className="flex-1 lg:pr-8">
+            <div className="flex-1 lg:pr-8 w-full min-w-0">
               <div className="inline-block bg-white border-4 border-navy text-navy font-black px-5 py-2 rounded-xl mb-8 shadow-[4px_4px_0px_#0A1628] -rotate-2">
                 GRADES 4—6
               </div>
               <h2 className="font-heading font-black text-white text-4xl sm:text-5xl md:text-6xl mb-8 leading-[1.1] drop-shadow-[4px_4px_0px_#0A1628] break-words">
                 Building Mastery & Confidence.
               </h2>
-              <div className="bg-white border-4 border-navy rounded-2xl p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform rotate-1">
-                <p className="text-navy text-xl font-bold leading-relaxed">
+              <div className="bg-white border-4 border-navy rounded-2xl p-4 sm:p-6 shadow-[8px_8px_0px_#0A1628] mb-10 transform rotate-1 max-w-full break-words">
+                <p className="text-navy text-base sm:text-xl font-bold leading-relaxed">
                    For our intermediate learners (The Builder Band), we shift focus to structured subjects, badge walls, and competitive progress tracks that reward consistency and academic growth.
                 </p>
               </div>
