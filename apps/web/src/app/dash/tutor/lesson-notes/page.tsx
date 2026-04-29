@@ -275,82 +275,82 @@ export default function TutorLessonNotesPage() {
   };
 
   return (
-    <div className="mx-auto max-w-[1400px] space-y-8 p-6 sm:p-8 pb-20">
-      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-6 sm:space-y-8 pb-20">
+      <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         
         {/* Header */}
-        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-            <div className="space-y-3 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[3px] sm:border-b-[4px] border-dark bg-yellow/20">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 min-w-0">
+            <div className="space-y-3 min-w-0 w-full">
+              <span className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-dark bg-white text-[9px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] font-black shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] break-words max-w-full text-center">
                 TEACHING MANAGEMENT
               </span>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 Lesson Notes & Plans
               </h1>
-              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl break-words">
                 Prepare lesson plans, objectives, delivery notes, and class activities in one unified place.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-8 md:p-12 space-y-8">
+        <div className="p-5 sm:p-8 md:p-12 space-y-6 sm:space-y-8 min-w-0">
 
           {feedback ? (
-            <section className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm text-dark font-black shadow-[5px_5px_0px_#060E1C]">{feedback}</section>
+            <section className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm text-dark font-black shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] break-words">{feedback}</section>
           ) : null}
 
-          <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
+          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-4 min-w-0">
             <Stat title="Plans This Week" value={stats.total} icon={ClipboardList} bgColor="bg-emerald-200" />
             <Stat title="Ready to Deliver" value={stats.ready} icon={CheckSquare} bgColor="bg-blue-200" />
             <Stat title="Draft Notes" value={stats.draft} icon={FilePenLine} bgColor="bg-amber-200" />
             <Stat title="Resource Packs" value={stats.packs} icon={BookOpen} bgColor="bg-rose-200" />
           </section>
 
-          <section className="grid grid-cols-1 gap-8 xl:grid-cols-12">
+          <section className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12 min-w-0">
             
-            <div className="space-y-6 xl:col-span-8">
-              <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-                <div className="p-6 border-b-[3px] border-dark bg-off-white flex flex-row items-center justify-between">
-                  <h2 className="text-2xl font-black text-dark tracking-tight">Current Lesson Plans</h2>
-                  <Button className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2" onClick={() => setShowForm((v) => !v)}>
+            <div className="space-y-6 xl:col-span-8 min-w-0">
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+                <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-off-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Current Lesson Plans</h2>
+                  <Button className="w-full sm:w-auto bg-dark text-white border-[2px] sm:border-[3px] border-dark font-black rounded-xl shadow-[2px_2px_0px_#F5C518] sm:shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-3 flex justify-center" onClick={() => setShowForm((v) => !v)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     {showForm ? 'Close Form' : 'New Lesson Note'}
                   </Button>
                 </div>
                 
-                <div className="p-6 space-y-6">
+                <div className="p-5 sm:p-6 space-y-6 min-w-0">
                   {showForm ? (
-                    <div className="rounded-2xl border-[3px] border-dark bg-blue-50 p-6 shadow-[5px_5px_0px_#060E1C]">
-                      <h3 className="text-xl font-black text-dark tracking-tight">
+                    <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-blue-50 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                      <h3 className="text-lg sm:text-xl font-black text-dark tracking-tight break-words">
                         {editingPlanId ? 'Edit Lesson Note' : 'Create Lesson Note'}
                       </h3>
-                      <div className="mt-6 space-y-4">
+                      <div className="mt-4 sm:mt-6 space-y-4 min-w-0">
                         <input
                           value={className}
                           onChange={(event) => setClassName(event.target.value)}
                           placeholder="Class name (e.g., JSS3 Mathematics)"
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <input
                           value={topic}
                           onChange={(event) => setTopic(event.target.value)}
                           placeholder="Topic"
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                           <input
                             value={lessonDate}
                             onChange={(event) => setLessonDate(event.target.value)}
                             type="date"
-                            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                           />
                           <input
                             value={duration}
                             onChange={(event) => setDuration(event.target.value)}
                             placeholder="Duration (e.g., 60 mins)"
-                            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                           />
                         </div>
                         <textarea
@@ -358,68 +358,68 @@ export default function TutorLessonNotesPage() {
                           onChange={(event) => setObjective(event.target.value)}
                           placeholder="Learning objective(s)"
                           rows={3}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={priorKnowledge}
                           onChange={(event) => setPriorKnowledge(event.target.value)}
                           placeholder="Prior knowledge/bridge from last lesson"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <input
                           value={keyVocabulary}
                           onChange={(event) => setKeyVocabulary(event.target.value)}
                           placeholder="Key vocabulary"
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={resources}
                           onChange={(event) => setResources(event.target.value)}
                           placeholder="Teaching resources/materials"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={differentiation}
                           onChange={(event) => setDifferentiation(event.target.value)}
                           placeholder="Differentiation and SEND/ELL support"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={formativeAssessment}
                           onChange={(event) => setFormativeAssessment(event.target.value)}
                           placeholder="Formative assessment and checks for understanding"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={homework}
                           onChange={(event) => setHomework(event.target.value)}
                           placeholder="Homework / independent practice"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={safeguarding}
                           onChange={(event) => setSafeguarding(event.target.value)}
                           placeholder="Safeguarding and classroom management notes"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
                         <textarea
                           value={reflection}
                           onChange={(event) => setReflection(event.target.value)}
                           placeholder="Teacher reflection / next-step adjustment"
                           rows={2}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
-                        <div className="flex flex-wrap gap-4 pt-4 border-t-[3px] border-dark/10">
-                          <Button className="bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto" onClick={() => createLessonPlan('Ready')}>
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 pt-4 border-t-[3px] border-dark/10 min-w-0">
+                          <Button className="w-full sm:w-auto bg-emerald-400 border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto text-xs sm:text-sm" onClick={() => createLessonPlan('Ready')}>
                             {editingPlanId ? 'Update as Ready' : 'Save as Ready'}
                           </Button>
-                          <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto" onClick={() => createLessonPlan('Draft')}>
+                          <Button className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto text-xs sm:text-sm" onClick={() => createLessonPlan('Draft')}>
                             {editingPlanId ? 'Update as Draft' : 'Save as Draft'}
                           </Button>
                         </div>
@@ -428,23 +428,23 @@ export default function TutorLessonNotesPage() {
                   ) : null}
 
                   {plans.map((item) => (
-                    <div key={item.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[5px_5px_0px_#060E1C]">
-                      <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-                        <p className="text-xs font-black uppercase tracking-[0.12em] text-dark bg-white px-3 py-1 rounded-md border-[2px] border-dark">
+                    <div key={item.id} className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-off-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                      <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
+                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] sm:tracking-[0.12em] text-dark bg-white px-3 py-1.5 sm:py-1 rounded-md border-[2px] border-dark break-words max-w-full">
                           {item.className} | {item.lessonDate} | {item.duration}
                         </p>
-                        <div className="flex items-center gap-2">
-                          <Button className="h-8 border-[2px] border-dark bg-white text-dark font-black text-xs hover:bg-slate-50 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => startEditPlan(item)}>
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                          <Button className="flex-1 sm:flex-none h-10 sm:h-8 border-[2px] border-dark bg-white text-dark font-black text-xs hover:bg-slate-50 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => startEditPlan(item)}>
                             <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
                           </Button>
-                          <Button className="h-8 border-[2px] border-dark bg-rose-100 text-rose-700 font-black text-xs hover:bg-rose-200 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => deletePlan(item.id)}>
+                          <Button className="flex-1 sm:flex-none h-10 sm:h-8 border-[2px] border-dark bg-rose-100 text-rose-700 font-black text-xs hover:bg-rose-200 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => deletePlan(item.id)}>
                             <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
                           </Button>
                         </div>
                       </div>
-                      <p className="mt-2 text-2xl font-black text-dark tracking-tight">{item.topic}</p>
-                      <p className="mt-2 text-sm font-bold text-dark/70">{item.objective}</p>
-                      <div className="mt-4 space-y-2 border-t-[2px] border-dark/10 pt-4">
+                      <p className="mt-2 text-xl sm:text-2xl font-black text-dark tracking-tight break-words">{item.topic}</p>
+                      <p className="mt-2 text-xs sm:text-sm font-bold text-dark/70 break-words">{item.objective}</p>
+                      <div className="mt-4 space-y-2 border-t-[2px] border-dark/10 pt-4 min-w-0">
                         <p className="text-xs text-dark/70 font-semibold"><strong className="text-dark font-black uppercase tracking-widest">Assessment:</strong> {item.formativeAssessment}</p>
                         <p className="text-xs text-dark/70 font-semibold"><strong className="text-dark font-black uppercase tracking-widest">Differentiation:</strong> {item.differentiation}</p>
                         <p className="text-xs text-dark/70 font-semibold"><strong className="text-dark font-black uppercase tracking-widest">Safeguarding:</strong> {item.safeguarding}</p>
@@ -458,10 +458,10 @@ export default function TutorLessonNotesPage() {
               </div>
             </div>
 
-            <div className="space-y-6 xl:col-span-4">
-              <div className="border-[3px] border-dark rounded-3xl bg-white p-6 shadow-[5px_5px_0px_#060E1C]">
-                <h3 className="text-xl font-black text-dark mb-4">Plan Checklist</h3>
-                <div className="space-y-3 text-sm font-semibold text-dark/80">
+            <div className="space-y-6 xl:col-span-4 min-w-0">
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-dark mb-4 break-words">Plan Checklist</h3>
+                <div className="space-y-3 text-xs sm:text-sm font-semibold text-dark/80 min-w-0">
                   <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Learning objective defined</div>
                   <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Starter activity prepared</div>
                   <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 shadow-[2px_2px_0px_#060E1C]">Practice questions prepared</div>
@@ -472,12 +472,12 @@ export default function TutorLessonNotesPage() {
                 </div>
               </div>
 
-              <div className="border-[3px] border-dark rounded-3xl bg-blue-100 p-6 shadow-[5px_5px_0px_#060E1C]">
-                <h3 className="text-xl font-black text-dark mb-4 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-dark" />
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-blue-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-dark mb-4 flex items-center gap-2 break-words">
+                  <Target className="h-5 w-5 text-dark shrink-0" />
                   Veteran Standard
                 </h3>
-                <div className="space-y-3 text-sm font-semibold text-dark/80">
+                <div className="space-y-3 text-xs sm:text-sm font-semibold text-dark/80 min-w-0">
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Objective must be measurable and observable.</div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">At least two formative checks during delivery.</div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Plan remediation for struggling learners.</div>
@@ -485,12 +485,12 @@ export default function TutorLessonNotesPage() {
                 </div>
               </div>
 
-              <div className="border-[3px] border-dark rounded-3xl bg-yellow/20 p-6 shadow-[5px_5px_0px_#060E1C] space-y-4">
-                <h3 className="text-xl font-black text-dark flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-dark" />
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-yellow/20 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] space-y-4 min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-dark flex items-center gap-2 break-words">
+                  <Sparkles className="h-5 w-5 text-dark shrink-0" />
                   Lesson Explainer
                 </h3>
-                <p className="text-sm font-semibold text-dark/70">
+                <p className="text-xs sm:text-sm font-semibold text-dark/70 break-words">
                   Rework any lesson note into a simpler explanation, harder examples, quick checks, or revision notes.
                 </p>
                 <select
@@ -499,7 +499,7 @@ export default function TutorLessonNotesPage() {
                     setExplainerPlanId(event.target.value);
                     setExplainerResult(null);
                   }}
-                  className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
+                  className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                 >
                   {plans.map((plan) => (
                     <option key={plan.id} value={plan.id}>
@@ -518,10 +518,10 @@ export default function TutorLessonNotesPage() {
                       key={item.value}
                       type="button"
                       onClick={() => setExplainerMode(item.value as typeof explainerMode)}
-                      className={`rounded-xl border-[3px] px-3 py-3 text-left text-[11px] font-black uppercase tracking-widest transition-all ${
+                      className={`rounded-xl border-[2px] sm:border-[3px] px-2 sm:px-3 py-2 sm:py-3 text-left text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all min-w-0 break-words ${
                         explainerMode === item.value
-                          ? 'border-dark bg-dark text-white shadow-[3px_3px_0px_#F5C518]'
-                          : 'border-dark bg-white text-dark shadow-[3px_3px_0px_#060E1C]'
+                          ? 'border-dark bg-dark text-white shadow-[2px_2px_0px_#F5C518] sm:shadow-[3px_3px_0px_#F5C518]'
+                          : 'border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C]'
                       }`}
                     >
                       {item.label}
@@ -529,21 +529,21 @@ export default function TutorLessonNotesPage() {
                   ))}
                 </div>
                 <Button
-                  className="w-full bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] h-auto py-4"
+                  className="w-full bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] h-auto py-3 sm:py-4 text-xs sm:text-sm break-words whitespace-normal"
                   disabled={!selectedExplainerPlan || isExplaining}
                   onClick={() => void runLessonExplainer()}
                 >
                   {isExplaining ? 'Explaining...' : 'Run Edvoura AI Explainer'}
                 </Button>
 
-                <div className="rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[3px_3px_0px_#060E1C]">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/50">
+                <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
+                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-dark/50 break-words">
                     Explainer Output
                   </p>
                   {explainerResult ? (
-                    <div className="mt-4 space-y-3 text-sm font-semibold text-dark/80">
-                      <p className="text-lg font-black text-dark">{explainerResult.title}</p>
-                      <p>{explainerResult.explanation}</p>
+                    <div className="mt-4 space-y-3 text-xs sm:text-sm font-semibold text-dark/80 min-w-0">
+                      <p className="text-base sm:text-lg font-black text-dark break-words">{explainerResult.title}</p>
+                      <p className="break-words">{explainerResult.explanation}</p>
                       {explainerResult.examples.length > 0 ? (
                         <div className="space-y-2">
                           <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">Examples</p>
@@ -588,12 +588,12 @@ export default function TutorLessonNotesPage() {
                 </div>
               </div>
 
-              <div className="border-[3px] border-dark rounded-3xl bg-rose-100 p-6 shadow-[5px_5px_0px_#060E1C]">
-                <h3 className="text-xl font-black text-dark mb-4 flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-dark" />
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-rose-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-dark mb-4 flex items-center gap-2 break-words">
+                  <ShieldCheck className="h-5 w-5 text-dark shrink-0" />
                   Lesson Safety
                 </h3>
-                <div className="space-y-3 text-sm font-semibold text-dark/80">
+                <div className="space-y-3 text-xs sm:text-sm font-semibold text-dark/80 min-w-0">
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Safe activity flow and supervision points</div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Respectful classroom language standards</div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">Sensitive learner support notes</div>
@@ -619,14 +619,14 @@ function Stat({
   bgColor?: string;
 }) {
   return (
-    <div className={`border-[3px] border-dark rounded-2xl ${bgColor} p-6 shadow-[5px_5px_0px_#060E1C]`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-black uppercase tracking-widest text-dark/70">{title}</p>
-          <p className="mt-2 text-3xl font-black text-dark">{value}</p>
+    <div className={`border-[3px] border-dark rounded-[20px] sm:rounded-2xl ${bgColor} p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0`}>
+      <div className="flex items-center justify-between gap-2 min-w-0">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-dark/70 break-words">{title}</p>
+          <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-black text-dark">{value}</p>
         </div>
-        <div className="h-12 w-12 rounded-xl border-[3px] border-dark bg-white flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
-          <Icon className="h-6 w-6 text-dark" />
+        <div className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-xl border-[3px] border-dark bg-white flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
+          <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-dark" />
         </div>
       </div>
     </div>

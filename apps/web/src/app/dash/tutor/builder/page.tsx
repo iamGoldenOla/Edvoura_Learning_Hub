@@ -505,19 +505,19 @@ export default function TutorBuilderPage() {
   );
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
-      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 pb-24">
+      <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         {/* Header */}
-        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-            <div className="space-y-3 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[3px] sm:border-b-[4px] border-dark bg-yellow/20">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 min-w-0">
+            <div className="space-y-3 min-w-0 w-full">
+              <span className="inline-flex items-center justify-center text-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-dark bg-white text-[9px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] font-black shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] break-words max-w-full">
                 CONTENT STUDIO
               </span>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 Assignments & Quizzes
               </h1>
-              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl break-words">
                 Create engaging learning content and publish it directly to your
                 enrolled students.
               </p>
@@ -525,14 +525,14 @@ export default function TutorBuilderPage() {
           </div>
         </div>
 
-        <div className="p-8 md:p-12 space-y-8">
+        <div className="p-5 sm:p-8 md:p-12 space-y-6 sm:space-y-8 min-w-0">
           {feedback ? (
-            <section className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm text-dark font-black shadow-[5px_5px_0px_#060E1C]">
+            <section className="rounded-[20px] sm:rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm text-dark font-black shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] break-words">
               {feedback}
             </section>
           ) : null}
 
-          <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4 min-w-0">
             <ToolCard
               title="Assignments"
               subtitle="Send tasks to students"
@@ -570,7 +570,7 @@ export default function TutorBuilderPage() {
             />
           </section>
 
-          <section className="grid grid-cols-1 gap-5 md:grid-cols-4">
+          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-4 min-w-0">
             <Stat
               title="Active Assignments"
               value={builderStats.assignments}
@@ -593,16 +593,16 @@ export default function TutorBuilderPage() {
             />
           </section>
 
-          <section className="space-y-8">
-            <div className="space-y-6">
-              <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-                <div className="p-6 border-b-[3px] border-dark bg-off-white flex flex-row items-center justify-between">
-                  <h2 className="text-2xl font-black text-dark tracking-tight">
+          <section className="space-y-6 sm:space-y-8 min-w-0">
+            <div className="space-y-6 min-w-0">
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+                <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-off-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">
                     {livePanelTitle}
                   </h2>
                   {activeTool !== "ai-generator" ? (
                     <Button
-                      className="bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-2"
+                      className="w-full sm:w-auto bg-dark text-white border-[3px] border-dark font-black rounded-xl shadow-[3px_3px_0px_#F5C518] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-xs px-4 py-3 sm:py-2 flex justify-center"
                       onClick={() => setShowAssignmentForm((value) => !value)}
                     >
                       {showAssignmentForm
@@ -612,10 +612,10 @@ export default function TutorBuilderPage() {
                   ) : null}
                 </div>
 
-                <div className="p-6 space-y-6">
+                <div className="p-5 sm:p-6 space-y-6 min-w-0">
                   {showCreateForm && showAssignmentForm ? (
-                    <div className="rounded-2xl border-[3px] border-dark bg-blue-50 p-6 shadow-[5px_5px_0px_#060E1C]">
-                      <h3 className="text-xl font-black text-dark tracking-tight">
+                    <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-blue-50 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                      <h3 className="text-lg sm:text-xl font-black text-dark tracking-tight break-words">
                         Create{" "}
                         {activeTool === "assignment"
                           ? "Assignment"
@@ -946,11 +946,11 @@ export default function TutorBuilderPage() {
                             key={item.id}
                             className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]"
                           >
-                            <div className="flex items-center justify-between mb-4">
-                              <p className="text-xl font-black text-dark tracking-tight">
+                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-0 min-w-0">
+                              <p className="text-lg sm:text-xl font-black text-dark tracking-tight break-words min-w-0 w-full sm:w-auto">
                                 {item.title}
                               </p>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 w-full sm:w-auto shrink-0">
                                 <Button
                                   className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                                   onClick={() => {
@@ -990,28 +990,28 @@ export default function TutorBuilderPage() {
                               </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-3">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-dark bg-white px-3 py-1.5 rounded-lg border-[2px] border-dark">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark bg-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border-[2px] border-dark break-words">
                                 {item.className}
                               </span>
-                              <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 border-[2px] border-dark/20 px-3 py-1.5 rounded-lg">
+                              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/70 border-[2px] border-dark/20 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg break-words">
                                 Due: {item.due}
                               </span>
-                              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 border-[2px] border-emerald-300 px-3 py-1.5 rounded-lg ml-auto">
+                              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-emerald-800 bg-emerald-100 border-[2px] border-emerald-300 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:ml-auto break-words">
                                 {item.status}
                               </span>
                             </div>
 
                             {item.resources.length > 0 ? (
-                              <div className="mt-4 space-y-2 rounded-xl border-[2px] border-dark/20 bg-white p-3">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">
-                                  Attached resources
-                                </p>
-                                {item.resources.map((resource) => (
-                                  <div
-                                    key={resource.id}
-                                    className="text-xs font-bold text-dark"
-                                  >
+                                <div className="mt-4 space-y-2 rounded-xl border-[2px] border-dark/20 bg-white p-3 min-w-0">
+                                  <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/50 break-words">
+                                    Attached resources
+                                  </p>
+                                  {item.resources.map((resource) => (
+                                    <div
+                                      key={resource.id}
+                                      className="text-[10px] sm:text-xs font-bold text-dark break-words"
+                                    >
                                     {resource.fileName}
                                   </div>
                                 ))}
@@ -1035,17 +1035,17 @@ export default function TutorBuilderPage() {
                             key={item.id}
                             className="rounded-2xl border-[3px] border-dark bg-blue-50 p-5 shadow-[4px_4px_0px_#060E1C]"
                           >
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <div className="space-y-2">
-                                <p className="text-xl font-black tracking-tight text-dark">
+                            <div className="flex flex-col sm:flex-row flex-wrap items-start justify-between gap-3 min-w-0">
+                              <div className="space-y-2 min-w-0">
+                                <p className="text-lg sm:text-xl font-black tracking-tight text-dark break-words">
                                   {item.title}
                                 </p>
-                                <p className="text-sm font-bold leading-relaxed text-dark/70">
+                                <p className="text-xs sm:text-sm font-bold leading-relaxed text-dark/70 break-words">
                                   {item.instructions}
                                 </p>
                               </div>
-                              <div className="flex gap-2 shrink-0">
-                                <span className="rounded-lg border-[2px] border-blue-300 bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-900 h-fit">
+                              <div className="flex gap-2 shrink-0 w-full sm:w-auto">
+                                <span className="rounded-lg border-[2px] border-blue-300 bg-blue-100 px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-blue-900 h-fit break-words">
                                   {item.status}
                                 </span>
                                 <Button
@@ -1074,11 +1074,11 @@ export default function TutorBuilderPage() {
                                 </Button>
                               </div>
                             </div>
-                            <div className="mt-4 flex flex-wrap items-center gap-3">
-                              <span className="rounded-lg border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark">
+                            <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                              <span className="rounded-lg border-[2px] border-dark bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark break-words">
                                 {item.className}
                               </span>
-                              <span className="rounded-lg border-[2px] border-dark/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark/70">
+                              <span className="rounded-lg border-[2px] border-dark/20 px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">
                                 {item.timeLimitLabel}
                               </span>
                             </div>
@@ -1099,12 +1099,12 @@ export default function TutorBuilderPage() {
                             key={item.id}
                             className="rounded-2xl border-[3px] border-dark bg-amber-50 p-5 shadow-[4px_4px_0px_#060E1C]"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="space-y-2">
-                                <p className="text-xl font-black tracking-tight text-dark">
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-3 min-w-0">
+                              <div className="space-y-2 min-w-0">
+                                <p className="text-lg sm:text-xl font-black tracking-tight text-dark break-words">
                                   {item.title}
                                 </p>
-                                <p className="text-sm font-bold leading-relaxed text-dark/70">
+                                <p className="text-xs sm:text-sm font-bold leading-relaxed text-dark/70 break-words">
                                   {item.description}
                                 </p>
                               </div>
@@ -1133,11 +1133,11 @@ export default function TutorBuilderPage() {
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
-                            <div className="mt-4 flex flex-wrap items-center gap-3">
-                              <span className="rounded-lg border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark">
+                            <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
+                              <span className="rounded-lg border-[2px] border-dark bg-white px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark break-words">
                                 {item.className}
                               </span>
-                              <span className="rounded-lg border-[2px] border-dark/20 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-dark/70">
+                              <span className="rounded-lg border-[2px] border-dark/20 px-2 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">
                                 Added {item.createdLabel}
                               </span>
                             </div>
@@ -1153,15 +1153,15 @@ export default function TutorBuilderPage() {
                   ) : null}
 
                   {activeTool === "ai-generator" && (
-                    <div className="space-y-6">
-                      <div className="rounded-2xl border-[3px] border-dark bg-yellow/5 p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
-                        <div className="flex items-center gap-3">
-                          <Sparkles className="w-8 h-8 text-yellow-600" />
-                          <h3 className="text-2xl font-black text-dark">
+                    <div className="space-y-6 min-w-0">
+                      <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-yellow/5 p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] space-y-6 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600 shrink-0" />
+                          <h3 className="text-xl sm:text-2xl font-black text-dark break-words">
                             Quick AI Generator
                           </h3>
                         </div>
-                        <div className="grid gap-6 md:grid-cols-2">
+                        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0">
                           <div className="space-y-4">
                             <div>
                               <label className="text-xs font-black uppercase tracking-widest text-dark/60">
@@ -1223,9 +1223,9 @@ export default function TutorBuilderPage() {
                               </div>
                             ) : null}
                           </div>
-                          <div className="rounded-2xl border-[3px] border-dark bg-white p-6 shadow-[4px_4px_0px_#060E1C] min-h-[300px]">
-                            <div className="flex items-center justify-between mb-4 border-b-2 border-dark pb-2">
-                              <p className="text-[10px] font-black uppercase tracking-widest text-dark/50">
+                          <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] min-h-[250px] sm:min-h-[300px] min-w-0 flex flex-col">
+                            <div className="flex items-center justify-between mb-4 border-b-2 border-dark pb-2 min-w-0">
+                              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/50 break-words">
                                 AI Output Preview
                               </p>
                               {aiResult !== null && (
@@ -1235,7 +1235,7 @@ export default function TutorBuilderPage() {
                                     setAiContentId(null);
                                     setFeedback("");
                                   }}
-                                  className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors"
+                                  className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors shrink-0"
                                 >
                                   Clear Result
                                 </button>
@@ -1256,19 +1256,19 @@ export default function TutorBuilderPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="rounded-2xl border-[3px] border-dark bg-white p-8 shadow-[5px_5px_0px_#060E1C] space-y-6">
-                        <div className="flex flex-col gap-4 border-b-[3px] border-dark pb-5 md:flex-row md:items-center md:justify-between">
-                          <div className="space-y-2">
-                            <h3 className="text-3xl font-black tracking-tight text-dark">
+                      <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] space-y-6 min-w-0">
+                        <div className="flex flex-col gap-4 border-b-[3px] border-dark pb-5 md:flex-row md:items-center md:justify-between min-w-0">
+                          <div className="space-y-2 min-w-0">
+                            <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-dark break-words">
                               Edvoura AI Content Assistant
                             </h3>
-                            <p className="text-sm font-bold text-dark/70">
+                            <p className="text-xs sm:text-sm font-bold text-dark/70 break-words">
                               Expanded workspace for lesson notes, stories,
                               quizzes, spelling bees, and publish-ready
                               classroom content.
                             </p>
                           </div>
-                          <div className="inline-flex h-fit items-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-4 py-2 text-[10px] font-black uppercase tracking-[0.16em] shadow-[3px_3px_0px_#060E1C]">
+                          <div className="inline-flex h-fit items-center gap-2 rounded-xl border-[2px] sm:border-[3px] border-dark bg-yellow px-3 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.16em] shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] w-fit">
                             <Sparkles className="h-4 w-4" />
                             Tutor-Controlled AI
                           </div>
@@ -1304,39 +1304,39 @@ export default function TutorBuilderPage() {
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="border-[4px] border-dark rounded-3xl bg-yellow/10 p-8 shadow-[8px_8px_0px_#060E1C] space-y-8">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-yellow border-[3px] border-dark rounded-2xl shadow-[3px_3px_0px_#060E1C]">
-                    <Sparkles className="w-6 h-6 text-dark" />
+            <div className="space-y-6 min-w-0">
+              <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-3xl bg-yellow/10 p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] space-y-6 sm:space-y-8 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 sm:p-3 bg-yellow border-[2px] sm:border-[3px] border-dark rounded-xl sm:rounded-2xl shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] shrink-0">
+                    <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-dark" />
                   </div>
-                  <div>
-                    <h3 className="text-3xl font-black text-dark tracking-tight leading-none">
+                  <div className="min-w-0">
+                    <h3 className="text-2xl sm:text-3xl font-black text-dark tracking-tight leading-none break-words">
                       Edvoura AI
                     </h3>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mt-1">
+                    <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/60 mt-1 break-words">
                       Content Assistant
                     </p>
                   </div>
                 </div>
 
-                <p className="max-w-4xl text-sm font-bold text-dark/70 leading-relaxed">
+                <p className="max-w-4xl text-xs sm:text-sm font-bold text-dark/70 leading-relaxed break-words">
                   Automate your curriculum with Edvoura AI. Generate lesson
                   notes, quizzes, spelling bees, and tutor-ready study content
                   in seconds.
                 </p>
 
-                <div className="grid gap-6 xl:grid-cols-3">
-                  <div className="space-y-4 xl:col-span-2">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                <div className="grid gap-6 xl:grid-cols-3 min-w-0">
+                  <div className="space-y-4 xl:col-span-2 min-w-0">
+                    <div className="grid gap-4 md:grid-cols-2 min-w-0">
+                      <div className="space-y-2 min-w-0">
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/60 break-words">
                           Content Type
                         </label>
                         <select
                           value={aiType}
                           onChange={(e) => setAiType(e.target.value)}
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C]"
                         >
                           <option value="lesson_note">Lesson Note</option>
                           <option value="story">Story</option>
@@ -1347,15 +1347,15 @@ export default function TutorBuilderPage() {
                         </select>
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                      <div className="space-y-2 min-w-0">
+                        <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/60 break-words">
                           Topic
                         </label>
                         <input
                           value={aiTopic}
                           onChange={(e) => setAiTopic(e.target.value)}
                           placeholder="e.g. Algebra Basics"
-                          className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow shadow-[3px_3px_0px_#060E1C]"
+                          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none focus:border-yellow shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C]"
                         />
                       </div>
                     </div>
@@ -1397,7 +1397,7 @@ export default function TutorBuilderPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-4 min-w-0">
                     <Button
                       disabled={
                         isGeneratingAi ||
@@ -1406,14 +1406,14 @@ export default function TutorBuilderPage() {
                         !formGradeCode
                       }
                       onClick={() => void runAiGeneration()}
-                      className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-4 w-full text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                      className="bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black px-4 sm:px-6 py-3 sm:py-4 w-full text-xs sm:text-sm shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50 break-words"
                     >
                       {isGeneratingAi ? "Thinking..." : "Generate Now"}
                     </Button>
                     <Button
                       disabled={isPublishingAi || !aiContentId}
                       onClick={() => void publishAiContent()}
-                      className="w-full bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-4 text-sm shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                      className="w-full bg-emerald-400 border-[2px] sm:border-[3px] border-dark text-dark font-black px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all disabled:opacity-50 break-words"
                     >
                       {isPublishingAi
                         ? "Publishing..."
@@ -1436,10 +1436,10 @@ export default function TutorBuilderPage() {
                 </div>
 
                 {Boolean(aiResult) ? (
-                  <div className="rounded-2xl border-[3px] border-dark bg-white p-4 shadow-[4px_4px_0px_#060E1C]">
-                    <div className="flex items-center justify-between mb-2 border-b-[2px] border-dark pb-1">
-                      <div className="flex items-center gap-3">
-                        <h4 className="font-black text-sm uppercase tracking-widest">
+                  <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] min-w-0">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 border-b-[2px] border-dark pb-2 gap-2 sm:gap-0 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                        <h4 className="font-black text-xs sm:text-sm uppercase tracking-widest break-words">
                           Result Preview
                         </h4>
                         <button
@@ -1448,24 +1448,24 @@ export default function TutorBuilderPage() {
                             setAiContentId(null);
                             setFeedback("");
                           }}
-                          className="text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors ml-auto h-fit"
+                          className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-rose-500 hover:text-rose-600 transition-colors ml-auto sm:ml-4 h-fit shrink-0"
                         >
                           Discard Draft
                         </button>
                       </div>
-                      <span className="text-[10px] font-bold text-dark/40">
+                      <span className="text-[9px] sm:text-[10px] font-bold text-dark/40 break-words">
                         ID: {aiContentId?.split("-")[0]}...
                       </span>
                     </div>
-                    <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[320px] p-3 bg-gray-50 border-[2px] border-dark rounded-xl">
+                    <pre className="whitespace-pre-wrap font-mono text-[9px] sm:text-[10px] overflow-auto max-h-[320px] p-3 sm:p-4 bg-gray-50 border-[2px] border-dark rounded-xl break-words">
                       {JSON.stringify(aiResult, null, 2)}
                     </pre>
                   </div>
                 ) : null}
               </div>
 
-              <div className="border-[3px] border-dark rounded-3xl bg-blue-100 p-6 shadow-[5px_5px_0px_#060E1C]">
-                <h3 className="text-xl font-black text-dark mb-4">
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-blue-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-dark mb-4 break-words">
                   What This Connects
                 </h3>
                 <div className="space-y-3 text-sm font-semibold text-dark/80">
@@ -1486,8 +1486,8 @@ export default function TutorBuilderPage() {
                 </div>
               </div>
 
-              <div className="border-[3px] border-dark rounded-3xl bg-white p-6 shadow-[5px_5px_0px_#060E1C]">
-                <h3 className="text-xl font-black text-dark mb-4">
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <h3 className="text-lg sm:text-xl font-black text-dark mb-4 break-words">
                   Related Pages
                 </h3>
                 <div className="space-y-3">
@@ -1505,9 +1505,9 @@ export default function TutorBuilderPage() {
                   </Link>
                   <Link
                     href="/dash/student/assignments"
-                    className="flex items-center justify-between rounded-xl border-[2px] border-dark bg-off-white px-4 py-3 text-sm font-black text-dark hover:bg-yellow hover:translate-x-[2px] hover:translate-y-[2px] shadow-[3px_3px_0px_#060E1C] hover:shadow-none transition-all"
+                    className="flex items-center justify-between gap-2 rounded-xl border-[2px] border-dark bg-off-white px-4 py-3 text-sm font-black text-dark hover:bg-yellow hover:translate-x-[2px] hover:translate-y-[2px] shadow-[3px_3px_0px_#060E1C] hover:shadow-none transition-all min-w-0"
                   >
-                    Check student view <ArrowRight className="h-4 w-4" />
+                    <span className="truncate">Check student view</span> <ArrowRight className="h-4 w-4 shrink-0" />
                   </Link>
                 </div>
               </div>
@@ -1536,21 +1536,21 @@ function ToolCard({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-2xl border-[3px] p-5 text-left transition-all ${
+      className={`rounded-[20px] sm:rounded-2xl border-[2px] sm:border-[3px] p-4 sm:p-5 text-left transition-all min-w-0 w-full ${
         active
-          ? "border-dark bg-yellow shadow-[5px_5px_0px_#060E1C] translate-x-[-2px] translate-y-[-2px]"
-          : "border-dark bg-white shadow-[3px_3px_0px_#060E1C] hover:bg-off-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#060E1C]"
+          ? "border-dark bg-yellow shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] translate-x-[-2px] translate-y-[-2px]"
+          : "border-dark bg-white shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] hover:bg-off-white hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_#060E1C] sm:hover:shadow-[4px_4px_0px_#060E1C]"
       }`}
     >
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-black text-dark tracking-tight leading-tight pr-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 min-w-0">
+        <p className="text-base sm:text-lg font-black text-dark tracking-tight leading-tight pr-0 sm:pr-2 break-words">
           {title}
         </p>
         <Icon
-          className={`h-6 w-6 shrink-0 ${active ? "text-dark" : "text-dark/50"}`}
+          className={`h-5 w-5 sm:h-6 sm:w-6 shrink-0 ${active ? "text-dark" : "text-dark/50"}`}
         />
       </div>
-      <p className="mt-2 text-xs font-bold text-dark/70">{subtitle}</p>
+      <p className="mt-2 text-[10px] sm:text-xs font-bold text-dark/70 break-words">{subtitle}</p>
       <div
         className={`mt-4 inline-flex px-2 py-1 text-[10px] font-black uppercase tracking-widest border-[2px] border-dark rounded-md ${active ? "bg-white text-dark" : "bg-transparent text-dark/40 border-dark/20"}`}
       >
@@ -1571,12 +1571,12 @@ function Stat({
 }) {
   return (
     <div
-      className={`border-[3px] border-dark rounded-2xl ${bgColor} p-5 shadow-[4px_4px_0px_#060E1C]`}
+      className={`border-[2px] sm:border-[3px] border-dark rounded-[20px] sm:rounded-2xl ${bgColor} p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0`}
     >
-      <p className="text-[10px] font-black uppercase tracking-widest text-dark/70">
+      <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-widest text-dark/70 break-words">
         {title}
       </p>
-      <p className="mt-2 text-3xl font-black text-dark tracking-tight">
+      <p className="mt-1 sm:mt-2 text-2xl sm:text-3xl font-black text-dark tracking-tight break-words">
         {value}
       </p>
     </div>

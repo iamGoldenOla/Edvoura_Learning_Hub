@@ -8,6 +8,13 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 
 ## Last Session Handoff (2026-04-29)
 
+### Current Status: Parent & Admin Mobile Shell Hardening (2026-04-29)
+
+- Fixed mobile layout for Parent and Admin dashboards.
+- Added horizontally scrollable bottom navigation bars for Parent and Admin roles, similar to Student and Tutor dashboards, to prevent content obscuration and improve mobile UX.
+- Ensured proper left and right padding (`p-4 sm:p-8`) and container constraints (`min-w-0`, `break-words`) across Parent and Admin views.
+- Fixed an `Unterminated string literal` syntax error in `TutorAIWorkspaceClient.tsx`.
+
 ### Current Status: Cross-Dashboard Delivery Contract + Mobile Shell Hardening (2026-04-29)
 
 - Dashboard publishing and review side effects are now being consolidated around a shared interaction contract instead of scattered route-specific behavior.

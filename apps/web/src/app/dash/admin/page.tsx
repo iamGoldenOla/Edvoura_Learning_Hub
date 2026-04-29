@@ -90,10 +90,10 @@ export default async function AdminDashboard() {
         <div className="p-5 sm:p-8 md:p-12">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             <div className="space-y-4 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-white bg-dark text-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#ffffff]">
+              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-white bg-dark text-white text-[9px] sm:text-[10px] tracking-[0.2em] font-black shadow-[3px_3px_0px_#ffffff] sm:shadow-[4px_4px_0px_#ffffff]">
                 COMMAND CENTER
               </span>
-              <h1 className="flex items-center gap-3 text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] break-words">
+              <h1 className="flex items-center gap-3 text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] break-words">
                 {title}
                 <div className="hidden md:flex h-12 w-12 rounded-2xl border-[3px] border-dark bg-yellow items-center justify-center shadow-[4px_4px_0px_#ffffff] rotate-6">
                   <Activity className="h-6 w-6 text-dark" />
@@ -103,17 +103,17 @@ export default async function AdminDashboard() {
                 {subtitle}
               </p>
             </div>
-            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto">
+            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto min-w-0">
               <Link
                 href="/dash/admin/analytics"
-                className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#ffffff] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto inline-flex items-center"
+                className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#ffffff] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto inline-flex items-center whitespace-normal break-words"
               >
                 Reports and Analytics
               </Link>
               {isSuperAdmin ? (
                 <Link
                   href="/dash/admin/audit-logs"
-                  className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#ffffff] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto inline-flex items-center"
+                  className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#ffffff] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto inline-flex items-center whitespace-normal break-words"
                 >
                   Audit Logs
                 </Link>
@@ -124,27 +124,27 @@ export default async function AdminDashboard() {
       </section>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4 min-w-0">
         {statCards.map(({ label, value, bg }) => (
-          <div key={label} className={`rounded-3xl border-[4px] border-dark ${bg} p-6 shadow-[6px_6px_0px_#060E1C]`}>
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">{label}</p>
-            <p className="mt-2 text-4xl font-black text-dark">{value}</p>
+          <div key={label} className={`rounded-[20px] sm:rounded-3xl border-[3px] sm:border-[4px] border-dark ${bg} p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] min-w-0`}>
+            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/80 break-words">{label}</p>
+            <p className="mt-2 text-2xl sm:text-4xl font-black text-dark">{value}</p>
           </div>
         ))}
       </div>
 
-      <section className="overflow-hidden rounded-[24px] border-[4px] border-dark bg-white shadow-[8px_8px_0px_#060E1C]">
-        <div className="border-b-[4px] border-dark bg-dark p-4 sm:p-5 text-white">
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">System Health Panel</h2>
-          <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-white/70">
+      <section className="overflow-hidden rounded-[20px] sm:rounded-[24px] border-[3px] sm:border-[4px] border-dark bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] min-w-0">
+        <div className="border-b-[3px] sm:border-b-[4px] border-dark bg-dark p-4 sm:p-5 text-white">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight break-words">System Health Panel</h2>
+          <p className="mt-1 text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] text-white/70 break-words">
             AI providers, generation queue, and chat delivery pulse
           </p>
         </div>
-        <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 p-4 sm:p-5 md:grid-cols-2 xl:grid-cols-3 min-w-0">
           {healthCards.map((card) => (
-            <div key={card.label} className={`rounded-2xl border-[3px] border-dark ${card.bg} p-4 shadow-[4px_4px_0px_#060E1C]`}>
-              <p className="text-[10px] font-black uppercase tracking-widest text-dark/70">{card.label}</p>
-              <p className="mt-2 text-3xl font-black tracking-tight text-dark">{card.value.toLocaleString()}</p>
+            <div key={card.label} className={`rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark ${card.bg} p-4 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0`}>
+              <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">{card.label}</p>
+              <p className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-dark">{card.value.toLocaleString()}</p>
             </div>
           ))}
         </div>
@@ -154,19 +154,19 @@ export default async function AdminDashboard() {
         <div className="border-[4px] border-dark rounded-[24px] bg-rose-100 shadow-[8px_8px_0px_#060E1C] overflow-hidden">
           <div className="p-5 sm:p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-start md:items-center gap-4">
-              <div className="h-14 w-14 bg-white border-[3px] border-dark rounded-2xl flex items-center justify-center shadow-[3px_3px_0px_#060E1C] shrink-0">
-                <ShieldCheck className="h-7 w-7 text-rose-600" />
+              <div className="h-12 w-12 sm:h-14 sm:w-14 bg-white border-[2px] sm:border-[3px] border-dark rounded-xl sm:rounded-2xl flex items-center justify-center shadow-[3px_3px_0px_#060E1C] shrink-0">
+                <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7 text-rose-600" />
               </div>
-              <div>
-                <p className="text-xl font-black text-dark">
+              <div className="min-w-0">
+                <p className="text-lg sm:text-xl font-black text-dark break-words">
                   {dashboard.pendingTutorApprovals} tutor{dashboard.pendingTutorApprovals > 1 ? 's' : ''} pending approval
                 </p>
-                <p className="text-sm font-bold text-dark/70 mt-1">Review and approve tutor applications to allow them to start teaching.</p>
+                <p className="text-xs sm:text-sm font-bold text-dark/70 mt-1 break-words">Review and approve tutor applications to allow them to start teaching.</p>
               </div>
             </div>
             <Link
               href="/dash/admin/tutors"
-              className="bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 shrink-0 inline-flex items-center"
+              className="w-full sm:w-auto text-center justify-center bg-dark border-[2px] sm:border-[3px] border-dark text-white font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 sm:px-8 py-3 sm:py-4 shrink-0 inline-flex items-center"
             >
               Review Now
             </Link>

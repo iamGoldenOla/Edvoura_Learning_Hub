@@ -41,8 +41,8 @@ export default function PendingReviewList({
   onPreview: (content: unknown) => void;
 }) {
   return (
-    <section className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
-      <h2 className="mb-4 text-xl font-black text-dark">{title}</h2>
+    <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] min-w-0">
+      <h2 className="mb-4 text-lg sm:text-xl font-black text-dark break-words">{title}</h2>
       <div className="space-y-3">
         {records.length === 0 ? (
           <div className="rounded-xl border-[2px] border-dark bg-off-white p-4 text-sm font-semibold text-dark/70">
@@ -50,16 +50,16 @@ export default function PendingReviewList({
           </div>
         ) : null}
         {records.map((record) => (
-          <article key={record.id} className="rounded-xl border-[2px] border-dark bg-off-white p-4">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p className="font-black text-dark">{record.title}</p>
-              <AIStatusBadge status={record.status} />
+          <article key={record.id} className="rounded-xl border-[2px] border-dark bg-off-white p-4 min-w-0">
+            <div className="mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
+              <p className="font-black text-dark break-words">{record.title}</p>
+              <div className="self-start sm:self-auto shrink-0"><AIStatusBadge status={record.status} /></div>
             </div>
-            <p className="text-xs font-bold text-dark/70">
+            <p className="text-xs font-bold text-dark/70 break-words">
               {record.subject} | {record.topic} | {record.grade} | {EDVOURA_TASK_TYPE_LABELS[record.task_type as EdvouraTaskType] ?? record.task_type}
             </p>
             {record.review_note ? (
-              <p className="mt-2 rounded-lg border border-dark/30 bg-white p-2 text-xs font-semibold text-dark/80">
+              <p className="mt-2 rounded-lg border border-dark/30 bg-white p-2 text-xs font-semibold text-dark/80 break-words">
                 Review note: {record.review_note}
               </p>
             ) : null}

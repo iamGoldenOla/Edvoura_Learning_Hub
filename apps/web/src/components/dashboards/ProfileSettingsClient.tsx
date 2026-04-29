@@ -238,11 +238,11 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   };
 
   const renderTutorSection = () => (
-    <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-      <div className="p-6 border-b-[3px] border-dark bg-yellow/20">
-        <h2 className="text-2xl font-black text-dark tracking-tight">Tutor Teaching Profile</h2>
+    <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+      <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-yellow/20 min-w-0">
+        <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Tutor Teaching Profile</h2>
       </div>
-      <div className="p-8 space-y-6">
+      <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 min-w-0">
         <label className="block space-y-2">
           <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Full Name</span>
           <input
@@ -252,17 +252,17 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
           />
         </label>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <label className="block space-y-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Phone Number</span>
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0">
+          <label className="block space-y-2 min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">Phone Number</span>
             <input
               value={tutorForm.phoneNumber}
               onChange={(event) => setTutorForm((prev) => ({ ...prev, phoneNumber: event.target.value }))}
-              className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+              className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none focus:border-yellow"
             />
           </label>
-          <label className="block space-y-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Timezone</span>
+          <label className="block space-y-2 min-w-0">
+            <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">Timezone</span>
             <select
               value={tutorForm.timezone}
               onChange={(event) => setTutorForm((prev) => ({ ...prev, timezone: event.target.value }))}
@@ -320,27 +320,27 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   );
 
   const renderTutorClasses = () => (
-    <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-      <div className="p-6 border-b-[3px] border-dark bg-blue-100">
-        <h2 className="text-2xl font-black text-dark tracking-tight">Classes You Are Taking</h2>
+    <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+      <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-blue-100 min-w-0">
+        <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Classes You Are Taking</h2>
       </div>
-      <div className="p-8">
+      <div className="p-5 sm:p-8 min-w-0">
         {props.tutorClasses.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             {props.tutorClasses.map((classItem) => (
               <div
                 key={classItem.id}
-                className="rounded-2xl border-[3px] border-dark bg-off-white p-4 shadow-[4px_4px_0px_#060E1C]"
+                className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-off-white p-4 shadow-[4px_4px_0px_#060E1C] min-w-0"
               >
-                <p className="font-black text-lg text-dark">{classItem.title}</p>
-                <p className="text-xs font-bold text-dark/70 mt-1 uppercase tracking-widest">
+                <p className="font-black text-base sm:text-lg text-dark break-words">{classItem.title}</p>
+                <p className="text-[10px] sm:text-xs font-bold text-dark/70 mt-1 uppercase tracking-widest break-words">
                   {classItem.subjectName} | Status: <span className="text-emerald-600">{classItem.status}</span>
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 text-center text-sm font-semibold text-dark/60">
+          <div className="rounded-[20px] sm:rounded-2xl border-[2px] sm:border-[3px] border-dashed border-dark/20 bg-slate-50 p-4 sm:p-6 text-center text-xs sm:text-sm font-semibold text-dark/60 min-w-0 break-words">
             No classes are currently assigned to you yet. Once assigned, they will appear here.
           </div>
         )}
@@ -349,12 +349,12 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   );
 
   const renderStudentSection = () => (
-    <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-      <div className="p-6 border-b-[3px] border-dark bg-yellow/20">
-        <h2 className="text-2xl font-black text-dark tracking-tight">Student Learning Profile</h2>
+    <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+      <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-yellow/20 min-w-0">
+        <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Student Learning Profile</h2>
       </div>
-      <div className="p-8 space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
+      <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 min-w-0">
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0">
           <label className="block space-y-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Grade Level Code</span>
             <input
@@ -458,12 +458,12 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
 
   const renderStudentSnapshot = () =>
     props.studentSummary ? (
-      <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-        <div className="p-6 border-b-[3px] border-dark bg-emerald-100">
-          <h2 className="text-2xl font-black text-dark tracking-tight">Learning Snapshot</h2>
+      <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+        <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-emerald-100 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Learning Snapshot</h2>
         </div>
-        <div className="p-8">
-          <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
+        <div className="p-5 sm:p-8 min-w-0">
+          <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-4 min-w-0">
             <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
               <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Active Classes</p>
               <p className="mt-2 text-3xl font-black text-dark">{props.studentSummary.activeClasses}</p>
@@ -488,17 +488,17 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   const displayAvatar = avatarPreview ?? avatarPersistedUrl;
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
-      <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark mb-8">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-6 sm:space-y-10 p-6 sm:p-8 pb-24">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark mb-4 sm:mb-8 break-words">
         Profile Settings
       </h1>
 
-      <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-        <div className="p-6 border-b-[3px] border-dark bg-amber-100">
-          <h2 className="text-2xl font-black text-dark tracking-tight">Account Basics</h2>
+      <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden min-w-0">
+        <div className="p-5 sm:p-6 border-b-[3px] border-dark bg-amber-100 min-w-0">
+          <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Account Basics</h2>
         </div>
-        <div className="p-8 space-y-6">
-          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 min-w-0">
+          <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-center md:justify-between min-w-0">
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mb-1">Email Address</p>
               <p className="text-lg font-black text-dark tracking-tight">{props.viewer.email}</p>
@@ -515,7 +515,7 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
                   <div className="flex h-full w-full items-center justify-center text-[10px] font-black uppercase tracking-widest text-dark/40">No image</div>
                 )}
               </div>
-              <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-[3px] border-dark bg-white px-5 py-3 text-xs font-black text-dark hover:bg-slate-50 transition-all shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+                <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-4 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-xs font-black text-dark hover:bg-slate-50 transition-all shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-center break-words w-full sm:w-auto mt-2 sm:mt-0">
                 Upload Profile Image
                 <input
                   type="file"
@@ -544,15 +544,15 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
         </>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-4 pt-6 border-t-[3px] border-dark/10">
-        <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" disabled={isSaving} onClick={handleSave}>
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 pt-6 border-t-[3px] border-dark/10 min-w-0">
+        <Button className="w-full sm:w-auto bg-emerald-400 border-[2px] sm:border-[3px] border-dark !text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 sm:px-8 py-3 sm:py-4 h-auto text-sm sm:text-base break-words" disabled={isSaving} onClick={handleSave}>
           {isSaving ? 'Saving...' : 'Save Profile Settings'}
         </Button>
-        <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-8 py-4 h-auto" onClick={() => alert('Use your account auth page to change password.')}>
+        <Button className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark !text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 sm:px-8 py-3 sm:py-4 h-auto text-sm sm:text-base break-words" onClick={() => alert('Use your account auth page to change password.')}>
           Change Password
         </Button>
       </div>
-      {statusMessage ? <div className="rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-sm font-black !text-dark shadow-[4px_4px_0px_#060E1C] mt-4">{statusMessage}</div> : null}
+      {statusMessage ? <div className="rounded-[20px] sm:rounded-xl border-[3px] border-dark bg-blue-100 p-4 text-xs sm:text-sm font-black !text-dark shadow-[4px_4px_0px_#060E1C] mt-4 break-words">{statusMessage}</div> : null}
     </div>
   );
 }

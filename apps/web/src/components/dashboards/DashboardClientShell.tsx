@@ -112,6 +112,8 @@ export default function DashboardClientShell({
   );
   const showStudentBottomNav = effectiveRole === 'student';
   const showTutorBottomNav = effectiveRole === 'tutor';
+  const showParentBottomNav = effectiveRole === 'parent';
+  const showAdminBottomNav = effectiveRole === 'admin';
   const roleLabel =
     effectiveRole === 'tutor'
       ? 'Tutor teaching dashboard'
@@ -267,7 +269,7 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showStudentBottomNav || showTutorBottomNav ? 'pb-28' : ''}`}>
+          <main className={`custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative ${showStudentBottomNav || showTutorBottomNav || showParentBottomNav || showAdminBottomNav ? 'pb-28' : ''}`}>
             <div className="mx-auto w-full max-w-[1760px] min-w-0">{children}</div>
           </main>
         </div>
@@ -277,6 +279,12 @@ export default function DashboardClientShell({
         ) : null}
         {showTutorBottomNav ? (
           <TutorBottomNav />
+        ) : null}
+        {showParentBottomNav ? (
+          <ParentBottomNav />
+        ) : null}
+        {showAdminBottomNav ? (
+          <AdminBottomNav isSuperAdmin={isSuperAdmin} />
         ) : null}
       </div>
     </BandProvider>
@@ -452,3 +460,52 @@ function AdminSidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
     </div>
   );
 }
+
+function ParentBottomNav() {
+  const pathname = usePathname();
+  const parentNav = [
+    { href: '/dash/parent/children', label: 'Children', icon: Users },
+    { href: '/dash/parent/monitor', label: 'Monitor', icon: CalendarClock },
+    { href: '/dash/parent/reports', label: 'Reports', icon: Activity },
+    { href: '/dash/parent/rewards', label: 'Rewards', icon: Star },
+    { href: '/dash/parent/messages', label: 'Messages', icon: MessageCircle },
+    { href: '/dash/parent/billing', label: 'Billing', icon: CreditCard },
+    { href: '/dash/parent/notifications', label: 'Alerts', icon: Bell },
+    { href: '/dash/profile', label: 'Settings', icon: Shield },
+  ];
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+        {parentNav.map((item) => (
+          <BottomNavItem key={`${item.href}-${item.label}`} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function AdminBottomNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
+  const pathname = usePathname();
+  const adminNav = [
+    { href: '/dash/admin', label: 'Overview', icon: Activity, superAdminOnly: false },
+    { href: '/dash/admin/users', label: 'Users', icon: UserCog, superAdminOnly: true },
+    { href: '/dash/admin/students', label: 'Students', icon: Users, superAdminOnly: false },
+    { href: '/dash/admin/tutors', label: 'Tutors', icon: ShieldCheck, superAdminOnly: false },
+    { href: '/dash/admin/finance', label: 'Finance', icon: DollarSign, superAdminOnly: false },
+    { href: '/dash/admin/ai', label: 'AI', icon: Sparkles, superAdminOnly: false },
+    { href: '/dash/admin/support', label: 'Support', icon: LifeBuoy, superAdminOnly: false },
+    { href: '/dash/admin/settings', label: 'Settings', icon: Settings2, superAdminOnly: true },
+  ];
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+        {adminNav.filter((item) => (item.superAdminOnly ? isSuperAdmin : true)).map((item) => (
+          <BottomNavItem key={`${item.href}-${item.label}`} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />
+        ))}
+      </div>
+    </nav>
+  );
+}
+

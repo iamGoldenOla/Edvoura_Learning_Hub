@@ -61,16 +61,16 @@ export default function AIContentGeneratorForm({
   const [history, setHistory] = useState("");
 
   return (
-    <section className="rounded-2xl border-[3px] border-dark bg-yellow/20 p-5 shadow-[4px_4px_0px_#060E1C]">
+    <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-yellow/20 p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] min-w-0">
       <p className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-dark/70">
         Edvoura AI Generator
       </p>
-      <p className="mb-4 rounded-xl border-[2px] border-dark bg-white p-3 text-xs font-bold text-dark/70">
+      <p className="mb-4 rounded-[20px] sm:rounded-xl border-[2px] border-dark bg-white p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-dark/70 break-words">
         AI generation may require a secure Puter sign-in session. This is only
         used for Tutor and Super Admin dashboard AI tools. Students will never
         see this.
       </p>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 min-w-0">
         <label className="space-y-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">
             Task Type
@@ -78,7 +78,7 @@ export default function AIContentGeneratorForm({
           <select
             value={taskType}
             onChange={(event) => setTaskType(event.target.value as EdvouraTaskType)}
-            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold outline-none"
+            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold outline-none min-w-0"
           >
             {EDVOURA_VISIBLE_TASK_TYPES.map((entry) => (
               <option key={entry} value={entry}>
@@ -95,7 +95,7 @@ export default function AIContentGeneratorForm({
           <select
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
-            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-xs font-bold outline-none"
+            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold outline-none min-w-0"
           >
             {SUBJECT_OPTIONS.map((entry) => (
               <option key={entry} value={entry}>
@@ -113,7 +113,7 @@ export default function AIContentGeneratorForm({
             value={topic}
             onChange={(event) => setTopic(event.target.value)}
             placeholder="e.g. Fractions in daily life"
-            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-bold outline-none"
+            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold outline-none min-w-0"
           />
         </label>
 
@@ -125,7 +125,7 @@ export default function AIContentGeneratorForm({
             value={grade}
             onChange={(event) => setGrade(event.target.value)}
             placeholder="e.g. Grade 6"
-            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-bold outline-none"
+            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold outline-none min-w-0"
           />
         </label>
 
@@ -137,7 +137,7 @@ export default function AIContentGeneratorForm({
             value={skillType}
             onChange={(event) => setSkillType(event.target.value)}
             placeholder="e.g. Communication Skills"
-            className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-bold outline-none"
+            className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold outline-none min-w-0"
           />
         </label>
       </div>
@@ -151,7 +151,7 @@ export default function AIContentGeneratorForm({
           onChange={(event) => setExtraInstruction(event.target.value)}
           placeholder="Extra tutor/admin instruction, preferred teaching approach, or material preference"
           rows={3}
-          className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-semibold outline-none"
+          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold outline-none min-w-0"
         />
       </label>
 
@@ -164,11 +164,11 @@ export default function AIContentGeneratorForm({
           onChange={(event) => setExistingContent(event.target.value)}
           placeholder="Paste existing JSON/content for improve or regenerate tasks."
           rows={4}
-          className="w-full rounded-xl border-[3px] border-dark bg-white px-3 py-3 text-sm font-semibold outline-none"
+          className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold outline-none min-w-0"
         />
       </label>
 
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
+      <div className="mt-3 sm:mt-4 grid gap-3 sm:gap-4 md:grid-cols-2 min-w-0">
         <label className="space-y-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">
             Score (ADAPT_LEARNING)
@@ -209,7 +209,7 @@ export default function AIContentGeneratorForm({
             history: history || undefined,
           })
         }
-        className="mt-4 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl px-5 py-3 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+        className="mt-4 sm:mt-5 w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl px-4 sm:px-6 py-3 h-auto shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none break-words whitespace-normal text-sm sm:text-base"
       >
         {disabled ? "Generating..." : "Generate with Edvoura AI"}
       </Button>

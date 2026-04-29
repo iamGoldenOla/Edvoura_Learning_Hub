@@ -126,24 +126,24 @@ export default function ParentDashboardClient({
         <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8">
             <div className="space-y-3 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-dark bg-white text-[9px] sm:text-[10px] tracking-[0.2em] font-black shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C]">
                 PARENT PORTAL
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 Welcome, {parentName}
               </h1>
               <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl break-words">
                 Track each child with confidence, visibility, and control.
               </p>
             </div>
-            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto">
+            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto min-w-0">
               <Link href="/dash/parent/messages">
-                <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
+                <Button className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto whitespace-normal break-words">
                   Message Tutor
                 </Button>
               </Link>
               <Link href="/dash/parent/children">
-                <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-3 h-auto">
+                <Button className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto whitespace-normal break-words">
                   Manage Children
                 </Button>
               </Link>
@@ -151,8 +151,8 @@ export default function ParentDashboardClient({
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 bg-off-white flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center">
-          <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
+        <div className="p-4 sm:p-6 bg-off-white flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center min-w-0">
+          <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 shrink-0">
             <Users className="h-4 w-4" />
             Switch Child
           </span>
@@ -167,13 +167,13 @@ export default function ParentDashboardClient({
                     setInsightData(null);
                     setInsightError('');
                   }}
-                  className={`rounded-xl border-[3px] px-4 py-2 text-sm font-black transition-all hover:translate-x-[1px] hover:translate-y-[1px] ${
+                  className={`rounded-xl border-[2px] sm:border-[3px] px-3 sm:px-4 py-2 text-xs sm:text-sm font-black transition-all hover:translate-x-[1px] hover:translate-y-[1px] break-words whitespace-normal text-left ${
                     activeChild?.userId === child.userId
-                      ? 'border-dark bg-dark text-white shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
-                      : 'border-dark bg-white text-dark shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
+                      ? 'border-dark bg-dark text-white shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
+                      : 'border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] hover:shadow-none'
                   }`}
                 >
-                  {child.fullName ?? 'Unnamed Child'} <span className="opacity-60 font-bold ml-1">({child.gradeLevelName})</span>
+                  {child.fullName ?? 'Unnamed Child'} <span className="opacity-60 font-bold ml-1 break-words">({child.gradeLevelName})</span>
                 </button>
               ))}
             </div>
@@ -192,25 +192,25 @@ export default function ParentDashboardClient({
           <div className="p-6 sm:p-8">
             {activeChild ? (
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Child Name</p>
                   <p className="mt-1 text-xl font-black text-dark">{activeChild.fullName ?? 'Unnamed Child'}</p>
                 </div>
-                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Grade</p>
                   <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeLevelName}</p>
                 </div>
-                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Learner Band</p>
                   <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeBandName}</p>
                 </div>
-                <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">School</p>
                   <p className="mt-1 text-xl font-black text-dark truncate">{activeChild.schoolName ?? 'Not set'}</p>
                 </div>
               </div>
             ) : (
-              <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-bold text-dark/60">
+              <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 sm:p-8 text-center text-xs sm:text-sm font-bold text-dark/60 break-words">
                 Add a child profile to unlock this parent dashboard.
               </div>
             )}
@@ -230,8 +230,8 @@ export default function ParentDashboardClient({
             <div className="p-6 space-y-4">
               {activeSummary?.alerts && activeSummary.alerts.length > 0 ? (
                 activeSummary.alerts.map((alertItem) => (
-                  <div key={alertItem.id} className="rounded-2xl border-[3px] border-dark bg-rose-50 p-4 shadow-[4px_4px_0px_#060E1C]">
-                    <p className="flex items-center gap-2 text-sm font-black text-rose-600 uppercase tracking-widest">
+                  <div key={alertItem.id} className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-rose-50 p-4 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0 break-words">
+                    <p className="flex items-center gap-2 text-xs sm:text-sm font-black text-rose-600 uppercase tracking-widest break-words">
                       <ShieldAlert className="h-4 w-4" />
                       {alertItem.title}
                     </p>
@@ -313,7 +313,7 @@ export default function ParentDashboardClient({
                   setIsGeneratingInsight(false);
                 }
               }}
-              className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-2 h-auto"
+              className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-2 h-auto whitespace-normal break-words"
             >
               {isGeneratingInsight ? 'Edvoura AI is analyzing...' : 'Generate AI Report'}
             </Button>

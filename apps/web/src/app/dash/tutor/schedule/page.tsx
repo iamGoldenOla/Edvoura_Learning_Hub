@@ -253,7 +253,7 @@ export default async function TutorSchedulePage(props: {
                         id="gradeLevelId"
                         name="gradeLevelId"
                         required
-                        className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
+                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
                       >
                         {(gradeLevels || []).map((item) => (
                           <option key={item.id} value={item.id}>
@@ -274,7 +274,7 @@ export default async function TutorSchedulePage(props: {
                       type="text"
                       required
                       placeholder="e.g. Mastering Algebraic Expressions"
-                      className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/30"
+                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/30"
                     />
                   </div>
 
@@ -283,12 +283,12 @@ export default async function TutorSchedulePage(props: {
                       <label htmlFor="scheduledStartAt" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
                         Start Time
                       </label>
-                      <input
+                        <input
                         id="scheduledStartAt"
                         name="scheduledStartAt"
                         type="datetime-local"
                         required
-                        className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
+                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
                       />
                     </div>
                     <div className="space-y-2">
@@ -300,20 +300,20 @@ export default async function TutorSchedulePage(props: {
                         name="scheduledEndAt"
                         type="datetime-local"
                         required
-                        className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
+                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 p-4 rounded-xl border-[3px] border-dark bg-white shadow-[2px_2px_0px_#060E1C]">
+                    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-[2px] sm:border-[3px] border-dark bg-white shadow-[2px_2px_0px_#060E1C]">
                       <input
                         type="checkbox"
                         id="isRecurring"
                         name="isRecurring"
-                        className="h-5 w-5 rounded border-[2px] border-dark text-dark accent-dark focus:ring-dark"
+                        className="h-4 w-4 sm:h-5 sm:w-5 rounded border-[2px] border-dark text-dark accent-dark focus:ring-dark shrink-0"
                       />
-                      <label htmlFor="isRecurring" className="text-xs font-black text-dark">
+                      <label htmlFor="isRecurring" className="text-xs font-black text-dark break-words">
                         Repeat Weekly
                       </label>
                     </div>
@@ -324,7 +324,7 @@ export default async function TutorSchedulePage(props: {
                       <select
                         id="recurrenceWeeks"
                         name="recurrenceWeeks"
-                        className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none focus:border-yellow focus:bg-white"
+                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none focus:border-yellow focus:bg-white"
                         defaultValue="4"
                       >
                         <option value="1">Just once</option>
@@ -336,7 +336,7 @@ export default async function TutorSchedulePage(props: {
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="joinUrl" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
+                    <label htmlFor="joinUrl" className="text-[11px] font-black uppercase tracking-widest text-dark/60 break-words">
                       Google Meet Link <span className="text-rose-500 font-bold">(Required)</span>
                     </label>
                     <input
@@ -345,14 +345,14 @@ export default async function TutorSchedulePage(props: {
                       type="url"
                       required
                       placeholder="e.g. https://meet.google.com/abc-defg-hij"
-                      className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/30"
+                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/30"
                     />
-                    <p className="text-[11px] text-dark/60 font-semibold leading-snug">
+                    <p className="text-[10px] sm:text-[11px] text-dark/60 font-semibold leading-snug break-words">
                       Go to <a href="https://meet.google.com" target="_blank" rel="noreferrer" className="underline text-blue-600">meet.google.com</a> → New Meeting → Create for later → paste link here.
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 sm:h-14 bg-dark hover:bg-dark/90 text-white border-[3px] border-dark rounded-xl font-black text-base sm:text-lg transition-all active:scale-95 shadow-[4px_4px_0px_#F5C518]">
+                  <Button type="submit" className="w-full h-12 sm:h-14 bg-dark hover:bg-dark/90 text-white border-[2px] sm:border-[3px] border-dark rounded-xl font-black text-base sm:text-lg transition-all active:scale-95 shadow-[3px_3px_0px_#F5C518] sm:shadow-[4px_4px_0px_#F5C518] break-words">
                     Publish to Dashboard
                   </Button>
                 </form>
