@@ -142,210 +142,114 @@ export default function StudentBandClientWrapper({
     const streak = Math.max(1, dashboard.progress.length);
 
     return (
-      <div className="w-full min-w-0 animate-in fade-in duration-500">
-        {/* ── Profile Card (LinkedIn-inspired) ── */}
-        <div className="bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
-          {/* Cover gradient */}
-          <div className="h-20 sm:h-28 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-400 relative">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMiIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4wOCIvPjwvc3ZnPg==')] opacity-60" />
+      <div className="space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-700 w-full min-w-0">
+        <header className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 w-full min-w-0">
+          <div className="text-center md:text-left min-w-0">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-heading font-black text-dark tracking-tight leading-none break-words">
+              Hi, {dashboard.profile.fullName?.split(' ')[0] || 'Explorer'}! 👋
+            </h1>
+            <p className="mt-3 sm:mt-4 text-base sm:text-xl md:text-2xl font-bold text-dark/60 italic break-words">Ready for your magic missions today?</p>
           </div>
-          <div className="px-4 sm:px-6 pb-5 -mt-10">
-            <div className="flex items-end gap-3">
-              <div className="h-[72px] w-[72px] rounded-full ring-4 ring-white overflow-hidden bg-white shrink-0">
-                <img
-                  src={`https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(dashboard.profile.fullName ?? 'Explorer')}`}
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0 pb-1">
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
-                  {dashboard.profile.fullName?.split(' ')[0] || 'Explorer'} 👋
-                </h1>
-                <p className="text-xs font-semibold text-slate-500 truncate">
-                  {dashboard.profile.gradeLevelName} · {copy.label}
-                </p>
-              </div>
-            </div>
-            {/* Stats row */}
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex-1 flex items-center gap-2 bg-amber-50 rounded-xl px-3 py-2.5">
-                <Star className="h-5 w-5 text-amber-500 fill-amber-500 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-lg font-black text-slate-900 leading-none">{stars}</p>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Stars</p>
-                </div>
-              </div>
-              <div className="flex-1 flex items-center gap-2 bg-orange-50 rounded-xl px-3 py-2.5">
-                <Flame className="h-5 w-5 text-orange-500 fill-orange-500 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-lg font-black text-slate-900 leading-none">{streak}</p>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Streak</p>
-                </div>
-              </div>
-              <div className="flex-1 flex items-center gap-2 bg-emerald-50 rounded-xl px-3 py-2.5">
-                <Target className="h-5 w-5 text-emerald-500 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-lg font-black text-slate-900 leading-none">{formatPercent(dashboard.stats.averageScore)}</p>
-                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Avg</p>
-                </div>
-              </div>
-            </div>
+          <div className="flex gap-3 sm:gap-4 flex-wrap justify-center min-w-0 w-full md:w-auto">
+             <div className="bg-yellow border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] text-center flex-1 md:min-w-[120px]">
+                <Star className="h-6 w-6 sm:h-8 sm:w-8 text-dark mx-auto mb-1 sm:mb-2 fill-current" />
+                <p className="text-2xl sm:text-3xl font-black text-dark">{stars}</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-dark/50 mt-1">Stars</p>
+             </div>
+             <div className="bg-orange-400 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] text-center flex-1 md:min-w-[120px]">
+                <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2 fill-current" />
+                <p className="text-2xl sm:text-3xl font-black text-white">{streak}</p>
+                <p className="text-[9px] font-black uppercase tracking-widest text-white/70 mt-1">Streak</p>
+             </div>
           </div>
+        </header>
+
+        {/* Quick Fun Links */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
+          <FunCard icon="📚" label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />
+          <FunCard icon="📝" label="Notes" href="/dash/student/notes" color="bg-indigo-300" />
+          <FunCard icon="🐝" label="Spelling Bee" href="/dash/student/spelling-bee" color="bg-yellow" />
+          <FunCard icon="🎮" label="Play Zone" href="/dash/student/games" color="bg-green-400" />
+          <FunCard icon="📖" label="Read Corner" href="/dash/student/read" color="bg-blue-400" />
+          <FunCard icon="📺" label="Stories" href="/dash/student/stories" color="bg-red-400" />
         </div>
 
-        {/* ── Quick Actions (horizontal scroll) ── */}
-        <div className="mt-3 sm:mt-5 overflow-x-auto hide-scrollbar">
-          <div className="flex gap-2 px-4 sm:px-0 min-w-max">
-            <QuickPill icon="📚" label="Subjects" href="/dash/student/subjects" color="bg-indigo-50 text-indigo-700 border-indigo-200" />
-            <QuickPill icon="🐝" label="Spelling" href="/dash/student/spelling-bee" color="bg-amber-50 text-amber-700 border-amber-200" />
-            <QuickPill icon="🎮" label="Play" href="/dash/student/games" color="bg-emerald-50 text-emerald-700 border-emerald-200" />
-            <QuickPill icon="📖" label="Read" href="/dash/student/read" color="bg-sky-50 text-sky-700 border-sky-200" />
-            <QuickPill icon="📺" label="Stories" href="/dash/student/stories" color="bg-rose-50 text-rose-700 border-rose-200" />
-            <QuickPill icon="✨" label="Flashcards" href="/dash/student/flashcards" color="bg-purple-50 text-purple-700 border-purple-200" />
-          </div>
-        </div>
-
-        {/* ── Feed Cards ── */}
-        <div className="mt-3 sm:mt-5 space-y-3 sm:space-y-5 px-0 sm:px-0">
-
-          {/* Live Class Card */}
-          {nextLesson ? (
-            <div className="bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-2.5 border-b border-slate-100">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
-                </span>
-                <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Live Class · {countdownText(nextLesson.scheduledStartAt)}</span>
+        <div className="grid grid-cols-1 gap-6 pt-2 sm:gap-8 lg:grid-cols-3 sm:pt-4">
+           {/* Active Missions */}
+           <div className="lg:col-span-2 space-y-6 min-w-0">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Today&apos;s Missions</h2>
+                <Link href="/dash/student/homework" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">See All</Link>
               </div>
-              <div className="p-4 flex items-center gap-4">
-                <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl shrink-0 shadow-md">
-                  👨‍🏫
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-bold text-slate-900 truncate">{nextLesson.title}</h3>
-                  <p className="text-xs font-medium text-slate-500 mt-0.5">{nextLesson.classTitle}</p>
-                </div>
-              </div>
-              <div className="px-4 pb-4">
-                {nextLesson.joinUrl ? (
-                  <a
-                    href={nextLesson.joinUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white rounded-xl font-bold text-sm transition-all shadow-sm"
-                  >
-                    <PlayCircle className="h-5 w-5" />
-                    Join Class Now
-                  </a>
-                ) : (
-                  <div className="flex items-center justify-center gap-2 w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-medium text-sm">
-                    <Clock3 className="h-4 w-4" />
-                    Preparing room...
+              
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+                {featuredAssignments.map((hw) => (
+                  <div key={hw.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col min-w-0">
+                     <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shrink-0">
+                        📚
+                     </div>
+                     <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{hw.subjectName}</p>
+                     <h3 className="text-lg sm:text-2xl font-black text-dark mb-4 sm:mb-6 flex-1 break-words">{hw.title}</h3>
+                     <Link 
+                       href="/dash/student/homework"
+                       className="w-full py-3 sm:py-4 bg-indigo-600 text-white border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] text-center block"
+                     >
+                       Start Now!
+                     </Link>
+                  </div>
+                ))}
+                {featuredAssignments.length === 0 && (
+                  <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[40px] p-8 sm:p-12 text-center">
+                    <CheckCircle2 className="h-10 w-10 text-dark/20 mx-auto mb-3" />
+                    <p className="font-bold text-dark/30 italic">All caught up! Great job! 🎉</p>
                   </div>
                 )}
               </div>
-            </div>
-          ) : null}
+           </div>
 
-          {/* Today's Missions */}
-          <div className="bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                  <BookOpen className="h-4 w-4 text-indigo-600" />
-                </div>
-                <h2 className="text-sm font-bold text-slate-900">Today&apos;s Missions</h2>
-              </div>
-              <Link href="/dash/student/homework" className="text-xs font-bold text-indigo-600 hover:text-indigo-700">See all</Link>
-            </div>
-            {featuredAssignments.length > 0 ? (
-              <div className="divide-y divide-slate-100">
-                {featuredAssignments.map((hw) => (
-                  <Link key={hw.id} href="/dash/student/homework" className="flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition-colors">
-                    <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-violet-100 to-indigo-100 border border-indigo-200/60 flex items-center justify-center text-xl shrink-0">
-                      📝
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 truncate">{hw.title}</p>
-                      <p className="text-[11px] font-medium text-slate-500 mt-0.5">{hw.subjectName} · Due {formatDate(hw.dueAt)}</p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-slate-400 shrink-0" />
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="px-4 py-10 text-center">
-                <CheckCircle2 className="h-8 w-8 text-emerald-300 mx-auto mb-2" />
-                <p className="text-sm font-medium text-slate-400">All caught up! 🎉</p>
-              </div>
-            )}
-          </div>
-
-          {/* Subject Progress */}
-          {progressRows.length > 0 && (
-            <div className="bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-                <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
-                </div>
-                <h2 className="text-sm font-bold text-slate-900">Subject Progress</h2>
-              </div>
-              <div className="p-4 space-y-4">
-                {progressRows.map((row) => {
-                  const width = Math.max(8, Math.min(100, row.value || 0));
-                  return (
-                    <div key={row.id}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-sm font-semibold text-slate-700">{row.subject}</span>
-                        <span className="text-sm font-bold text-slate-900">{row.value.toFixed(0)}%</span>
+           {/* Live Now / Next */}
+           <div className="space-y-6 min-w-0">
+              <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Live Class</h2>
+              {nextLesson ? (
+                <div className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] overflow-hidden">
+                   <div className="bg-red-500 p-3 sm:p-4 border-b-[3px] sm:border-b-[4px] border-dark text-center">
+                      <span className="text-xs font-black text-white uppercase tracking-widest animate-pulse">
+                         Live in {countdownText(nextLesson.scheduledStartAt)}
+                      </span>
+                   </div>
+                   <div className="p-5 sm:p-8 text-center space-y-4 min-w-0">
+                      <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-slate-50 border-[3px] border-dark flex items-center justify-center text-3xl sm:text-4xl mx-auto">
+                         👨‍🏫
                       </div>
-                      <div className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-700"
-                          style={{ width: `${width}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Live Content from Tutor */}
-          <div className="bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-              <div className="h-8 w-8 rounded-lg bg-rose-100 flex items-center justify-center">
-                <Video className="h-4 w-4 text-rose-600" />
-              </div>
-              <h2 className="text-sm font-bold text-slate-900">Live from Tutor</h2>
-            </div>
-            <div className="p-4">
-              <StudentLiveContentPanel />
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="bg-white sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-sm overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-              <div className="h-8 w-8 rounded-lg bg-amber-100 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-amber-600" />
-              </div>
-              <h2 className="text-sm font-bold text-slate-900">Explore</h2>
-            </div>
-            <div className="grid grid-cols-2 gap-px bg-slate-100">
-              <MobileLink icon="🎓" label="Join Lesson" href="/dash/student/live" />
-              <MobileLink icon="📤" label="Submit Work" href="/dash/student/assignments" />
-              <MobileLink icon="🧪" label="Practice Tests" href="/dash/student/exam-prep" />
-              <MobileLink icon="📒" label="Study Notes" href="/dash/student/notes" />
-            </div>
-          </div>
+                      <h3 className="text-xl sm:text-2xl font-black text-dark break-words">{nextLesson.title}</h3>
+                      <p className="text-sm font-bold text-dark/40">{nextLesson.classTitle}</p>
+                      
+                      {nextLesson.joinUrl ? (
+                        <a
+                          href={nextLesson.joinUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block w-full py-4 sm:py-5 bg-yellow text-dark border-[3px] sm:border-[4px] border-dark rounded-2xl font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                        >
+                          Join Class Now
+                        </a>
+                      ) : (
+                        <div className="py-4 text-sm font-bold text-dark/30 italic">Getting the room ready...</div>
+                      )}
+                   </div>
+                </div>
+              ) : (
+                <div className="bg-slate-50 border-[3px] sm:border-[4px] border-dark border-dashed rounded-[24px] sm:rounded-[40px] p-8 sm:p-12 text-center">
+                   <p className="font-bold text-dark/30 italic">No classes today. Take a break!</p>
+                </div>
+              )}
+           </div>
         </div>
 
-        {/* Bottom spacer for safe area */}
-        <div className="h-4 sm:h-8" />
+        {/* Live Content Panel */}
+        <Panel title="Live from tutor" icon={Video} color="bg-rose-100">
+          <StudentLiveContentPanel />
+        </Panel>
       </div>
     );
   }

@@ -21,18 +21,18 @@ export default async function StudentClassesPage() {
   }));
 
   return (
-    <div className="space-y-8 max-w-[1680px] mx-auto pb-20">
-      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-blue-50">
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+    <div className="space-y-6 sm:space-y-8 max-w-[1680px] mx-auto pb-20 w-full min-w-0">
+      <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden w-full min-w-0">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[3px] sm:border-b-[4px] border-dark bg-blue-50">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 sm:gap-6">
             <div className="space-y-3 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+              <span className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C]">
                 Explorer Hub
               </span>
-              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark [overflow-wrap:anywhere]">
+              <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 My Classes
               </h1>
-              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-3xl">
+              <p className="text-xs sm:text-sm md:text-base font-semibold normal-case text-dark/70 max-w-3xl break-words">
                 Track your active classes, schedule windows, and session readiness from one clean command center.
               </p>
             </div>
@@ -48,7 +48,7 @@ export default async function StudentClassesPage() {
           </div>
         </div>
 
-        <div className="p-8 md:p-12">
+        <div className="p-4 sm:p-8 md:p-12">
           {enrollments.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {enrollments.map((course) => (
