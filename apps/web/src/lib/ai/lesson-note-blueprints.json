@@ -43,6 +43,16 @@
             "Moving air is called wind. Wind can move leaves, fly kites, dry clothes, and push boats with sails. Air is also needed for breathing. Human beings and animals need air to stay alive, and plants also need air to grow well.",
             "Air is useful in many parts of everyday life. It helps things burn, helps tyres carry vehicles properly, and helps us keep cool when it moves. So, even though we cannot see air, we can feel it, use it, and observe what it does."
           ],
+          "types_or_categories": [
+            "Still air, which is air that is not moving",
+            "Moving air, which we call wind"
+          ],
+          "importance_points": [
+            "Air is needed for breathing by people and animals",
+            "Plants need air to grow well",
+            "Air helps tyres, balloons, and balls fill up",
+            "Moving air helps cool the body and dry clothes"
+          ],
           "must_cover": [
             "air is all around us even though we cannot see it",
             "air occupies space",
@@ -89,6 +99,22 @@
             "Prepositions show position or relationship, such as in, on, under, and beside. Conjunctions join words or sentences, such as and, but, and because. Interjections show sudden feelings, such as wow!, oh!, or hurray! These parts of speech help us build correct and meaningful sentences.",
             "Parts of speech are important because they help us speak and write correctly. When we understand the job a word is doing, it becomes easier to form good sentences, read with understanding, and express our ideas clearly."
           ],
+          "types_or_categories": [
+            "Nouns",
+            "Pronouns",
+            "Verbs",
+            "Adjectives",
+            "Adverbs",
+            "Prepositions",
+            "Conjunctions",
+            "Interjections"
+          ],
+          "importance_points": [
+            "They help us understand the job each word is doing",
+            "They make speaking and writing clearer",
+            "They help learners build correct sentences",
+            "They improve reading comprehension and grammar"
+          ],
           "must_cover": [
             "meaning of parts of speech",
             "the eight parts of speech in simple language",
@@ -132,6 +158,18 @@
             "There are different types of transportation. Land transportation includes cars, buses, bicycles, motorcycles, lorries, and trains. Water transportation includes canoes, boats, ferries, and ships. Air transportation includes aeroplanes and helicopters. Each type of transportation helps people move in different places.",
             "Transportation is important because it helps people travel for school, work, trade, health care, and family visits. It helps farmers take food to the market and helps families buy what they need. Without transportation, movement would be slow and many community activities would become difficult.",
             "Good transportation also saves time and energy. However, people must use transportation safely. We should cross roads carefully, obey traffic rules, enter vehicles properly, and respect transport workers. Transportation is part of our daily life and helps communities stay connected."
+          ],
+          "types_or_categories": [
+            "Land transportation, such as cars, buses, bicycles, trains, motorcycles, and lorries",
+            "Water transportation, such as canoes, boats, ferries, and ships",
+            "Air transportation, such as aeroplanes and helicopters"
+          ],
+          "importance_points": [
+            "Transportation helps children get to school",
+            "Transportation helps workers travel to their jobs",
+            "Transportation helps goods move to shops and markets",
+            "Transportation helps people reach hospitals, relatives, and important services",
+            "Transportation saves time and connects communities"
           ],
           "must_cover": [
             "transportation means movement of people and goods from one place to another",

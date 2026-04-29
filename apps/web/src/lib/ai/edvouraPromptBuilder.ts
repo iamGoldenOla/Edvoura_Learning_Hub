@@ -66,7 +66,7 @@ PEDAGOGICAL DIRECTIVES:
 
 CONTEXTUAL RULES:
 - Always adapt language, examples, and depth to: Grade Level {{grade}}, Subject {{subject}}, Skill Type {{skill_type}}
-- Use relatable, real-life examples (Nigerian markets, local foods, school situations, family scenarios where appropriate)
+- Use relatable, real-life examples that are globally understandable. When local context is useful, prefer ordinary home, school, transport, market, health, and community situations that learners in many countries can recognize.
 - NEVER repeat the same questions, spelling words, or examples from previous generations
 - NEVER give vague one-line explanations — every response must demonstrate teaching mastery
 - Always return structured JSON matching the exact schema provided

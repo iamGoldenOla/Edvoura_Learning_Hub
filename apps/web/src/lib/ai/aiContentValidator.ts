@@ -27,6 +27,8 @@ const lessonNoteSchema = z.object({
   title: z.string().min(3),
   lesson_summary: z.string().min(30),
   explanation: z.string().min(80),
+  types_or_categories: z.array(z.string().min(3)).min(1).optional(),
+  importance_points: z.array(z.string().min(3)).min(1).optional(),
   key_points: z.array(z.string().min(3)).min(3),
   worked_examples: z.array(z.object({
     title: z.string().min(3),
@@ -345,11 +347,19 @@ function normalizeLessonNotePayload(parsed: unknown) {
   const learningChecks = Array.isArray(source.learning_checks)
     ? source.learning_checks.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
     : practiceQuestions.slice(0, 3).map((item) => item.question);
+  const typesOrCategories = Array.isArray(source.types_or_categories)
+    ? source.types_or_categories.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
+  const importancePoints = Array.isArray(source.importance_points)
+    ? source.importance_points.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+    : [];
 
   return {
     title,
     lesson_summary: lessonSummary || `${title} helps learners understand the core idea in simple language.`,
     explanation,
+    ...(typesOrCategories.length > 0 ? { types_or_categories: typesOrCategories } : {}),
+    ...(importancePoints.length > 0 ? { importance_points: importancePoints } : {}),
     key_points: keyPoints,
     worked_examples: workedExamples,
     real_world_examples: realWorldExamples,

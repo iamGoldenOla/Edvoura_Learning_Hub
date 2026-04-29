@@ -56,6 +56,8 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
   const content = note.content;
   const explanation = typeof content.explanation === 'string' ? content.explanation : '';
   const lessonSummary = typeof content.lesson_summary === 'string' ? content.lesson_summary : '';
+  const typesOrCategories = Array.isArray(content.types_or_categories) ? content.types_or_categories : [];
+  const importancePoints = Array.isArray(content.importance_points) ? content.importance_points : [];
   const keyPoints = Array.isArray(content.key_points) ? content.key_points : [];
   const workedExamples = Array.isArray(content.worked_examples) ? content.worked_examples : [];
   const realWorldExamples = Array.isArray(content.real_world_examples) ? content.real_world_examples : [];
@@ -100,6 +102,28 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
             <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
               <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">📖 Explanation</p>
               <p className="text-sm font-semibold leading-7 text-dark/80 whitespace-pre-line">{explanation}</p>
+            </div>
+          ) : null}
+
+          {typesOrCategories.length > 0 ? (
+            <div className="rounded-xl border-[2px] border-dark bg-cyan-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">Types / Categories</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm font-semibold text-dark/80">
+                {typesOrCategories.map((item, index) => (
+                  <li key={`type-${index}`}>{String(item)}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {importancePoints.length > 0 ? (
+            <div className="rounded-xl border-[2px] border-dark bg-amber-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">Importance</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm font-semibold text-dark/80">
+                {importancePoints.map((item, index) => (
+                  <li key={`importance-${index}`}>{String(item)}</li>
+                ))}
+              </ul>
             </div>
           ) : null}
 

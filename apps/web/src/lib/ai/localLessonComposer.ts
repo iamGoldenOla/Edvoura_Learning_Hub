@@ -212,6 +212,12 @@ export function buildLocalLessonNote(input: GenerateEdvouraInput) {
     title: `${subject}: ${topic}`,
     lesson_summary: summary,
     explanation,
+    ...(topicBlueprint?.types_or_categories?.length
+      ? { types_or_categories: topicBlueprint.types_or_categories.map((item) => ensureSentence(item)) }
+      : {}),
+    ...(topicBlueprint?.importance_points?.length
+      ? { importance_points: topicBlueprint.importance_points.map((item) => ensureSentence(item)) }
+      : {}),
     key_points: keyPoints,
     worked_examples: workedExamples,
     real_world_examples: realWorldExamples,

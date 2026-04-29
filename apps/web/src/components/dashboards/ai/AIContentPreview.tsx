@@ -282,6 +282,20 @@ export default function AIContentPreview({
             </div>
           ) : null}
 
+          {record.types_or_categories ? (
+            <div className="rounded-xl border-[2px] border-dark bg-cyan-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">Types / Categories</p>
+              {renderStringList(record.types_or_categories)}
+            </div>
+          ) : null}
+
+          {record.importance_points ? (
+            <div className="rounded-xl border-[2px] border-dark bg-amber-50 p-4">
+              <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">Importance</p>
+              {renderStringList(record.importance_points)}
+            </div>
+          ) : null}
+
           {/* Lesson Note: Key Points */}
           {record.key_points ? (
             <div className="rounded-xl border-[2px] border-dark bg-green-50 p-4">

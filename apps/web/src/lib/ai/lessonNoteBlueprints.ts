@@ -10,6 +10,8 @@ type SubjectBlueprint = {
       hook?: string;
       summary?: string;
       explanation_paragraphs?: string[];
+      types_or_categories?: string[];
+      importance_points?: string[];
       must_cover?: string[];
       worked_examples?: string[];
       real_world_examples?: string[];
