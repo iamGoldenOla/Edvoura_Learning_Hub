@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { BookOpen, FolderOpen, ArrowRight, PlayCircle, Library } from 'lucide-react';
+import { BookOpen, FolderOpen, ArrowRight, Library } from 'lucide-react';
 
 type AIContentItem = {
   id: string;
@@ -22,6 +22,25 @@ type Enrollment = {
   tutorName: string;
 };
 
+const SUBJECT_ALIAS_MAP: Record<string, string> = {
+  english: 'English Language',
+  'english language': 'English Language',
+  maths: 'Mathematics',
+  math: 'Mathematics',
+  mathematics: 'Mathematics',
+  'basic science': 'Basic Science',
+  'social studies': 'Social Studies',
+  'civic education': 'Civic Education',
+  'computer studies': 'Computer Studies',
+  spelling: 'Spelling',
+};
+
+function normalizeSubjectLabel(value: string | null | undefined) {
+  const raw = value?.trim() || 'General Studies';
+  const key = raw.toLowerCase().replace(/\s+/g, ' ');
+  return SUBJECT_ALIAS_MAP[key] ?? raw;
+}
+
 export default function StudentSubjectsClient({
   contentItems,
   enrollments,
@@ -31,24 +50,42 @@ export default function StudentSubjectsClient({
 }) {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
+  const normalizedContentItems = useMemo(
+    () =>
+      contentItems.map((item) => ({
+        ...item,
+        subject: normalizeSubjectLabel(item.subject),
+      })),
+    [contentItems],
+  );
+
+  const normalizedEnrollments = useMemo(
+    () =>
+      enrollments.map((entry) => ({
+        ...entry,
+        subjectName: normalizeSubjectLabel(entry.subjectName),
+      })),
+    [enrollments],
+  );
+
   // Group all content items by subject
   const contentBySubject = useMemo(() => {
     const map = new Map<string, AIContentItem[]>();
-    for (const item of contentItems) {
+    for (const item of normalizedContentItems) {
       const subject = item.subject || 'General Studies';
       if (!map.has(subject)) map.set(subject, []);
       map.get(subject)!.push(item);
     }
     return map;
-  }, [contentItems]);
+  }, [normalizedContentItems]);
 
   // Merge the subjects from the AI content with the student's actual enrollments
   const allSubjects = useMemo(() => {
     const set = new Set<string>();
-    for (const en of enrollments) set.add(en.subjectName);
+    for (const en of normalizedEnrollments) set.add(en.subjectName);
     for (const subject of Array.from(contentBySubject.keys())) set.add(subject);
     return Array.from(set).sort();
-  }, [enrollments, contentBySubject]);
+  }, [normalizedEnrollments, contentBySubject]);
 
   return (
     <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24 animate-in fade-in duration-700">
@@ -67,7 +104,7 @@ export default function StudentSubjectsClient({
         <section className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {allSubjects.length > 0 ? (
             allSubjects.map((subject) => {
-              const subjectEnrollments = enrollments.filter(e => e.subjectName === subject);
+              const subjectEnrollments = normalizedEnrollments.filter(e => e.subjectName === subject);
               const subjectContent = contentBySubject.get(subject) || [];
               
               const notesCount = subjectContent.filter(c => c.taskType.includes('LESSON')).length;
