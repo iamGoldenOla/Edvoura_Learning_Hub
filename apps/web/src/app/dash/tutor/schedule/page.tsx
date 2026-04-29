@@ -63,32 +63,32 @@ export default async function TutorSchedulePage(props: {
   const upcomingSessions = typedSchedule.filter((session) => new Date(session.scheduled_end_at) >= new Date());
 
   return (
-    <div className="space-y-8 max-w-[1400px] mx-auto pb-20">
-      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="space-y-6 sm:space-y-8 w-full min-w-0 max-w-[1400px] mx-auto pb-20">
+      <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         
         {/* Header */}
-        <div className="p-8 md:p-12 border-b-[4px] border-dark bg-blue-50">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
-            <div className="space-y-3 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[3px] sm:border-b-[4px] border-dark bg-blue-50">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8 min-w-0">
+            <div className="space-y-3 min-w-0 w-full">
+              <span className="inline-flex items-center justify-center text-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-dark bg-white text-[9px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] font-black shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] break-words max-w-full">
                 TEACHING MANAGEMENT
               </span>
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 Master Schedule
               </h1>
-              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl">
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-xl break-words">
                 Organize your virtual classrooms and manage recurring sessions from one solid command center.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-              <Link href="/dash/tutor/schedule?action=sync-calendar" className="flex-1 lg:flex-none">
-                <Button className="w-full h-14 px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto">
+              <Link href="/dash/tutor/schedule?action=sync-calendar" className="w-full sm:flex-1 lg:flex-none">
+                <Button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
                   <Clock className="mr-2 w-4 h-4" /> Sync Calendar
                 </Button>
               </Link>
-              <a href="#scheduler" className="flex-1 lg:flex-none">
-                <Button className="w-full h-14 px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+              <a href="#scheduler" className="w-full sm:flex-1 lg:flex-none">
+                <Button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
                   <Plus className="mr-2 w-5 h-5" /> New Session
                 </Button>
               </a>
@@ -96,12 +96,12 @@ export default async function TutorSchedulePage(props: {
           </div>
         </div>
 
-        <div className="p-8 md:p-12">
+        <div className="p-5 sm:p-8 md:p-12 min-w-0">
           
           {/* Notifications */}
-          <div className="space-y-6 mb-10">
+          <div className="space-y-4 sm:space-y-6 mb-8 sm:mb-10">
             {created && (
-              <div className="flex items-center gap-4 rounded-xl border-[3px] border-dark bg-emerald-100 p-6 shadow-[5px_5px_0px_#060E1C]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-xl border-[3px] border-dark bg-emerald-100 p-4 sm:p-6 shadow-[3px_3px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C]">
                 <div className="h-10 w-10 shrink-0 rounded-full border-[2px] border-dark bg-emerald-400 flex items-center justify-center text-dark">
                   <CheckCircle2 className="h-6 w-6" />
                 </div>
@@ -113,7 +113,7 @@ export default async function TutorSchedulePage(props: {
             )}
 
             {errorParam && (
-              <div className="flex items-center gap-4 rounded-xl border-[3px] border-dark bg-rose-100 p-6 shadow-[5px_5px_0px_#060E1C]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 rounded-xl border-[3px] border-dark bg-rose-100 p-4 sm:p-6 shadow-[3px_3px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C]">
                 <div className="h-10 w-10 shrink-0 rounded-full border-[2px] border-dark bg-rose-500 flex items-center justify-center text-white">
                   <Info className="h-6 w-6" />
                 </div>
@@ -125,13 +125,13 @@ export default async function TutorSchedulePage(props: {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-10 items-start min-w-0">
             
             {/* Session List Area */}
             <section className="lg:col-span-7 space-y-6">
-              <div className="flex items-center justify-between px-2">
-                <h2 className="text-2xl font-black text-dark">Upcoming Live Sessions</h2>
-                <span className="bg-yellow border-[3px] border-dark px-4 py-2 rounded-xl text-xs font-black text-dark shadow-[3px_3px_0px_#060E1C]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 sm:px-2">
+                <h2 className="text-xl sm:text-2xl font-black text-dark">Upcoming Live Sessions</h2>
+                <span className="bg-yellow border-[2px] sm:border-[3px] border-dark px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-black text-dark shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] self-start sm:self-auto">
                   {upcomingSessions.length} Active
                 </span>
               </div>
@@ -139,12 +139,12 @@ export default async function TutorSchedulePage(props: {
               <div className="space-y-6">
                 {upcomingSessions.length > 0 ? (
                   upcomingSessions.map((session) => (
-                    <article key={session.id} className="bg-off-white border-[3px] border-dark rounded-2xl p-6 shadow-[5px_5px_0px_#060E1C]">
-                      <div className="flex flex-col sm:flex-row gap-6">
+                    <article key={session.id} className="bg-off-white border-[3px] border-dark rounded-[20px] sm:rounded-2xl p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 min-w-0">
                         {/* Date Label */}
-                        <div className="flex flex-col items-center justify-center h-20 w-20 bg-white rounded-xl border-[3px] border-dark shadow-[2px_2px_0px_#060E1C] shrink-0">
+                        <div className="flex flex-row sm:flex-col items-center justify-center gap-2 sm:gap-0 h-14 sm:h-20 w-full sm:w-20 bg-white rounded-xl border-[3px] border-dark shadow-[2px_2px_0px_#060E1C] shrink-0">
                           <span className="text-[10px] font-black uppercase tracking-widest text-dark/50">{new Date(session.scheduled_start_at).toLocaleString('default', { month: 'short' })}</span>
-                          <span className="text-2xl font-black text-dark">{new Date(session.scheduled_start_at).getDate()}</span>
+                          <span className="text-xl sm:text-2xl font-black text-dark">{new Date(session.scheduled_start_at).getDate()}</span>
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -170,13 +170,13 @@ export default async function TutorSchedulePage(props: {
                       </div>
 
                       {/* Action buttons */}
-                      <div className="mt-6 pt-6 border-t-[3px] border-dark/10 flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
+                      <div className="mt-5 sm:mt-6 pt-5 sm:pt-6 border-t-[3px] border-dark/10 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full sm:w-auto">
                           {session.status === 'live' ? (
                             (session.host_url || session.join_url) ? (
-                              <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer">
-                                <Button className="h-12 px-6 bg-emerald-400 border-[3px] border-dark text-dark rounded-xl font-black flex items-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
-                                  <Video className="w-5 h-5 fill-current" /> Join Classroom
+                              <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                <Button className="w-full sm:w-auto h-12 px-4 sm:px-6 bg-emerald-400 border-[3px] border-dark text-dark rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                                  <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Join Classroom
                                 </Button>
                               </a>
                             ) : (
@@ -188,8 +188,8 @@ export default async function TutorSchedulePage(props: {
                             <>
                               <TutorLessonStartButton lessonId={session.id} status={session.status} />
                               {(session.host_url || session.join_url) && (
-                                <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer">
-                                  <Button className="h-12 px-5 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 rounded-xl font-black flex items-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
+                                <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                  <Button className="w-full sm:w-auto h-12 px-4 sm:px-5 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
                                     <ExternalLink className="w-4 h-4" /> Preview Link
                                   </Button>
                                 </a>
@@ -197,7 +197,9 @@ export default async function TutorSchedulePage(props: {
                             </>
                           )}
                         </div>
-                        <DeleteLessonButton lessonId={session.id} />
+                        <div className="w-full sm:w-auto mt-2 sm:mt-0 flex justify-end">
+                          <DeleteLessonButton lessonId={session.id} />
+                        </div>
                       </div>
                     </article>
                   ))
@@ -216,9 +218,9 @@ export default async function TutorSchedulePage(props: {
             </section>
 
             {/* Scheduler Form Area */}
-            <section id="scheduler" className="lg:col-span-5 sticky top-10">
-              <div className="bg-white rounded-3xl border-[4px] border-dark p-8 shadow-[8px_8px_0px_#060E1C]">
-                <h2 className="text-2xl font-black text-dark tracking-tight">Publish Live Slot</h2>
+            <section id="scheduler" className="lg:col-span-5 sticky top-4 sm:top-10">
+              <div className="bg-white rounded-[20px] sm:rounded-3xl border-[3px] sm:border-[4px] border-dark p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] min-w-0">
+                <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">Publish Live Slot</h2>
                 <p className="mt-2 text-dark/70 text-sm font-semibold">
                   Fill in the details below to sync a new session to the student portal.
                 </p>
@@ -226,14 +228,14 @@ export default async function TutorSchedulePage(props: {
                 <form action={createTutorLiveSlot} className="mt-8 space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label htmlFor="subjectId" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
+                      <label htmlFor="subjectId" className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-dark/60">
                         Subject
                       </label>
                       <select
                         id="subjectId"
                         name="subjectId"
                         required
-                        className="w-full h-12 rounded-xl border-[3px] border-dark bg-off-white px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
+                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
                       >
                         {(subjects || []).map((item) => (
                           <option key={item.id} value={item.id}>
@@ -350,14 +352,14 @@ export default async function TutorSchedulePage(props: {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-14 bg-dark hover:bg-dark/90 text-white border-[3px] border-dark rounded-xl font-black text-lg transition-all active:scale-95 shadow-[4px_4px_0px_#F5C518]">
+                  <Button type="submit" className="w-full h-12 sm:h-14 bg-dark hover:bg-dark/90 text-white border-[3px] border-dark rounded-xl font-black text-base sm:text-lg transition-all active:scale-95 shadow-[4px_4px_0px_#F5C518]">
                     Publish to Dashboard
                   </Button>
                 </form>
               </div>
 
               {/* Neo-brutalist Tip Card */}
-              <div className="mt-8 bg-yellow border-[4px] border-dark rounded-3xl p-6 shadow-[5px_5px_0px_#060E1C]">
+              <div className="mt-6 sm:mt-8 bg-yellow border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-3xl p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="p-1.5 bg-white border-[2px] border-dark rounded-lg">
                      <Info className="h-5 w-5 text-dark" />

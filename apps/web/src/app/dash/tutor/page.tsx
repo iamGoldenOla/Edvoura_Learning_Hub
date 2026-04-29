@@ -45,31 +45,31 @@ export default async function TutorDashboard() {
     <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-6 pb-20 sm:space-y-8">
       
       {/* Header Section */}
-      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-yellow/20">
+      <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+        <div className="p-5 sm:p-8 md:p-12 border-b-[3px] sm:border-b-[4px] border-dark bg-yellow/20">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
-            <div className="space-y-3 min-w-0">
-              <span className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-dark bg-white text-[10px] tracking-[0.2em] font-black shadow-[4px_4px_0px_#060E1C]">
+            <div className="space-y-3 min-w-0 w-full">
+              <span className="inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 border-[2px] sm:border-[3px] border-dark bg-white text-[9px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] font-black shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] break-words max-w-full">
                 TUTOR COMMAND CENTER
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark [overflow-wrap:anywhere]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
                 Welcome back, {dashboard.tutorName}
               </h1>
-              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-3xl">
+              <p className="text-sm md:text-base font-semibold normal-case text-dark/70 max-w-3xl break-words">
                 You have <span className="font-black text-dark">{dashboard.todayLessons.length} live classes</span> scheduled for today and <span className="font-black text-dark">{dashboard.pendingGrading} assignments</span> to grade.
               </p>
             </div>
 
-            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto">
-              <Link href="/dash/tutor/schedule" className="flex-1 lg:flex-none">
-                <Button className="w-full h-14 px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
-                  <CalendarClock className="mr-2 h-5 w-5" />
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto mt-4 sm:mt-0">
+              <Link href="/dash/tutor/schedule" className="w-full sm:flex-1 lg:flex-none">
+                <Button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                  <CalendarClock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Open Scheduler
                 </Button>
               </Link>
-              <Link href="/dash/tutor/builder" className="flex-1 lg:flex-none">
-                <Button className="w-full h-14 px-8 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
-                  <Plus className="mr-2 h-5 w-5" />
+              <Link href="/dash/tutor/builder" className="w-full sm:flex-1 lg:flex-none">
+                <Button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                  <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   New Assignment
                 </Button>
               </Link>
@@ -77,14 +77,14 @@ export default async function TutorDashboard() {
           </div>
         </div>
 
-        <div className="p-4 sm:p-8 md:p-12">
-          <div className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12">
+        <div className="p-4 sm:p-5 md:p-8 lg:p-12 min-w-0">
+          <div className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12 min-w-0">
             
             {/* Live Today Section */}
-            <section className="xl:col-span-8 space-y-6 sm:space-y-8">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <section className="xl:col-span-8 space-y-4 sm:space-y-6 sm:space-y-8 min-w-0">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center justify-between">
                 <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">Today&apos;s Schedule</h2>
-                <Link href="/dash/tutor/schedule" className="text-xs font-black text-blue-600 hover:underline border-[2px] border-dark px-4 py-2 rounded-xl bg-white shadow-[2px_2px_0px_#060E1C]">
+                <Link href="/dash/tutor/schedule" className="text-xs font-black text-blue-600 hover:underline border-[2px] sm:border-[3px] border-dark px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-white shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] self-start sm:self-auto text-center">
                   View Full Week
                 </Link>
               </div>
@@ -93,9 +93,9 @@ export default async function TutorDashboard() {
                 {dashboard.todayLessons.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4">
                     {dashboard.todayLessons.map((item) => (
-                      <div key={item.id} className="border-[3px] border-dark rounded-2xl bg-off-white p-4 sm:p-6 shadow-[5px_5px_0px_#060E1C] min-w-0">
-                        <div className="flex flex-col justify-between gap-5 lg:flex-row">
-                           <div className="space-y-3">
+                      <div key={item.id} className="border-[3px] border-dark rounded-[20px] sm:rounded-2xl bg-off-white p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                        <div className="flex flex-col justify-between gap-4 sm:gap-5 lg:flex-row min-w-0">
+                           <div className="space-y-3 min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                  <span className="px-3 py-1 bg-dark text-white border-[2px] border-dark text-[9px] font-black uppercase tracking-widest rounded-md">
                                    {item.subjectName}
@@ -115,20 +115,20 @@ export default async function TutorDashboard() {
                               </div>
                            </div>
 
-                           <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
+                           <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 w-full sm:w-auto">
                               {item.status !== 'live' ? (
                                 <TutorLessonStartButton lessonId={item.id} status={item.status} />
                               ) : (
-                                <a href={item.joinUrl || '#'} target="_blank" rel="noreferrer">
-                                  <Button className="h-14 px-8 bg-emerald-400 border-[3px] border-dark hover:bg-emerald-500 text-dark rounded-xl font-black flex items-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
-                                    <Video className="w-5 h-5 fill-current" /> Join Classroom
+                                <a href={item.joinUrl || '#'} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                  <Button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-8 bg-emerald-400 border-[3px] border-dark hover:bg-emerald-500 text-dark rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
+                                    <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Join Classroom
                                   </Button>
                                 </a>
                               )}
                               
                               {item.status !== 'live' && item.joinUrl && (
-                                <a href={item.joinUrl} target="_blank" rel="noreferrer">
-                                  <Button className="h-14 px-6 bg-white border-[3px] border-dark hover:bg-slate-50 text-dark rounded-xl font-black shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none">
+                                <a href={item.joinUrl} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                  <Button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark hover:bg-slate-50 text-dark rounded-xl font-black shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base flex items-center justify-center">
                                     Preview Room
                                   </Button>
                                 </a>
@@ -151,10 +151,10 @@ export default async function TutorDashboard() {
             </section>
 
             {/* Sidebar Navigation & Tools */}
-            <aside className="xl:col-span-4 space-y-8">
+            <aside className="xl:col-span-4 space-y-6 sm:space-y-8 min-w-0">
               {/* Broadcast Quick Action */}
-              <div className="border-[3px] border-dark rounded-3xl bg-blue-50 p-5 sm:p-8 shadow-[5px_5px_0px_#060E1C]">
-                <h3 className="text-xl font-black text-dark mb-2 flex items-center gap-2">
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-blue-50 p-4 sm:p-5 md:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <h3 className="text-xl font-black text-dark mb-2 flex items-center gap-2 break-words">
                   <Rocket className="h-5 w-5 text-dark" /> Quick Broadcast
                 </h3>
                 <p className="text-sm text-dark/70 font-semibold mb-6">Send an instant alert to your active students.</p>
@@ -162,10 +162,10 @@ export default async function TutorDashboard() {
               </div>
 
               {/* Grading Queue Mini */}
-              <div className="border-[3px] border-dark rounded-3xl bg-white p-5 sm:p-8 shadow-[5px_5px_0px_#060E1C]">
-                <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                   <h3 className="text-xl font-black text-dark flex items-center gap-2">
-                     <ClipboardCheck className="h-5 w-5" /> Grading Queue
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white p-4 sm:p-5 md:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <div className="mb-4 sm:mb-6 flex flex-col gap-3 sm:flex-row sm:items-center justify-between">
+                   <h3 className="text-xl font-black text-dark flex items-center gap-2 break-words">
+                     <ClipboardCheck className="h-5 w-5 shrink-0" /> Grading Queue
                    </h3>
                    <Link href="/dash/tutor/grading" className="text-xs font-black text-blue-600 hover:underline">View All</Link>
                 </div>
@@ -187,9 +187,9 @@ export default async function TutorDashboard() {
               </div>
 
               {/* Navigation Grid */}
-              <div className="border-[3px] border-dark rounded-3xl bg-white p-5 sm:p-8 shadow-[5px_5px_0px_#060E1C]">
-                 <h3 className="text-lg font-black text-dark mb-6 flex items-center gap-2">
-                   <LayoutDashboard className="h-5 w-5" />
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-white p-4 sm:p-5 md:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                 <h3 className="text-lg font-black text-dark mb-4 sm:mb-6 flex items-center gap-2 break-words">
+                   <LayoutDashboard className="h-5 w-5 shrink-0" />
                    Quick Navigation
                  </h3>
                  <div className="grid grid-cols-1 gap-3">
@@ -215,9 +215,9 @@ export default async function TutorDashboard() {
               </div>
 
               {/* Support Box */}
-              <div className="border-[4px] border-dark rounded-3xl p-6 sm:p-10 bg-yellow shadow-[5px_5px_0px_#060E1C] relative overflow-hidden">
-                 <Trophy className="h-10 w-10 text-dark mb-6" />
-                 <h3 className="text-2xl font-black mb-2 tracking-tight text-dark">Tutor Elite</h3>
+              <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-3xl p-5 sm:p-10 bg-yellow shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] relative overflow-hidden min-w-0">
+                 <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-dark mb-4 sm:mb-6" />
+                 <h3 className="text-xl sm:text-2xl font-black mb-2 tracking-tight text-dark break-words">Tutor Elite</h3>
                  <p className="text-dark/80 text-sm font-semibold leading-relaxed">
                    Need assistance with your lessons or tools? Our team is available 24/7.
                  </p>
