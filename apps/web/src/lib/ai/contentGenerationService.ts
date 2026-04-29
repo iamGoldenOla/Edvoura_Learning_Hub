@@ -11,6 +11,7 @@ import {
   extractAntiRepetitionItems,
 } from "./antiRepetitionService";
 import { fetchPreviousItems, saveAiDraft } from "./aiContentRepository";
+import { getLessonNoteBlueprint, normalizeSubjectName } from "./lessonNoteBlueprints";
 
 export type GenerateEdvouraInput = {
   userRole: "tutor" | "super_admin" | "admin";
@@ -106,6 +107,10 @@ function isWeakLessonNote(content: unknown) {
     /break the task into smaller steps/i,
     /guided practice/i,
     /model thinking/i,
+    /begin by telling the learner/i,
+    /help learners build real understanding/i,
+    /if the lesson is practical/i,
+    /if the lesson is more descriptive/i,
   ];
 
   const hasGenericExplanation = genericPatterns.some((pattern) => pattern.test(explanation));
@@ -131,35 +136,54 @@ function isWeakLessonNote(content: unknown) {
 }
 
 function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
-  const title = `${input.subject}: ${input.topic}`;
+  const normalizedSubject = normalizeSubjectName(input.subject);
+  const title = `${normalizedSubject}: ${input.topic}`;
+  const { topicBlueprint } = getLessonNoteBlueprint(normalizedSubject, input.topic);
 
   switch (input.taskType) {
     case "GENERATE_LESSON":
     case "GENERATE_LESSON_NOTE":
       return {
         title,
-        lesson_summary: `${input.topic} teaches learners what the idea means, why it matters in everyday life, and how to talk about it with confidence using clear examples and short practice tasks.`,
-        explanation: `${input.topic} is a lesson in ${input.subject} that should help learners build real understanding, not just repeat a definition. Begin by telling the learner plainly what the topic means in simple words. Next, connect it to familiar objects, places, or experiences the learner already knows from home, school, the market, or the wider community. After that, move to short examples that show the topic in action. If the lesson is practical, explain what the learner would see, notice, compare, or do. If the lesson is more descriptive, explain the important features, uses, or differences that the learner should remember. End by helping the learner say the main idea back in their own words and answer short questions with confidence.`,
+        lesson_summary:
+          topicBlueprint?.hook
+            ? `${topicBlueprint.hook} In this lesson, learners will understand what ${input.topic} means, where it appears in real life, and why it is important.`
+            : `${input.topic} helps learners understand the meaning of the topic, its main features, and why it matters in everyday life.`,
+        explanation:
+          topicBlueprint && normalizedSubject === "Basic Science" && input.topic.trim().toLowerCase() === "air"
+            ? `Air is the invisible substance all around us. We cannot see air, but it is everywhere. We feel it when the wind blows on our faces, when a fan cools us, and when we breathe in and out. Air does not have a colour, but it is real. One way we know air is real is that it occupies space. When we blow air into a balloon, the balloon becomes bigger. That shows that air enters the balloon and fills it. Another way we know air is present is when the leaves of trees move outside. Moving air is called wind.\n\nAir is very important to living things. Human beings and animals need air to breathe and stay alive. Plants also need air to grow well. Without air, people, animals, and plants would not survive. Air also helps in many daily activities. It helps fires burn, it fills tyres, it helps kites fly, and it dries clothes spread outside in the sun and wind.\n\nWe should remember that air is not 'nothing'. Even though we cannot see it, we can feel its effects and observe what it does. If you wave a book close to your face, you will feel moving air. If you blow into an empty nylon bag, it expands because air has entered it. So, air is useful, real, and necessary for life.`
+            : topicBlueprint && normalizedSubject === "English Language" && input.topic.trim().toLowerCase() === "parts of speech"
+              ? `Parts of speech are the different jobs that words do in a sentence. Just as people in a school have different duties, words also have different duties when we speak or write. Some words name people, places, animals, or things. Some words show actions. Some words describe, while others join words or show feeling.\n\nIn English Language, the main parts of speech include nouns, pronouns, verbs, adjectives, adverbs, prepositions, conjunctions, and interjections. A noun is a naming word, such as boy, school, or mango. A pronoun takes the place of a noun, such as he, she, or they. A verb shows action or state of being, such as run, eat, is, or are. An adjective describes a noun, such as tall boy or red bag. An adverb describes how an action happens, such as quickly or softly.\n\nPrepositions show position or relationship, such as in, on, under, and beside. Conjunctions join words or sentences, such as and, but, and because. Interjections show sudden feelings, such as wow!, oh!, or hurray!\n\nParts of speech are important because they help us speak and write correctly. When we understand the job a word is doing, it becomes easier to form good sentences, read with understanding, and express our ideas clearly.`
+              : `${input.topic} is an important topic in ${normalizedSubject}. ${topicBlueprint?.hook ?? ""} Learners should first understand its meaning in simple language. After that, they should know the main features or parts connected to the topic. They should also understand why the topic is important and where it appears in everyday life. Good lesson notes should not speak about how a teacher will teach; they should clearly teach the learner the actual idea, give concrete examples, and help the learner explain the topic in their own words.`,
         key_points: [
-          `${input.topic} should be explained in simple language that a learner in ${input.grade} can understand.`,
-          `Learners should know the meaning of ${input.topic}, its main features, and why it is important.`,
-          `The lesson should connect ${input.topic} to everyday life in school, at home, or in the community.`,
-          `Learners should practise talking about ${input.topic} using correct examples and short written answers.`,
+          ...(topicBlueprint?.must_cover?.slice(0, 4).map((item) => `${item.charAt(0).toUpperCase()}${item.slice(1)}.`) ?? [
+            `${input.topic} should be explained in simple language that a learner in ${input.grade} can understand.`,
+            `Learners should know the meaning of ${input.topic}, its main features, and why it is important.`,
+            `The lesson should connect ${input.topic} to everyday life in school, at home, or in the community.`,
+            `Learners should practise talking about ${input.topic} using correct examples and short written answers.`,
+          ]),
         ],
         worked_examples: [
           {
-            title: "Meaning and Identification",
-            explanation: `Start with a direct example of ${input.topic} and explain how to identify it correctly. Point out the important clue words, features, or properties that help a learner know why the example belongs to this lesson.`,
+            title: "Worked Example 1",
+            explanation:
+              topicBlueprint?.worked_examples?.[0]
+                ? `${topicBlueprint.worked_examples[0]} Explain it step by step in simple language so the learner can follow the reasoning clearly.`
+                : `Use one clear example to show the meaning of ${input.topic} and explain why it fits the lesson.`,
           },
           {
-            title: "Everyday Life Connection",
-            explanation: `Use a second example from a familiar setting such as home, school, transport, nature, or play. Explain how the same lesson idea appears there so the learner can connect classroom learning to real life.`,
+            title: "Worked Example 2",
+            explanation:
+              topicBlueprint?.worked_examples?.[1]
+                ? `${topicBlueprint.worked_examples[1]} Explain it step by step in simple language so the learner can connect it to real life.`
+                : `Use a second real-life example so learners can connect ${input.topic} to home, school, or community life.`,
           },
         ],
-        real_world_examples: [
-          `A learner should be able to spot ${input.topic} in a familiar place such as the classroom, home, school compound, market, or road depending on the lesson topic.`,
-          `A teacher can also use a short demonstration, picture, object, or story so that learners see that ${input.topic} is part of the real world and not just a textbook idea.`,
-        ],
+        real_world_examples:
+          topicBlueprint?.real_world_examples?.map((item) => `Real-life example: ${item}.`) ?? [
+            `A learner should be able to spot ${input.topic} in a familiar place such as the classroom, home, school compound, market, or road depending on the lesson topic.`,
+            `A teacher can also use a short demonstration, picture, object, or story so that learners see that ${input.topic} is part of the real world and not just a textbook idea.`,
+          ],
         practice_questions: [
           {
             question: `Define ${input.topic} in your own words.`,
@@ -191,15 +215,25 @@ function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
           youtube_videos: [
             {
               title: `${input.topic} explained for ${input.grade}`,
-              search_query: `${input.subject} ${input.topic} lesson for ${input.grade}`,
+              search_query: `${normalizedSubject} ${input.topic} lesson for ${input.grade}`,
               why_it_helps: "Helps the learner hear and see the topic explained with visuals, examples, and simple language.",
+            },
+            {
+              title: `${input.topic} for children`,
+              search_query: `${input.topic} for children ${input.grade}`,
+              why_it_helps: "Provides a second child-friendly explanation using visuals and concrete examples.",
             },
           ],
           image_resources: [
             {
               title: `${input.topic} diagrams and real-life pictures`,
-              search_query: `${input.subject} ${input.topic} diagram for ${input.grade}`,
+              search_query: `${normalizedSubject} ${input.topic} diagram for ${input.grade}`,
               why_it_helps: "Gives the learner diagrams, labelled pictures, or concrete visuals that make the topic easier to understand and remember.",
+            },
+            {
+              title: `${input.topic} labelled pictures`,
+              search_query: `${input.topic} labelled pictures for children`,
+              why_it_helps: "Supports visual recall with clear labelled images suited to primary learners.",
             },
           ],
           classroom_materials: [
@@ -468,9 +502,10 @@ function shouldQualityCheckLesson(taskType: EdvouraTaskType) {
 
 export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   validateRole(input.userRole);
+  const normalizedSubject = normalizeSubjectName(input.subject);
 
   const previousItems = await fetchPreviousItems({
-    subject: input.subject,
+    subject: normalizedSubject,
     topic: input.topic,
     grade: input.grade,
     skillType: input.skillType,
@@ -478,7 +513,7 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
 
   const promptInput: EdvouraPromptInput = {
     taskType: input.taskType,
-    subject: input.subject,
+    subject: normalizedSubject,
     topic: input.topic,
     grade: input.grade,
     skillType: input.skillType,
@@ -553,7 +588,7 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
 
   const antiRepetitionItems = extractAntiRepetitionItems({
     taskType: input.taskType,
-    subject: input.subject,
+    subject: normalizedSubject,
     topic: input.topic,
     grade: input.grade,
     skillType: input.skillType,
@@ -568,7 +603,7 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
 
   const saved = await saveAiDraft({
     title,
-    subject: input.subject,
+    subject: normalizedSubject,
     topic: input.topic,
     grade: input.grade,
     skillType: input.skillType,

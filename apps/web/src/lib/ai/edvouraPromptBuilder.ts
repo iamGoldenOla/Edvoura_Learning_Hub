@@ -1,3 +1,5 @@
+import { buildLessonNoteBlueprintBlock, normalizeSubjectName } from "./lessonNoteBlueprints";
+
 export const EDVOURA_TASK_TYPES = [
   "GENERATE_LESSON_NOTE",
   "GENERATE_LESSON_PLAN",
@@ -243,6 +245,7 @@ Return JSON content only, matching the original schema.`;
 // Final prompt assembly
 // ---------------------------------------------------------------------------
 export function buildEdvouraPrompt(input: EdvouraPromptInput) {
+  const normalizedSubject = normalizeSubjectName(input.subject);
   const avoidBlock = input.previousContent.length
     ? `ANTI-REPETITION — Avoid these previously used items:\n${input.previousContent.map((item) => `- ${item}`).join("\n")}`
     : "No previous anti-repetition items found. Still avoid repeating patterns.";
@@ -265,10 +268,15 @@ export function buildEdvouraPrompt(input: EdvouraPromptInput) {
         ? `IMPORTANT: This is a STUDENT-FACING lesson note. Write it warmly and clearly as if you are the best teacher explaining directly to the child. Do NOT include private teacher delivery notes, full answer keys, or marking guides. The "answer_hint" field in practice questions is the ONLY place where brief correct answers should appear (for teacher review only).`
         : `Keep the output aligned to the requested teaching artifact type.`;
 
+  const blueprintBlock =
+    input.taskType === "GENERATE_LESSON_NOTE" || input.taskType === "GENERATE_LESSON"
+      ? buildLessonNoteBlueprintBlock(normalizedSubject, input.topic, input.grade)
+      : "";
+
   return `${CORE_PROMPT}
 
 Task Type: ${input.taskType}
-Subject: ${input.subject}
+Subject: ${normalizedSubject}
 Topic: ${input.topic}
 Grade Level: ${input.grade}
 Skill Type: ${input.skillType}
@@ -277,6 +285,7 @@ ${existingContentBlock}
 ${instructionBlock}
 
 ${roleReminder}
+${blueprintBlock ? `\n\n${blueprintBlock}` : ""}
 
 INSTRUCTIONAL MATERIALS GUIDANCE:
 - Provide safe, age-appropriate YouTube search queries (NOT invented or fake URLs)

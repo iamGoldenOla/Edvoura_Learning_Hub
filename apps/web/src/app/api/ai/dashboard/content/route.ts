@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import type { EdvouraTaskType } from "@/lib/ai/edvouraPromptBuilder";
+import { normalizeSubjectName } from "@/lib/ai/lessonNoteBlueprints";
 
 type AllowedRole = "tutor" | "admin" | "super_admin";
 
@@ -137,11 +138,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required draft fields." }, { status: 400 });
     }
 
+    const normalizedSubject = normalizeSubjectName(payload.subject);
+
     const { data: inserted, error: insertError } = await supabase
       .from("ai_generated_content")
       .insert({
         title: payload.title,
-        subject: payload.subject,
+        subject: normalizedSubject,
         topic: payload.topic,
         grade: payload.grade,
         skill_type: payload.skillType,
@@ -168,7 +171,7 @@ export async function POST(request: NextRequest) {
       const antiRows = payload.antiRepetitionItems.map((item) => ({
         content_id: inserted.id,
         item_type: item.itemType,
-        subject: item.subject,
+        subject: normalizeSubjectName(item.subject),
         topic: item.topic,
         grade: item.grade,
         skill_type: item.skillType,

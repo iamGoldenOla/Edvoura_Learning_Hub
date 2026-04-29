@@ -1,0 +1,114 @@
+{
+  "default": {
+    "lesson_flow": [
+      "Start with a direct child-friendly definition of the topic.",
+      "Explain the main features, parts, or types of the topic.",
+      "State why the topic is important in daily life.",
+      "Use at least two specific real-life examples a child can picture.",
+      "End with a short recap and understanding questions."
+    ],
+    "explanation_requirements": [
+      "Do not explain how a teacher should teach the lesson.",
+      "Do not give meta-instructions such as 'Begin by telling the learner'.",
+      "Write the actual lesson note the student should read.",
+      "Use specific examples instead of placeholders or generic phrases."
+    ],
+    "practice_question_angles": [
+      "definition",
+      "identification",
+      "real-life example",
+      "importance"
+    ]
+  },
+  "subjects": {
+    "Basic Science": {
+      "display_name": "Basic Science",
+      "must_cover": [
+        "clear meaning or definition",
+        "main properties, characteristics, or parts",
+        "importance to life, health, or the environment",
+        "everyday examples from home, school, weather, plants, animals, or the body"
+      ],
+      "resource_search_terms": [
+        "simple science experiment for children",
+        "labelled science diagram for primary school"
+      ],
+      "topic_overrides": {
+        "air": {
+          "hook": "Learners already feel air when the wind blows, when they fan themselves, or when they blow up a balloon.",
+          "must_cover": [
+            "air is all around us even though we cannot see it",
+            "air occupies space",
+            "moving air is called wind",
+            "people, animals, and plants need air to live",
+            "simple examples such as balloons, tyres, kites, breathing, and wind"
+          ],
+          "worked_examples": [
+            "Explain how a balloon becomes bigger when it is filled with air.",
+            "Explain how we know air is present when tree leaves move or a kite flies."
+          ],
+          "real_world_examples": [
+            "breathing in the classroom or at home",
+            "a bicycle tyre filled with air",
+            "a balloon used during a birthday celebration",
+            "wind drying clothes outside"
+          ],
+          "misconceptions": [
+            "air is not nothing; it is a real substance around us",
+            "because we cannot see air does not mean it is absent"
+          ]
+        }
+      }
+    },
+    "English Language": {
+      "display_name": "English Language",
+      "must_cover": [
+        "meaning of the grammar idea in simple words",
+        "clear examples in sentences",
+        "why the concept helps speaking, reading, and writing",
+        "common mistakes children make"
+      ],
+      "resource_search_terms": [
+        "grammar for grade 3",
+        "sentence examples for children"
+      ],
+      "topic_overrides": {
+        "parts of speech": {
+          "hook": "Every word in a sentence has a job to do.",
+          "must_cover": [
+            "meaning of parts of speech",
+            "the eight parts of speech in simple language",
+            "at least one sentence example for each major part",
+            "why knowing parts of speech helps writing and speaking"
+          ],
+          "worked_examples": [
+            "Identify noun and verb in a simple sentence.",
+            "Show the difference between an adjective and an adverb using one sentence."
+          ],
+          "real_world_examples": [
+            "school instructions",
+            "market conversations",
+            "short story sentences"
+          ],
+          "misconceptions": [
+            "the same word can do different jobs in different sentences",
+            "small words like prepositions and conjunctions are still important"
+          ]
+        }
+      }
+    },
+    "Mathematics": {
+      "display_name": "Mathematics",
+      "must_cover": [
+        "what the concept means",
+        "when to use it",
+        "step-by-step worked solutions",
+        "common mistakes and how to avoid them"
+      ],
+      "resource_search_terms": [
+        "worked math examples for primary school",
+        "math manipulative visual for grade school"
+      ]
+    }
+  }
+}

@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { generateEducationalContent, CONTENT_TYPES, type ContentType } from '@/lib/ai';
+import { normalizeSubjectName } from '@/lib/ai/lessonNoteBlueprints';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -73,10 +74,11 @@ export async function POST(request: NextRequest) {
   }
 
   // 4. Generate content via the orchestrator
+  const normalizedSubject = normalizeSubjectName(body.subject);
   const result = await generateEducationalContent({
     contentType: body.contentType,
     topic: body.topic,
-    subject: body.subject,
+    subject: normalizedSubject,
     gradeLevel: body.gradeLevel,
     curriculumSystem: body.curriculumSystem ?? 'WAEC',
     objectives: objectives ?? body.objectives,
@@ -118,11 +120,11 @@ export async function POST(request: NextRequest) {
     .insert({
       content_type: body.contentType,
       curriculum_map_id: body.curriculumMapId ?? null,
-      title: result.data && typeof result.data === 'object' && 'title' in result.data ? (result.data as { title?: string }).title ?? `${body.subject} - ${body.topic}` : `${body.subject} - ${body.topic}`,
-      subject: body.subject,
+      title: result.data && typeof result.data === 'object' && 'title' in result.data ? (result.data as { title?: string }).title ?? `${normalizedSubject} - ${body.topic}` : `${normalizedSubject} - ${body.topic}`,
+      subject: normalizedSubject,
       topic: body.topic,
       grade: body.gradeLevel,
-      skill_type: body.subject,
+      skill_type: normalizedSubject,
       task_type: body.contentType === 'lesson_note' ? 'GENERATE_LESSON_NOTE' : body.contentType === 'quiz' ? 'GENERATE_QUIZ' : body.contentType === 'spelling_bee' ? 'GENERATE_SPELLING' : 'IMPROVE_CONTENT',
       content_json: result.data,
       content_text: JSON.stringify(result.data, null, 2),
