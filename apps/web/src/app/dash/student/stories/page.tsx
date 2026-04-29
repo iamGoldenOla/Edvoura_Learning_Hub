@@ -13,28 +13,28 @@ export default function StoriesPage() {
   const [selectedVideo, setSelectedVideo] = useState<typeof STORY_VIDEOS[0] | null>(null);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-12">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-4xl font-heading font-black text-dark flex items-center gap-3">
-            <Play className="h-10 w-10 text-red-600" />
+    <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-12 w-full min-w-0">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+        <div className="min-w-0">
+          <h1 className="text-3xl sm:text-4xl font-heading font-black text-dark flex items-center gap-3 break-words">
+            <Play className="h-8 w-8 sm:h-10 sm:w-10 text-red-600 shrink-0" />
             Story Time!
           </h1>
-          <p className="mt-2 text-dark/60 font-semibold">Watch and listen to amazing stories.</p>
+          <p className="mt-2 text-sm sm:text-base text-dark/60 font-semibold">Watch and listen to amazing stories.</p>
         </div>
         
-        <div className="flex gap-4">
-           <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-[3px] border-dark bg-white text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+        <div className="flex gap-3 sm:gap-4 flex-wrap">
+           <button className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-[2px] sm:border-[3px] border-dark bg-white text-dark font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
              <PlusCircle className="h-4 w-4" /> Add Story
            </button>
-           <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border-[3px] border-dark bg-red-600 text-white font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+           <button className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-[2px] sm:border-[3px] border-dark bg-red-600 text-white font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
              <Sparkles className="h-4 w-4" /> AI Storyteller
            </button>
         </div>
       </header>
 
       {selectedVideo ? (
-        <div className="bg-white border-[4px] border-dark rounded-[40px] shadow-[12px_12px_0px_#060E1C] overflow-hidden">
+        <div className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] overflow-hidden">
           <div className="aspect-video bg-black relative">
              <iframe 
                width="100%" 
@@ -46,7 +46,7 @@ export default function StoriesPage() {
                allowFullScreen
              ></iframe>
           </div>
-          <div className="p-8 flex items-center justify-between">
+          <div className="p-4 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-2xl font-black text-dark">{selectedVideo.title}</h2>
               <p className="text-dark/40 font-bold uppercase tracking-widest text-xs flex items-center gap-2 mt-2">
@@ -62,12 +62,12 @@ export default function StoriesPage() {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {STORY_VIDEOS.map((story) => (
             <div 
               key={story.id}
               onClick={() => setSelectedVideo(story)}
-              className="group cursor-pointer bg-white border-[4px] border-dark rounded-[32px] shadow-[8px_8px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all overflow-hidden"
+              className="group cursor-pointer bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all overflow-hidden"
             >
               <div className={`${story.color} h-48 flex items-center justify-center text-[100px] group-hover:scale-110 transition-transform relative`}>
                 {story.thumbnail}
@@ -77,7 +77,7 @@ export default function StoriesPage() {
                   </div>
                 </div>
               </div>
-              <div className="p-6 border-t-[4px] border-dark">
+              <div className="p-4 sm:p-6 border-t-[3px] sm:border-t-[4px] border-dark">
                 <h3 className="text-xl font-black text-dark">{story.title}</h3>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="inline-flex items-center gap-2 text-xs font-bold text-red-600 uppercase tracking-widest">
@@ -90,7 +90,7 @@ export default function StoriesPage() {
           ))}
 
           {/* AI Storyteller Box */}
-          <div className="bg-gradient-to-br from-red-500 to-rose-600 border-[4px] border-dark rounded-[32px] shadow-[8px_8px_0px_#060E1C] p-8 flex flex-col items-center justify-center text-white text-center group cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+          <div className="bg-gradient-to-br from-red-500 to-rose-600 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] p-6 sm:p-8 flex flex-col items-center justify-center text-white text-center group cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
              <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                <Volume2 className="h-12 w-12 text-white" />
              </div>

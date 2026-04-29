@@ -255,9 +255,9 @@ export default function StudentBandClientWrapper({
   }
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 pb-14 sm:space-y-10">
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-5 sm:p-8 border-b-[4px] border-dark bg-yellow/20">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-6 sm:space-y-8 pb-14 sm:pb-14">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+        <div className="p-4 sm:p-5 md:p-8 border-b-[3px] sm:border-b-[4px] border-dark bg-yellow/20">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-2">{copy.label}</p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
             Hello, {dashboard.profile.fullName ?? 'Student'}
@@ -283,7 +283,7 @@ export default function StudentBandClientWrapper({
 
           <Panel title="Next lesson" icon={Clock3} color="bg-amber-100">
             {nextLesson ? (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[4px_4px_0px_#060E1C]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-off-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C]">
                 <div>
                   <h3 className="text-xl font-black text-dark">{nextLesson.title}</h3>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mt-2">
@@ -304,7 +304,7 @@ export default function StudentBandClientWrapper({
                       href={nextLesson.joinUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center justify-center bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 animate-pulse"
+                      className="inline-flex w-full sm:w-auto items-center justify-center bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 sm:py-4 animate-pulse text-sm sm:text-base"
                     >
                       <PlayCircle className="mr-2 h-5 w-5" />
                       Join Class Now
@@ -312,7 +312,7 @@ export default function StudentBandClientWrapper({
                   ) : (
                     <Link
                       href="/dash/student/live"
-                      className="inline-flex items-center justify-center bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4"
+                      className="inline-flex w-full sm:w-auto items-center justify-center bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base"
                     >
                       Wait for teacher...
                     </Link>
@@ -328,7 +328,7 @@ export default function StudentBandClientWrapper({
             <div className="space-y-4">
               {pendingAssignments.length > 0 ? (
                 pendingAssignments.map((assignment) => (
-                  <article key={assignment.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-6 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C]">
+                  <article key={assignment.id} className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-off-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C] min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                       <div>
                         <span className="inline-flex rounded-md border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
@@ -367,7 +367,7 @@ export default function StudentBandClientWrapper({
             </div>
             <Link
               href="/dash/student/assignments"
-              className="mt-6 inline-flex items-center justify-between w-full bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4"
+              className="mt-6 inline-flex items-center justify-between w-full bg-dark border-[3px] border-dark text-white font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base"
             >
               <span>Open all assignments</span>
               <ArrowRight className="h-5 w-5" />
@@ -383,7 +383,7 @@ export default function StudentBandClientWrapper({
                   const width = Math.max(6, Math.min(100, row.value || 0));
 
                   return (
-                    <div key={row.id} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                    <div key={row.id} className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C]">
                       <div className="mb-3 flex items-center justify-between gap-4">
                         <span className="text-sm font-black text-dark tracking-tight">{row.subject}</span>
                         <span className="inline-flex rounded-xl border-[2px] border-dark bg-white px-2 py-1 text-[10px] font-black shadow-[2px_2px_0px_#060E1C]">{row.value.toFixed(0)}%</span>
@@ -410,7 +410,7 @@ export default function StudentBandClientWrapper({
           </Panel>
 
           <Panel title="Subscription" icon={Target} color="bg-purple-100" className="mt-auto">
-            <div className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C] space-y-4">
+            <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] space-y-4">
               <div className="flex justify-between items-center border-b-[3px] border-dark/10 pb-3">
                 <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Access</span>
                 <span className={`inline-flex rounded-md border-[2px] border-dark px-2 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] ${billingSummary.entitlement.hasAccess ? 'bg-emerald-300 text-dark' : 'bg-rose-100 text-rose-900'}`}>
@@ -457,8 +457,8 @@ function FunCard({ icon, label, href, color }: { icon: string; label: string; hr
   className?: string;
 }) {
   return (
-    <section className={`rounded-[24px] sm:rounded-[28px] border-[4px] border-dark bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col ${className}`}>
-      <div className={`p-4 sm:p-6 border-b-[4px] border-dark ${color} flex items-center gap-3`}>
+    <section className={`rounded-[24px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col min-w-0 ${className}`}>
+      <div className={`p-4 sm:p-6 border-b-[3px] sm:border-b-[4px] border-dark ${color} flex items-center gap-3`}>
         <Icon className="h-6 w-6 text-dark" />
         <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">{title}</h2>
       </div>
@@ -481,12 +481,12 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className={`rounded-2xl border-[3px] border-dark ${color} p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col`}>
+    <div className={`rounded-[20px] sm:rounded-2xl border-[3px] border-dark ${color} p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col min-w-0`}>
       <div className="flex items-center justify-between gap-2">
         <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">{label}</span>
         <Icon className="h-4 w-4 text-dark/50" />
       </div>
-      <p className="mt-4 text-3xl md:text-4xl font-black text-dark">{value}</p>
+      <p className="mt-3 sm:mt-4 text-2xl sm:text-3xl md:text-4xl font-black text-dark">{value}</p>
     </div>
   );
 }

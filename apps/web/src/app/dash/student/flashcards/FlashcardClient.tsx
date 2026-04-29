@@ -65,19 +65,19 @@ export default function FlashcardClient({ gradeLevel }: { gradeLevel: string }) 
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-12 p-4">
+    <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12 pb-12 w-full min-w-0 px-2 sm:px-4">
       <header className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-dark border-[3px] border-dark font-black uppercase text-[10px] tracking-widest shadow-[4px_4px_0px_#060E1C]">
-          <Brain className="h-4 w-4 text-emerald-600" />
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-100 text-dark border-[2px] sm:border-[3px] border-dark font-black uppercase text-[9px] sm:text-[10px] tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C]">
+          <Brain className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-600" />
           AI Flashcard Study
         </div>
-        <h1 className="text-5xl font-black text-dark tracking-tight">Flashcard Generator</h1>
-        <p className="text-dark/60 font-semibold italic">Study anything, powered by Edvoura AI</p>
+        <h1 className="text-3xl sm:text-5xl font-black text-dark tracking-tight break-words px-2">Flashcard Generator</h1>
+        <p className="text-sm sm:text-base text-dark/60 font-semibold italic">Study anything, powered by Edvoura AI</p>
       </header>
 
       {/* Input Form */}
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-6 md:p-8 space-y-6">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="p-5 sm:p-6 md:p-8 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-dark/60 ml-1">Subject</label>
@@ -101,7 +101,7 @@ export default function FlashcardClient({ gradeLevel }: { gradeLevel: string }) 
           <Button 
             disabled={isLoading || !topic || !subject}
             onClick={generateFlashcards}
-            className="w-full h-14 bg-emerald-500 hover:bg-emerald-600 border-[3px] border-dark text-white text-lg font-black rounded-xl shadow-[6px_6px_0px_#060E1C] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] active:scale-95 transition-all"
+            className="w-full h-12 sm:h-14 bg-emerald-500 hover:bg-emerald-600 border-[3px] border-dark text-white text-base sm:text-lg font-black rounded-xl shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:scale-95 transition-all"
           >
             {isLoading ? (
               <>
@@ -130,7 +130,7 @@ export default function FlashcardClient({ gradeLevel }: { gradeLevel: string }) 
               className={`relative w-full h-full transition-transform duration-500 transform-style-3d cursor-pointer ${isFlipped ? 'rotate-y-180' : ''}`}
             >
               {/* Front of Card */}
-              <div className="absolute inset-0 backface-hidden border-[6px] border-dark rounded-[40px] shadow-[12px_12px_0px_#060E1C] flex flex-col items-center justify-center p-10 bg-white">
+              <div className="absolute inset-0 backface-hidden border-[4px] sm:border-[6px] border-dark rounded-[32px] sm:rounded-[40px] shadow-[8px_8px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col items-center justify-center p-6 sm:p-10 bg-white">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mb-8">QUESTION / CONCEPT</p>
                 <div className="text-2xl md:text-3xl font-black text-dark text-center leading-tight">
                   {flashcards[currentIdx].front}
@@ -139,7 +139,7 @@ export default function FlashcardClient({ gradeLevel }: { gradeLevel: string }) 
               </div>
 
               {/* Back of Card */}
-              <div className="absolute inset-0 backface-hidden rotate-y-180 border-[6px] border-dark rounded-[40px] shadow-[12px_12px_0px_#060E1C] flex flex-col items-center justify-center p-10 bg-emerald-50">
+              <div className="absolute inset-0 backface-hidden rotate-y-180 border-[4px] sm:border-[6px] border-dark rounded-[32px] sm:rounded-[40px] shadow-[8px_8px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col items-center justify-center p-6 sm:p-10 bg-emerald-50">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mb-8">ANSWER / EXPLANATION</p>
                 <div className="text-xl md:text-2xl font-black text-dark text-center leading-relaxed">
                   {flashcards[currentIdx].back}
@@ -155,23 +155,23 @@ export default function FlashcardClient({ gradeLevel }: { gradeLevel: string }) 
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <button 
               onClick={prevCard}
-              className="h-16 w-16 rounded-2xl border-[4px] border-dark bg-white flex items-center justify-center shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl border-[3px] sm:border-[4px] border-dark bg-white flex items-center justify-center shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
             >
-              <ArrowLeft className="h-8 w-8" />
+              <ArrowLeft className="h-6 w-6 sm:h-8 sm:w-8" />
             </button>
             
-            <div className="px-8 py-4 bg-white border-[4px] border-dark rounded-2xl font-black text-xl shadow-[6px_6px_0px_#060E1C]">
+            <div className="px-6 py-3 sm:px-8 sm:py-4 bg-white border-[3px] sm:border-[4px] border-dark rounded-2xl font-black text-lg sm:text-xl shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C]">
               {currentIdx + 1} / {flashcards.length}
             </div>
 
             <button 
               onClick={nextCard}
-              className="h-16 w-16 rounded-2xl border-[4px] border-dark bg-emerald-500 text-white flex items-center justify-center shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+              className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl border-[3px] sm:border-[4px] border-dark bg-emerald-500 text-white flex items-center justify-center shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
             >
-              <ArrowRight className="h-8 w-8" />
+              <ArrowRight className="h-6 w-6 sm:h-8 sm:w-8" />
             </button>
           </div>
 
