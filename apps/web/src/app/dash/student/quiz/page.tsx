@@ -3,6 +3,9 @@ import { requireAppViewer } from '@/lib/app-context';
 import { Target, Sparkles, Clock, ArrowRight } from 'lucide-react';
 import { PracticeQuizClient } from './PracticeQuizClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function QuizPage() {
   const viewer = await requireAppViewer();
   const supabase = await createClient();

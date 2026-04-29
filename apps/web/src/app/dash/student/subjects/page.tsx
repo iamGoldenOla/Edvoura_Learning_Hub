@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server';
 import { requireAppViewer, getStudentDashboardData } from '@/lib/app-context';
 import StudentSubjectsClient from './components/StudentSubjectsClient';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function SubjectsPage() {
   const viewer = await requireAppViewer();
   const supabase = await createClient();

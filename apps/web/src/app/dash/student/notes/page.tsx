@@ -3,6 +3,9 @@ import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
 import StudentNotesWorkspace from './StudentNotesWorkspace';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function NotesPage() {
   const viewer = await requireAppViewer();
   const supabase = await createClient();

@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server';
 import { SpellingBeeClient } from './SpellingBeeClient';
 import type { SpellingBee } from '@/lib/ai';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 type ChallengeRow = {
   id: string;
   raw_output: SpellingBee | null;

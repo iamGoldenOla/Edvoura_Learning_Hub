@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import StudentBandClientWrapper from '@/components/dashboards/StudentBandClientWrapper';
 import { getBillingSummary, getStudentDashboardData, requireAppViewer, roleToDashboardPath } from '@/lib/app-context';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function StudentDashboard() {
   const viewer = await requireAppViewer();
   const role = viewer.currentUser.primaryRole;
