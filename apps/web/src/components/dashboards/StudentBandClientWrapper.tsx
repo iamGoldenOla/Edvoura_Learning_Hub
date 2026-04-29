@@ -141,22 +141,22 @@ export default function StudentBandClientWrapper({
     const streak = Math.max(1, dashboard.progress.length);
 
     return (
-      <div className="space-y-8 pb-12 animate-in fade-in duration-700">
-        <header className="bg-white border-[4px] border-dark rounded-[40px] p-8 md:p-12 shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-6xl font-heading font-black text-dark tracking-tight leading-none">
+      <div className="space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-700 w-full min-w-0">
+        <header className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-6 sm:p-8 md:p-12 shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 max-w-full w-full min-w-0">
+          <div className="text-center md:text-left min-w-0">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-heading font-black text-dark tracking-tight leading-none break-words">
               Hi, {dashboard.profile.fullName?.split(' ')[0] || 'Explorer'}! 👋
             </h1>
-            <p className="mt-4 text-xl md:text-2xl font-bold text-dark/60 italic">Ready for your magic missions today?</p>
+            <p className="mt-3 sm:mt-4 text-base sm:text-xl md:text-2xl font-bold text-dark/60 italic break-words">Ready for your magic missions today?</p>
           </div>
-          <div className="flex gap-4">
-             <div className="bg-yellow border-[4px] border-dark rounded-[32px] p-6 shadow-[6px_6px_0px_#060E1C] text-center min-w-[120px]">
-                <Star className="h-8 w-8 text-dark mx-auto mb-2 fill-current" />
-                <p className="text-3xl font-black text-dark">{stars}</p>
+          <div className="flex gap-3 sm:gap-4 flex-wrap justify-center min-w-0 w-full md:w-auto">
+             <div className="bg-yellow border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] text-center flex-1 md:min-w-[120px]">
+                <Star className="h-6 w-6 sm:h-8 sm:w-8 text-dark mx-auto mb-1 sm:mb-2 fill-current" />
+                <p className="text-2xl sm:text-3xl font-black text-dark">{stars}</p>
              </div>
-             <div className="bg-orange-400 border-[4px] border-dark rounded-[32px] p-6 shadow-[6px_6px_0px_#060E1C] text-center min-w-[120px]">
-                <Flame className="h-8 w-8 text-white mx-auto mb-2 fill-current" />
-                <p className="text-3xl font-black text-white">{streak}</p>
+             <div className="bg-orange-400 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] text-center flex-1 md:min-w-[120px]">
+                <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-white mx-auto mb-1 sm:mb-2 fill-current" />
+                <p className="text-2xl sm:text-3xl font-black text-white">{streak}</p>
              </div>
           </div>
         </header>

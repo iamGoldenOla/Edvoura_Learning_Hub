@@ -226,33 +226,33 @@ export default function DashboardClientShell({
           </div>
         </aside>
 
-        <div className="flex h-screen flex-1 flex-col overflow-hidden bg-off-white">
-          <header className="border-b-[4px] border-dark bg-white px-5 py-4 sm:px-8 z-20">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-4">
+        <div className="flex h-screen flex-1 flex-col overflow-hidden bg-off-white w-full min-w-0">
+          <header className="border-b-[4px] border-dark bg-white px-4 py-4 sm:px-8 z-20 w-full min-w-0">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 w-full min-w-0">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-4 flex-shrink">
                 {/* Mobile Menu Toggle */}
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="rounded-xl border-[3px] border-dark bg-white p-2 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none lg:hidden"
+                  className="rounded-xl border-[3px] border-dark bg-white p-2 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none lg:hidden shrink-0"
                 >
                   {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
 
-                <div className="hidden items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 sm:flex shadow-[2px_2px_0px_#060E1C]">
+                <div className="hidden items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 sm:flex shadow-[2px_2px_0px_#060E1C] shrink-0">
                   <Search className="h-4 w-4 text-dark/50" />
                   <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>
                 </div>
-                <p className="truncate text-sm font-black text-dark/60">{roleLabel}</p>
+                <p className="truncate text-xs sm:text-sm font-black text-dark/60 min-w-0">{roleLabel}</p>
                 {effectiveRole === 'student' ? <StudentBandSwitcher /> : null}
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="rounded-xl border-[3px] border-dark bg-white px-4 py-2 text-right shadow-[2px_2px_0px_#060E1C]">
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                <div className="hidden sm:block rounded-xl border-[3px] border-dark bg-white px-4 py-2 text-right shadow-[2px_2px_0px_#060E1C]">
                   <p suppressHydrationWarning className="text-sm font-black text-dark">{timeLabel}</p>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-dark/50">Local Time</p>
                 </div>
-                <button type="button" className="relative rounded-xl border-[3px] border-dark bg-white p-3 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95" aria-label="Notifications">
+                <button type="button" className="relative rounded-xl border-[3px] border-dark bg-white p-2 sm:p-3 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95 shrink-0" aria-label="Notifications">
                   <Bell className="h-5 w-5" />
                   <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-rose-500" />
                 </button>
@@ -260,14 +260,14 @@ export default function DashboardClientShell({
             </div>
           </header>
 
-          <main className="custom-scrollbar flex-1 overflow-y-auto p-5 sm:p-7 lg:p-10 xl:p-12">
-            <div className="mx-auto w-full max-w-[1760px]">{children}</div>
+          <main className="custom-scrollbar flex-1 overflow-y-auto p-4 sm:p-7 lg:p-10 xl:p-12 w-full min-w-0 overflow-x-hidden relative">
+            <div className="mx-auto w-full max-w-[1760px] min-w-0">{children}</div>
           </main>
         </div>
 
         {showGrade13BottomNav ? (
-          <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-2 py-2 backdrop-blur lg:hidden">
-            <div className="mx-auto grid max-w-3xl grid-cols-7 gap-1">
+          <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-1 py-2 backdrop-blur lg:hidden overflow-x-auto hide-scrollbar">
+            <div className="mx-auto flex min-w-max items-center justify-between gap-1 sm:justify-center sm:gap-2 px-1">
               <BottomNavItem href="/dash/student" label="Home" icon={Home} active={pathname === '/dash/student'} />
               <BottomNavItem href="/dash/student/classes" label="Lessons" icon={BookOpen} active={pathname === '/dash/student/classes'} />
               <BottomNavItem href="/dash/student/subjects" label="Subjects" icon={BookMarked} active={pathname === '/dash/student/subjects'} />
