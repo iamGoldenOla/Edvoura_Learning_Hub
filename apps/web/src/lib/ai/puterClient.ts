@@ -10,12 +10,35 @@ function readPuterText(response: unknown): string {
   }
 
   if (response && typeof response === "object") {
-    const candidate = response as { text?: unknown; message?: unknown };
+    const candidate = response as any;
+
+    // Claude shape: response.message.content[0].text
+    if (
+      candidate.message &&
+      Array.isArray(candidate.message.content) &&
+      candidate.message.content[0] &&
+      typeof candidate.message.content[0].text === "string"
+    ) {
+      return candidate.message.content[0].text;
+    }
+
+    // DeepSeek shape: response.message.content
+    if (
+      candidate.message &&
+      typeof candidate.message.content === "string"
+    ) {
+      return candidate.message.content;
+    }
+
+    // Generic fallbacks
+    if (typeof candidate.message === "string") {
+      return candidate.message;
+    }
     if (typeof candidate.text === "string") {
       return candidate.text;
     }
-    if (typeof candidate.message === "string") {
-      return candidate.message;
+    if (typeof candidate.content === "string") {
+      return candidate.content;
     }
   }
 
