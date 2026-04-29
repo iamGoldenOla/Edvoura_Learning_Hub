@@ -17,7 +17,7 @@ import {
   Crown,
   DollarSign,
   Gift,
-  Gamepad2,
+
   Home,
   LifeBuoy,
   MessageCircle,
@@ -29,7 +29,7 @@ import {
   Search,
   Star,
   TrendingUp,
-  User,
+
   UserCog,
   Users,
   Activity,
@@ -169,7 +169,7 @@ export default function DashboardClientShell({
     <BandProvider initialBand={initialBand}>
       <DashboardToastViewport />
       <DashboardQueryActionBridge />
-      <div className="flex min-h-screen bg-off-white text-dark">
+      <div className="flex min-h-screen bg-slate-50 text-dark overflow-x-hidden">
         {/* Mobile Sidebar Overlay */}
         {isMobileMenuOpen && (
           <div 
