@@ -75,6 +75,61 @@ function getServerFallbackContentType(taskType: EdvouraTaskType) {
   }
 }
 
+function isWeakLessonNote(content: unknown) {
+  if (!content || typeof content !== "object" || Array.isArray(content)) {
+    return true;
+  }
+
+  const payload = content as Record<string, unknown>;
+  const explanation =
+    typeof payload.explanation === "string" ? payload.explanation.trim() : "";
+  const summary =
+    typeof payload.lesson_summary === "string" ? payload.lesson_summary.trim() : "";
+  const keyPoints = Array.isArray(payload.key_points)
+    ? payload.key_points.filter((item): item is string => typeof item === "string")
+    : [];
+  const examples = Array.isArray(payload.real_world_examples)
+    ? payload.real_world_examples.filter((item): item is string => typeof item === "string")
+    : [];
+  const workedExamples = Array.isArray(payload.worked_examples)
+    ? payload.worked_examples
+    : [];
+  const learningChecks = Array.isArray(payload.learning_checks)
+    ? payload.learning_checks.filter((item): item is string => typeof item === "string")
+    : [];
+
+  const genericPatterns = [
+    /is a key topic in/i,
+    /students in .* should understand what it means/i,
+    /daily-life scenario connected to/i,
+    /classroom activity that reinforces/i,
+    /break the task into smaller steps/i,
+    /guided practice/i,
+    /model thinking/i,
+  ];
+
+  const hasGenericExplanation = genericPatterns.some((pattern) => pattern.test(explanation));
+  const hasGenericSummary = genericPatterns.some((pattern) => pattern.test(summary));
+  const hasGenericKeyPoints = keyPoints.some((point) =>
+    /define .* clearly|identify .* uses|apply .* to guided/i.test(point),
+  );
+  const hasGenericExamples = examples.some((example) =>
+    genericPatterns.some((pattern) => pattern.test(example)),
+  );
+
+  return (
+    explanation.length < 280 ||
+    summary.length < 80 ||
+    keyPoints.length < 4 ||
+    workedExamples.length < 2 ||
+    learningChecks.length < 3 ||
+    hasGenericExplanation ||
+    hasGenericSummary ||
+    hasGenericKeyPoints ||
+    hasGenericExamples
+  );
+}
+
 function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
   const title = `${input.subject}: ${input.topic}`;
 
@@ -83,52 +138,75 @@ function buildEmergencyCanonicalContent(input: GenerateEdvouraInput) {
     case "GENERATE_LESSON_NOTE":
       return {
         title,
-        lesson_summary: `${input.topic} introduces learners to the main idea in simple, memorable language.`,
-        explanation: `${input.topic} is an important ${input.subject} topic for ${input.grade}. Learners should understand what it means, where it appears in everyday life, and how to explain it clearly using age-appropriate examples and guided practice.`,
+        lesson_summary: `${input.topic} teaches learners what the idea means, why it matters in everyday life, and how to talk about it with confidence using clear examples and short practice tasks.`,
+        explanation: `${input.topic} is a lesson in ${input.subject} that should help learners build real understanding, not just repeat a definition. Begin by telling the learner plainly what the topic means in simple words. Next, connect it to familiar objects, places, or experiences the learner already knows from home, school, the market, or the wider community. After that, move to short examples that show the topic in action. If the lesson is practical, explain what the learner would see, notice, compare, or do. If the lesson is more descriptive, explain the important features, uses, or differences that the learner should remember. End by helping the learner say the main idea back in their own words and answer short questions with confidence.`,
         key_points: [
-          `Define ${input.topic} clearly.`,
-          `Identify where ${input.topic} appears in daily life.`,
-          `Practice explaining ${input.topic} with confidence.`,
+          `${input.topic} should be explained in simple language that a learner in ${input.grade} can understand.`,
+          `Learners should know the meaning of ${input.topic}, its main features, and why it is important.`,
+          `The lesson should connect ${input.topic} to everyday life in school, at home, or in the community.`,
+          `Learners should practise talking about ${input.topic} using correct examples and short written answers.`,
         ],
         worked_examples: [
           {
-            title: "Worked Example 1",
-            explanation: `Show one home or classroom example related to ${input.topic} and explain why it matches the lesson idea.`,
+            title: "Meaning and Identification",
+            explanation: `Start with a direct example of ${input.topic} and explain how to identify it correctly. Point out the important clue words, features, or properties that help a learner know why the example belongs to this lesson.`,
           },
           {
-            title: "Worked Example 2",
-            explanation: `Guide learners through a second example that uses a different situation but the same concept.`,
+            title: "Everyday Life Connection",
+            explanation: `Use a second example from a familiar setting such as home, school, transport, nature, or play. Explain how the same lesson idea appears there so the learner can connect classroom learning to real life.`,
           },
         ],
         real_world_examples: [
-          `${input.topic} can be connected to a simple home or classroom example that learners can observe directly.`,
-          `${input.topic} can also be practiced through guided discussion, drawing, or a short hands-on classroom activity.`,
+          `A learner should be able to spot ${input.topic} in a familiar place such as the classroom, home, school compound, market, or road depending on the lesson topic.`,
+          `A teacher can also use a short demonstration, picture, object, or story so that learners see that ${input.topic} is part of the real world and not just a textbook idea.`,
         ],
         practice_questions: [
-          { question: `What is ${input.topic}?`, difficulty: "easy", answer_hint: `${input.topic} is a key concept in ${input.subject} that learners should be able to define in simple terms.` },
-          { question: `Give one real-life example of ${input.topic}.`, difficulty: "easy", answer_hint: `An everyday situation where ${input.topic} applies, such as at home or school.` },
-          { question: `How can a pupil practice ${input.topic}?`, difficulty: "medium", answer_hint: `Through guided exercises, classroom discussion, or hands-on activities related to ${input.topic}.` },
+          {
+            question: `Define ${input.topic} in your own words.`,
+            difficulty: "easy",
+            answer_hint: `A good answer should explain the meaning of ${input.topic} simply and correctly.`,
+          },
+          {
+            question: `Give one example that shows ${input.topic} in real life.`,
+            difficulty: "easy",
+            answer_hint: `Choose a home, school, or community example that clearly matches the lesson idea.`,
+          },
+          {
+            question: `State two important facts every learner should remember about ${input.topic}.`,
+            difficulty: "medium",
+            answer_hint: `Think about the definition, features, uses, or importance of the topic.`,
+          },
+          {
+            question: `Why is ${input.topic} important in ${input.subject}?`,
+            difficulty: "medium",
+            answer_hint: `Explain how the topic helps the learner understand the world, solve problems, or describe real situations.`,
+          },
         ],
         learning_checks: [
-          `Can the learner explain ${input.topic} in simple words?`,
-          `Can the learner connect ${input.topic} to one daily-life example?`,
+          `Can the learner define ${input.topic} correctly without copying the teacher word for word?`,
+          `Can the learner give at least one correct everyday example of ${input.topic}?`,
+          `Can the learner explain why ${input.topic} matters in simple language?`,
         ],
         instructional_materials: {
           youtube_videos: [
             {
-              title: `${input.subject} ${input.topic} lesson`,
+              title: `${input.topic} explained for ${input.grade}`,
               search_query: `${input.subject} ${input.topic} lesson for ${input.grade}`,
-              why_it_helps: "Helps the tutor find a short explainer or revision video.",
+              why_it_helps: "Helps the learner hear and see the topic explained with visuals, examples, and simple language.",
             },
           ],
           image_resources: [
             {
-              title: `${input.topic} diagrams and pictures`,
+              title: `${input.topic} diagrams and real-life pictures`,
               search_query: `${input.subject} ${input.topic} diagram for ${input.grade}`,
-              why_it_helps: "Provides simple visual aids that support explanation and recall.",
+              why_it_helps: "Gives the learner diagrams, labelled pictures, or concrete visuals that make the topic easier to understand and remember.",
             },
           ],
-          classroom_materials: ["Whiteboard", "Exercise books", `${input.topic} visual aids`],
+          classroom_materials: [
+            "Whiteboard and markers",
+            "Student exercise books",
+            `${input.topic} charts, pictures, or concrete teaching aids`,
+          ],
         },
       };
     case "GENERATE_LESSON_PLAN":
@@ -379,6 +457,15 @@ async function generateViaServerFallback(input: GenerateEdvouraInput) {
   return parseAndValidateAIResponse(JSON.stringify(data.content), input.taskType);
 }
 
+function shouldQualityCheckLesson(taskType: EdvouraTaskType) {
+  return [
+    "GENERATE_LESSON",
+    "GENERATE_LESSON_NOTE",
+    "GENERATE_FINANCIAL_LITERACY",
+    "GENERATE_COMMUNICATION_SKILL",
+  ].includes(taskType);
+}
+
 export async function generateEdvouraContent(input: GenerateEdvouraInput) {
   validateRole(input.userRole);
 
@@ -416,13 +503,19 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
     
     try {
       parsed = parseAndValidateAIResponse(generatedText, input.taskType);
+      if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(parsed)) {
+        throw new Error("Generated lesson note was too generic for student learning.");
+      }
     } catch (error) {
       console.warn("First validation failed, attempting repair. Error:", error);
       const repairPrompt = buildRepairPrompt(prompt, input.taskType, error);
       try {
         const repairResponse = await generateWithPuterAI(repairPrompt, { model });
         parsed = parseAndValidateAIResponse(repairResponse.text, input.taskType);
-      } catch (repairError) {
+        if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(parsed)) {
+          throw new Error("Repaired lesson note was still too generic for student learning.");
+        }
+      } catch {
         console.error("AI Repair failed. Original text from Puter:", generatedText);
         throw new Error(
           `AI generated content could not be parsed into the required format. The AI responded with: ${generatedText.substring(0, 100)}...`
@@ -434,15 +527,27 @@ export async function generateEdvouraContent(input: GenerateEdvouraInput) {
     try {
       const serverResult = await generateViaServerFallback(input);
       if (serverResult) {
-        parsed = serverResult;
-        providerUsed = "server_api_fallback";
-        modelUsed = "gemini-1.5-pro-or-flash";
+        if (shouldQualityCheckLesson(input.taskType) && isWeakLessonNote(serverResult)) {
+          parsed = buildEmergencyCanonicalContent(input);
+          providerUsed = "emergency_template";
+          modelUsed = "dashboard_template";
+        } else {
+          parsed = serverResult;
+          providerUsed = "server_api_fallback";
+          modelUsed = "gemini-1.5-pro-or-flash";
+        }
       } else {
         throw new Error("Server fallback not supported for this task type.");
       }
     } catch (fallbackError) {
-      const errMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
-      throw new Error(`AI generation failed on both Puter and Server API. Reason: ${errMessage}`);
+      const emergencyContent = buildEmergencyCanonicalContent(input);
+      if (!emergencyContent) {
+        const errMessage = fallbackError instanceof Error ? fallbackError.message : String(fallbackError);
+        throw new Error(`AI generation failed on both Puter and Server API. Reason: ${errMessage}`);
+      }
+      parsed = emergencyContent;
+      providerUsed = "emergency_template";
+      modelUsed = "dashboard_template";
     }
   }
 

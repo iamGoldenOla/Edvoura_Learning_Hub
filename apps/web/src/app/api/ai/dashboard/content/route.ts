@@ -243,11 +243,16 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (targetError || !target) return NextResponse.json({ error: "Content not found." }, { status: 404 });
-    if (role === "tutor" && target.generated_by_user_id !== user.id) return forbidden();
+    if (role === "tutor" && target.generated_by_user_id !== user.id) {
+      return forbidden();
+    }
 
     const { data: updated, error: updateError } = await supabase
       .from("ai_generated_content")
-      .update({ status: "PUBLISHED", published_at: new Date().toISOString() })
+      .update({
+        status: "PUBLISHED",
+        published_at: new Date().toISOString(),
+      })
       .eq("id", body.contentId)
       .select("id,status")
       .single();

@@ -145,11 +145,11 @@ export default function TutorAIWorkspaceClient() {
   }
 
   async function onPublishDirectly(contentId: string) {
-    if (!confirm("Are you sure you want to push this directly to the student dashboard?")) return;
+    if (!confirm("Are you sure you want to publish this directly to the student dashboard?")) return;
     setIsPublishing(contentId);
     try {
       await publishDirectly(contentId);
-      setFeedback("Content published directly to student dashboard.");
+      setFeedback("Content published directly to the student dashboard.");
       await loadRecords();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Unable to publish directly.");
@@ -225,7 +225,7 @@ export default function TutorAIWorkspaceClient() {
         <h1 className="text-3xl font-black tracking-tight text-dark">Tutor AI Content Generator</h1>
         <p className="mt-2 text-sm font-bold text-dark/70">
           Generate teacher-facing lesson plans, student-facing lesson notes, quizzes, spelling content,
-          and adaptive draft content. Human review stays mandatory before student publishing.
+          and adaptive draft content. Tutors can publish directly or submit for super admin review.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <div className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2 text-xs font-black text-dark">

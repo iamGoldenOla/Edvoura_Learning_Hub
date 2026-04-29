@@ -1,6 +1,13 @@
 import { z } from "zod";
 import type { EdvouraTaskType } from "./edvouraPromptBuilder";
 
+type SearchResource = {
+  title: string;
+  search_query: string;
+  why_it_helps: string;
+  url: string;
+};
+
 const difficultySchema = z.enum(["easy", "medium", "hard"]);
 
 const resourceSchema = z.object({
@@ -135,7 +142,7 @@ function normalizeResourceArray(
   raw: unknown,
   kind: "youtube" | "image",
   fallbackTopic: string,
-) {
+): SearchResource[] {
   if (!Array.isArray(raw)) return [];
 
   return raw
@@ -179,7 +186,7 @@ function normalizeResourceArray(
         url,
       };
     })
-    .filter((item): item is { title: string; search_query: string; why_it_helps: string; url: string } => Boolean(item));
+    .filter((item): item is SearchResource => item !== null);
 }
 
 function buildDefaultInstructionalMaterials(topic: string, subject: string, grade: string) {
