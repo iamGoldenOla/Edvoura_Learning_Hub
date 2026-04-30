@@ -134,6 +134,24 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
   - parent notifications
   - tutor messages
 
+### Current Status: Feed Widgets + Broadcast Composer (2026-04-30)
+
+- The shared interaction contract is now visible inside the dashboards, not only in the backend delivery layer.
+- Admin notification center now includes a working broadcast composer:
+  - `apps/web/src/components/dashboards/AdminBroadcastComposer.tsx`
+  - posts to `POST /api/dashboard/notifications/broadcast`
+- Reusable role feed widget added:
+  - `apps/web/src/components/dashboards/DashboardFeedWidget.tsx`
+- Feed widgets are now rendered on:
+  - student dashboard home
+  - parent dashboard home
+  - tutor dashboard home
+- Feed count wiring now uses:
+  - dashboard data for learner-facing counts where appropriate
+  - unread notification `feedKeys` for parent/tutor/admin-targeted workflow counts
+- Operating rule going forward:
+  - when a dashboard notification or announcement is added, it should carry `feedKeys` and `surfaceTargets` so role feed widgets and downstream inbox views can stay aligned without page-local special cases
+
 ### Current Status: Puter Dashboard AI Workflow (2026-04-27)
 
 - Puter.js integration is now architected as **dashboard-only** generation tooling:

@@ -1,6 +1,9 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import StudentBandClientWrapper from '@/components/dashboards/StudentBandClientWrapper';
 import { getBillingSummary, getStudentDashboardData, requireAppViewer, roleToDashboardPath } from '@/lib/app-context';
+import { buildFeedCountMapFromNotificationData } from '@/lib/dashboard/feedRules';
+import { createClient } from '@/utils/supabase/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -28,12 +31,12 @@ export default async function StudentDashboard() {
           >
             Start Student Onboarding
           </a>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center px-6 py-3 border-[3px] border-dark bg-white text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C]"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -41,12 +44,30 @@ export default async function StudentDashboard() {
 
   let dashboard;
   let billingSummary;
+  let feedCounts: Record<string, number> = {};
 
   try {
     [dashboard, billingSummary] = await Promise.all([
       getStudentDashboardData(viewer.accessToken),
       getBillingSummary(viewer.accessToken),
     ]);
+    const supabase = await createClient();
+    const { data: notifications = [] } = await supabase
+      .from('notifications')
+      .select('data')
+      .eq('recipient_user_id', viewer.currentUser.userId)
+      .eq('status', 'unread')
+      .limit(20);
+    const notificationFeedCounts = buildFeedCountMapFromNotificationData(notifications ?? [], 'platform_announcements');
+    feedCounts = {
+      learning_content: dashboard.upcomingLessons.length,
+      practice_and_assessment: dashboard.assignments.filter((assignment) => {
+        const normalized = (assignment.submissionStatus ?? '').toLowerCase();
+        return !normalized || normalized === 'draft' || normalized === 'submitted' || normalized === 'late';
+      }).length,
+      classroom_resources: dashboard.stats.activeClasses,
+      platform_announcements: notificationFeedCounts.get('platform_announcements') ?? 0,
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to load student dashboard.';
 
@@ -63,12 +84,12 @@ export default async function StudentDashboard() {
           >
             Start Student Onboarding
           </a>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center justify-center px-6 py-3 border-[3px] border-dark bg-white text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C]"
           >
             Back to Home
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -78,6 +99,7 @@ export default async function StudentDashboard() {
     <StudentBandClientWrapper 
       dashboard={dashboard}
       billingSummary={billingSummary}
+      feedCounts={feedCounts}
     />
   );
 }

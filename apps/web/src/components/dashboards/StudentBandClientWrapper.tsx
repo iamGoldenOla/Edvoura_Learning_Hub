@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight } from 'lucide-react';
 
 import { useBand } from './BandContext';
+import DashboardFeedWidget from './DashboardFeedWidget';
 import StudentLiveContentPanel from './StudentLiveContentPanel';
 import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
+import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 
 const bandCopy = {
   '1-3': {
@@ -76,9 +78,11 @@ const isPendingAssignment = (status: string | null) => {
 export default function StudentBandClientWrapper({
   dashboard,
   billingSummary,
+  feedCounts = {},
 }: {
   dashboard: StudentDashboardData;
   billingSummary: BillingSummary;
+  feedCounts?: Record<string, number>;
 }) {
   const { band } = useBand();
   const copy = bandCopy[band];
@@ -135,6 +139,10 @@ export default function StudentBandClientWrapper({
     billingSummary.subscription?.planAmountMinor ?? billingSummary.plans[0]?.amountMinor ?? null,
     billingSummary.subscription?.planCurrencyCode ?? billingSummary.plans[0]?.currencyCode ?? null,
   );
+  const studentFeedLanes = getFeedRulesForRole('student').map((rule) => ({
+    ...rule,
+    count: feedCounts[rule.feedKey] ?? 0,
+  }));
 
   if (band === '1-3') {
     const stars = dashboard.stats.completedAssignments * 8 + dashboard.stats.activeClasses * 4;
@@ -250,6 +258,12 @@ export default function StudentBandClientWrapper({
         <Panel title="Live from tutor" icon={Video} color="bg-rose-100">
           <StudentLiveContentPanel />
         </Panel>
+
+        <DashboardFeedWidget
+          title="Learning Lanes"
+          subtitle="These lanes show where lessons, practice work, classroom resources, and platform announcements should appear for the learner."
+          lanes={studentFeedLanes}
+        />
       </div>
     );
   }
@@ -376,6 +390,12 @@ export default function StudentBandClientWrapper({
         </div>
 
         <div className="space-y-6 sm:space-y-8 xl:col-span-4 flex flex-col">
+          <DashboardFeedWidget
+            title="Learning Lanes"
+            subtitle="These lanes show where lessons, practice work, classroom resources, and platform announcements should appear for the learner."
+            lanes={studentFeedLanes}
+          />
+
           <Panel title="Subject progress" icon={TrendingUp} color="bg-emerald-100">
             <div className="space-y-4">
               {progressRows.length > 0 ? (

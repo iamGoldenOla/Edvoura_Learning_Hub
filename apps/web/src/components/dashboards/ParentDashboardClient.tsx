@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import DashboardFeedWidget from '@/components/dashboards/DashboardFeedWidget';
+import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 
 type ParentChild = {
   userId: string;
@@ -93,11 +95,13 @@ export default function ParentDashboardClient({
   linkedChildren,
   billingSummary,
   childSummaries = [],
+  feedCounts = {},
 }: {
   parentName: string;
   linkedChildren: ParentChild[];
   billingSummary: BillingSummary | null;
   childSummaries?: ChildSummary[];
+  feedCounts?: Record<string, number>;
 }) {
   const [activeChildId, setActiveChildId] = useState<string>(linkedChildren[0]?.userId ?? '');
   const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
@@ -117,6 +121,10 @@ export default function ParentDashboardClient({
   const invoices = billingSummary?.invoices ?? [];
   const subscription = billingSummary?.subscription;
   const latestInvoice = invoices[0] ?? null;
+  const parentFeedLanes = getFeedRulesForRole('parent').map((rule) => ({
+    ...rule,
+    count: feedCounts[rule.feedKey] ?? 0,
+  }));
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
@@ -356,6 +364,12 @@ export default function ParentDashboardClient({
           )}
         </div>
       )}
+
+      <DashboardFeedWidget
+        title="Parent Inbox Lanes"
+        subtitle="These lanes define how child progress alerts, family communication, and broader announcements should reach the parent dashboard."
+        lanes={parentFeedLanes}
+      />
 
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* Lessons & Attendance */}

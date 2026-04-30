@@ -142,3 +142,27 @@ export const DASHBOARD_FEED_RULES: DashboardFeedRule[] = [
 export function getFeedRulesForRole(role: DashboardRole) {
   return DASHBOARD_FEED_RULES.filter((rule) => rule.role === role);
 }
+
+export function buildFeedCountMapFromNotificationData(
+  notifications: Array<{ data?: unknown }>,
+  fallbackFeedKey = 'workflow_alerts',
+) {
+  const counts = new Map<string, number>();
+
+  for (const notification of notifications) {
+    const payload =
+      notification.data && typeof notification.data === 'object' && !Array.isArray(notification.data)
+        ? (notification.data as { feedKeys?: unknown })
+        : {};
+
+    const feedKeys = Array.isArray(payload.feedKeys)
+      ? payload.feedKeys.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
+      : [fallbackFeedKey];
+
+    for (const feedKey of feedKeys) {
+      counts.set(feedKey, (counts.get(feedKey) ?? 0) + 1);
+    }
+  }
+
+  return counts;
+}

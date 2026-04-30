@@ -18,9 +18,12 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import DashboardFeedWidget from '@/components/dashboards/DashboardFeedWidget';
 import TutorLiveContentPublisher from '@/components/dashboards/TutorLiveContentPublisher';
 import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButton';
 import { requireAppViewer, getTutorDashboardData } from '@/lib/app-context';
+import { buildFeedCountMapFromNotificationData, getFeedRulesForRole } from '@/lib/dashboard/feedRules';
+import { createClient } from '@/utils/supabase/server';
 
 const tutorSections = [
   { href: '/dash/tutor/schedule', title: "Today's Classes", description: 'Schedule and manage live sessions.', icon: CalendarClock, color: 'text-dark bg-yellow' },
@@ -38,8 +41,27 @@ const formatDuration = (startIso: string, endIso: string) => {
 };
 
 export default async function TutorDashboard() {
-  await requireAppViewer();
+  const viewer = await requireAppViewer();
   const dashboard = await getTutorDashboardData();
+  const supabase = await createClient();
+  const [{ data: notifications = [] }, { count: pendingReviewCount }] = await Promise.all([
+    supabase
+      .from('notifications')
+      .select('data')
+      .eq('recipient_user_id', viewer.currentUser.userId)
+      .eq('status', 'unread')
+      .limit(30),
+    supabase
+      .from('ai_generated_content')
+      .select('*', { count: 'exact', head: true })
+      .eq('generated_by_user_id', viewer.currentUser.userId)
+      .eq('status', 'PENDING_REVIEW'),
+  ]);
+  const tutorNotificationFeedCounts = buildFeedCountMapFromNotificationData(notifications ?? [], 'workflow_alerts');
+  const tutorFeedLanes = getFeedRulesForRole('tutor').map((rule) => ({
+    ...rule,
+    count: rule.feedKey === 'ai_review_queue' ? pendingReviewCount ?? 0 : tutorNotificationFeedCounts.get(rule.feedKey) ?? 0,
+  }));
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-6 pb-20 sm:space-y-8">
@@ -225,6 +247,12 @@ export default async function TutorDashboard() {
                    Get Support
                  </Button>
               </div>
+
+              <DashboardFeedWidget
+                title="Tutor Workflow Lanes"
+                subtitle="These lanes show where review feedback, family communication, and publishing workflow alerts should surface."
+                lanes={tutorFeedLanes}
+              />
             </aside>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Bell, Megaphone, Send } from 'lucide-react';
 
+import AdminBroadcastComposer from '@/components/dashboards/AdminBroadcastComposer';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { createClient } from '@/utils/supabase/server';
 
@@ -85,16 +86,16 @@ export default async function AdminNotificationsPage() {
         <div className="flex items-center justify-between gap-4 border-b-[4px] border-dark bg-amber-100 p-4 sm:p-6">
           <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl">Actions</h2>
         </div>
-        <div className="grid gap-3 p-4 sm:flex sm:flex-wrap sm:gap-4 sm:p-8">
-          <Link href="/dash/admin/notifications?action=create-broadcast" className="inline-flex items-center justify-center rounded-xl border-[3px] border-dark bg-dark px-6 py-4 font-black text-white shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
-            Create Broadcast
-          </Link>
-          <Link href="/dash/admin/notifications?action=failed-deliveries" className="inline-flex items-center justify-center rounded-xl border-[3px] border-dark bg-white px-6 py-4 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
-            Review Failed Deliveries
-          </Link>
-          <Link href="/dash/admin/notifications?action=pause-campaign" className="inline-flex items-center justify-center rounded-xl border-[3px] border-dark bg-white px-6 py-4 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
-            Pause Campaign
-          </Link>
+        <div className="grid gap-4 p-4 sm:gap-5 sm:p-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <AdminBroadcastComposer />
+          <div className="grid gap-3 content-start">
+            <Link href="/dash/admin/notifications?action=failed-deliveries" className="inline-flex items-center justify-center rounded-xl border-[3px] border-dark bg-white px-6 py-4 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+              Review Failed Deliveries
+            </Link>
+            <Link href="/dash/admin/notifications?action=pause-campaign" className="inline-flex items-center justify-center rounded-xl border-[3px] border-dark bg-white px-6 py-4 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+              Pause Campaign
+            </Link>
+          </div>
         </div>
       </div>
 

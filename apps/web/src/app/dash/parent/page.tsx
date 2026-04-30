@@ -1,5 +1,6 @@
 import ParentDashboardClient from '@/components/dashboards/ParentDashboardClient';
 import { getBillingSummary, getParentDashboardData, requireAppViewer, type BillingSummary } from '@/lib/app-context';
+import { buildFeedCountMapFromNotificationData } from '@/lib/dashboard/feedRules';
 import { createClient } from '@/utils/supabase/server';
 
 export default async function ParentDashboardPage() {
@@ -9,6 +10,13 @@ export default async function ParentDashboardPage() {
   const billingSummary = await getBillingSummary(viewer.accessToken).catch(() => null as BillingSummary | null);
   const supabase = await createClient();
   const childIds = parentData.children.map((child) => child.userId);
+  const { data: parentNotifications = [] } = await supabase
+    .from('notifications')
+    .select('data')
+    .eq('recipient_user_id', viewer.currentUser.userId)
+    .eq('status', 'unread')
+    .limit(30);
+  const parentFeedCounts = buildFeedCountMapFromNotificationData(parentNotifications ?? [], 'child_progress_alerts');
 
   const childSummaries =
     childIds.length > 0
@@ -21,6 +29,11 @@ export default async function ParentDashboardPage() {
       linkedChildren={parentData.children}
       billingSummary={billingSummary}
       childSummaries={childSummaries}
+      feedCounts={{
+        child_progress_alerts: parentFeedCounts.get('child_progress_alerts') ?? 0,
+        family_communication: parentFeedCounts.get('family_communication') ?? 0,
+        platform_announcements: parentFeedCounts.get('platform_announcements') ?? 0,
+      }}
     />
   );
 }
