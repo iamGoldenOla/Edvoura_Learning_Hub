@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Languages, Mic2, PlayCircle, RefreshCw, Sparkles, Volume2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -58,26 +58,9 @@ export function SpellingBeeClient({
   const [isFinished, setIsFinished] = useState(false);
   const [gameState, setGameState] = useState<'idle' | 'playing'>('idle');
   const [accent, setAccent] = useState<AccentMode>('en-GB');
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const currentWord = activeChallenge?.words[currentIndex] ?? null;
-
-  useEffect(() => {
-    if (!('speechSynthesis' in window)) {
-      return;
-    }
-
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    loadVoices();
-    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-
-    return () => {
-      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-      window.speechSynthesis.cancel();
-    };
-  }, []);
-
-
 
   const score = useMemo(() => {
     let total = 0;
@@ -101,59 +84,64 @@ export function SpellingBeeClient({
     [results],
   );
 
-  const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
-    return new Promise((resolve) => {
-      const loaded = window.speechSynthesis.getVoices();
-      if (loaded.length > 0) {
-        resolve(loaded);
-        return;
-      }
-      let attempts = 0;
-      const interval = setInterval(() => {
-        attempts += 1;
-        const available = window.speechSynthesis.getVoices();
-        if (available.length > 0 || attempts > 20) {
-          clearInterval(interval);
-          resolve(available);
-        }
-      }, 100);
-    });
-  };
-
+  /**
+   * Speaks text using a Google Translate TTS audio URL played through an
+   * HTML Audio element. This bypasses all the Chrome speechSynthesis bugs
+   * (cancel+speak race, empty voices, silent failures) and produces a
+   * consistent, high-quality voice on every browser/device.
+   *
+   * Falls back to speechSynthesis only if audio playback fails entirely.
+   */
   const speak = async (word: SpellingBeeWord) => {
-    if (!('speechSynthesis' in window)) {
-      return;
-    }
-
-    // Chrome bug: calling speak() immediately after cancel() silently drops
-    // the utterance. We must cancel, wait a beat, then speak.
-    window.speechSynthesis.cancel();
-    await new Promise((r) => setTimeout(r, 150));
-
-    const availableVoices = voices.length > 0 ? voices : await waitForVoices();
-    if (availableVoices.length > 0 && voices.length === 0) {
-      setVoices(availableVoices);
-    }
-
-    const pickedVoice =
-      availableVoices.find((v) => v.lang?.toLowerCase().startsWith(accent.toLowerCase())) ??
-      availableVoices.find((v) => v.lang?.toLowerCase().startsWith('en')) ??
-      null;
-
     const text = `Spell the word. ${word.word}. ${word.exampleSentence}. The word again: ${word.word}.`;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.8;
-    utterance.lang = accent;
-    if (pickedVoice) {
-      utterance.voice = pickedVoice;
-    }
-    utterance.onerror = (event) => {
-      // 'interrupted' is expected when the user clicks again before speech finishes
-      if (event.error !== 'interrupted') {
-        console.warn('[SpellingBee] Speech error:', event.error);
+    const langCode = accent === 'en-US' ? 'en-us' : 'en-gb';
+
+    setIsSpeaking(true);
+
+    try {
+      // Primary: use Google Translate TTS via Audio element (reliable, no API key needed)
+      const encodedText = encodeURIComponent(text);
+      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${langCode}&client=tw-ob`;
+      const audio = new Audio(audioUrl);
+      audio.playbackRate = 0.9;
+
+      await new Promise<void>((resolve, reject) => {
+        audio.onended = () => resolve();
+        audio.onerror = () => reject(new Error('Audio playback failed'));
+        audio.play().catch(reject);
+      });
+    } catch {
+      // Fallback: use browser speechSynthesis
+      try {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          await new Promise((r) => setTimeout(r, 200));
+
+          const availableVoices = window.speechSynthesis.getVoices();
+          const pickedVoice =
+            availableVoices.find((v) => v.lang?.toLowerCase().startsWith(accent.toLowerCase())) ??
+            availableVoices.find((v) => v.lang?.toLowerCase().startsWith('en')) ??
+            null;
+
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 0.8;
+          utterance.lang = accent;
+          if (pickedVoice) utterance.voice = pickedVoice;
+
+          await new Promise<void>((resolve) => {
+            utterance.onend = () => resolve();
+            utterance.onerror = () => resolve();
+            window.speechSynthesis.speak(utterance);
+            // Safety timeout in case events never fire
+            setTimeout(resolve, 15000);
+          });
+        }
+      } catch {
+        console.warn('[SpellingBee] Both TTS methods failed for word:', word.word);
       }
-    };
-    window.speechSynthesis.speak(utterance);
+    } finally {
+      setIsSpeaking(false);
+    }
   };
 
   const startChallenge = (challenge: SpellingBeeChallenge) => {
@@ -166,7 +154,7 @@ export function SpellingBeeClient({
 
     const firstWord = challenge.words[0];
     if (firstWord) {
-      setTimeout(() => speak(firstWord), 500);
+      setTimeout(() => speak(firstWord), 400);
     }
   };
 
@@ -258,13 +246,18 @@ export function SpellingBeeClient({
           <div className="flex flex-col items-center gap-6 py-4 sm:gap-8 sm:py-6">
             <button
               type="button"
+              disabled={isSpeaking}
               onClick={() => speak(currentWord)}
-              className="flex h-24 w-24 items-center justify-center rounded-full border-[4px] border-dark bg-yellow text-dark shadow-[6px_6px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:scale-95"
+              className={`flex h-24 w-24 items-center justify-center rounded-full border-[4px] border-dark text-dark shadow-[6px_6px_0px_#060E1C] transition-all active:scale-95 ${
+                isSpeaking
+                  ? 'animate-pulse bg-emerald-400 shadow-[6px_6px_0px_#065f46]'
+                  : 'bg-yellow hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none'
+              }`}
             >
-              <Volume2 className="h-10 w-10" />
+              <Volume2 className={`h-10 w-10 ${isSpeaking ? 'animate-bounce' : ''}`} />
             </button>
             <div className="space-y-3 text-center">
-              <p className="text-sm font-black uppercase tracking-widest text-dark/30">Click to hear the word again</p>
+              <p className="text-sm font-black uppercase tracking-widest text-dark/30">{isSpeaking ? '🔊 Playing pronunciation…' : 'Click to hear the word again'}</p>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"

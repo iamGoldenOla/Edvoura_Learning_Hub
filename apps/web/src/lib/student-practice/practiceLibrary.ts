@@ -112,18 +112,37 @@ function findFlashcardDeck(params: {
 
   if (requestedSubject && subjects[requestedSubject]) {
     const subjectDeck = subjects[requestedSubject];
+
+    // Only return a local deck if the topic actually matches what the user asked for.
+    // Do NOT fall back to topics[0] — that would show wrong content (e.g. "Air" when user asked "Magnet").
     const matchedTopic =
       subjectDeck.topics.find((entry) => entry.topic.toLowerCase() === requestedTopic) ??
-      subjectDeck.topics.find((entry) => entry.topic.toLowerCase().includes(requestedTopic) || requestedTopic.includes(entry.topic.toLowerCase())) ??
-      subjectDeck.topics[0];
+      subjectDeck.topics.find((entry) => entry.topic.toLowerCase().includes(requestedTopic) || requestedTopic.includes(entry.topic.toLowerCase()));
 
-    return matchedTopic
-      ? {
-          subject: requestedSubject,
-          topic: matchedTopic.topic,
-          cards: matchedTopic.cards,
-        }
-      : null;
+    if (matchedTopic) {
+      return {
+        subject: requestedSubject,
+        topic: matchedTopic.topic,
+        cards: matchedTopic.cards,
+      };
+    }
+
+    // If topic was provided but doesn't match any local deck, return null
+    // so the caller generates cards about the actual requested topic.
+    if (requestedTopic) {
+      return null;
+    }
+
+    // Only if no topic was requested at all, pick the first available one.
+    if (subjectDeck.topics[0]) {
+      return {
+        subject: requestedSubject,
+        topic: subjectDeck.topics[0].topic,
+        cards: subjectDeck.topics[0].cards,
+      };
+    }
+
+    return null;
   }
 
   if (requestedTopic) {
