@@ -1,0 +1,212 @@
+{
+  "spellingBee": {
+    "grades_1_3": {
+      "display_name": "Grades 1-3",
+      "decks": [
+        {
+          "id": "everyday-words",
+          "title": "Everyday Spelling Warm-Up",
+          "theme": "Daily Vocabulary",
+          "instructions": "Listen carefully, type each word, and build confidence with everyday school and home vocabulary.",
+          "words": [
+            { "word": "school", "pronunciation": "skool", "syllables": 1, "definition": "A place where children go to learn.", "exampleSentence": "The children arrived at school early in the morning.", "hint": "It begins with s and ends with l.", "difficulty": "easy" },
+            { "word": "garden", "pronunciation": "GAR-den", "syllables": 2, "definition": "A piece of ground where flowers or plants grow.", "exampleSentence": "We planted tomatoes in the garden behind the house.", "hint": "It has two syllables and starts with g.", "difficulty": "easy" },
+            { "word": "window", "pronunciation": "WIN-doh", "syllables": 2, "definition": "An opening in a wall fitted with glass.", "exampleSentence": "Please open the window and let fresh air inside.", "hint": "It begins with w and has the word win at the start.", "difficulty": "medium" },
+            { "word": "blanket", "pronunciation": "BLANG-kit", "syllables": 2, "definition": "A large cloth used for warmth on a bed.", "exampleSentence": "She covered the baby with a soft blanket.", "hint": "It starts with bl and ends with et.", "difficulty": "medium" },
+            { "word": "morning", "pronunciation": "MOR-ning", "syllables": 2, "definition": "The early part of the day before noon.", "exampleSentence": "We read our storybook every morning.", "hint": "It begins with m and has ing at the end.", "difficulty": "medium" },
+            { "word": "beautiful", "pronunciation": "BYOO-ti-ful", "syllables": 3, "definition": "Very pleasing to look at or hear.", "exampleSentence": "The garden looked beautiful after the rain.", "hint": "It starts with beau and has three syllables.", "difficulty": "hard" },
+            { "word": "friendly", "pronunciation": "FREND-lee", "syllables": 2, "definition": "Kind and pleasant to others.", "exampleSentence": "Our new neighbour is friendly and cheerful.", "hint": "It ends with ly and starts with fr.", "difficulty": "hard" },
+            { "word": "important", "pronunciation": "im-POR-tent", "syllables": 3, "definition": "Having great value or meaning.", "exampleSentence": "It is important to listen when the teacher speaks.", "hint": "It begins with im and ends with ant.", "difficulty": "hard" }
+          ]
+        },
+        {
+          "id": "science-and-nature",
+          "title": "Nature and Science Spellings",
+          "theme": "Science Words",
+          "instructions": "Practise science-related words that help you talk about the world around you.",
+          "words": [
+            { "word": "air", "pronunciation": "air", "syllables": 1, "definition": "The invisible mixture of gases around us.", "exampleSentence": "Plants, animals, and people all need air to live.", "hint": "It is a short word with three letters.", "difficulty": "easy" },
+            { "word": "plant", "pronunciation": "plant", "syllables": 1, "definition": "A living thing that grows in soil or water.", "exampleSentence": "We watered the plant after class.", "hint": "It starts with pl.", "difficulty": "easy" },
+            { "word": "animal", "pronunciation": "AN-i-mal", "syllables": 3, "definition": "A living thing that can move and breathe.", "exampleSentence": "A goat is an animal that lives on many farms.", "hint": "It begins with a and has three syllables.", "difficulty": "medium" },
+            { "word": "weather", "pronunciation": "WETH-er", "syllables": 2, "definition": "The condition of the air at a certain time.", "exampleSentence": "The weather is sunny today.", "hint": "It begins with wea.", "difficulty": "medium" },
+            { "word": "transport", "pronunciation": "TRANS-port", "syllables": 2, "definition": "To carry people or goods from one place to another.", "exampleSentence": "Buses transport children safely to school.", "hint": "It begins with trans.", "difficulty": "hard" },
+            { "word": "environment", "pronunciation": "en-VY-run-ment", "syllables": 4, "definition": "The natural world and surroundings where we live.", "exampleSentence": "We should keep the environment clean.", "hint": "It starts with en and ends with ment.", "difficulty": "hard" }
+          ]
+        }
+      ]
+    },
+    "grades_4_6": {
+      "display_name": "Grades 4-6",
+      "decks": [
+        {
+          "id": "academic-vocabulary",
+          "title": "Academic Vocabulary Challenge",
+          "theme": "Classroom Language",
+          "instructions": "Strengthen your classroom language with words you meet in reading, science, and social studies.",
+          "words": [
+            { "word": "fraction", "pronunciation": "FRAK-shun", "syllables": 2, "definition": "A number that shows part of a whole.", "exampleSentence": "One half is a fraction.", "hint": "It starts with fr and ends with tion.", "difficulty": "medium" },
+            { "word": "paragraph", "pronunciation": "PAR-uh-graf", "syllables": 3, "definition": "A group of related sentences on one main idea.", "exampleSentence": "Write one paragraph about your favourite season.", "hint": "It begins with para.", "difficulty": "hard" },
+            { "word": "experiment", "pronunciation": "ik-SPER-uh-ment", "syllables": 4, "definition": "A scientific test done to learn something.", "exampleSentence": "The class did an experiment with water and ice.", "hint": "It starts with ex and ends with ment.", "difficulty": "hard" },
+            { "word": "journey", "pronunciation": "JER-nee", "syllables": 2, "definition": "Travel from one place to another.", "exampleSentence": "The family began a long journey by train.", "hint": "It contains our.", "difficulty": "medium" }
+          ]
+        }
+      ]
+    },
+    "grades_7_12": {
+      "display_name": "Grades 7-12",
+      "decks": [
+        {
+          "id": "advanced-word-power",
+          "title": "Advanced Word Power",
+          "theme": "High-Confidence Vocabulary",
+          "instructions": "Practise mature academic words that appear across subjects and formal writing.",
+          "words": [
+            { "word": "analysis", "pronunciation": "uh-NAL-uh-sis", "syllables": 4, "definition": "Detailed examination of something.", "exampleSentence": "Her analysis of the poem was thoughtful and clear.", "hint": "It starts with ana.", "difficulty": "hard" },
+            { "word": "hypothesis", "pronunciation": "hy-POTH-uh-sis", "syllables": 4, "definition": "An idea that can be tested.", "exampleSentence": "The student wrote a hypothesis before the experiment.", "hint": "It begins with hypo.", "difficulty": "hard" },
+            { "word": "responsibility", "pronunciation": "ri-spon-suh-BIL-uh-tee", "syllables": 6, "definition": "A duty or task that one is expected to do.", "exampleSentence": "Leadership comes with responsibility.", "hint": "It ends with ility.", "difficulty": "hard" }
+          ]
+        }
+      ]
+    }
+  },
+  "flashcards": {
+    "grades_1_3": {
+      "display_name": "Grades 1-3",
+      "subjects": {
+        "Basic Science": {
+          "display_name": "Basic Science",
+          "topics": [
+            {
+              "topic": "Air",
+              "cards": [
+                { "front": "What is air?", "back": "Air is the invisible mixture of gases all around us. People, animals, and plants need it to live." },
+                { "front": "Can we see air?", "back": "We cannot usually see air, but we can feel it when the wind blows or a fan is on." },
+                { "front": "Why is air important?", "back": "Air is important because living things need it for breathing and burning." },
+                { "front": "Name one place where air is found.", "back": "Air is found everywhere around us, including in the classroom, at home, and outdoors." },
+                { "front": "How can moving air help us?", "back": "Moving air can cool us, dry clothes, and help seeds spread." },
+                { "front": "Give one example of air in action.", "back": "A balloon fills up because air goes inside it." }
+              ]
+            },
+            {
+              "topic": "Plants",
+              "cards": [
+                { "front": "What is a plant?", "back": "A plant is a living thing that grows in soil or water and makes its own food." },
+                { "front": "What do plants need to grow?", "back": "Plants need air, sunlight, water, and soil or nutrients to grow well." },
+                { "front": "Name one part of a plant.", "back": "Some parts of a plant are the root, stem, leaf, flower, and fruit." },
+                { "front": "What does the root do?", "back": "The root holds the plant in the soil and takes in water and nutrients." },
+                { "front": "Why are plants useful?", "back": "Plants give us food, shade, medicine, and clean air." },
+                { "front": "Give one example of a plant product.", "back": "Fruit, vegetables, wood, and cotton all come from plants." }
+              ]
+            }
+          ]
+        },
+        "Social Studies": {
+          "display_name": "Social Studies",
+          "topics": [
+            {
+              "topic": "Transportation",
+              "cards": [
+                { "front": "What is transportation?", "back": "Transportation is the movement of people and goods from one place to another." },
+                { "front": "Name the three main types of transportation.", "back": "The three main types are land transportation, water transportation, and air transportation." },
+                { "front": "Give one example of land transportation.", "back": "Examples include bus, car, bicycle, train, and motorcycle." },
+                { "front": "Give one example of water transportation.", "back": "Examples include canoe, boat, ferry, and ship." },
+                { "front": "Why is transportation important?", "back": "Transportation helps people travel to school, work, hospitals, shops, and other communities." },
+                { "front": "What safety rule should we follow when using transport?", "back": "We should obey road and transport safety rules, board carefully, and respect drivers and other passengers." }
+              ]
+            }
+          ]
+        },
+        "English Language": {
+          "display_name": "English Language",
+          "topics": [
+            {
+              "topic": "Parts of Speech",
+              "cards": [
+                { "front": "What is a noun?", "back": "A noun is a naming word for a person, place, animal, or thing." },
+                { "front": "What is a pronoun?", "back": "A pronoun is a word used in place of a noun, such as he, she, it, or they." },
+                { "front": "What is a verb?", "back": "A verb is an action word or a being word. It tells what someone does or is." },
+                { "front": "What is an adjective?", "back": "An adjective is a describing word. It tells us more about a noun." },
+                { "front": "What is an adverb?", "back": "An adverb tells how, when, where, or how often something happens." },
+                { "front": "Why are parts of speech important?", "back": "They help us understand the job each word is doing so we can read, write, and speak clearly." }
+              ]
+            }
+          ]
+        },
+        "Mathematics": {
+          "display_name": "Mathematics",
+          "topics": [
+            {
+              "topic": "Multiplication Facts",
+              "cards": [
+                { "front": "What does multiplication mean?", "back": "Multiplication means adding equal groups again and again." },
+                { "front": "What is 3 x 4?", "back": "3 x 4 = 12 because 4 + 4 + 4 = 12." },
+                { "front": "What is 5 x 2?", "back": "5 x 2 = 10." },
+                { "front": "What does 6 x 1 equal?", "back": "6 x 1 = 6 because any number multiplied by 1 stays the same." },
+                { "front": "What is 4 x 0?", "back": "4 x 0 = 0 because any number multiplied by 0 equals 0." },
+                { "front": "Why is multiplication useful?", "back": "Multiplication helps us count quickly and solve repeated addition problems." }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "grades_4_6": {
+      "display_name": "Grades 4-6",
+      "subjects": {
+        "Basic Science": {
+          "display_name": "Basic Science",
+          "topics": [
+            {
+              "topic": "The Water Cycle",
+              "cards": [
+                { "front": "What is evaporation?", "back": "Evaporation happens when liquid water changes into water vapour because of heat." },
+                { "front": "What is condensation?", "back": "Condensation happens when water vapour cools and turns back into tiny droplets." },
+                { "front": "What is precipitation?", "back": "Precipitation is water falling from clouds as rain, snow, hail, or sleet." },
+                { "front": "Why is the water cycle important?", "back": "It moves water around Earth and helps supply water for plants, animals, and people." },
+                { "front": "Where does collection happen?", "back": "Collection happens when water gathers in rivers, lakes, oceans, and the ground." },
+                { "front": "What gives energy for the water cycle?", "back": "The Sun provides the heat energy that starts much of the water cycle." }
+              ]
+            }
+          ]
+        },
+        "English Language": {
+          "display_name": "English Language",
+          "topics": [
+            {
+              "topic": "Figures of Speech",
+              "cards": [
+                { "front": "What is a simile?", "back": "A simile compares two things using like or as." },
+                { "front": "What is a metaphor?", "back": "A metaphor compares two things by saying one thing is another." },
+                { "front": "What is personification?", "back": "Personification gives human qualities to animals, objects, or ideas." },
+                { "front": "Why do writers use figures of speech?", "back": "They make writing more vivid, imaginative, and memorable." },
+                { "front": "Give an example of a simile.", "back": "\"As brave as a lion\" is a simile." },
+                { "front": "How is a metaphor different from a simile?", "back": "A simile uses like or as, but a metaphor does not." }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "grades_7_12": {
+      "display_name": "Grades 7-12",
+      "subjects": {
+        "Biology": {
+          "display_name": "Biology",
+          "topics": [
+            {
+              "topic": "Photosynthesis",
+              "cards": [
+                { "front": "What is photosynthesis?", "back": "Photosynthesis is the process by which green plants use sunlight to make food from carbon dioxide and water." },
+                { "front": "Where does photosynthesis take place?", "back": "It takes place mainly in the chloroplasts of green plant cells." },
+                { "front": "Why is chlorophyll important?", "back": "Chlorophyll traps light energy needed for photosynthesis." },
+                { "front": "What are the raw materials of photosynthesis?", "back": "The raw materials are water and carbon dioxide." },
+                { "front": "What are the products of photosynthesis?", "back": "The products are glucose and oxygen." },
+                { "front": "Why is photosynthesis important to life?", "back": "It provides food for plants and releases oxygen needed by most living things." }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -360,3 +360,10 @@ Before merging any meaningful change:
 3. Verify audit, billing, and notification side effects if relevant.
 4. Verify documentation updates were made.
 5. Verify test coverage or note the gap explicitly.
+
+## Current Status: Student Practice Engine (2026-04-30)
+
+- Student spelling bee now includes always-available grade-aware practice decks from a local JSON practice library.
+- Spelling practice uses browser speech synthesis with British and US accent selection plus score gain/loss for correct and incorrect answers.
+- Student flashcards now support local study-deck fallback and a `Surprise Me` mode so revision still works without live AI or tutor input.
+- Practice library files live in `apps/web/src/lib/student-practice/`.

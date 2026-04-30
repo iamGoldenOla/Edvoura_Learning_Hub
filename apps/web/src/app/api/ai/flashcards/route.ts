@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { generateFlashcards } from '@/lib/ai';
+import { buildLocalFlashcardDeck } from '@/lib/student-practice/practiceLibrary';
 
 export async function POST(request: Request) {
   try {
@@ -15,31 +16,47 @@ export async function POST(request: Request) {
 
     const { subject, topic, gradeLevel } = await request.json();
 
-    if (!subject || !topic || !gradeLevel) {
-      return NextResponse.json({ error: 'Missing subject, topic or gradeLevel' }, { status: 400 });
+    if (!gradeLevel) {
+      return NextResponse.json({ error: 'Missing gradeLevel' }, { status: 400 });
+    }
+
+    const localDeck = buildLocalFlashcardDeck({ gradeLevel, subject, topic });
+
+    if (!subject || !topic) {
+      return NextResponse.json({
+        flashcards: localDeck.flashcards,
+        provider: localDeck.provider,
+        subject: localDeck.subject,
+        topic: localDeck.topic,
+        deckTitle: localDeck.deckTitle,
+        attempts: 1,
+      });
     }
 
     const result = await generateFlashcards({ subject, topic, gradeLevel });
 
     if (!result.success) {
-      const status =
-        result.error.includes('No valid AI provider keys found') ||
-        result.error.includes('No valid OpenRouter keys configured') ||
-        result.error.includes('GEMINI_API_KEY is not configured')
-          ? 503
-          : 422;
-
       return NextResponse.json(
         {
-          error: 'Flashcard generation failed',
-          detail: result.error,
+          flashcards: localDeck.flashcards,
+          provider: localDeck.provider,
+          subject: localDeck.subject,
+          topic: localDeck.topic,
+          deckTitle: localDeck.deckTitle,
+          fallbackReason: result.error,
           attempts: result.attempts,
         },
-        { status },
       );
     }
 
-    return NextResponse.json({ flashcards: result.data, attempts: result.attempts, provider: result.provider });
+    return NextResponse.json({
+      flashcards: result.data,
+      attempts: result.attempts,
+      provider: result.provider,
+      subject,
+      topic,
+      deckTitle: `${subject}: ${topic}`,
+    });
   } catch (error: unknown) {
     console.error('Error generating flashcards:', error);
     return NextResponse.json(

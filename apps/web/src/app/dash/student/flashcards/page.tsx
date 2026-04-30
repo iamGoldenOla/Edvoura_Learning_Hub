@@ -1,6 +1,13 @@
 import { requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
 import FlashcardClient from './FlashcardClient';
+import { getFlashcardSubjectSuggestions } from '@/lib/student-practice/practiceLibrary';
+
+type StudentLearningProfileRow = {
+  grade_level?: {
+    name?: string | null;
+  } | null;
+} | null;
 
 export default async function FlashcardPage() {
   const viewer = await requireAppViewer();
@@ -12,9 +19,12 @@ export default async function FlashcardPage() {
     .eq('student_id', viewer.currentUser.userId)
     .single();
 
+  const gradeLevelName = ((profile as StudentLearningProfileRow)?.grade_level?.name ?? 'Primary').trim() || 'Primary';
+
   return (
     <FlashcardClient 
-      gradeLevel={(profile?.grade_level as any)?.name || 'Primary'} 
+      gradeLevel={gradeLevelName}
+      subjectSuggestions={getFlashcardSubjectSuggestions(gradeLevelName)}
     />
   );
 }

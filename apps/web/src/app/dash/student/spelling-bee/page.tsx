@@ -2,6 +2,7 @@ import { supabaseAdmin } from '@/utils/supabase/admin';
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { SpellingBeeClient } from './SpellingBeeClient';
 import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
+import { getSpellingPracticeChallenges } from '@/lib/student-practice/practiceLibrary';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -55,6 +56,7 @@ type StudentSpellingBeeChallenge = {
 export default async function SpellingBeePage() {
   const viewer = await requireAppViewer();
   const dashboard = await getStudentDashboardData(viewer.accessToken).catch(() => null);
+  const gradeLevelName = dashboard?.profile.gradeLevelName ?? 'Grade 3';
 
   const { data } = await supabaseAdmin
     .from('ai_generated_content')
@@ -117,5 +119,11 @@ export default async function SpellingBeePage() {
     })
     .filter((entry): entry is StudentSpellingBeeChallenge => entry !== null);
 
-  return <SpellingBeeClient challenges={challenges} />;
+  return (
+    <SpellingBeeClient
+      challenges={challenges}
+      practiceChallenges={getSpellingPracticeChallenges(gradeLevelName)}
+      gradeLevelName={gradeLevelName}
+    />
+  );
 }
