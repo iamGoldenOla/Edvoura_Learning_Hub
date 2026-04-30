@@ -77,10 +77,7 @@ export function SpellingBeeClient({
     };
   }, []);
 
-  const resolvedVoice = useMemo(() => {
-    const exact = voices.find((voice) => voice.lang?.toLowerCase().startsWith(accent.toLowerCase()));
-    return exact ?? voices.find((voice) => voice.lang?.toLowerCase().startsWith('en')) ?? null;
-  }, [accent, voices]);
+
 
   const score = useMemo(() => {
     let total = 0;
@@ -104,19 +101,49 @@ export function SpellingBeeClient({
     [results],
   );
 
-  const speak = (word: SpellingBeeWord) => {
+  const waitForVoices = (): Promise<SpeechSynthesisVoice[]> => {
+    return new Promise((resolve) => {
+      const loaded = window.speechSynthesis.getVoices();
+      if (loaded.length > 0) {
+        resolve(loaded);
+        return;
+      }
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts += 1;
+        const available = window.speechSynthesis.getVoices();
+        if (available.length > 0 || attempts > 20) {
+          clearInterval(interval);
+          resolve(available);
+        }
+      }, 100);
+    });
+  };
+
+  const speak = async (word: SpellingBeeWord) => {
     if (!('speechSynthesis' in window)) {
       return;
     }
 
     window.speechSynthesis.cancel();
+
+    const availableVoices = voices.length > 0 ? voices : await waitForVoices();
+    if (availableVoices.length > 0 && voices.length === 0) {
+      setVoices(availableVoices);
+    }
+
+    const pickedVoice =
+      availableVoices.find((v) => v.lang?.toLowerCase().startsWith(accent.toLowerCase())) ??
+      availableVoices.find((v) => v.lang?.toLowerCase().startsWith('en')) ??
+      null;
+
     const utterance = new SpeechSynthesisUtterance(
       `Spell the word. ${word.word}. ${word.exampleSentence}. The word again: ${word.word}.`,
     );
     utterance.rate = 0.8;
     utterance.lang = accent;
-    if (resolvedVoice) {
-      utterance.voice = resolvedVoice;
+    if (pickedVoice) {
+      utterance.voice = pickedVoice;
     }
     window.speechSynthesis.speak(utterance);
   };
@@ -131,7 +158,7 @@ export function SpellingBeeClient({
 
     const firstWord = challenge.words[0];
     if (firstWord) {
-      setTimeout(() => speak(firstWord), 300);
+      setTimeout(() => speak(firstWord), 500);
     }
   };
 

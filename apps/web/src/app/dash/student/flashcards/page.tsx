@@ -5,7 +5,7 @@ import { getFlashcardSubjectSuggestions } from '@/lib/student-practice/practiceL
 
 type StudentLearningProfileRow = {
   grade_level?: {
-    name?: string | null;
+    display_name?: string | null;
   } | null;
 } | null;
 
@@ -14,12 +14,12 @@ export default async function FlashcardPage() {
   const supabase = await createClient();
 
   const { data: profile } = await supabase
-    .from('student_learning_profiles')
-    .select('grade_level:grade_levels(code, name)')
-    .eq('student_id', viewer.currentUser.userId)
+    .from('student_profiles')
+    .select('grade_level:grade_levels!grade_level_id(code, display_name)')
+    .eq('user_id', viewer.currentUser.userId)
     .single();
 
-  const gradeLevelName = ((profile as StudentLearningProfileRow)?.grade_level?.name ?? 'Primary').trim() || 'Primary';
+  const gradeLevelName = ((profile as StudentLearningProfileRow)?.grade_level?.display_name ?? 'Primary').trim() || 'Primary';
 
   return (
     <FlashcardClient 
