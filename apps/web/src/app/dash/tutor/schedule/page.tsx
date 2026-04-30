@@ -204,8 +204,8 @@ export default async function TutorSchedulePage(props: {
                     </article>
                   ))
                 ) : (
-                  <div className="bg-slate-50 rounded-3xl border-[3px] border-dashed border-dark/20 p-20 text-center">
-                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C]">
+                  <div className="bg-slate-50 rounded-[24px] sm:rounded-3xl border-[3px] border-dashed border-dark/20 p-8 sm:p-20 text-center min-w-0">
+                    <div className="mx-auto mb-6 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C]">
                       <CalendarIcon className="h-8 w-8 text-dark" />
                     </div>
                     <h3 className="text-2xl font-black text-dark">Your schedule is clear</h3>

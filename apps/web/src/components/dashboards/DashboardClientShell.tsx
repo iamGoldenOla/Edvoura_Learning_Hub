@@ -262,9 +262,12 @@ export default function DashboardClientShell({
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-dark/50">Local Time</p>
                 </div>
                 <button type="button" className="relative rounded-xl border-[3px] border-dark bg-white p-2 sm:p-2.5 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95 shrink-0" aria-label="Notifications">
-                  <Bell className="h-5 w-5" />
+                  <Bell className="h-5 w-5 sm:h-5 sm:w-5" />
                   <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-[2px] border-white bg-rose-500" />
                 </button>
+                <div className="lg:hidden shrink-0">
+                  <LogoutButton variant="brutalist" />
+                </div>
               </div>
             </div>
           </header>
@@ -330,7 +333,9 @@ function TutorSidebarNav() {
   ];
   const isActive = (href: string) => {
     const [basePath, queryString] = href.split('?');
-    if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
+    if (basePath === '/dash/tutor') {
+      if (pathname !== basePath) return false;
+    } else if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
       return false;
     }
 
@@ -386,7 +391,9 @@ function TutorBottomNav() {
 
   const isActive = (href: string) => {
     const [basePath, queryString] = href.split('?');
-    if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
+    if (basePath === '/dash/tutor') {
+      if (pathname !== basePath) return false;
+    } else if (!(pathname === basePath || pathname.startsWith(`${basePath}/`))) {
       return false;
     }
     if (!queryString) {
@@ -422,7 +429,12 @@ function ParentSidebarNav() {
     { href: '/dash/parent?ai-insight=true', label: 'Edvoura AI Insights', icon: Sparkles },
     { href: '/dash/profile', label: 'Consent & Settings', icon: Shield },
   ];
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    if (href === '/dash/parent') {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
   return (
     <div className="space-y-1.5">
       <p className="mb-2 mt-4 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Parent Workspace</p>
@@ -452,7 +464,12 @@ function AdminSidebarNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
     { href: '/dash/admin/audit-logs', label: 'Audit Logs', icon: ClipboardList, superAdminOnly: true },
     { href: '/dash/admin/settings', label: 'Settings', icon: Settings2, superAdminOnly: true },
   ];
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    if (href === '/dash/admin') {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
   return (
     <div className="space-y-1.5">
       <p className="mb-2 mt-4 px-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{isSuperAdmin ? 'Super Admin Workspace' : 'Admin Workspace'}</p>
@@ -473,7 +490,12 @@ function ParentBottomNav() {
     { href: '/dash/parent/notifications', label: 'Alerts', icon: Bell },
     { href: '/dash/profile', label: 'Settings', icon: Shield },
   ];
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    if (href === '/dash/parent') {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
       <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
@@ -497,7 +519,12 @@ function AdminBottomNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
     { href: '/dash/admin/support', label: 'Support', icon: LifeBuoy, superAdminOnly: false },
     { href: '/dash/admin/settings', label: 'Settings', icon: Settings2, superAdminOnly: true },
   ];
-  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    if (href === '/dash/admin') {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
       <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
