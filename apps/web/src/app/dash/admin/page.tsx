@@ -197,7 +197,7 @@ export default async function AdminDashboard() {
       </div>
 
       {dashboard.recentSignups.length > 0 && (
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-4 sm:p-6 border-b-[4px] border-dark bg-off-white flex items-center gap-3">
             <UserPlus className="h-6 w-6 text-dark" />
             <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">Recent Signups</h2>
@@ -247,7 +247,7 @@ export default async function AdminDashboard() {
         </div>
       )}
 
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <RecentUiActionsPanel
           viewer={viewer}
           scope="admin"

@@ -20,7 +20,7 @@ export default async function AdminNotificationsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-5 sm:p-8 border-b-[4px] border-dark bg-rose-100">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
             Notification Center
@@ -63,7 +63,7 @@ export default async function AdminNotificationsPage() {
         </div>
       </div>
 
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="flex items-center justify-between gap-4 border-b-[4px] border-dark bg-amber-100 p-4 sm:p-6">
           <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl">Actions</h2>
         </div>

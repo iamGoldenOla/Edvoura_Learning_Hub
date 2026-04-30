@@ -15,8 +15,8 @@ export default async function AdminPlansPage() {
   const plans = rawPlans ?? [];
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-8 border-b-[4px] border-dark bg-purple-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">

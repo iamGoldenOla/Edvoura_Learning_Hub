@@ -20,8 +20,8 @@ export default async function AdminSupportModerationPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-8 border-b-[4px] border-dark bg-sky-100">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
             Support and Moderation
@@ -33,7 +33,7 @@ export default async function AdminSupportModerationPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-[28px] border-[4px] border-dark bg-blue-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+        <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-blue-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">
           <div className="flex items-center gap-3">
             <LifeBuoy className="h-6 w-6 text-dark" />
             <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Queued Deliveries</p>
@@ -43,7 +43,7 @@ export default async function AdminSupportModerationPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border-[4px] border-dark bg-rose-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+        <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-rose-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">
           <div className="flex items-center gap-3">
             <MessageSquareWarning className="h-6 w-6 text-dark" />
             <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Failed Deliveries</p>
@@ -53,7 +53,7 @@ export default async function AdminSupportModerationPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border-[4px] border-dark bg-amber-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+        <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-amber-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">
           <div className="flex items-center gap-3">
             <ShieldAlert className="h-6 w-6 text-dark" />
             <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Notifications Today</p>
@@ -63,7 +63,7 @@ export default async function AdminSupportModerationPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] border-[4px] border-dark bg-emerald-100 p-6 shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between">
+        <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-emerald-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">
           <div className="flex items-center gap-3">
             <Bell className="h-6 w-6 text-dark" />
             <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Unread Alerts</p>
@@ -74,7 +74,7 @@ export default async function AdminSupportModerationPage() {
         </div>
       </div>
 
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0 flex flex-col">
         <div className="p-6 border-b-[4px] border-dark bg-purple-100 flex items-center justify-between gap-4">
           <h2 className="text-2xl font-black text-dark tracking-tight">Moderation and Escalation</h2>
           <UserRoundCheck className="h-6 w-6 text-dark" />
@@ -87,7 +87,7 @@ export default async function AdminSupportModerationPage() {
         </div>
       </div>
 
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center justify-between gap-4">
           <h2 className="text-2xl font-black text-dark tracking-tight">Actions</h2>
         </div>
