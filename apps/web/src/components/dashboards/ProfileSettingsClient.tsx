@@ -506,16 +506,17 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
                 Role: {role}
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="h-20 w-20 overflow-hidden rounded-2xl border-[3px] border-dark bg-off-white shadow-[3px_3px_0px_#060E1C]">
+            <div className="flex flex-row sm:items-center gap-4 w-full sm:w-auto">
+              <div className="shrink-0 h-20 w-20 overflow-hidden rounded-2xl border-[3px] border-dark bg-off-white shadow-[3px_3px_0px_#060E1C]">
                 {displayAvatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={displayAvatar} alt="Avatar preview" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-[10px] font-black uppercase tracking-widest text-dark/40">No image</div>
+                  <div className="flex h-full w-full items-center justify-center text-[10px] font-black uppercase tracking-widest text-dark/40 text-center leading-tight">No<br/>image</div>
                 )}
               </div>
-                <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-4 sm:px-5 py-2 sm:py-3 text-[10px] sm:text-xs font-black text-dark hover:bg-slate-50 transition-all shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-center break-words w-full sm:w-auto mt-2 sm:mt-0">
+              <div className="flex-1 min-w-0">
+                <label className="inline-flex cursor-pointer items-center justify-center rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-4 py-3 sm:px-5 sm:py-3 text-[10px] sm:text-xs font-black text-dark hover:bg-slate-50 transition-all shadow-[2px_2px_0px_#060E1C] sm:shadow-[3px_3px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-center break-words w-full h-full">
                 Upload Profile Image
                 <input
                   type="file"
@@ -524,6 +525,7 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
                   onChange={(event) => setAvatarFile(event.target.files?.[0] ?? null)}
                 />
               </label>
+              </div>
             </div>
           </div>
           {avatarPath ? <p className="text-xs font-bold text-dark/50">Saved avatar path: {avatarPath}</p> : null}
