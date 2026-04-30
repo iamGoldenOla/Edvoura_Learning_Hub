@@ -283,7 +283,7 @@ export function SpellingBeeClient({
               </div>
               <p className="text-sm font-bold text-dark/60">Hint: {currentWord.hint}</p>
               <p className="text-xs font-bold uppercase tracking-widest text-dark/40">
-                Pronunciation: {currentWord.pronunciation} • {currentWord.syllables} syllables • {currentWord.difficulty}
+                {currentWord.syllables} {currentWord.syllables === 1 ? 'syllable' : 'syllables'} • {currentWord.difficulty}
               </p>
             </div>
 
