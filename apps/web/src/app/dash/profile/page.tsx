@@ -156,8 +156,6 @@ export default async function ProfileDashboard() {
       tutorProfile={
         tutorProfile
           ? {
-              fullName: tutorProfile.fullName ?? viewer.currentUser.profile.fullName ?? '',
-              dateOfBirth: viewer.currentUser.profile.dateOfBirth ?? '',
               phoneNumber: tutorProfile.phoneNumber ?? '',
               timezone: tutorProfile.timezone,
               headline: tutorProfile.headline ?? '',
@@ -171,8 +169,6 @@ export default async function ProfileDashboard() {
       studentProfile={
         studentProfile
           ? {
-              fullName: viewer.currentUser.profile.fullName ?? '',
-              dateOfBirth: viewer.currentUser.profile.dateOfBirth ?? '',
               gradeLevelCode: studentProfile.gradeLevelCode,
               schoolName: studentProfile.schoolName ?? '',
               academicGoalNotes: studentProfile.academicGoalNotes ?? '',

@@ -14,11 +14,11 @@ export default async function ParentBillingPage() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
       <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
-        <div className="p-8 border-b-[4px] border-dark bg-emerald-100">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+        <div className="p-5 sm:p-8 border-b-[4px] border-dark bg-emerald-100">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark break-words">
             Billing & Subscription
           </h1>
-          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+          <p className="mt-3 sm:mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl break-words">
             Manage Paystack subscription status, payment history, and account billing records.
           </p>
         </div>
@@ -45,16 +45,16 @@ export default async function ParentBillingPage() {
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-4 mt-auto">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4 mt-auto">
               <Link href="/dash/parent/billing?action=checkout">
-                <Button className="bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
-                  <CreditCard className="mr-2 h-5 w-5" />
+                <Button className="w-full sm:w-auto bg-emerald-400 border-[2px] sm:border-[3px] border-dark !text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 sm:py-4 h-auto text-sm sm:text-base whitespace-normal break-words">
+                  <CreditCard className="mr-2 h-5 w-5 shrink-0" />
                   Upgrade Plan (Paystack)
                 </Button>
               </Link>
               <Link href="/dash/parent/billing?action=manage-subscription">
-                <Button className="bg-white border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto text-base">
-                  <FileText className="mr-2 h-5 w-5" />
+                <Button className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark !text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 sm:py-4 h-auto text-sm sm:text-base whitespace-normal break-words">
+                  <FileText className="mr-2 h-5 w-5 shrink-0" />
                   Manage Billing Settings
                 </Button>
               </Link>
