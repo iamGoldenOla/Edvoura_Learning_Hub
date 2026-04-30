@@ -152,6 +152,19 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 - Operating rule going forward:
   - when a dashboard notification or announcement is added, it should carry `feedKeys` and `surfaceTargets` so role feed widgets and downstream inbox views can stay aligned without page-local special cases
 
+### Current Status: Parent Inbox Lanes (2026-04-30)
+
+- Parent notification center now renders inbox lanes from the shared feed contract instead of a single flat alert list.
+- `apps/web/src/app/dash/parent/notifications/page.tsx` now:
+  - reads notification `data`
+  - resolves `feedKeys`
+  - groups parent notifications into:
+    - `Child Progress Alerts`
+    - `Family Communication`
+    - `Platform Announcements`
+  - keeps uncategorized items in an explicit fallback section
+- `apps/web/src/lib/dashboard/feedRules.ts` now exposes a shared `getFeedKeysFromNotificationData(...)` helper so count widgets and detailed inbox views use the same routing logic.
+
 ### Current Status: Puter Dashboard AI Workflow (2026-04-27)
 
 - Puter.js integration is now architected as **dashboard-only** generation tooling:

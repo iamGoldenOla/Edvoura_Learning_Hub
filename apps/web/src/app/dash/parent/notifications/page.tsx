@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import { Bell, CheckCircle2, Clock } from 'lucide-react';
 
 import { requireAppViewer } from '@/lib/app-context';
+import { getFeedKeysFromNotificationData, getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { createClient } from '@/utils/supabase/server';
 
 type NotificationItem = {
@@ -10,6 +12,7 @@ type NotificationItem = {
   body: string;
   status: 'unread' | 'read' | 'archived';
   createdAt: string;
+  feedKeys: string[];
 };
 
 const formatWhen = (iso: string) =>
@@ -17,6 +20,7 @@ const formatWhen = (iso: string) =>
 
 export default async function ParentNotificationsPage() {
   await requireAppViewer();
+  const feedRules = getFeedRulesForRole('parent');
 
   let notifications: NotificationItem[] = [];
   try {
@@ -25,10 +29,10 @@ export default async function ParentNotificationsPage() {
     if (session?.user?.id) {
       const { data } = await supabase
         .from('notifications')
-        .select('id, kind, title, body, status, created_at')
+        .select('id, kind, title, body, status, created_at, data')
         .eq('recipient_user_id', session.user.id)
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(40);
       notifications = (data ?? []).map((n) => ({
         id: n.id,
         kind: n.kind,
@@ -36,11 +40,20 @@ export default async function ParentNotificationsPage() {
         body: n.body,
         status: n.status as 'unread' | 'read' | 'archived',
         createdAt: n.created_at,
+        feedKeys: getFeedKeysFromNotificationData(n.data, 'child_progress_alerts'),
       }));
     }
   } catch {
     notifications = [];
   }
+
+  const groupedNotifications = feedRules.map((rule) => ({
+    rule,
+    items: notifications.filter((item) => item.feedKeys.includes(rule.feedKey)),
+  }));
+  const uncategorizedNotifications = notifications.filter(
+    (item) => !item.feedKeys.some((feedKey) => feedRules.some((rule) => rule.feedKey === feedKey)),
+  );
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-5 p-3 pb-24 sm:space-y-8 sm:p-6 lg:p-8">
@@ -59,52 +72,95 @@ export default async function ParentNotificationsPage() {
         <div className="flex flex-col gap-3 border-b-[4px] border-dark bg-amber-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:p-6">
           <div className="flex items-center gap-3">
             <Bell className="h-5 w-5 text-dark sm:h-6 sm:w-6" />
-            <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl">Recent Alerts</h2>
+            <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl">Inbox Lanes</h2>
           </div>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-[3px] border-dark bg-white shadow-[2px_2px_0px_#060E1C]">
             <Bell className="h-5 w-5 text-dark" />
           </div>
         </div>
-        <div className="space-y-3 p-4 sm:space-y-4 sm:p-6 lg:p-8">
+        <div className="space-y-5 p-4 sm:space-y-6 sm:p-6 lg:p-8">
           {notifications.length === 0 ? (
             <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 text-center text-sm font-bold text-dark/60 sm:p-8">
               No notifications yet.
             </div>
           ) : (
-            notifications.map((item) => (
-              <div
-                key={item.id}
-                className={`rounded-2xl border-[3px] border-dark p-4 shadow-[3px_3px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C] sm:p-5 sm:shadow-[4px_4px_0px_#060E1C] ${
-                  item.status === 'unread'
-                    ? 'bg-blue-50'
-                    : 'bg-off-white'
-                }`}
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-base font-black text-dark sm:text-lg">{item.title}</p>
-                    <p className="mt-2 text-sm font-bold leading-relaxed text-dark/70">{item.body}</p>
+            <>
+              {groupedNotifications.map(({ rule, items }) => (
+                <section key={rule.feedKey} className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-dark/60">{rule.label}</p>
+                      <p className="mt-1 text-sm font-bold text-dark/65">{rule.description}</p>
+                    </div>
+                    <Link
+                      href={rule.route}
+                      className="shrink-0 rounded-xl border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C]"
+                    >
+                      {items.length}
+                    </Link>
                   </div>
-                  <div className="flex shrink-0 flex-col gap-2 sm:items-end sm:gap-3">
-                    <span className="inline-flex items-center gap-2 self-start rounded-xl border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] sm:self-auto">
-                      <Clock className="h-4 w-4 text-dark" />
-                      {formatWhen(item.createdAt)}
-                    </span>
-                    {item.status === 'unread' ? (
-                      <span className="inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-blue-900 shadow-[2px_2px_0px_#060E1C]">
-                        <Bell className="h-4 w-4" />
-                        Unread
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-emerald-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-900 shadow-[2px_2px_0px_#060E1C]">
-                        <CheckCircle2 className="h-4 w-4" />
-                        Read
-                      </span>
-                    )}
+
+                  {items.length > 0 ? (
+                    items.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`rounded-2xl border-[3px] border-dark p-4 shadow-[3px_3px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[6px_6px_0px_#060E1C] sm:p-5 sm:shadow-[4px_4px_0px_#060E1C] ${
+                          item.status === 'unread' ? 'bg-blue-50' : 'bg-off-white'
+                        }`}
+                      >
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <p className="text-base font-black text-dark sm:text-lg">{item.title}</p>
+                            <p className="mt-2 text-sm font-bold leading-relaxed text-dark/70">{item.body}</p>
+                          </div>
+                          <div className="flex shrink-0 flex-col gap-2 sm:items-end sm:gap-3">
+                            <span className="inline-flex items-center gap-2 self-start rounded-xl border-[2px] border-dark bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-[2px_2px_0px_#060E1C] sm:self-auto">
+                              <Clock className="h-4 w-4 text-dark" />
+                              {formatWhen(item.createdAt)}
+                            </span>
+                            {item.status === 'unread' ? (
+                              <span className="inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-blue-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-blue-900 shadow-[2px_2px_0px_#060E1C]">
+                                <Bell className="h-4 w-4" />
+                                Unread
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-emerald-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-900 shadow-[2px_2px_0px_#060E1C]">
+                                <CheckCircle2 className="h-4 w-4" />
+                                Read
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-5 text-sm font-bold text-dark/55">
+                      No items in this lane right now.
+                    </div>
+                  )}
+                </section>
+              ))}
+
+              {uncategorizedNotifications.length > 0 ? (
+                <section className="space-y-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.2em] text-dark/60">Other Alerts</p>
+                    <p className="mt-1 text-sm font-bold text-dark/65">
+                      Notifications that have not been assigned to a specific inbox lane yet.
+                    </p>
                   </div>
-                </div>
-              </div>
-            ))
+                  {uncategorizedNotifications.map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-2xl border-[3px] border-dark bg-off-white p-4 shadow-[3px_3px_0px_#060E1C] sm:p-5 sm:shadow-[4px_4px_0px_#060E1C]"
+                    >
+                      <p className="text-base font-black text-dark sm:text-lg">{item.title}</p>
+                      <p className="mt-2 text-sm font-bold leading-relaxed text-dark/70">{item.body}</p>
+                    </div>
+                  ))}
+                </section>
+              ) : null}
+            </>
           )}
         </div>
       </div>

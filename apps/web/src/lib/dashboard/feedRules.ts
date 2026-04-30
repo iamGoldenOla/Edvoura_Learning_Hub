@@ -150,14 +150,7 @@ export function buildFeedCountMapFromNotificationData(
   const counts = new Map<string, number>();
 
   for (const notification of notifications) {
-    const payload =
-      notification.data && typeof notification.data === 'object' && !Array.isArray(notification.data)
-        ? (notification.data as { feedKeys?: unknown })
-        : {};
-
-    const feedKeys = Array.isArray(payload.feedKeys)
-      ? payload.feedKeys.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
-      : [fallbackFeedKey];
+    const feedKeys = getFeedKeysFromNotificationData(notification.data, fallbackFeedKey);
 
     for (const feedKey of feedKeys) {
       counts.set(feedKey, (counts.get(feedKey) ?? 0) + 1);
@@ -165,4 +158,17 @@ export function buildFeedCountMapFromNotificationData(
   }
 
   return counts;
+}
+
+export function getFeedKeysFromNotificationData(data: unknown, fallbackFeedKey = 'workflow_alerts') {
+  const payload =
+    data && typeof data === 'object' && !Array.isArray(data)
+      ? (data as { feedKeys?: unknown })
+      : {};
+
+  const feedKeys = Array.isArray(payload.feedKeys)
+    ? payload.feedKeys.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
+    : [fallbackFeedKey];
+
+  return feedKeys.length > 0 ? feedKeys : [fallbackFeedKey];
 }
