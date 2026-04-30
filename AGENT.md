@@ -109,6 +109,31 @@ Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean back
 - Current architectural rule:
   - when a new dashboard-to-dashboard delivery flow is introduced, define it in the interaction matrix and implement its side effects through the shared dashboard delivery layer rather than page-local mutations
 
+### Current Status: Role Feed Rules + Broader Notification Distribution (2026-04-30)
+
+- The dashboard interaction contract has now been extended beyond AI-only publishing:
+  - new role feed rule map: `apps/web/src/lib/dashboard/feedRules.ts`
+  - expanded interaction matrix entries in `apps/web/src/lib/dashboard/interactionMatrix.ts`
+  - contract doc updated in `DASHBOARD_INTERACTION_MATRIX.md`
+- Shared delivery layer upgrades in `apps/web/src/lib/dashboard/distribution.ts`:
+  - notifications can now carry explicit `surfaceTargets` and `feedKeys`
+  - parent weekly report notifications now use the shared delivery layer instead of route-local inserts
+  - broader cross-role broadcast helper now exists for admin/super_admin initiated announcements
+- New route added:
+  - `POST /api/dashboard/notifications/broadcast`
+  - queues role-targeted dashboard broadcasts through the shared distribution layer
+- Mobile-first cleanup continued on secondary communication/support pages:
+  - `apps/web/src/app/dash/parent/messages/page.tsx`
+  - `apps/web/src/app/dash/tutor/messages/page.tsx`
+  - `apps/web/src/components/dashboards/RoleChatBox.tsx`
+  - `apps/web/src/app/dash/admin/notifications/page.tsx`
+  - `apps/web/src/app/dash/admin/support/page.tsx`
+  - `apps/web/src/app/dash/tutor/schedule/page.tsx`
+- Regression coverage expanded in `apps/web/e2e/dashboard-actions.spec.ts` to include narrow-screen checks for:
+  - admin notification center
+  - parent notifications
+  - tutor messages
+
 ### Current Status: Puter Dashboard AI Workflow (2026-04-27)
 
 - Puter.js integration is now architected as **dashboard-only** generation tooling:

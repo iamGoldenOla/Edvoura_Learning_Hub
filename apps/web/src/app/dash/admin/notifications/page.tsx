@@ -1,31 +1,49 @@
 import Link from 'next/link';
 import { Bell, Megaphone, Send } from 'lucide-react';
+
+import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { createClient } from '@/utils/supabase/server';
 
 export default async function AdminNotificationsPage() {
   const supabase = await createClient();
+  const studentFeedRules = getFeedRulesForRole('student');
+  const parentFeedRules = getFeedRulesForRole('parent');
+  const tutorFeedRules = getFeedRulesForRole('tutor');
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [
-    { count: queuedCount },
-    { count: sentTodayCount },
-    { count: failedDeliveriesCount },
-  ] = await Promise.all([
-    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).eq('delivery_status', 'queued'),
-    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).in('delivery_status', ['sent', 'delivered']).gte('created_at', todayStart.toISOString()),
-    supabase.from('notification_deliveries').select('*', { count: 'exact', head: true }).eq('delivery_status', 'failed'),
-  ]);
+  const [{ count: queuedCount }, { count: sentTodayCount }, { count: failedDeliveriesCount }] =
+    await Promise.all([
+      supabase
+        .from('notification_deliveries')
+        .select('*', { count: 'exact', head: true })
+        .eq('delivery_status', 'queued'),
+      supabase
+        .from('notification_deliveries')
+        .select('*', { count: 'exact', head: true })
+        .in('delivery_status', ['sent', 'delivered'])
+        .gte('created_at', todayStart.toISOString()),
+      supabase
+        .from('notification_deliveries')
+        .select('*', { count: 'exact', head: true })
+        .eq('delivery_status', 'failed'),
+    ]);
+
+  const feedRuleGroups = [
+    { label: 'Students', rules: studentFeedRules },
+    { label: 'Parents', rules: parentFeedRules },
+    { label: 'Tutors', rules: tutorFeedRules },
+  ];
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
-      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-5 p-3 pb-24 sm:space-y-8 sm:p-6 lg:p-8">
+      <div className="border-[3px] border-dark rounded-[24px] bg-white shadow-[4px_4px_0px_#060E1C] overflow-hidden min-w-0 sm:border-[4px] sm:rounded-[28px] sm:shadow-[10px_10px_0px_#060E1C]">
         <div className="p-5 sm:p-8 border-b-[4px] border-dark bg-rose-100">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+          <h1 className="text-[2rem] sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
             Notification Center
           </h1>
-          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
+          <p className="mt-3 sm:mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
             Platform notification management for students, parents, tutors, and admins.
           </p>
         </div>
@@ -63,7 +81,7 @@ export default async function AdminNotificationsPage() {
         </div>
       </div>
 
-      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+      <div className="border-[3px] border-dark rounded-[24px] bg-white shadow-[4px_4px_0px_#060E1C] overflow-hidden min-w-0 sm:border-[4px] sm:rounded-[28px] sm:shadow-[10px_10px_0px_#060E1C]">
         <div className="flex items-center justify-between gap-4 border-b-[4px] border-dark bg-amber-100 p-4 sm:p-6">
           <h2 className="text-xl font-black tracking-tight text-dark sm:text-2xl">Actions</h2>
         </div>
@@ -77,6 +95,30 @@ export default async function AdminNotificationsPage() {
           <Link href="/dash/admin/notifications?action=pause-campaign" className="inline-flex items-center justify-center rounded-xl border-[3px] border-dark bg-white px-6 py-4 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
             Pause Campaign
           </Link>
+        </div>
+      </div>
+
+      <div className="border-[3px] border-dark rounded-[24px] bg-white shadow-[4px_4px_0px_#060E1C] overflow-hidden min-w-0 sm:border-[4px] sm:rounded-[28px] sm:shadow-[10px_10px_0px_#060E1C]">
+        <div className="p-4 sm:p-6 border-b-[4px] border-dark bg-sky-100">
+          <h2 className="text-xl sm:text-2xl font-black tracking-tight text-dark">Inbox Routing Rules</h2>
+          <p className="mt-2 max-w-2xl text-sm font-bold text-dark/70">
+            Broadcasts and alerts should land in predictable role feeds instead of relying on page-local assumptions.
+          </p>
+        </div>
+        <div className="grid gap-4 p-4 sm:grid-cols-3 sm:gap-5 sm:p-6">
+          {feedRuleGroups.map((group) => (
+            <div key={group.label} className="rounded-2xl border-[3px] border-dark bg-off-white p-4 shadow-[3px_3px_0px_#060E1C] sm:p-5 sm:shadow-[4px_4px_0px_#060E1C]">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-dark/60">{group.label}</p>
+              <div className="mt-3 space-y-3">
+                {group.rules.slice(0, 3).map((rule) => (
+                  <div key={rule.feedKey} className="rounded-xl border-[2px] border-dark bg-white p-3">
+                    <p className="text-sm font-black text-dark">{rule.label}</p>
+                    <p className="mt-1 text-xs font-bold leading-relaxed text-dark/65">{rule.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ export default async function TutorMessagesPage() {
   const senderName = viewer.currentUser.profile.fullName ?? 'Tutor';
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-6 pb-20 sm:space-y-8">
+    <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-5 pb-20 sm:space-y-8">
       <section className="overflow-hidden rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] min-w-0">
         <div className="border-b-[3px] sm:border-b-[4px] border-dark bg-yellow/20 p-5 sm:p-8 md:p-12">
           <div className="flex flex-col items-start justify-between gap-6 sm:gap-8 lg:flex-row lg:items-center min-w-0">
@@ -28,7 +28,7 @@ export default async function TutorMessagesPage() {
           </div>
         </div>
 
-        <div className="p-5 sm:p-8 md:p-12 min-w-0">
+        <div className="p-3 sm:p-6 md:p-8 lg:p-12 min-w-0">
           <div className="overflow-hidden rounded-[20px] sm:rounded-3xl border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] min-w-0">
             <RoleChatBox
               title="Tutor Hub"
@@ -37,12 +37,12 @@ export default async function TutorMessagesPage() {
               channels={[
                 {
                   id: 'tutor-parent',
-                  label: 'Tutor <-> Parent',
+                  label: 'Tutor to Parent',
                   description: 'Progress updates, attendance alerts, homework communication.',
                 },
                 {
                   id: 'tutor-student-7-12',
-                  label: 'Tutor <-> Grade 7-12 Student',
+                  label: 'Tutor to Grade 7-12 Student',
                   description: 'Academic support and lesson clarifications for Grade 7-12 learners.',
                 },
               ]}

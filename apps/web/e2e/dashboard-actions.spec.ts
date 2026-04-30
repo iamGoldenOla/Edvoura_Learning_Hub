@@ -24,3 +24,22 @@ test('student subjects page stays readable on narrow screens', async ({ page }) 
   await page.goto('/dash/student/subjects');
   await expect(page.getByRole('heading', { name: /my subjects/i })).toBeVisible();
 });
+
+test('admin notification center stays readable on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/dash/admin/notifications');
+  await expect(page.getByRole('heading', { name: /notification center/i })).toBeVisible();
+  await expect(page.getByText(/inbox routing rules/i)).toBeVisible();
+});
+
+test('parent notifications page stays readable on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/dash/parent/notifications');
+  await expect(page.getByRole('heading', { name: /notifications/i })).toBeVisible();
+});
+
+test('tutor messages page stays readable on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/dash/tutor/messages');
+  await expect(page.getByRole('heading', { name: /tutor messages/i })).toBeVisible();
+});

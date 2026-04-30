@@ -21,6 +21,7 @@ export type InteractionRule = {
   targetRoles: DashboardRole[];
   contentType: string;
   deliverySurfaceByRole: Partial<Record<DashboardRole, DashboardSurface[]>>;
+  feedKeysByRole?: Partial<Record<DashboardRole, string[]>>;
   requiresReview: boolean;
   notes: string;
 };
@@ -35,6 +36,10 @@ export function getDeliverySurfacesForRole(sourceRole: DashboardRole, contentTyp
   return getInteractionRule(sourceRole, contentType)?.deliverySurfaceByRole[role] ?? [];
 }
 
+export function getFeedKeysForRole(sourceRole: DashboardRole, contentType: string, role: DashboardRole) {
+  return getInteractionRule(sourceRole, contentType)?.feedKeysByRole?.[role] ?? [];
+}
+
 export const DASHBOARD_INTERACTION_MATRIX: InteractionRule[] = [
   {
     sourceRole: 'tutor',
@@ -44,6 +49,11 @@ export const DASHBOARD_INTERACTION_MATRIX: InteractionRule[] = [
       student: ['subjects', 'notes'],
       parent: ['notifications'],
       super_admin: ['review_queue'],
+    },
+    feedKeysByRole: {
+      student: ['learning_content', 'subject_updates'],
+      parent: ['child_progress_alerts'],
+      super_admin: ['ai_review_queue'],
     },
     requiresReview: false,
     notes: 'Tutor may publish directly; parent receives awareness notification; super admin sees review traffic when submitted.',
@@ -57,6 +67,11 @@ export const DASHBOARD_INTERACTION_MATRIX: InteractionRule[] = [
       parent: ['notifications'],
       super_admin: ['review_queue'],
     },
+    feedKeysByRole: {
+      student: ['practice_and_assessment', 'subject_updates'],
+      parent: ['child_progress_alerts'],
+      super_admin: ['ai_review_queue'],
+    },
     requiresReview: false,
     notes: 'Quiz content appears on student challenge surfaces and parent gets a publish notification.',
   },
@@ -69,16 +84,25 @@ export const DASHBOARD_INTERACTION_MATRIX: InteractionRule[] = [
       parent: ['notifications'],
       super_admin: ['review_queue'],
     },
+    feedKeysByRole: {
+      student: ['practice_and_assessment', 'subject_updates'],
+      parent: ['child_progress_alerts'],
+      super_admin: ['ai_review_queue'],
+    },
     requiresReview: false,
     notes: 'Spelling challenges reach learner practice space and parent notifications.',
   },
   {
     sourceRole: 'tutor',
-    targetRoles: ['parent'],
+    targetRoles: ['student', 'parent'],
     contentType: 'manual_resource_or_assignment',
     deliverySurfaceByRole: {
       parent: ['notifications'],
       student: ['library'],
+    },
+    feedKeysByRole: {
+      student: ['classroom_resources'],
+      parent: ['child_progress_alerts'],
     },
     requiresReview: false,
     notes: 'Manual tutor publishing should create student-facing class artifacts and parent awareness alerts.',
@@ -89,6 +113,9 @@ export const DASHBOARD_INTERACTION_MATRIX: InteractionRule[] = [
     contentType: 'review_decision',
     deliverySurfaceByRole: {
       tutor: ['ai_workspace', 'notifications'],
+    },
+    feedKeysByRole: {
+      tutor: ['review_feedback', 'workflow_alerts'],
     },
     requiresReview: false,
     notes: 'Approval, rejection, and request-changes decisions must flow back to the generating tutor.',
@@ -103,7 +130,39 @@ export const DASHBOARD_INTERACTION_MATRIX: InteractionRule[] = [
       tutor: ['notifications'],
       admin: ['notifications'],
     },
+    feedKeysByRole: {
+      parent: ['platform_announcements'],
+      student: ['platform_announcements'],
+      tutor: ['platform_announcements'],
+      admin: ['platform_announcements'],
+    },
     requiresReview: false,
     notes: 'Platform-wide announcements should use the shared notification pipeline.',
+  },
+  {
+    sourceRole: 'parent',
+    targetRoles: ['tutor'],
+    contentType: 'parent_support_request',
+    deliverySurfaceByRole: {
+      tutor: ['messages', 'notifications'],
+    },
+    feedKeysByRole: {
+      tutor: ['family_communication', 'workflow_alerts'],
+    },
+    requiresReview: false,
+    notes: 'Parent escalation or support requests should be visible in tutor communication surfaces.',
+  },
+  {
+    sourceRole: 'tutor',
+    targetRoles: ['parent'],
+    contentType: 'tutor_parent_update',
+    deliverySurfaceByRole: {
+      parent: ['messages', 'notifications'],
+    },
+    feedKeysByRole: {
+      parent: ['family_communication', 'child_progress_alerts'],
+    },
+    requiresReview: false,
+    notes: 'Tutor-originated family updates should appear in parent communication and alert surfaces.',
   },
 ];

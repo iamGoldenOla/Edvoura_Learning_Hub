@@ -6,35 +6,37 @@ export default async function ParentMessagesPage() {
   const senderName = viewer.currentUser.profile.fullName ?? 'Parent';
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
-      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
-        <div className="p-8 border-b-[4px] border-dark bg-sky-100">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-5 p-3 pb-24 sm:space-y-8 sm:p-6 lg:p-8">
+      <div className="min-w-0 overflow-hidden rounded-[24px] border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C] sm:rounded-[28px] sm:border-[4px] sm:shadow-[10px_10px_0px_#060E1C]">
+        <div className="border-b-[4px] border-dark bg-sky-100 p-5 sm:p-8">
+          <h1 className="text-[2rem] font-black tracking-tight leading-[0.92] text-dark sm:text-4xl md:text-5xl">
             Parent Messages
           </h1>
-          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Chat directly with tutors and Grade 7-12 learner support thread when needed.
+          <p className="mt-3 max-w-xl text-sm font-bold text-dark/70 sm:mt-4 md:text-base">
+            Chat directly with tutors and Grade 7-12 learner support threads when needed.
           </p>
         </div>
       </div>
 
-      <RoleChatBox
-        title="Parent Communication Hub"
-        senderRole="parent"
-        senderName={senderName}
-        channels={[
-          {
-            id: 'tutor-parent',
-            label: 'Parent ↔ Tutor',
-            description: 'Ask tutor questions about class progress, behavior, and homework.',
-          },
-          {
-            id: 'parent-student-7-12',
-            label: 'Parent ↔ Grade 7-12 Student',
-            description: 'Support and accountability communication with your learner.',
-          },
-        ]}
-      />
+      <div className="min-w-0 overflow-hidden rounded-[24px] border-[3px] border-dark bg-white p-3 shadow-[4px_4px_0px_#060E1C] sm:rounded-[28px] sm:border-[4px] sm:p-4 sm:shadow-[10px_10px_0px_#060E1C]">
+        <RoleChatBox
+          title="Parent Communication Hub"
+          senderRole="parent"
+          senderName={senderName}
+          channels={[
+            {
+              id: 'tutor-parent',
+              label: 'Parent to Tutor',
+              description: 'Ask tutor questions about class progress, behavior, and homework.',
+            },
+            {
+              id: 'parent-student-7-12',
+              label: 'Parent to Grade 7-12 Student',
+              description: 'Support and accountability communication with your learner.',
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 }

@@ -167,8 +167,8 @@ export default function RoleChatBox({
   };
 
   return (
-    <div className="grid gap-4 bg-off-white p-4 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="rounded-2xl border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C]">
+    <div className="grid gap-3 bg-off-white p-3 sm:gap-4 sm:p-4 lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="rounded-2xl border-[3px] border-dark bg-white shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C]">
         <div className="border-b-[3px] border-dark bg-yellow/20 px-4 py-4">
           <h2 className="flex items-center gap-2 text-base font-black text-dark">
             <MessageCircle className="h-4 w-4" />
@@ -179,7 +179,7 @@ export default function RoleChatBox({
           </p>
         </div>
 
-        <div className="space-y-3 p-4">
+        <div className="space-y-3 p-3 sm:p-4">
           {channels.map((channel) => {
             const isActive = channel.id === activeChannel?.id;
             return (
@@ -201,13 +201,13 @@ export default function RoleChatBox({
         </div>
       </aside>
 
-      <section className="flex min-h-[560px] flex-col rounded-2xl border-[3px] border-dark bg-white shadow-[6px_6px_0px_#060E1C]">
-        <div className="flex items-center justify-between border-b-[3px] border-dark bg-navy px-4 py-3 text-white">
-          <div>
+      <section className="flex min-h-[520px] flex-col rounded-2xl border-[3px] border-dark bg-white shadow-[4px_4px_0px_#060E1C] sm:min-h-[560px] sm:shadow-[6px_6px_0px_#060E1C]">
+        <div className="flex flex-col gap-3 border-b-[3px] border-dark bg-navy px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="text-sm font-black tracking-tight">{activeChannel?.label ?? 'Channel'}</p>
             <p className="text-[11px] font-bold text-white/75">{activeChannel?.description}</p>
           </div>
-          <div className="inline-flex items-center gap-1 rounded-lg border-[2px] border-white/20 bg-white/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em]">
+          <div className="inline-flex self-start items-center gap-1 rounded-lg border-[2px] border-white/20 bg-white/10 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] sm:self-auto">
             <ShieldCheck className="h-3.5 w-3.5" />
             Monitored
           </div>
@@ -220,7 +220,7 @@ export default function RoleChatBox({
             const distanceFromBottom = element.scrollHeight - element.scrollTop - element.clientHeight;
             shouldStickToBottomRef.current = distanceFromBottom < 48;
           }}
-          className="custom-scrollbar flex-1 space-y-3 overflow-y-auto bg-[#e9edf4] p-4"
+          className="custom-scrollbar flex-1 space-y-3 overflow-y-auto bg-[#e9edf4] p-3 sm:p-4"
         >
           {channelMessages.length > 0 ? (
             channelMessages.map((message) => {
@@ -228,7 +228,7 @@ export default function RoleChatBox({
               return (
                 <div key={message.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[88%] rounded-2xl border-[2px] px-3 py-2 shadow-[2px_2px_0px_#060E1C] ${
+                    className={`max-w-[92%] rounded-2xl border-[2px] px-3 py-2 shadow-[2px_2px_0px_#060E1C] sm:max-w-[88%] ${
                       mine
                         ? 'border-dark bg-yellow text-dark'
                         : 'border-dark bg-white text-dark'
@@ -256,7 +256,7 @@ export default function RoleChatBox({
           <div ref={endOfMessagesRef} />
         </div>
 
-        <div className="space-y-3 border-t-[3px] border-dark bg-white p-4">
+        <div className="space-y-3 border-t-[3px] border-dark bg-white p-3 sm:p-4">
           {errorMessage ? (
             <div className="rounded-xl border-[2px] border-rose-400 bg-rose-100 px-3 py-2 text-xs font-black text-rose-900">
               {errorMessage}
@@ -272,7 +272,7 @@ export default function RoleChatBox({
           <div className="flex justify-end">
             <Button
               variant="primary"
-              className="inline-flex items-center gap-2 border-[3px] border-dark bg-dark px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+              className="inline-flex w-full items-center justify-center gap-2 border-[3px] border-dark bg-dark px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none sm:w-auto"
               onClick={() => void sendMessage()}
               disabled={isSending || !draft.trim()}
             >

@@ -5,10 +5,7 @@ import {
   ExternalLink,
   Plus,
   Video,
-  Trash2,
-  ChevronRight,
   Info,
-  CalendarCheck,
   CheckCircle2,
   Users,
 } from 'lucide-react';
@@ -47,7 +44,7 @@ const formatDateTime = (value: string) =>
 export default async function TutorSchedulePage(props: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const viewer = await requireAppViewer();
+  await requireAppViewer();
   const searchParams = (await props.searchParams) ?? {};
   const created = searchParams.created === '1';
   const errorParam = typeof searchParams.error === 'string' ? searchParams.error : null;
@@ -63,7 +60,7 @@ export default async function TutorSchedulePage(props: {
   const upcomingSessions = typedSchedule.filter((session) => new Date(session.scheduled_end_at) >= new Date());
 
   return (
-    <div className="space-y-6 sm:space-y-8 w-full min-w-0 max-w-[1400px] mx-auto pb-20">
+    <div className="space-y-5 sm:space-y-8 w-full min-w-0 max-w-[1400px] mx-auto pb-20">
       <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         
         {/* Header */}
@@ -218,7 +215,7 @@ export default async function TutorSchedulePage(props: {
             </section>
 
             {/* Scheduler Form Area */}
-            <section id="scheduler" className="lg:col-span-5 sticky top-4 sm:top-10">
+            <section id="scheduler" className="lg:col-span-5 lg:sticky lg:top-10">
               <div className="bg-white rounded-[20px] sm:rounded-3xl border-[3px] sm:border-[4px] border-dark p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] min-w-0">
                 <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight">Publish Live Slot</h2>
                 <p className="mt-2 text-dark/70 text-sm font-semibold">

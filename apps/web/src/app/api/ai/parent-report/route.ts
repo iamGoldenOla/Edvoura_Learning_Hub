@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { generateParentReport } from '@/lib/ai';
+import { notifyParentProgressReport } from '@/lib/dashboard/distribution';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -112,22 +113,14 @@ export async function POST(request: NextRequest) {
   });
 
   // Optionally create a notification for the parent
-  const { data: parentLinks } = await supabase
-    .from('parent_student_links')
-    .select('parent_user_id')
-    .eq('student_user_id', body.childUserId);
-
-  if (parentLinks?.length) {
-    for (const link of parentLinks) {
-      await supabase.from('notifications').insert({
-        recipient_user_id: link.parent_user_id,
-        title: `Weekly Report: ${childProfile.full_name ?? 'Your Child'}`,
-        body: result.data.summary,
-        status: 'unread',
-        metadata: { reportData: result.data },
-      });
-    }
-  }
+  await notifyParentProgressReport({
+    actorUserId: user.id,
+    childUserId: body.childUserId,
+    childName: childProfile.full_name ?? 'Your Child',
+    title: `Weekly Report: ${childProfile.full_name ?? 'Your Child'}`,
+    body: result.data.summary,
+    reportData: result.data as Record<string, unknown>,
+  });
 
   return NextResponse.json({
     message: 'Parent report generated successfully',

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { normalizeSubjectName } from '@/lib/ai/lessonNoteBlueprints';
+import { getDeliverySurfacesForRole, getFeedKeysForRole, type DashboardRole } from '@/lib/dashboard/interactionMatrix';
 
 type AiWorkflowNotificationEvent =
   | 'SUBMITTED_FOR_REVIEW'
@@ -25,6 +26,8 @@ type PublishOptions = {
   allowedStatuses?: string[];
 };
 
+type NotificationKind = 'admin_alert' | 'broadcast' | 'parent_report';
+
 function canonicalize(value: string | null | undefined) {
   return (value ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
@@ -42,6 +45,7 @@ async function insertNotifications(params: {
   title: string;
   body: string;
   data: Record<string, unknown>;
+  kind?: NotificationKind;
 }) {
   const recipientUserIds = Array.from(
     new Set(params.recipientUserIds.filter((entry) => typeof entry === 'string' && entry.length > 0)),
@@ -54,7 +58,7 @@ async function insertNotifications(params: {
   const notifications = recipientUserIds.map((recipientUserId) => ({
     recipient_user_id: recipientUserId,
     actor_user_id: params.actorUserId,
-    kind: 'admin_alert',
+    kind: params.kind ?? 'admin_alert',
     title: params.title,
     body: params.body,
     status: 'unread',
@@ -92,6 +96,23 @@ async function listSuperAdminIds() {
   }
 
   return (data ?? []).map((entry) => entry.user_id);
+}
+
+async function listUserIdsByRoles(targetRoles: DashboardRole[]) {
+  if (targetRoles.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('user_roles')
+    .select('user_id, role')
+    .in('role', targetRoles);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return Array.from(new Set((data ?? []).map((entry) => entry.user_id)));
 }
 
 function buildAiContentLabel(content: Pick<AiContentRow, 'subject' | 'topic' | 'title'>) {
@@ -337,10 +358,13 @@ export async function notifyAiWorkflowEvent(params: {
       recipientUserIds: await listSuperAdminIds(),
       title: 'AI content submitted for review',
       body: `${label} is waiting for super admin review.${reviewSuffix}`,
+      kind: 'admin_alert',
       data: {
         contentId: content.id,
         event: params.event,
         route: '/dash/admin/ai',
+        surfaceTargets: getDeliverySurfacesForRole('tutor', 'ai_lesson_note', 'super_admin'),
+        feedKeys: getFeedKeysForRole('tutor', 'ai_lesson_note', 'super_admin'),
       },
     });
     return;
@@ -361,10 +385,13 @@ export async function notifyAiWorkflowEvent(params: {
     recipientUserIds: [content.generated_by_user_id],
     title: `AI content ${params.event.toLowerCase().replace('_', ' ')}`,
     body: messageByEvent[params.event],
+    kind: 'admin_alert',
     data: {
       contentId: content.id,
       event: params.event,
       route: '/dash/tutor/ai',
+      surfaceTargets: getDeliverySurfacesForRole('super_admin', 'review_decision', 'tutor'),
+      feedKeys: getFeedKeysForRole('super_admin', 'review_decision', 'tutor'),
     },
   });
 }
@@ -496,6 +523,24 @@ export async function publishAiContentAndDistribute(contentId: string, options: 
             ? '/dash/student/quiz'
             : '/dash/student/notes',
       classId: classroom.classId,
+      surfaceTargets: getDeliverySurfacesForRole(
+        'tutor',
+        content.content_type === 'spelling_bee'
+          ? 'ai_spelling_bee'
+          : content.content_type === 'quiz'
+            ? 'ai_quiz'
+            : 'ai_lesson_note',
+        'parent',
+      ),
+      feedKeys: getFeedKeysForRole(
+        'tutor',
+        content.content_type === 'spelling_bee'
+          ? 'ai_spelling_bee'
+          : content.content_type === 'quiz'
+            ? 'ai_quiz'
+            : 'ai_lesson_note',
+        'parent',
+      ),
     },
   });
 
@@ -504,10 +549,13 @@ export async function publishAiContentAndDistribute(contentId: string, options: 
     recipientUserIds: [content.generated_by_user_id],
     title: 'AI content published',
     body: `${label} is now live on the learner dashboards.`,
+    kind: 'admin_alert',
     data: {
       contentId: content.id,
       event: 'PUBLISHED',
       route: '/dash/tutor/ai',
+      surfaceTargets: ['ai_workspace', 'notifications'],
+      feedKeys: ['workflow_alerts'],
     },
   });
 
@@ -533,4 +581,80 @@ export async function notifyParentsOfClassroomPublication(params: {
     body: params.body,
     data: params.data ?? {},
   });
+}
+
+export async function notifyParentProgressReport(params: {
+  actorUserId: string;
+  childUserId: string;
+  childName: string;
+  title: string;
+  body: string;
+  reportData: Record<string, unknown>;
+}) {
+  const { data: parentLinks, error } = await supabaseAdmin
+    .from('parent_student_links')
+    .select('parent_user_id')
+    .eq('student_user_id', params.childUserId)
+    .eq('is_active', true);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await insertNotifications({
+    actorUserId: params.actorUserId,
+    recipientUserIds: (parentLinks ?? []).map((link) => link.parent_user_id),
+    title: params.title,
+    body: params.body,
+    kind: 'parent_report',
+    data: {
+      childUserId: params.childUserId,
+      studentUserIds: [params.childUserId],
+      childName: params.childName,
+      reportData: params.reportData,
+      route: '/dash/parent/notifications',
+      surfaceTargets: ['notifications'],
+      feedKeys: ['child_progress_alerts'],
+    },
+  });
+}
+
+export async function sendDashboardBroadcast(params: {
+  actorUserId: string;
+  title: string;
+  body: string;
+  targetRoles: DashboardRole[];
+  route?: string;
+  audienceKey?: string;
+}) {
+  const targetRoles = Array.from(new Set(params.targetRoles));
+  const recipientUserIds = await listUserIdsByRoles(targetRoles);
+
+  if (recipientUserIds.length === 0) {
+    return { recipientCount: 0 };
+  }
+
+  const roleSurfaceMap = Object.fromEntries(
+    targetRoles.map((role) => [role, getDeliverySurfacesForRole('super_admin', 'broadcast_announcement', role)]),
+  );
+  const roleFeedMap = Object.fromEntries(
+    targetRoles.map((role) => [role, getFeedKeysForRole('super_admin', 'broadcast_announcement', role)]),
+  );
+
+  await insertNotifications({
+    actorUserId: params.actorUserId,
+    recipientUserIds,
+    title: params.title,
+    body: params.body,
+    kind: 'broadcast',
+    data: {
+      route: params.route ?? '/dash/admin/notifications',
+      audienceKey: params.audienceKey ?? 'broadcast_announcement',
+      targetRoles,
+      roleSurfaceMap,
+      roleFeedMap,
+    },
+  });
+
+  return { recipientCount: recipientUserIds.length };
 }
