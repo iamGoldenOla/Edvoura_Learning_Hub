@@ -99,18 +99,21 @@ export function SpellingBeeClient({
     setIsSpeaking(true);
 
     try {
-      // Primary: use Google Translate TTS via Audio element (reliable, no API key needed)
-      const encodedText = encodeURIComponent(text);
-      const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodedText}&tl=${langCode}&client=tw-ob`;
+      // Primary: use our server-side TTS proxy (bypasses CORS, always works)
+      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(langCode)}`;
       const audio = new Audio(audioUrl);
       audio.playbackRate = 0.9;
 
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => resolve();
         audio.onerror = () => reject(new Error('Audio playback failed'));
-        audio.play().catch(reject);
+        // Some browsers need a small delay before play()
+        setTimeout(() => {
+          audio.play().catch(reject);
+        }, 50);
       });
-    } catch {
+    } catch (primaryError) {
+      console.warn('[SpellingBee] TTS proxy failed, trying speechSynthesis:', primaryError);
       // Fallback: use browser speechSynthesis
       try {
         if ('speechSynthesis' in window) {
