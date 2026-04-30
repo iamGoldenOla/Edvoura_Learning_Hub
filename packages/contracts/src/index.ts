@@ -45,6 +45,7 @@ export const profileSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   fullName: z.string().nullable(),
+  dateOfBirth: z.string().date().nullable().optional(),
   avatarPath: z.string().nullable(),
 });
 

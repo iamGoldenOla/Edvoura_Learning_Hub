@@ -88,6 +88,7 @@ export default async function TutorProfileDashboard() {
       viewer={viewer.currentUser}
       tutorProfile={{
         fullName: tutorProfile.fullName ?? viewer.currentUser.profile.fullName ?? '',
+        dateOfBirth: viewer.currentUser.profile.dateOfBirth ?? '',
         phoneNumber: tutorProfile.phoneNumber ?? '',
         timezone: tutorProfile.timezone,
         headline: tutorProfile.headline ?? '',

@@ -211,7 +211,7 @@ async function buildDirectCurrentUser(
   await syncCurrentUserMembership(supabase);
 
   const [{ data: profile }, { data: rolesData }] = await Promise.all([
-    supabase.from('profiles').select('id, email, full_name, avatar_path').eq('id', sessionUser.id).single(),
+    supabase.from('profiles').select('id, email, full_name, avatar_path, date_of_birth').eq('id', sessionUser.id).single(),
     supabase.from('user_roles').select('role').eq('user_id', sessionUser.id),
   ]);
 
@@ -257,6 +257,7 @@ async function buildDirectCurrentUser(
       fullName:
         profile?.full_name ??
         (typeof sessionUser.user_metadata?.full_name === 'string' ? sessionUser.user_metadata.full_name : null),
+      dateOfBirth: profile?.date_of_birth ?? null,
       avatarPath: profile?.avatar_path ?? null,
     },
     learnerProfile,

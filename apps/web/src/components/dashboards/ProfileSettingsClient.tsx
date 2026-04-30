@@ -6,11 +6,10 @@ import type { CurrentUser } from '@edvoura/contracts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { saveTutorProfileAction, saveStudentProfileAction } from '@/app/dash/profile/actions';
+import { saveTutorProfileAction, saveStudentProfileAction, saveGeneralProfileAction } from '@/app/dash/profile/actions';
 import { createClient } from '@/utils/supabase/client';
 
 type TutorProfileContext = {
-  fullName: string;
   phoneNumber: string;
   timezone: string;
   headline: string;
@@ -81,8 +80,12 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const [basicForm, setBasicForm] = useState(() => ({
+    fullName: props.viewer.profile.fullName ?? '',
+    dateOfBirth: props.viewer.profile.dateOfBirth ?? '',
+  }));
+
   const [tutorForm, setTutorForm] = useState<TutorProfileContext>(() => ({
-    fullName: props.tutorProfile?.fullName ?? props.viewer.profile.fullName ?? '',
     phoneNumber: props.tutorProfile?.phoneNumber ?? '',
     timezone: props.tutorProfile?.timezone ?? 'Africa/Lagos',
     headline: props.tutorProfile?.headline ?? '',
@@ -185,7 +188,8 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
 
   const saveTutorProfile = async () => {
     await saveTutorProfileAction({
-      fullName: tutorForm.fullName.trim(),
+      fullName: basicForm.fullName.trim(),
+      dateOfBirth: basicForm.dateOfBirth.trim() || undefined,
       phoneNumber: tutorForm.phoneNumber.trim() || undefined,
       headline: tutorForm.headline.trim() || undefined,
       bio: tutorForm.bio.trim() || undefined,
@@ -197,6 +201,8 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
 
   const saveStudentProfile = async () => {
     await saveStudentProfileAction({
+      fullName: basicForm.fullName.trim(),
+      dateOfBirth: basicForm.dateOfBirth.trim() || undefined,
       gradeLevelCode: studentForm.gradeLevelCode,
       schoolName: studentForm.schoolName.trim() || undefined,
       academicGoalNotes: studentForm.academicGoalNotes.trim() || undefined,
@@ -225,6 +231,11 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
         await saveTutorProfile();
       } else if (role === 'student') {
         await saveStudentProfile();
+      } else {
+        await saveGeneralProfileAction({
+          fullName: basicForm.fullName.trim(),
+          dateOfBirth: basicForm.dateOfBirth.trim() || undefined,
+        });
       }
 
       setStatusMessage('Profile saved successfully.');
@@ -243,15 +254,6 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
         <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Tutor Teaching Profile</h2>
       </div>
       <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 min-w-0">
-        <label className="block space-y-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Full Name</span>
-          <input
-            value={tutorForm.fullName}
-            onChange={(event) => setTutorForm((prev) => ({ ...prev, fullName: event.target.value }))}
-            className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
-          />
-        </label>
-
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0">
           <label className="block space-y-2 min-w-0">
             <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">Phone Number</span>
@@ -528,7 +530,28 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
               </div>
             </div>
           </div>
-          {avatarPath ? <p className="text-xs font-bold text-dark/50">Saved avatar path: {avatarPath}</p> : null}
+          
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t-[3px] border-dark/10">
+            <label className="block space-y-2 min-w-0">
+              <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">Full Name</span>
+              <input
+                value={basicForm.fullName}
+                onChange={(e) => setBasicForm(prev => ({ ...prev, fullName: e.target.value }))}
+                className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+              />
+            </label>
+            <label className="block space-y-2 min-w-0">
+              <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">Date of Birth</span>
+              <input
+                type="date"
+                value={basicForm.dateOfBirth}
+                onChange={(e) => setBasicForm(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+              />
+            </label>
+          </div>
+
+          {avatarPath ? <p className="text-xs font-bold text-dark/50 mt-4">Saved avatar path: {avatarPath}</p> : null}
         </div>
       </div>
 

@@ -2,8 +2,26 @@
 
 import { createClient } from '@/utils/supabase/server';
 
+export async function saveGeneralProfileAction(form: {
+  fullName: string;
+  dateOfBirth?: string;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  const now = new Date().toISOString();
+
+  await supabase.from('profiles').update({
+    full_name: form.fullName.trim(),
+    date_of_birth: form.dateOfBirth?.trim() || null,
+    updated_at: now,
+  }).eq('id', user.id);
+}
+
 export async function saveTutorProfileAction(form: {
   fullName: string;
+  dateOfBirth?: string;
   phoneNumber?: string;
   headline?: string;
   bio?: string;
@@ -20,6 +38,7 @@ export async function saveTutorProfileAction(form: {
   // Update profiles table
   await supabase.from('profiles').update({
     full_name: form.fullName.trim(),
+    date_of_birth: form.dateOfBirth?.trim() || null,
     timezone: form.timezone?.trim() || 'Africa/Lagos',
     updated_at: now,
   }).eq('id', user.id);
@@ -38,6 +57,8 @@ export async function saveTutorProfileAction(form: {
 }
 
 export async function saveStudentProfileAction(form: {
+  fullName: string;
+  dateOfBirth?: string;
   gradeLevelCode: string;
   schoolName?: string;
   academicGoalNotes?: string;
@@ -56,6 +77,14 @@ export async function saveStudentProfileAction(form: {
   if (!gradeLevel) throw new Error('Invalid grade level');
 
   const now = new Date().toISOString();
+
+  // Update profiles table
+  await supabase.from('profiles').update({
+    full_name: form.fullName.trim(),
+    date_of_birth: form.dateOfBirth?.trim() || null,
+    timezone: form.timezone?.trim() || 'Africa/Lagos',
+    updated_at: now,
+  }).eq('id', user.id);
 
   const { error } = await supabase.from('student_profiles').upsert({
     user_id: user.id,
