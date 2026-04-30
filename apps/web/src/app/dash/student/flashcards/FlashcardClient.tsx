@@ -204,15 +204,23 @@ export default function FlashcardClient({
             </p>
           </div>
 
-          <div className="perspective-1000 relative aspect-[4/3] w-full max-w-[min(100%,450px)]">
+          <div style={{ perspective: '1000px' }} className="relative aspect-[4/3] w-full max-w-[min(100%,450px)]">
             <div
               onClick={() => {
                 setIsFlipped(!isFlipped);
                 if (!isFlipped) speak(flashcards[currentIdx].back);
               }}
-              className={`transform-style-3d relative h-full w-full cursor-pointer transition-transform duration-500 ${isFlipped ? 'rotate-y-180' : ''}`}
+              style={{
+                transformStyle: 'preserve-3d',
+                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                transition: 'transform 0.5s',
+              }}
+              className="relative h-full w-full cursor-pointer"
             >
-              <div className="backface-hidden absolute inset-0 flex flex-col items-center justify-center rounded-[28px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[6px] sm:p-10 sm:shadow-[12px_12px_0px_#060E1C]">
+              <div
+                style={{ backfaceVisibility: 'hidden' }}
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[6px] sm:p-10 sm:shadow-[12px_12px_0px_#060E1C]"
+              >
                 <p className="mb-5 text-center text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600 sm:mb-8 sm:text-[10px]">QUESTION / CONCEPT</p>
                 <div className="break-words text-center text-lg font-black leading-tight text-dark sm:text-2xl md:text-3xl">
                   {flashcards[currentIdx].front}
@@ -220,7 +228,10 @@ export default function FlashcardClient({
                 <p className="mt-5 text-center text-xs font-bold italic text-dark/40 sm:mt-8 sm:text-sm">Tap the card to flip</p>
               </div>
 
-              <div className="backface-hidden rotate-y-180 absolute inset-0 flex flex-col items-center justify-center rounded-[28px] border-[4px] border-dark bg-emerald-50 p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[6px] sm:p-10 sm:shadow-[12px_12px_0px_#060E1C]">
+              <div
+                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                className="absolute inset-0 flex flex-col items-center justify-center rounded-[28px] border-[4px] border-dark bg-emerald-50 p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[6px] sm:p-10 sm:shadow-[12px_12px_0px_#060E1C]"
+              >
                 <p className="mb-5 text-center text-[9px] font-black uppercase tracking-[0.2em] text-emerald-600 sm:mb-8 sm:text-[10px]">ANSWER / EXPLANATION</p>
                 <div className="break-words text-center text-base font-black leading-relaxed text-dark sm:text-xl md:text-2xl">
                   {flashcards[currentIdx].back}
@@ -274,12 +285,6 @@ export default function FlashcardClient({
         </div>
       ) : null}
 
-      <style jsx>{`
-        .perspective-1000 { perspective: 1000px; }
-        .transform-style-3d { transform-style: preserve-3d; }
-        .backface-hidden { backface-visibility: hidden; }
-        .rotate-y-180 { transform: rotateY(180deg); }
-      `}</style>
     </div>
   );
 }

@@ -125,7 +125,10 @@ export function SpellingBeeClient({
       return;
     }
 
+    // Chrome bug: calling speak() immediately after cancel() silently drops
+    // the utterance. We must cancel, wait a beat, then speak.
     window.speechSynthesis.cancel();
+    await new Promise((r) => setTimeout(r, 150));
 
     const availableVoices = voices.length > 0 ? voices : await waitForVoices();
     if (availableVoices.length > 0 && voices.length === 0) {
@@ -137,14 +140,19 @@ export function SpellingBeeClient({
       availableVoices.find((v) => v.lang?.toLowerCase().startsWith('en')) ??
       null;
 
-    const utterance = new SpeechSynthesisUtterance(
-      `Spell the word. ${word.word}. ${word.exampleSentence}. The word again: ${word.word}.`,
-    );
+    const text = `Spell the word. ${word.word}. ${word.exampleSentence}. The word again: ${word.word}.`;
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.8;
     utterance.lang = accent;
     if (pickedVoice) {
       utterance.voice = pickedVoice;
     }
+    utterance.onerror = (event) => {
+      // 'interrupted' is expected when the user clicks again before speech finishes
+      if (event.error !== 'interrupted') {
+        console.warn('[SpellingBee] Speech error:', event.error);
+      }
+    };
     window.speechSynthesis.speak(utterance);
   };
 
