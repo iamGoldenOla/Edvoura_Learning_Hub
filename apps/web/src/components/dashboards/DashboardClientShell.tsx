@@ -399,8 +399,8 @@ function TutorBottomNav() {
   };
   
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
         {allItems.map((item) => (
           <BottomNavItem key={`${item.href}-${item.label}`} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />
         ))}
@@ -475,8 +475,8 @@ function ParentBottomNav() {
   ];
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
         {parentNav.map((item) => (
           <BottomNavItem key={`${item.href}-${item.label}`} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />
         ))}
@@ -499,8 +499,8 @@ function AdminBottomNav({ isSuperAdmin }: { isSuperAdmin: boolean }) {
   ];
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
         {adminNav.filter((item) => (item.superAdminOnly ? isSuperAdmin : true)).map((item) => (
           <BottomNavItem key={`${item.href}-${item.label}`} href={item.href} icon={item.icon} label={item.label} active={isActive(item.href)} />
         ))}

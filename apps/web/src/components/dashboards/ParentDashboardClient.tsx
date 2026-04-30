@@ -122,7 +122,7 @@ export default function ParentDashboardClient({
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
       
       {/* Header Section */}
-      <section className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+      <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 sm:gap-8">
             <div className="space-y-3 min-w-0">
@@ -185,7 +185,7 @@ export default function ParentDashboardClient({
 
       <div className="grid gap-6 sm:gap-8 xl:grid-cols-12">
         {/* Child Snapshot */}
-        <div className="xl:col-span-8 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="xl:col-span-8 border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-amber-100">
             <h2 className="text-2xl font-black text-dark tracking-tight">Child Snapshot</h2>
           </div>
@@ -220,7 +220,7 @@ export default function ParentDashboardClient({
         {/* Alerts & Activity Sidebar */}
         <div className="xl:col-span-4 space-y-8">
           {/* Notifications (Alerts) */}
-          <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+          <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
             <div className="p-6 border-b-[4px] border-dark bg-rose-100 flex items-center justify-between">
               <h2 className="text-2xl font-black text-dark tracking-tight">Alerts</h2>
               <div className="h-10 w-10 bg-white border-[3px] border-dark rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
@@ -248,7 +248,7 @@ export default function ParentDashboardClient({
 
           {/* AI Practice Activity Section */}
           {activeSummary?.aiPracticeScores && activeSummary.aiPracticeScores.length > 0 && (
-            <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+            <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
               <div className="p-6 border-b-[4px] border-dark bg-emerald-100 flex items-center justify-between">
                 <h2 className="text-2xl font-black text-dark tracking-tight flex items-center gap-2">
                   <Brain className="h-6 w-6 text-emerald-600" /> Recent AI Practice
@@ -275,7 +275,7 @@ export default function ParentDashboardClient({
 
       {/* Edvoura AI Insights Section (Full Width) */}
       {activeChild && activeSummary && (
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 bg-white border-[3px] border-dark rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#060E1C]">
@@ -359,7 +359,7 @@ export default function ParentDashboardClient({
 
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* Lessons & Attendance */}
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
             <CalendarDays className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Lessons & Attendance</h2>
@@ -383,7 +383,7 @@ export default function ParentDashboardClient({
         </div>
 
         {/* Homework & Progress */}
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-blue-100 flex items-center gap-3">
             < BookOpen className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Homework & Progress</h2>
@@ -409,7 +409,7 @@ export default function ParentDashboardClient({
 
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
         {/* Rewards & Engagement */}
-        <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="lg:col-span-2 border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
             <LineChart className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Progress Signals</h2>
@@ -450,7 +450,7 @@ export default function ParentDashboardClient({
         </div>
 
         {/* Billing */}
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-emerald-100 flex items-center gap-3">
             <CreditCard className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Billing</h2>
@@ -482,7 +482,7 @@ export default function ParentDashboardClient({
 
       <div className="grid gap-6 sm:gap-8 lg:grid-cols-2">
         {/* Messages */}
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-sky-100 flex items-center gap-3">
             <MessageCircle className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Messages</h2>
@@ -501,7 +501,7 @@ export default function ParentDashboardClient({
         </div>
 
         {/* Settings */}
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-slate-100 flex items-center gap-3">
             <Settings className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Consent & Settings</h2>

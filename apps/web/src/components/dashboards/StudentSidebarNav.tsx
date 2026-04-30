@@ -293,10 +293,10 @@ function StudentBottomNavContent({ initialBand }: { initialBand: LearnerBand }) 
   const allItems = sections.flatMap((section) => section.items);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
         {allItems.map((item) => (
-          <BottomNavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
+           <BottomNavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
         ))}
       </div>
     </nav>
@@ -309,8 +309,8 @@ function LockedStudentBottomNav({ initialBand }: { initialBand: LearnerBand }) {
   const allItems = sections.flatMap((section) => section.items);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white px-1 py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
+      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
         {allItems.map((item) => (
           <BottomNavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
         ))}
