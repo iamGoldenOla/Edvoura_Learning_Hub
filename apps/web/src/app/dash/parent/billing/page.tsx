@@ -12,8 +12,8 @@ export default async function ParentBillingPage() {
   const invoices = billing?.invoices ?? [];
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-8 border-b-[4px] border-dark bg-emerald-100">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
             Billing & Subscription
@@ -26,7 +26,7 @@ export default async function ParentBillingPage() {
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Current Plan */}
-        <div className="lg:col-span-2 border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0 flex flex-col">
           <div className="p-6 border-b-[4px] border-dark bg-yellow/20 flex items-center gap-3">
             <CreditCard className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Current Plan</h2>
@@ -63,7 +63,7 @@ export default async function ParentBillingPage() {
         </div>
 
         {/* Billing Status */}
-        <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden flex flex-col">
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0 flex flex-col">
           <div className="p-6 border-b-[4px] border-dark bg-blue-100 flex items-center gap-3">
             <ShieldCheck className="h-6 w-6 text-dark" />
             <h2 className="text-2xl font-black text-dark tracking-tight">Access Status</h2>
@@ -87,7 +87,7 @@ export default async function ParentBillingPage() {
         </div>
       </div>
 
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center gap-3">
           <Receipt className="h-6 w-6 text-dark" />
           <h2 className="text-2xl font-black text-dark tracking-tight">Payment History</h2>

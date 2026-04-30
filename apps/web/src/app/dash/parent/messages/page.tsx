@@ -6,8 +6,8 @@ export default async function ParentMessagesPage() {
   const senderName = viewer.currentUser.profile.fullName ?? 'Parent';
 
   return (
-    <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
-      <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
+    <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-8 border-b-[4px] border-dark bg-sky-100">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
             Parent Messages
