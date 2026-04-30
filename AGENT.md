@@ -6,7 +6,21 @@ This repository is designed for long-lived human and AI collaboration. Treat thi
 
 Build EDVOURA Learning Hub as a premium K-12 tutoring platform with a clean backend spine, a vibrant Neo-Brutalist frontend, durable documentation, and production-oriented engineering discipline.
 
-## Last Session Handoff (2026-04-29)
+## Last Session Handoff (2026-04-30)
+
+### Current Status: Profile Date-of-Birth Feature + Build Fix (2026-04-30)
+
+- Added `date_of_birth` column to the `profiles` table via migration `supabase/migrations/20260430120000_add_date_of_birth.sql`.
+  - This is a shared column — it applies to **all roles** (Tutor, Student, Admin, Parent).
+  - **Migration must be run manually** in Supabase SQL Editor: `ALTER TABLE profiles ADD COLUMN IF NOT EXISTS date_of_birth date;`
+- Refactored `ProfileSettingsClient.tsx` to use a shared `basicForm` state for `fullName` and `dateOfBirth`, decoupled from role-specific profile types (`TutorProfileContext`, `StudentProfileContext`).
+- All three save actions (`saveTutorProfileAction`, `saveStudentProfileAction`, `saveGeneralProfileAction`) in `apps/web/src/app/dash/profile/actions.ts` now persist `date_of_birth` to the `profiles` table.
+- `app-context.ts` now fetches `date_of_birth` from `profiles` and exposes it as `dateOfBirth` on the viewer's profile object.
+- **Build fix (2026-04-30):** Resolved TypeScript build error where `fullName` and `dateOfBirth` were incorrectly passed inside the `tutorProfile` and `studentProfile` props in:
+  - `apps/web/src/app/dash/profile/page.tsx`
+  - `apps/web/src/app/dash/tutor/profile/page.tsx`
+  - These fields don't exist on `TutorProfileContext` or `StudentProfileContext`; they are handled by `basicForm` which reads from `viewer.currentUser.profile` directly.
+- Build passes cleanly (98/98 pages, exit code 0). Pushed to `main`.
 
 ### Current Status: Parent & Admin Mobile Shell Hardening (2026-04-29)
 
