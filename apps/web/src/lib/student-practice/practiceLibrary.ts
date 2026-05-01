@@ -27,6 +27,11 @@ export type PracticeFlashcard = {
   back: string;
 };
 
+export type PracticeFlashcardTopicSuggestion = {
+  subject: string;
+  topic: string;
+};
+
 type PracticeFlashcardDeck = {
   subject: string;
   topic: string;
@@ -109,6 +114,26 @@ export function getFlashcardSubjectSuggestions(gradeLevel: string) {
   const prioritized = GRADE_SURPRISE_SUBJECT_ORDER[band].filter((entry) => available.includes(entry));
   const remaining = available.filter((entry) => !prioritized.includes(entry)).sort();
   return [...prioritized, ...remaining];
+}
+
+export function getFlashcardTopicSuggestions(gradeLevel: string, subject?: string) {
+  const subjects = getFlashcardSubjectsForGrade(gradeLevel) as Record<string, FlashcardSubjectRecord>;
+  const normalizedSubject = normalizeSubjectName(subject?.trim() || '');
+
+  if (normalizedSubject && subjects[normalizedSubject]) {
+    return subjects[normalizedSubject].topics.map<PracticeFlashcardTopicSuggestion>((entry) => ({
+      subject: normalizedSubject,
+      topic: entry.topic,
+    }));
+  }
+
+  const prioritizedSubjects = getFlashcardSubjectSuggestions(gradeLevel);
+  return prioritizedSubjects.flatMap<PracticeFlashcardTopicSuggestion>((subjectName) =>
+    (subjects[subjectName]?.topics ?? []).map((entry) => ({
+      subject: subjectName,
+      topic: entry.topic,
+    })),
+  );
 }
 
 function findFlashcardDeck(params: {

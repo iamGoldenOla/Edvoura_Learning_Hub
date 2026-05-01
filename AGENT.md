@@ -369,4 +369,6 @@ Before merging any meaningful change:
 - Practice library files live in `apps/web/src/lib/student-practice/`.
 - Library coverage has been expanded across multiple subjects and age bands so the self-study tools now cover more of the same curriculum territory as the lesson-note engine.
 - `Surprise Me` flashcard selection is now grade-band-aware and subject-prioritized, so random revision feels intentional instead of arbitrary.
+- Local spelling practice now reserves used words across rounds so fresh practice pulls unseen words first instead of repeating the same first 6-8 words over and over.
+- Flashcard study now surfaces quick topic suggestions from the same grade-aware library so students are nudged toward real lesson-note topics instead of guessing topic names manually.
 - This phase is content-library only: no SQL migration, no storage bucket, no Supabase Edge Function, and no RLS change is required.

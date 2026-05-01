@@ -46,6 +46,20 @@
             { "word": "question", "pronunciation": "KWES-chun", "syllables": 2, "definition": "Something asked in order to get an answer.", "exampleSentence": "The student raised her hand to ask a question.", "hint": "It begins with qu.", "difficulty": "hard" },
             { "word": "understand", "pronunciation": "un-der-STAND", "syllables": 3, "definition": "To know the meaning of something clearly.", "exampleSentence": "I understand the lesson better after practice.", "hint": "It starts with under.", "difficulty": "hard" }
           ]
+        },
+        {
+          "id": "community-and-transport",
+          "title": "Community and Transport Spellings",
+          "theme": "Social Studies Words",
+          "instructions": "Practise words linked to family life, transportation, and the community so spelling also reinforces social studies ideas.",
+          "words": [
+            { "word": "family", "pronunciation": "FAM-uh-lee", "syllables": 3, "definition": "A group of related people who care for one another.", "exampleSentence": "My family ate dinner together last night.", "hint": "It starts with fam.", "difficulty": "easy" },
+            { "word": "market", "pronunciation": "MAR-kit", "syllables": 2, "definition": "A place where goods are bought and sold.", "exampleSentence": "Mother bought fruit at the market.", "hint": "It ends with ket.", "difficulty": "easy" },
+            { "word": "traffic", "pronunciation": "TRAF-ik", "syllables": 2, "definition": "Vehicles moving on the road.", "exampleSentence": "Traffic was heavy near the bus stop.", "hint": "It starts with tra.", "difficulty": "medium" },
+            { "word": "journey", "pronunciation": "JER-nee", "syllables": 2, "definition": "Travel from one place to another.", "exampleSentence": "The journey to school was short today.", "hint": "It contains our.", "difficulty": "medium" },
+            { "word": "bicycle", "pronunciation": "BY-sik-ul", "syllables": 3, "definition": "A vehicle with two wheels that is moved by pedalling.", "exampleSentence": "Tola rode her bicycle carefully.", "hint": "It begins with bi.", "difficulty": "hard" },
+            { "word": "community", "pronunciation": "kuh-MYOO-nuh-tee", "syllables": 4, "definition": "People living and working in the same area.", "exampleSentence": "The whole community helped to clean the field.", "hint": "It starts with commu.", "difficulty": "hard" }
+          ]
         }
       ]
     },
@@ -77,6 +91,20 @@
             { "word": "community", "pronunciation": "kuh-MYOO-nuh-tee", "syllables": 4, "definition": "A group of people living in the same place.", "exampleSentence": "Everyone in the community helped to clean the park.", "hint": "It begins with commu.", "difficulty": "hard" },
             { "word": "nutrient", "pronunciation": "NOO-tree-ent", "syllables": 3, "definition": "A substance that helps living things grow and stay healthy.", "exampleSentence": "Plants need nutrients from the soil.", "hint": "It starts with nu and ends with ent.", "difficulty": "hard" }
           ]
+        },
+        {
+          "id": "topic-aligned-study-words",
+          "title": "Topic-Aligned Study Words",
+          "theme": "Lesson Reinforcement",
+          "instructions": "Practise vocabulary linked to common classroom topics so spelling supports the same ideas learners revise in notes and flashcards.",
+          "words": [
+            { "word": "fraction", "pronunciation": "FRAK-shun", "syllables": 2, "definition": "A number showing part of a whole.", "exampleSentence": "One quarter is a fraction.", "hint": "It starts with fra.", "difficulty": "medium" },
+            { "word": "evaporation", "pronunciation": "ee-vap-uh-RAY-shun", "syllables": 5, "definition": "The process in which liquid changes into vapour.", "exampleSentence": "Evaporation is part of the water cycle.", "hint": "It begins with eva.", "difficulty": "hard" },
+            { "word": "machine", "pronunciation": "muh-SHEEN", "syllables": 2, "definition": "A tool or device that helps people do work.", "exampleSentence": "A simple machine can make work easier.", "hint": "It starts with ma.", "difficulty": "medium" },
+            { "word": "resource", "pronunciation": "REE-sors", "syllables": 2, "definition": "Something useful that people can use.", "exampleSentence": "Water is a natural resource.", "hint": "It starts with re.", "difficulty": "medium" },
+            { "word": "grammar", "pronunciation": "GRAM-er", "syllables": 2, "definition": "The rules used in speaking and writing a language correctly.", "exampleSentence": "Good grammar makes writing clearer.", "hint": "It begins with gra.", "difficulty": "medium" },
+            { "word": "conservation", "pronunciation": "kon-ser-VAY-shun", "syllables": 4, "definition": "The careful protection and use of resources.", "exampleSentence": "Tree planting supports conservation.", "hint": "It starts with con.", "difficulty": "hard" }
+          ]
         }
       ]
     },
@@ -106,6 +134,20 @@
             { "word": "democracy", "pronunciation": "di-MOK-ruh-see", "syllables": 4, "definition": "A system of government in which people have the power to choose leaders.", "exampleSentence": "The class learned how democracy gives citizens a voice.", "hint": "It starts with demo.", "difficulty": "hard" },
             { "word": "interpretation", "pronunciation": "in-tur-pruh-TAY-shun", "syllables": 5, "definition": "An explanation of the meaning of something.", "exampleSentence": "Her interpretation of the poem was thoughtful.", "hint": "It begins with inter.", "difficulty": "hard" },
             { "word": "significant", "pronunciation": "sig-NIF-ih-kunt", "syllables": 4, "definition": "Important enough to deserve attention.", "exampleSentence": "There was a significant change in the test results.", "hint": "It starts with sig.", "difficulty": "hard" }
+          ]
+        },
+        {
+          "id": "subject-mastery-words",
+          "title": "Subject Mastery Vocabulary",
+          "theme": "Curriculum Language",
+          "instructions": "Practise advanced subject words so spelling revision supports science, mathematics, English, and civic learning at secondary level.",
+          "words": [
+            { "word": "photosynthesis", "pronunciation": "foh-toh-SIN-thuh-sis", "syllables": 5, "definition": "The process by which green plants make food using sunlight.", "exampleSentence": "Photosynthesis takes place in green leaves.", "hint": "It begins with photo.", "difficulty": "hard" },
+            { "word": "equilibrium", "pronunciation": "ee-kwuh-LIB-ree-um", "syllables": 5, "definition": "A state of balance.", "exampleSentence": "The reaction reached equilibrium after some time.", "hint": "It starts with equi.", "difficulty": "hard" },
+            { "word": "government", "pronunciation": "GUV-un-ment", "syllables": 3, "definition": "The group of people who rule or manage a country or state.", "exampleSentence": "The government announced a new policy.", "hint": "It starts with gov.", "difficulty": "medium" },
+            { "word": "equation", "pronunciation": "ee-KWAY-zhun", "syllables": 3, "definition": "A mathematical statement that shows two expressions are equal.", "exampleSentence": "She solved the equation carefully.", "hint": "It starts with equ.", "difficulty": "hard" },
+            { "word": "paragraph", "pronunciation": "PAR-uh-graf", "syllables": 3, "definition": "A group of related sentences on one main idea.", "exampleSentence": "Write a paragraph about honesty.", "hint": "It begins with para.", "difficulty": "medium" },
+            { "word": "democracy", "pronunciation": "di-MOK-ruh-see", "syllables": 4, "definition": "A system of government in which people choose their leaders.", "exampleSentence": "Students learned how democracy gives citizens a voice.", "hint": "It starts with demo.", "difficulty": "hard" }
           ]
         }
       ]

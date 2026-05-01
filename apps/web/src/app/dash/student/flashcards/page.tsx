@@ -1,7 +1,7 @@
 import { requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
 import FlashcardClient from './FlashcardClient';
-import { getFlashcardSubjectSuggestions } from '@/lib/student-practice/practiceLibrary';
+import { getFlashcardSubjectSuggestions, getFlashcardTopicSuggestions } from '@/lib/student-practice/practiceLibrary';
 
 type StudentLearningProfileRow = {
   grade_level?: {
@@ -25,6 +25,7 @@ export default async function FlashcardPage() {
     <FlashcardClient 
       gradeLevel={gradeLevelName}
       subjectSuggestions={getFlashcardSubjectSuggestions(gradeLevelName)}
+      topicSuggestions={getFlashcardTopicSuggestions(gradeLevelName)}
     />
   );
 }

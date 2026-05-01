@@ -22,6 +22,7 @@ type SpellingBeeChallenge = {
   instructions: string;
   theme: string;
   words: SpellingBeeWord[];
+  source?: 'local_practice' | 'tutor_published';
 };
 
 type AttemptResult = {
@@ -36,10 +37,28 @@ type AttemptResult = {
 
 type AccentMode = 'en-GB' | 'en-US';
 
+type FreshPracticeRound = {
+  challenge: SpellingBeeChallenge;
+  resetPool: boolean;
+};
+
 function getWordPoints(difficulty: SpellingBeeWord['difficulty']) {
   if (difficulty === 'hard') return 15;
   if (difficulty === 'medium') return 10;
   return 5;
+}
+
+function normalizeWordKey(word: string) {
+  return word.trim().toLowerCase();
+}
+
+function shuffle<T>(items: T[]) {
+  const cloned = [...items];
+  for (let index = cloned.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [cloned[index], cloned[swapIndex]] = [cloned[swapIndex], cloned[index]];
+  }
+  return cloned;
 }
 
 export function SpellingBeeClient({
@@ -59,8 +78,25 @@ export function SpellingBeeClient({
   const [gameState, setGameState] = useState<'idle' | 'playing'>('idle');
   const [accent, setAccent] = useState<AccentMode>('en-GB');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [usedPracticeWordKeys, setUsedPracticeWordKeys] = useState<string[]>([]);
 
   const currentWord = activeChallenge?.words[currentIndex] ?? null;
+
+  const allPracticeWords = useMemo(() => {
+    const map = new Map<string, SpellingBeeWord>();
+    for (const challenge of practiceChallenges) {
+      for (const word of challenge.words) {
+        const key = normalizeWordKey(word.word);
+        if (!map.has(key)) {
+          map.set(key, word);
+        }
+      }
+    }
+    return Array.from(map.values());
+  }, [practiceChallenges]);
+
+  const practiceCoverage = allPracticeWords.length;
+  const completedPracticeCount = usedPracticeWordKeys.length;
 
   const score = useMemo(() => {
     let total = 0;
@@ -79,19 +115,8 @@ export function SpellingBeeClient({
     return total;
   }, [results]);
 
-  const correctCount = useMemo(
-    () => results.filter((entry) => entry.correct).length,
-    [results],
-  );
+  const correctCount = useMemo(() => results.filter((entry) => entry.correct).length, [results]);
 
-  /**
-   * Speaks text using a Google Translate TTS audio URL played through an
-   * HTML Audio element. This bypasses all the Chrome speechSynthesis bugs
-   * (cancel+speak race, empty voices, silent failures) and produces a
-   * consistent, high-quality voice on every browser/device.
-   *
-   * Falls back to speechSynthesis only if audio playback fails entirely.
-   */
   const speak = async (word: SpellingBeeWord) => {
     const text = `Spell the word. ${word.word}. ${word.exampleSentence}. The word again: ${word.word}.`;
     const langCode = accent === 'en-US' ? 'en-us' : 'en-gb';
@@ -99,7 +124,6 @@ export function SpellingBeeClient({
     setIsSpeaking(true);
 
     try {
-      // Primary: use our server-side TTS proxy (bypasses CORS, always works)
       const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(langCode)}`;
       const audio = new Audio(audioUrl);
       audio.playbackRate = 0.9;
@@ -107,23 +131,21 @@ export function SpellingBeeClient({
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => resolve();
         audio.onerror = () => reject(new Error('Audio playback failed'));
-        // Some browsers need a small delay before play()
         setTimeout(() => {
           audio.play().catch(reject);
         }, 50);
       });
     } catch (primaryError) {
       console.warn('[SpellingBee] TTS proxy failed, trying speechSynthesis:', primaryError);
-      // Fallback: use browser speechSynthesis
       try {
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
-          await new Promise((r) => setTimeout(r, 200));
+          await new Promise((resolve) => setTimeout(resolve, 200));
 
           const availableVoices = window.speechSynthesis.getVoices();
           const pickedVoice =
-            availableVoices.find((v) => v.lang?.toLowerCase().startsWith(accent.toLowerCase())) ??
-            availableVoices.find((v) => v.lang?.toLowerCase().startsWith('en')) ??
+            availableVoices.find((voice) => voice.lang?.toLowerCase().startsWith(accent.toLowerCase())) ??
+            availableVoices.find((voice) => voice.lang?.toLowerCase().startsWith('en')) ??
             null;
 
           const utterance = new SpeechSynthesisUtterance(text);
@@ -135,7 +157,6 @@ export function SpellingBeeClient({
             utterance.onend = () => resolve();
             utterance.onerror = () => resolve();
             window.speechSynthesis.speak(utterance);
-            // Safety timeout in case events never fire
             setTimeout(resolve, 15000);
           });
         }
@@ -147,7 +168,7 @@ export function SpellingBeeClient({
     }
   };
 
-  const startChallenge = (challenge: SpellingBeeChallenge) => {
+  const beginChallenge = (challenge: SpellingBeeChallenge, options?: { reserveWords?: boolean; resetPool?: boolean }) => {
     setActiveChallenge(challenge);
     setCurrentIndex(0);
     setUserInput('');
@@ -155,10 +176,86 @@ export function SpellingBeeClient({
     setIsFinished(false);
     setGameState('playing');
 
+    if (options?.reserveWords && challenge.source === 'local_practice') {
+      setUsedPracticeWordKeys((current) => {
+        const next = new Set(options.resetPool ? [] : current);
+        for (const word of challenge.words) {
+          next.add(normalizeWordKey(word.word));
+        }
+        return Array.from(next);
+      });
+    }
+
     const firstWord = challenge.words[0];
     if (firstWord) {
       setTimeout(() => speak(firstWord), 400);
     }
+  };
+
+  const buildFreshPracticeRound = (baseChallenge: PracticeSpellingChallenge): FreshPracticeRound => {
+    const currentUsed = new Set(usedPracticeWordKeys);
+    const requestedCount = Math.max(6, baseChallenge.words.length);
+
+    const preferredDeckWords = shuffle(
+      baseChallenge.words.filter((word) => !currentUsed.has(normalizeWordKey(word.word))),
+    );
+
+    const globalFreshWords = shuffle(
+      allPracticeWords.filter(
+        (word) =>
+          !currentUsed.has(normalizeWordKey(word.word)) &&
+          !preferredDeckWords.some((entry) => normalizeWordKey(entry.word) === normalizeWordKey(word.word)),
+      ),
+    );
+
+    let selectedWords = [...preferredDeckWords, ...globalFreshWords].slice(0, requestedCount);
+    const resetPool = selectedWords.length === 0;
+
+    if (resetPool) {
+      selectedWords = shuffle(allPracticeWords).slice(0, requestedCount);
+    }
+
+    const refreshedChallenge: SpellingBeeChallenge = {
+      ...baseChallenge,
+      id: `${baseChallenge.id}-${Date.now()}`,
+      title: `${baseChallenge.title} - Fresh Round`,
+      instructions:
+        selectedWords.length < requestedCount
+          ? `${baseChallenge.instructions} You are finishing the last fresh words in this grade pool before the library reshuffles.`
+          : `${baseChallenge.instructions} This round pulls fresh words so the same words do not repeat immediately.`,
+      words: selectedWords,
+      source: 'local_practice',
+    };
+
+    return {
+      challenge: refreshedChallenge,
+      resetPool,
+    };
+  };
+
+  const startChallenge = (challenge: SpellingBeeChallenge) => {
+    if (challenge.source === 'local_practice') {
+      const freshRound = buildFreshPracticeRound(challenge as PracticeSpellingChallenge);
+      beginChallenge(freshRound.challenge, {
+        reserveWords: true,
+        resetPool: freshRound.resetPool,
+      });
+      return;
+    }
+
+    beginChallenge({ ...challenge, source: 'tutor_published' });
+  };
+
+  const startNextPracticeRound = () => {
+    if (!activeChallenge || activeChallenge.source !== 'local_practice') {
+      return;
+    }
+
+    const freshRound = buildFreshPracticeRound(activeChallenge as PracticeSpellingChallenge);
+    beginChallenge(freshRound.challenge, {
+      reserveWords: true,
+      resetPool: freshRound.resetPool,
+    });
   };
 
   const resetBackToDecks = () => {
@@ -219,7 +316,7 @@ export function SpellingBeeClient({
             <Mic2 className="h-4 w-4" />
             {activeChallenge.theme}
           </div>
-          <h1 className="text-center text-3xl font-black tracking-tight text-dark sm:text-4xl break-words">{activeChallenge.title}</h1>
+          <h1 className="break-words text-center text-3xl font-black tracking-tight text-dark sm:text-4xl">{activeChallenge.title}</h1>
           <p className="mx-auto max-w-2xl text-center font-semibold text-dark/60">{activeChallenge.instructions}</p>
         </header>
 
@@ -260,7 +357,9 @@ export function SpellingBeeClient({
               <Volume2 className={`h-10 w-10 ${isSpeaking ? 'animate-bounce' : ''}`} />
             </button>
             <div className="space-y-3 text-center">
-              <p className="text-sm font-black uppercase tracking-widest text-dark/30">{isSpeaking ? '🔊 Playing pronunciation…' : 'Click to hear the word again'}</p>
+              <p className="text-sm font-black uppercase tracking-widest text-dark/30">
+                {isSpeaking ? 'Playing pronunciation...' : 'Click to hear the word again'}
+              </p>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
@@ -322,6 +421,12 @@ export function SpellingBeeClient({
             You earned {score} points and spelled {correctCount} out of {activeChallenge.words.length} words correctly.
           </p>
 
+          {activeChallenge.source === 'local_practice' ? (
+            <p className="mt-3 text-sm font-bold text-dark/55">
+              Fresh practice words used so far: {Math.min(completedPracticeCount, practiceCoverage)} / {practiceCoverage}
+            </p>
+          ) : null}
+
           <div className="mt-8 grid grid-cols-1 gap-4 text-left sm:mt-12 md:grid-cols-2">
             {results.map((result, index) => (
               <div
@@ -351,12 +456,21 @@ export function SpellingBeeClient({
           </div>
 
           <div className="mt-8 flex flex-col items-stretch justify-center gap-4 sm:mt-12 sm:flex-row sm:flex-wrap sm:items-center">
-            <Button
-              onClick={() => startChallenge(activeChallenge)}
-              className="inline-flex h-auto items-center justify-center gap-3 rounded-2xl bg-dark px-6 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:scale-105 sm:px-10"
-            >
-              <RefreshCw className="h-5 w-5" /> Try Again
-            </Button>
+            {activeChallenge.source === 'local_practice' ? (
+              <Button
+                onClick={startNextPracticeRound}
+                className="inline-flex h-auto items-center justify-center gap-3 rounded-2xl bg-emerald-600 px-6 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:scale-105 sm:px-10"
+              >
+                <RefreshCw className="h-5 w-5" /> Fresh Random Round
+              </Button>
+            ) : (
+              <Button
+                onClick={() => beginChallenge(activeChallenge)}
+                className="inline-flex h-auto items-center justify-center gap-3 rounded-2xl bg-dark px-6 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:scale-105 sm:px-10"
+              >
+                <RefreshCw className="h-5 w-5" /> Try Again
+              </Button>
+            )}
             <Button
               onClick={resetBackToDecks}
               className="inline-flex h-auto items-center justify-center gap-3 rounded-2xl border-[3px] border-dark bg-white px-6 py-4 text-sm font-black uppercase tracking-widest text-dark sm:px-10"
@@ -395,12 +509,17 @@ export function SpellingBeeClient({
             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Edvoura Practice Engine</p>
             <h2 className="text-xl font-black text-dark sm:text-2xl">Independent practice for {gradeLevelName}</h2>
             <p className="text-sm font-bold text-dark/70">
-              These decks are always available, even when no tutor homework has been published yet.
+              Fresh local rounds avoid repeating the same spelling words until the current grade pool has been used up.
             </p>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-full border-[3px] border-dark bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-dark shadow-[3px_3px_0px_#060E1C]">
-            <Languages className="h-4 w-4" />
-            British + US voice modes
+          <div className="space-y-2 text-right">
+            <div className="inline-flex items-center gap-2 rounded-full border-[3px] border-dark bg-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-dark shadow-[3px_3px_0px_#060E1C]">
+              <Languages className="h-4 w-4" />
+              British + US voice modes
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-widest text-dark/50">
+              {Math.min(completedPracticeCount, practiceCoverage)} / {practiceCoverage} practice words explored
+            </p>
           </div>
         </div>
 
@@ -428,7 +547,7 @@ export function SpellingBeeClient({
               <div className="rounded-2xl border-[3px] border-dark bg-emerald-50 p-4">
                 <p className="mb-2 text-[10px] font-black uppercase tracking-widest text-dark/50">Practice Preview</p>
                 <p className="text-sm font-bold text-dark/70">
-                  Includes listening, hints, definitions, example sentences, and points for correct spelling.
+                  Starts with this deck theme, then keeps serving fresh words from the wider grade pool instead of repeating the same round.
                 </p>
               </div>
 
@@ -475,7 +594,7 @@ export function SpellingBeeClient({
                 </div>
 
                 <Button
-                  onClick={() => startChallenge(challenge)}
+                  onClick={() => startChallenge({ ...challenge, source: 'tutor_published' })}
                   className="h-auto rounded-2xl border-[3px] border-dark bg-indigo-600 py-4 font-black text-white shadow-[4px_4px_0px_#060E1C]"
                 >
                   <PlayCircle className="mr-2 h-5 w-5" />

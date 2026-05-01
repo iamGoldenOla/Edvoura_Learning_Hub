@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowRight, Brain, Loader2, RotateCcw, Search, Volume2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { normalizeSubjectName } from '@/lib/ai/lessonNoteBlueprints';
 
 type Flashcard = {
   front: string;
@@ -13,9 +14,14 @@ type Flashcard = {
 export default function FlashcardClient({
   gradeLevel,
   subjectSuggestions,
+  topicSuggestions,
 }: {
   gradeLevel: string;
   subjectSuggestions: string[];
+  topicSuggestions: Array<{
+    subject: string;
+    topic: string;
+  }>;
 }) {
   const [topic, setTopic] = useState('');
   const [subject, setSubject] = useState('');
@@ -36,6 +42,14 @@ export default function FlashcardClient({
     }
     return 'Choose a subject and topic, or let Edvoura surprise you with a study deck.';
   }, [provider]);
+
+  const visibleTopicSuggestions = useMemo(() => {
+    const normalizedSubject = normalizeSubjectName(subject.trim());
+    const filtered = normalizedSubject
+      ? topicSuggestions.filter((entry) => entry.subject === normalizedSubject)
+      : topicSuggestions;
+    return filtered.slice(0, 8);
+  }, [subject, topicSuggestions]);
 
   const generateFlashcards = async (mode: 'guided' | 'surprise' = 'guided') => {
     if (mode === 'guided' && !topic && !subject) return;
@@ -135,6 +149,34 @@ export default function FlashcardClient({
                     }`}
                   >
                     {entry}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {visibleTopicSuggestions.length > 0 ? (
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs font-black uppercase tracking-widest text-dark/60">Quick Topics</p>
+                <p className="text-[11px] font-bold text-dark/50">
+                  {subject ? 'Topics aligned to this subject' : 'Popular lesson-note topics for your grade'}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {visibleTopicSuggestions.map((entry) => (
+                  <button
+                    key={`${entry.subject}:${entry.topic}`}
+                    type="button"
+                    onClick={() => {
+                      setSubject(entry.subject);
+                      setTopic(entry.topic);
+                    }}
+                    className={`rounded-2xl border-[2px] border-dark px-3 py-2 text-left text-[11px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] transition-all ${
+                      subject === entry.subject && topic === entry.topic ? 'bg-yellow text-dark' : 'bg-white text-dark'
+                    }`}
+                  >
+                    {entry.topic}
                   </button>
                 ))}
               </div>
