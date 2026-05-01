@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
     // Surprise mode or missing inputs → return a random local deck
     if (surprise || (!subject && !topic)) {
-      const localDeck = buildLocalFlashcardDeck({ gradeLevel, subject, topic });
+      const localDeck = buildLocalFlashcardDeck({ gradeLevel, subject, topic, surprise: Boolean(surprise) });
       return NextResponse.json({
         flashcards: localDeck.flashcards,
         provider: localDeck.provider,

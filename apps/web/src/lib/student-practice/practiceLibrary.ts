@@ -53,6 +53,12 @@ type FlashcardSubjectRecord = {
   topics: FlashcardTopicRecord[];
 };
 
+const GRADE_SURPRISE_SUBJECT_ORDER: Record<GradeBandKey, string[]> = {
+  grades_1_3: ['English Language', 'Mathematics', 'Basic Science', 'Social Studies'],
+  grades_4_6: ['Mathematics', 'English Language', 'Basic Science', 'Social Studies'],
+  grades_7_12: ['Mathematics', 'English Language', 'Biology', 'Physics', 'Chemistry'],
+};
+
 function gradeNumberFromLabel(value: string) {
   const match = value.toLowerCase().match(/grade\s*(\d{1,2})|^(\d{1,2})$/);
   return Number(match?.[1] ?? match?.[2] ?? 7);
@@ -98,17 +104,23 @@ export function getSpellingPracticeChallenges(gradeLevel: string) {
 }
 
 export function getFlashcardSubjectSuggestions(gradeLevel: string) {
-  return Object.keys(getFlashcardSubjectsForGrade(gradeLevel)).sort();
+  const band = getPracticeGradeBand(gradeLevel);
+  const available = Object.keys(getFlashcardSubjectsForGrade(gradeLevel));
+  const prioritized = GRADE_SURPRISE_SUBJECT_ORDER[band].filter((entry) => available.includes(entry));
+  const remaining = available.filter((entry) => !prioritized.includes(entry)).sort();
+  return [...prioritized, ...remaining];
 }
 
 function findFlashcardDeck(params: {
   gradeLevel: string;
   subject?: string;
   topic?: string;
+  surprise?: boolean;
 }) {
   const subjects = getFlashcardSubjectsForGrade(params.gradeLevel) as Record<string, FlashcardSubjectRecord>;
   const requestedSubject = normalizeSubjectName(params.subject?.trim() || '');
   const requestedTopic = (params.topic?.trim() || '').toLowerCase();
+  const gradeBand = getPracticeGradeBand(params.gradeLevel);
 
   if (requestedSubject && subjects[requestedSubject]) {
     const subjectDeck = subjects[requestedSubject];
@@ -161,6 +173,28 @@ function findFlashcardDeck(params: {
     }
   }
 
+  if (params.surprise) {
+    const prioritizedSubjects = getFlashcardSubjectSuggestions(params.gradeLevel)
+      .map((subjectName) => ({
+        subjectName,
+        subjectEntry: subjects[subjectName],
+      }))
+      .filter((entry) => entry.subjectEntry && entry.subjectEntry.topics.length > 0);
+
+    if (prioritizedSubjects.length > 0) {
+      const subjectIndex = stableSeed(`${params.gradeLevel}:${requestedSubject || 'surprise-subject'}:${gradeBand}`) % prioritizedSubjects.length;
+      const selectedSubject = prioritizedSubjects[subjectIndex];
+      const topicIndex = stableSeed(`${params.gradeLevel}:${selectedSubject.subjectName}:${requestedTopic || 'surprise-topic'}`) % selectedSubject.subjectEntry.topics.length;
+      const selectedTopic = selectedSubject.subjectEntry.topics[topicIndex];
+
+      return {
+        subject: selectedSubject.subjectName,
+        topic: selectedTopic.topic,
+        cards: selectedTopic.cards,
+      };
+    }
+  }
+
   const allDecks: PracticeFlashcardDeck[] = Object.entries(subjects).flatMap(([subjectName, subjectEntry]) =>
     subjectEntry.topics.map((topicEntry) => ({
       subject: subjectName,
@@ -180,6 +214,7 @@ export function buildLocalFlashcardDeck(params: {
   gradeLevel: string;
   subject?: string;
   topic?: string;
+  surprise?: boolean;
 }) {
   const deck = findFlashcardDeck(params);
 

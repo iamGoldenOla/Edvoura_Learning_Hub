@@ -368,4 +368,5 @@ Before merging any meaningful change:
 - Student flashcards now support local study-deck fallback and a `Surprise Me` mode so revision still works without live AI or tutor input.
 - Practice library files live in `apps/web/src/lib/student-practice/`.
 - Library coverage has been expanded across multiple subjects and age bands so the self-study tools now cover more of the same curriculum territory as the lesson-note engine.
+- `Surprise Me` flashcard selection is now grade-band-aware and subject-prioritized, so random revision feels intentional instead of arbitrary.
 - This phase is content-library only: no SQL migration, no storage bucket, no Supabase Edge Function, and no RLS change is required.
