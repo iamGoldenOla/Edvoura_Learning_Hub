@@ -41,6 +41,9 @@ const SUBJECT_ALIAS_MAP: Record<string, string> = {
   "social studies": "Social Studies",
   "civic education": "Civic Education",
   "computer studies": "Computer Studies",
+  agriculture: "Agricultural Science",
+  agric: "Agricultural Science",
+  "agricultural science": "Agricultural Science",
   spelling: "Spelling",
 };
 

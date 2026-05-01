@@ -366,12 +366,44 @@
               ]
             }
           ]
+        },
+        "Agricultural Science": {
+          "display_name": "Agricultural Science",
+          "topics": [
+            {
+              "topic": "Weeds",
+              "cards": [
+                { "front": "What are weeds?", "back": "Weeds are unwanted plants that grow where they are not needed, especially on farms and in gardens." },
+                { "front": "Why are weeds harmful to crops?", "back": "Weeds compete with crops for water, sunlight, space, and nutrients in the soil." },
+                { "front": "Give one example of a problem caused by weeds.", "back": "Weeds can slow crop growth, reduce harvest, or make farm work harder." },
+                { "front": "How can farmers control weeds?", "back": "Farmers can remove weeds by hand, use hoes, mulch the soil, or apply safe weed-control methods." },
+                { "front": "Why should weeds be removed early?", "back": "Early removal stops weeds from growing bigger, spreading seeds, and taking more nutrients from crops." },
+                { "front": "What is the difference between a crop and a weed?", "back": "A crop is planted on purpose for food or use, while a weed grows where it is not wanted." }
+              ]
+            }
+          ]
         }
       }
     },
     "grades_7_12": {
       "display_name": "Grades 7-12",
       "subjects": {
+        "Agricultural Science": {
+          "display_name": "Agricultural Science",
+          "topics": [
+            {
+              "topic": "Weeds",
+              "cards": [
+                { "front": "What is a weed in agricultural science?", "back": "A weed is any plant growing where it is not wanted and which interferes with the growth or management of useful crops." },
+                { "front": "State two effects of weeds on crop production.", "back": "Weeds compete with crops for nutrients, water, light, and space, and they can also reduce yield or harbor pests and diseases." },
+                { "front": "Why can weeds increase the cost of farming?", "back": "Weeds make land preparation, weeding, harvesting, and general crop management more difficult and time-consuming." },
+                { "front": "Name two methods of weed control.", "back": "Methods include manual weeding, hoeing, mulching, cover cropping, and careful use of herbicides." },
+                { "front": "What is selective weed control?", "back": "Selective weed control removes weeds without seriously damaging the crop being protected." },
+                { "front": "Why is proper weed management important?", "back": "Proper weed management helps crops grow well, improves yield, and supports healthier and more efficient farm production." }
+              ]
+            }
+          ]
+        },
         "Biology": {
           "display_name": "Biology",
           "topics": [

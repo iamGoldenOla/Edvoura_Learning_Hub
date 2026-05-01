@@ -1,7 +1,26 @@
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { generateFlashcards } from '@/lib/ai';
-import { buildLocalFlashcardDeck } from '@/lib/student-practice/practiceLibrary';
+import { buildLocalFlashcardDeck, findExactLocalFlashcardDeck } from '@/lib/student-practice/practiceLibrary';
+
+function normalizeForMatch(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
+}
+
+function isRelevantFlashcardDeck(cards: Array<{ front: string; back: string }>, subject: string, topic: string) {
+  const searchable = normalizeForMatch(cards.flatMap((card) => [card.front, card.back]).join(' '));
+  const topicTokens = normalizeForMatch(topic)
+    .split(/\s+/)
+    .filter((token) => token.length >= 4 && !['about', 'with', 'into', 'from'].includes(token));
+  const subjectTokens = normalizeForMatch(subject)
+    .split(/\s+/)
+    .filter((token) => token.length >= 4 && !['science', 'studies', 'language'].includes(token));
+
+  const topicMatched = topicTokens.length === 0 || topicTokens.some((token) => searchable.includes(token));
+  const subjectMatched = subjectTokens.length === 0 || subjectTokens.some((token) => searchable.includes(token));
+
+  return topicMatched && subjectMatched;
+}
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +39,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing gradeLevel' }, { status: 400 });
     }
 
-    // Surprise mode or missing inputs → return a random local deck
     if (surprise || (!subject && !topic)) {
       const localDeck = buildLocalFlashcardDeck({ gradeLevel, subject, topic, surprise: Boolean(surprise) });
       return NextResponse.json({
@@ -33,10 +51,21 @@ export async function POST(request: Request) {
       });
     }
 
-    // Try AI generation first (the primary, intelligent path)
+    const exactLocalDeck = findExactLocalFlashcardDeck({ gradeLevel, subject, topic });
+    if (exactLocalDeck) {
+      return NextResponse.json({
+        flashcards: exactLocalDeck.cards,
+        provider: 'local_practice_library',
+        subject: exactLocalDeck.subject,
+        topic: exactLocalDeck.topic,
+        deckTitle: `${exactLocalDeck.subject}: ${exactLocalDeck.topic}`,
+        attempts: 1,
+      });
+    }
+
     const result = await generateFlashcards({ subject, topic, gradeLevel });
 
-    if (result.success) {
+    if (result.success && isRelevantFlashcardDeck(result.data, String(subject ?? ''), String(topic ?? ''))) {
       return NextResponse.json({
         flashcards: result.data,
         attempts: result.attempts,
@@ -47,13 +76,13 @@ export async function POST(request: Request) {
       });
     }
 
-    // AI failed → check if we have a LOCAL deck that actually matches the requested topic
     const localDeck = buildLocalFlashcardDeck({ gradeLevel, subject, topic });
     const requestedTopic = (topic || '').trim().toLowerCase();
     const localTopicLower = localDeck.topic.toLowerCase();
     const localTopicMatches =
       requestedTopic &&
       (localTopicLower.includes(requestedTopic) || requestedTopic.includes(localTopicLower));
+    const fallbackReason = result.success ? 'AI returned cards that did not match the requested topic.' : result.error;
 
     if (localTopicMatches) {
       return NextResponse.json({
@@ -62,24 +91,38 @@ export async function POST(request: Request) {
         subject: localDeck.subject,
         topic: localDeck.topic,
         deckTitle: localDeck.deckTitle,
-        fallbackReason: result.error,
+        fallbackReason,
         attempts: result.attempts,
       });
     }
 
-    // AI failed AND no matching local deck → generate smart placeholder cards
-    // about the exact topic the student asked for
     const requestedSubject = subject || 'General Studies';
     const displayTopic = topic || 'Core Ideas';
     const placeholderCards = [
-      { front: `What is ${displayTopic}?`, back: `${displayTopic} is an important concept in ${requestedSubject}. It involves understanding key ideas, properties, and real-life applications that students explore through observation and practice.` },
-      { front: `Why is ${displayTopic} important in ${requestedSubject}?`, back: `${displayTopic} is important because it helps us understand how the world works and connects classroom learning to everyday experiences.` },
-      { front: `Name one key feature or property of ${displayTopic}.`, back: `A strong answer identifies one specific characteristic of ${displayTopic} and explains why it matters with a clear example.` },
-      { front: `Give a real-life example of ${displayTopic}.`, back: `Think about where you encounter ${displayTopic} at home, at school, or in nature. Describe what happens and why.` },
-      { front: `How would you explain ${displayTopic} to a younger student?`, back: `Use simple words, give one clear example, and relate it to something they already know from daily life.` },
-      { front: `What happens if ${displayTopic} is absent or removed?`, back: `Consider what changes in the system or environment. This helps you understand why ${displayTopic} is essential.` },
-      { front: `How can you test or observe ${displayTopic}?`, back: `Design a simple experiment or observation activity. Describe what you would see, hear, or measure.` },
-      { front: `Compare ${displayTopic} with a related concept.`, back: `Find similarities and differences with a closely related idea. Use a table or list to organize your comparison.` },
+      {
+        front: `What is ${displayTopic}?`,
+        back: `${displayTopic} is an important concept in ${requestedSubject}. Start by learning its meaning, its key features, and where it appears in real life.`,
+      },
+      {
+        front: `Why is ${displayTopic} important in ${requestedSubject}?`,
+        back: `${displayTopic} matters because it helps learners understand how the topic affects people, work, nature, or daily life within ${requestedSubject}.`,
+      },
+      {
+        front: `Give one example or feature of ${displayTopic}.`,
+        back: `A strong answer should name a real example of ${displayTopic} or describe one clear feature that shows what it is and why it matters.`,
+      },
+      {
+        front: `How can learners identify ${displayTopic}?`,
+        back: `Learners should look for the main characteristics, where it is found, and how it affects people, crops, animals, or the environment.`,
+      },
+      {
+        front: `How does ${displayTopic} affect daily life or work?`,
+        back: `Think about how ${displayTopic} changes farming, health, transport, learning, or the environment depending on the subject and topic.`,
+      },
+      {
+        front: `What is one way to manage, solve, or respond to ${displayTopic}?`,
+        back: `A good answer gives one practical action, explains how it works, and connects it to the topic clearly.`,
+      },
     ];
 
     return NextResponse.json({
@@ -88,7 +131,7 @@ export async function POST(request: Request) {
       subject: requestedSubject,
       topic: displayTopic,
       deckTitle: `${requestedSubject}: ${displayTopic}`,
-      fallbackReason: result.error,
+      fallbackReason,
       attempts: result.attempts,
     });
   } catch (error: unknown) {

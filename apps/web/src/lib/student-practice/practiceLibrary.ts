@@ -58,6 +58,12 @@ type FlashcardSubjectRecord = {
   topics: FlashcardTopicRecord[];
 };
 
+type LocalFlashcardDeckResult = {
+  subject: string;
+  topic: string;
+  cards: PracticeFlashcard[];
+};
+
 const GRADE_SURPRISE_SUBJECT_ORDER: Record<GradeBandKey, string[]> = {
   grades_1_3: ['English Language', 'Mathematics', 'Basic Science', 'Social Studies'],
   grades_4_6: ['Mathematics', 'English Language', 'Basic Science', 'Social Studies'],
@@ -141,7 +147,7 @@ function findFlashcardDeck(params: {
   subject?: string;
   topic?: string;
   surprise?: boolean;
-}) {
+}): LocalFlashcardDeckResult | null {
   const subjects = getFlashcardSubjectsForGrade(params.gradeLevel) as Record<string, FlashcardSubjectRecord>;
   const requestedSubject = normalizeSubjectName(params.subject?.trim() || '');
   const requestedTopic = (params.topic?.trim() || '').toLowerCase();
@@ -290,4 +296,30 @@ export function buildLocalFlashcardDeck(params: {
     topic,
     provider: 'local_practice_template',
   };
+}
+
+export function findExactLocalFlashcardDeck(params: {
+  gradeLevel: string;
+  subject?: string;
+  topic?: string;
+}) {
+  const topic = (params.topic?.trim() || '').toLowerCase();
+  if (!topic) {
+    return null;
+  }
+
+  const deck = findFlashcardDeck({
+    gradeLevel: params.gradeLevel,
+    subject: params.subject,
+    topic: params.topic,
+    surprise: false,
+  });
+
+  if (!deck) {
+    return null;
+  }
+
+  const matchedTopic = deck.topic.toLowerCase();
+  const exactOrNearMatch = matchedTopic === topic || matchedTopic.includes(topic) || topic.includes(matchedTopic);
+  return exactOrNearMatch ? deck : null;
 }
