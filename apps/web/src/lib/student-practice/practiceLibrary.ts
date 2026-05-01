@@ -71,8 +71,23 @@ const GRADE_SURPRISE_SUBJECT_ORDER: Record<GradeBandKey, string[]> = {
 };
 
 function gradeNumberFromLabel(value: string) {
-  const match = value.toLowerCase().match(/grade\s*(\d{1,2})|^(\d{1,2})$/);
-  return Number(match?.[1] ?? match?.[2] ?? 7);
+  const normalized = value.toLowerCase().trim();
+  const rangeMatch = normalized.match(/grades?\s*(\d{1,2})\s*[-–]\s*(\d{1,2})/);
+  if (rangeMatch?.[1]) {
+    return Number(rangeMatch[1]);
+  }
+
+  const labelledMatch = normalized.match(/grades?[_\s-]*(\d{1,2})/);
+  if (labelledMatch?.[1]) {
+    return Number(labelledMatch[1]);
+  }
+
+  const numericMatch = normalized.match(/\d{1,2}/);
+  if (numericMatch?.[0]) {
+    return Number(numericMatch[0]);
+  }
+
+  return 7;
 }
 
 export function getPracticeGradeBand(gradeLevel: string): GradeBandKey {

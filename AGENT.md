@@ -372,4 +372,5 @@ Before merging any meaningful change:
 - Local spelling practice now reserves used words across rounds so fresh practice pulls unseen words first instead of repeating the same first 6-8 words over and over.
 - Flashcard study now surfaces quick topic suggestions from the same grade-aware library so students are nudged toward real lesson-note topics instead of guessing topic names manually.
 - Guided flashcards now prefer exact local topic decks first and reject off-topic AI decks, so a request like `Agricultural Science -> Weeds` no longer drifts into unrelated subjects.
+- Grade-band parsing for student self-study now correctly understands labels like `Grades 1-3` and `Grades 4-6`, preventing secondary-school subjects from leaking into lower-grade flashcard suggestions.
 - This phase is content-library only: no SQL migration, no storage bucket, no Supabase Edge Function, and no RLS change is required.

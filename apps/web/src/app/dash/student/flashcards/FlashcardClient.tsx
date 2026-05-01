@@ -137,7 +137,10 @@ export default function FlashcardClient({
 
           {subjectSuggestions.length > 0 ? (
             <div className="space-y-3">
-              <p className="text-xs font-black uppercase tracking-widest text-dark/60">Quick Subjects</p>
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs font-black uppercase tracking-widest text-dark/60">Quick Subjects</p>
+                <p className="text-[11px] font-bold text-dark/50">Only class-appropriate subjects are shown for {gradeLevel}.</p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {subjectSuggestions.map((entry) => (
                   <button
