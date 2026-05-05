@@ -6,6 +6,7 @@ export default async function DashboardLayout(props: { children: ReactNode }) {
   const viewer = await requireAppViewer();
   const role = viewer.currentUser.primaryRole;
   const initialBand = gradeBandCodeToUiBand(viewer.currentUser.learnerProfile?.gradeBandCode ?? null);
+  const subscriptionStatus = await getSubscriptionStatusForUser(viewer.currentUser.userId ?? viewer.currentUser.profile.id);
 
   return (
     <DashboardClientShell
@@ -14,8 +15,10 @@ export default async function DashboardLayout(props: { children: ReactNode }) {
       viewerName={viewer.currentUser.profile.fullName ?? viewer.currentUser.email}
       viewerSecondaryLabel={viewer.currentUser.learnerProfile?.gradeLevelName ?? role.replace('_', ' ')}
       viewerAvatarPath={viewer.currentUser.profile.avatarPath}
+      subscriptionStatus={subscriptionStatus}
     >
       {props.children}
     </DashboardClientShell>
   );
 }
+

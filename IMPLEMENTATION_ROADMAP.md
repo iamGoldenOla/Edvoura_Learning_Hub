@@ -86,7 +86,8 @@ Status: Complete ✅
 
 ### Phase 5: Billing and Entitlements
 
-Status: Planned (Next)
+Status: In Progress 🛠️
+
 
 - Paystack customer and subscription lifecycle
 - Plans, invoices, and payment reconciliation

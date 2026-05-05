@@ -1,6 +1,16 @@
 # CHANGELOG_INTERNAL.md
 
+## [1.0.0] - 2026-05-01
+
+### Phase 5: Billing and Entitlements
+
+- Paystack plan CRUD APIs.
+- Subscription lifecycle/gating.
+- Worker billing alerts.
+- Dashboard status integration.
+
 ## [0.9.1] - 2026-04-11
+
 
 ### Neo-Brutalist Dashboard Intensification
 
