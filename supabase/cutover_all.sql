@@ -2248,6 +2248,9 @@ $$;
 
 grant execute on function public.attach_assignment_asset(uuid, text, text) to authenticated;
 grant execute on function public.attach_submission_file(uuid, text, text) to authenticated;
+
+drop function if exists public.create_tutor_live_slot(uuid, text, timestamptz, timestamptz, text, text, public.live_class_provider);
+
 create or replace function public.create_tutor_live_slot(
   p_class_id uuid,
   p_title text,
