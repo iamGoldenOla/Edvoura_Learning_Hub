@@ -944,7 +944,8 @@ values
   ('civic-education', 'Civic Education', false),
   ('biology', 'Biology', true),
   ('chemistry', 'Chemistry', true),
-  ('physics', 'Physics', true)
+  ('physics', 'Physics', true),
+  ('games', 'Games', false)
 on conflict (slug) do update
 set
   name = excluded.name,

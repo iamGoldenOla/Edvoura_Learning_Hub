@@ -84,6 +84,7 @@ export default function DashboardClientShell({
   viewerName,
   viewerSecondaryLabel,
   viewerAvatarPath,
+  subscriptionStatus,
   children,
 }: {
   role: string;
@@ -91,6 +92,7 @@ export default function DashboardClientShell({
   viewerName: string;
   viewerSecondaryLabel: string;
   viewerAvatarPath?: string | null;
+  subscriptionStatus?: string | null;
   children: React.ReactNode;
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

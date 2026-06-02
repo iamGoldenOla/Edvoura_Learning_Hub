@@ -80,14 +80,14 @@ export default async function TutorSchedulePage(props: {
 
             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto">
               <Link href="/dash/tutor/schedule?action=sync-calendar" className="w-full sm:flex-1 lg:flex-none">
-                <Button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <Clock className="mr-2 w-4 h-4" /> Sync Calendar
-                </Button>
+                </button>
               </Link>
               <a href="#scheduler" className="w-full sm:flex-1 lg:flex-none">
-                <Button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <Plus className="mr-2 w-5 h-5" /> New Session
-                </Button>
+                </button>
               </a>
             </div>
           </div>
@@ -186,9 +186,9 @@ export default async function TutorSchedulePage(props: {
                               <TutorLessonStartButton lessonId={session.id} status={session.status} />
                               {(session.host_url || session.join_url) && (
                                 <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-                                  <Button className="w-full sm:w-auto h-12 px-4 sm:px-5 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
+                                  <button className="w-full sm:w-auto h-12 px-4 sm:px-5 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
                                     <ExternalLink className="w-4 h-4" /> Preview Link
-                                  </Button>
+                                  </button>
                                 </a>
                               )}
                             </>
@@ -349,9 +349,9 @@ export default async function TutorSchedulePage(props: {
                     </p>
                   </div>
 
-                  <Button type="submit" className="w-full h-12 sm:h-14 bg-dark hover:bg-dark/90 text-white border-[2px] sm:border-[3px] border-dark rounded-xl font-black text-base sm:text-lg transition-all active:scale-95 shadow-[3px_3px_0px_#F5C518] sm:shadow-[4px_4px_0px_#F5C518] break-words">
+                  <button type="submit" className="w-full h-12 sm:h-14 bg-dark hover:bg-dark/90 text-white border-[2px] sm:border-[3px] border-dark rounded-xl font-black text-base sm:text-lg transition-all active:scale-95 shadow-[3px_3px_0px_#F5C518] sm:shadow-[4px_4px_0px_#F5C518] break-words flex items-center justify-center">
                     Publish to Dashboard
-                  </Button>
+                  </button>
                 </form>
               </div>
 

@@ -1,10 +1,8 @@
-import { createSupabaseServerClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/server';
 import { createBillingPlanSchema, CreateBillingPlanDto, createSubscriptionSchema, CreateSubscriptionDto, subscriptionStatusSchema } from '@edvoura/contracts';
-import { cookies } from 'next/headers';
 
 export async function createNotification(recipientUserId: string, kind: string, title: string, body: string, data?: Record<string, unknown>) {
-  const cookieStore = cookies();
-  const supabase = createSupabaseServerClient(cookieStore);
+  const supabase = await createClient();
   const { error } = await supabase.from('notifications').insert({
     recipient_user_id: recipientUserId,
     kind,
@@ -16,9 +14,9 @@ export async function createNotification(recipientUserId: string, kind: string, 
 }
 
 export class BillingService {
-  private supabase;
+  private supabase: any;
 
-  constructor(supabase) {
+  constructor(supabase: any) {
     this.supabase = supabase;
   }
 
@@ -60,9 +58,7 @@ export class BillingService {
 
 // Client helper
 export async function getSubscriptionStatusForUser(userId: string) {
-  const cookieStore = cookies();
-  const supabase = createSupabaseServerClient(cookieStore);
+  const supabase = await createClient();
   const service = new BillingService(supabase);
   return service.getSubscriptionStatus(userId);
 }
-

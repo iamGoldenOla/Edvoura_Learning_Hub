@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import DashboardClientShell from '@/components/dashboards/DashboardClientShell';
 import { gradeBandCodeToUiBand, requireAppViewer } from '@/lib/app-context';
+import { getSubscriptionStatusForUser } from '@/lib/billing';
 
 export default async function DashboardLayout(props: { children: ReactNode }) {
   const viewer = await requireAppViewer();
@@ -21,4 +22,3 @@ export default async function DashboardLayout(props: { children: ReactNode }) {
     </DashboardClientShell>
   );
 }
-

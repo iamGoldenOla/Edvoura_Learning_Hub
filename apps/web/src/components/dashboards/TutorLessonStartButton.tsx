@@ -49,13 +49,13 @@ export default function TutorLessonStartButton({ lessonId, status }: { lessonId:
   };
 
   return (
-    <Button
+    <button
       onClick={handleStart}
       disabled={loading}
-      className="h-12 px-6 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+      className="h-12 px-6 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl font-black flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all inline-flex justify-center"
     >
       <Play className="w-4 h-4 fill-current" />
       {loading ? 'Launching…' : 'Start Lesson'}
-    </Button>
+    </button>
   );
 }

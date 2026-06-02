@@ -1,14 +1,12 @@
 'use server';
 
 import { BillingService } from '@/lib/billing';
-import { createSupabaseServerClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
+import { createClient } from '@/utils/supabase/server';
 import { createSubscriptionSchema, CreateSubscriptionDto } from '@edvoura/contracts';
 import { redirect } from 'next/navigation';
 
 export async function createSubscription(formData: FormData) {
-  const cookieStore = cookies();
-  const supabase = createSupabaseServerClient(cookieStore);
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) throw new Error('Unauthorized');
@@ -25,4 +23,3 @@ export async function createSubscription(formData: FormData) {
   // TODO: Integrate real Paystack checkout redirect
   redirect(`/dash?subCreated=true&code=${subscription.paystack_subscription_code}`);
 }
-

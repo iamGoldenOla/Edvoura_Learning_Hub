@@ -84,16 +84,16 @@ export default async function TutorDashboard() {
 
             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto mt-4 sm:mt-0">
               <Link href="/dash/tutor/schedule" className="w-full sm:flex-1 lg:flex-none">
-                <Button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <CalendarClock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Open Scheduler
-                </Button>
+                </button>
               </Link>
               <Link href="/dash/tutor/builder" className="w-full sm:flex-1 lg:flex-none">
-                <Button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   New Assignment
-                </Button>
+                </button>
               </Link>
             </div>
           </div>
@@ -142,17 +142,17 @@ export default async function TutorDashboard() {
                                 <TutorLessonStartButton lessonId={item.id} status={item.status} />
                               ) : (
                                 <a href={item.joinUrl || '#'} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-                                  <Button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-8 bg-emerald-400 border-[3px] border-dark hover:bg-emerald-500 text-dark rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
+                                  <button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-8 bg-emerald-400 border-[3px] border-dark hover:bg-emerald-500 text-dark rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
                                     <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Join Classroom
-                                  </Button>
+                                  </button>
                                 </a>
                               )}
                               
                               {item.status !== 'live' && item.joinUrl && (
                                 <a href={item.joinUrl} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-                                  <Button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark hover:bg-slate-50 text-dark rounded-xl font-black shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base flex items-center justify-center">
+                                  <button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark hover:bg-slate-50 text-dark rounded-xl font-black shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base flex items-center justify-center">
                                     Preview Room
-                                  </Button>
+                                  </button>
                                 </a>
                               )}
                            </div>
@@ -243,9 +243,9 @@ export default async function TutorDashboard() {
                  <p className="text-dark/80 text-sm font-semibold leading-relaxed">
                    Need assistance with your lessons or tools? Our team is available 24/7.
                  </p>
-                 <Button className="mt-8 w-full h-14 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+                 <button className="mt-8 w-full h-14 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center">
                    Get Support
-                 </Button>
+                 </button>
               </div>
 
               <DashboardFeedWidget

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BillingService, createNotification } from '@/lib/billing';
-import { createSupabaseServerClient } from '@/utils/supabase/server';
-import { cookies } from 'next/headers';
+import { BillingService } from '@/lib/billing';
+import { createClient } from '@/utils/supabase/server';
 import { createBillingPlanSchema } from '@edvoura/contracts';
 import { AppRole } from '@edvoura/contracts';
 
 export async function GET() {
-  const cookieStore = cookies();
-  const supabase = createSupabaseServerClient(cookieStore);
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,8 +21,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const cookieStore = cookies();
-  const supabase = createSupabaseServerClient(cookieStore);
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -42,4 +39,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(plan, { status: 201 });
 }
-

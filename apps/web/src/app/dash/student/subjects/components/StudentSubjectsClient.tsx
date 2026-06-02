@@ -33,6 +33,7 @@ const SUBJECT_ALIAS_MAP: Record<string, string> = {
   'civic education': 'Civic Education',
   'computer studies': 'Computer Studies',
   spelling: 'Spelling',
+  games: 'Games',
 };
 
 function normalizeSubjectLabel(value: string | null | undefined) {
