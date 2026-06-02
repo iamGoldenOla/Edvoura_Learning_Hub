@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import DashboardFeedWidget from '@/components/dashboards/DashboardFeedWidget';
 import TutorLiveContentPublisher from '@/components/dashboards/TutorLiveContentPublisher';
 import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButton';
+import DeleteLessonButton from '@/components/dashboards/DeleteLessonButton';
 import { requireAppViewer, getTutorDashboardData } from '@/lib/app-context';
 import { buildFeedCountMapFromNotificationData, getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { createClient } from '@/utils/supabase/server';
@@ -155,6 +156,7 @@ export default async function TutorDashboard() {
                                   </button>
                                 </a>
                               )}
+                              <DeleteLessonButton lessonId={item.id} />
                            </div>
                         </div>
                       </div>

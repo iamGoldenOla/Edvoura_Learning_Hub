@@ -1,19 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-
-import { Button } from '@/components/ui/button';
 import { createClient } from '@/utils/supabase/client';
-
-type LiveContent = {
-  headline: string;
-  agenda: string;
-  explanation: string;
-  classTask: string;
-  homework: string;
-  resourceUrl: string;
-  updatedAt: string;
-};
 
 export default function TutorLiveContentPublisher() {
   const supabase = useMemo(() => createClient(), []);
@@ -25,6 +13,7 @@ export default function TutorLiveContentPublisher() {
   const [resourceUrl, setResourceUrl] = useState('');
   const [feedback, setFeedback] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'info' | 'tasks'>('info');
 
   useEffect(() => {
     const loadCurrent = async () => {
@@ -54,14 +43,13 @@ export default function TutorLiveContentPublisher() {
 
   const publish = async () => {
     if (!headline.trim() || !agenda.trim() || !classTask.trim()) {
-      setFeedback('Please fill at least headline, agenda, and class task before publishing.');
+      setFeedback('Please fill at least Topic, Agenda, and Class Task before publishing.');
       return;
     }
 
     setIsSaving(true);
     setFeedback('');
     try {
-      // Get the current user to set tutor_user_id
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
@@ -85,7 +73,7 @@ export default function TutorLiveContentPublisher() {
       });
 
       if (error) throw error;
-      setFeedback('Live teaching content published to student dashboard.');
+      setFeedback('Live teaching content published to student dashboard!');
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : 'Failed to publish live content.');
     } finally {
@@ -115,83 +103,168 @@ export default function TutorLiveContentPublisher() {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-      <h3 className="text-sm font-semibold text-slate-900">Live Content To Student Dashboard</h3>
-      <p className="mt-1 text-xs text-slate-600">
-        Publish what students should see during this lesson.
-      </p>
-
-      <div className="mt-3 space-y-2">
-        <input
-          value={headline}
-          onChange={(event) => setHeadline(event.target.value)}
-          placeholder="Lesson headline"
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-        />
-        <textarea
-          value={agenda}
-          onChange={(event) => setAgenda(event.target.value)}
-          placeholder="Lesson agenda"
-          rows={2}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-        />
-        <textarea
-          value={explanation}
-          onChange={(event) => setExplanation(event.target.value)}
-          placeholder="Key explanation points"
-          rows={2}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-        />
-        <textarea
-          value={classTask}
-          onChange={(event) => setClassTask(event.target.value)}
-          placeholder="In-class task"
-          rows={2}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-        />
-        <textarea
-          value={homework}
-          onChange={(event) => setHomework(event.target.value)}
-          placeholder="Homework"
-          rows={2}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-        />
-        <input
-          value={resourceUrl}
-          onChange={(event) => setResourceUrl(event.target.value)}
-          placeholder="Resource URL (optional)"
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800"
-        />
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button variant="primary" className="text-xs" onClick={() => void publish()} disabled={isSaving}>
-          Publish To Students
-        </Button>
-        {resourceUrl ? (
-          <Button
-            variant="outline"
-            className="border-slate-300 bg-white text-xs"
-            onClick={() => {
-              setResourceUrl('');
-              setFeedback('Resource link removed from draft.');
-            }}
-            disabled={isSaving}
-          >
-            Remove Resource Link
-          </Button>
-        ) : null}
-        <Button
-          variant="outline"
-          className="border-slate-300 bg-white text-xs"
-          onClick={() => void clearPublished()}
-          disabled={isSaving}
+    <div className="w-full space-y-4">
+      {/* Brutalist Tab Selection */}
+      <div className="flex gap-2 border-b-[3px] border-dark pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('info')}
+          className={`flex-1 h-9 text-xs font-black uppercase tracking-wider border-[2px] border-dark rounded-xl transition-all ${
+            activeTab === 'info'
+              ? 'bg-yellow text-dark shadow-[2px_2px_0px_#060E1C]'
+              : 'bg-white text-dark/70 hover:bg-slate-50'
+          }`}
         >
-          Clear Published Content
-        </Button>
+          Topic & Info
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('tasks')}
+          className={`flex-1 h-9 text-xs font-black uppercase tracking-wider border-[2px] border-dark rounded-xl transition-all ${
+            activeTab === 'tasks'
+              ? 'bg-yellow text-dark shadow-[2px_2px_0px_#060E1C]'
+              : 'bg-white text-dark/70 hover:bg-slate-50'
+          }`}
+        >
+          Class Tasks
+        </button>
       </div>
 
-      {feedback ? <p className="mt-2 text-xs font-medium text-blue-700">{feedback}</p> : null}
+      {/* Form Fields container */}
+      <div className="space-y-4">
+        {activeTab === 'info' ? (
+          <>
+            <div className="space-y-1.5">
+              <label htmlFor="live-headline" className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                Lesson Topic / Headline
+              </label>
+              <input
+                id="live-headline"
+                type="text"
+                value={headline}
+                onChange={(event) => setHeadline(event.target.value)}
+                placeholder="e.g. Fractions with visual models"
+                className="w-full h-11 rounded-xl border-[2px] border-dark bg-white px-3 text-sm font-bold text-dark outline-none transition-all focus:bg-white focus:border-yellow"
+              />
+            </div>
+            
+            <div className="space-y-1.5">
+              <label htmlFor="live-agenda" className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                Lesson Agenda
+              </label>
+              <textarea
+                id="live-agenda"
+                value={agenda}
+                onChange={(event) => setAgenda(event.target.value)}
+                placeholder="e.g. 1) Starter drill 2) Core task 3) Exit ticket"
+                rows={3}
+                className="w-full rounded-xl border-[2px] border-dark bg-white px-3 py-2 text-sm font-bold text-dark outline-none transition-all focus:bg-white focus:border-yellow resize-none min-h-[80px]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="live-resourceUrl" className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                Resource Link (Optional)
+              </label>
+              <input
+                id="live-resourceUrl"
+                type="url"
+                value={resourceUrl}
+                onChange={(event) => setResourceUrl(event.target.value)}
+                placeholder="e.g. Miro board, Worksheet PDF URL"
+                className="w-full h-11 rounded-xl border-[2px] border-dark bg-white px-3 text-sm font-bold text-dark outline-none transition-all focus:bg-white focus:border-yellow"
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="space-y-1.5">
+              <label htmlFor="live-explanation" className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                Key Explanation Points
+              </label>
+              <textarea
+                id="live-explanation"
+                value={explanation}
+                onChange={(event) => setExplanation(event.target.value)}
+                placeholder="e.g. Remember to find common denominators first."
+                rows={3}
+                className="w-full rounded-xl border-[2px] border-dark bg-white px-3 py-2 text-sm font-bold text-dark outline-none transition-all focus:bg-white focus:border-yellow resize-none min-h-[80px]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="live-classTask" className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                In-Class Task
+              </label>
+              <textarea
+                id="live-classTask"
+                value={classTask}
+                onChange={(event) => setClassTask(event.target.value)}
+                placeholder="e.g. Solve questions 1 to 10 on page 44."
+                rows={3}
+                className="w-full rounded-xl border-[2px] border-dark bg-white px-3 py-2 text-sm font-bold text-dark outline-none transition-all focus:bg-white focus:border-yellow resize-none min-h-[80px]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label htmlFor="live-homework" className="text-[10px] font-black uppercase tracking-widest text-dark/60">
+                Homework
+              </label>
+              <textarea
+                id="live-homework"
+                value={homework}
+                onChange={(event) => setHomework(event.target.value)}
+                placeholder="e.g. Finish worksheet questions 11-15."
+                rows={2}
+                className="w-full rounded-xl border-[2px] border-dark bg-white px-3 py-2 text-sm font-bold text-dark outline-none transition-all focus:bg-white focus:border-yellow resize-none min-h-[60px]"
+              />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Save / Actions Area */}
+      <div className="pt-2 space-y-3">
+        <button
+          type="button"
+          onClick={() => void publish()}
+          disabled={isSaving}
+          className="w-full h-11 bg-dark hover:bg-dark/90 text-white border-[2px] border-dark rounded-xl font-black text-xs uppercase tracking-wider transition-all active:scale-95 shadow-[2px_2px_0px_#F5C518] disabled:opacity-50 flex items-center justify-center cursor-pointer"
+        >
+          {isSaving ? 'Publishing...' : 'Publish to Students'}
+        </button>
+        
+        <div className="flex gap-2">
+          {resourceUrl && (
+            <button
+              type="button"
+              onClick={() => {
+                setResourceUrl('');
+                setFeedback('Resource link removed from draft.');
+              }}
+              disabled={isSaving}
+              className="flex-1 h-9 bg-white hover:bg-slate-50 text-dark border-[2px] border-dark rounded-xl font-black text-[10px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center cursor-pointer"
+            >
+              Clear Link
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void clearPublished()}
+            disabled={isSaving}
+            className="flex-1 h-9 bg-white hover:bg-slate-50 text-dark border-[2px] border-dark rounded-xl font-black text-[10px] uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center cursor-pointer"
+          >
+            Clear Live
+          </button>
+        </div>
+      </div>
+
+      {/* Notification Toast */}
+      {feedback && (
+        <div className="mt-3 p-3 rounded-xl border-[2px] border-dark bg-yellow/10 text-xs font-bold text-dark shadow-[2px_2px_0px_#060E1C] leading-snug break-words">
+          💡 {feedback}
+        </div>
+      )}
     </div>
   );
 }
