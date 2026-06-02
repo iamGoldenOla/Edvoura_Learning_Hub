@@ -11,8 +11,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
     }
 
+    const webhookSecret = process.env.PAYSTACK_LIVE_SECRET_KEY_EDVOURA || process.env.PAYSTACK_SECRET_KEY || '';
     const hash = crypto
-      .createHmac('sha512', process.env.PAYSTACK_SECRET_KEY || '')
+      .createHmac('sha512', webhookSecret)
       .update(body)
       .digest('hex');
 

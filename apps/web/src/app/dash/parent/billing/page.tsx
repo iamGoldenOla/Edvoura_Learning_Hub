@@ -3,13 +3,84 @@ import { CreditCard, FileText, Receipt, ShieldCheck, ArrowRight } from 'lucide-r
 
 import { Button } from '@/components/ui/button';
 import { getBillingSummary, requireAppViewer } from '@/lib/app-context';
+import CheckoutButton from '@/components/dashboards/CheckoutButton';
+import { createClient } from '@/utils/supabase/server';
 
-export default async function ParentBillingPage() {
+export default async function ParentBillingPage(props: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const searchParams = (await props.searchParams) ?? {};
+  const action = typeof searchParams.action === 'string' ? searchParams.action : null;
+
   const viewer = await requireAppViewer();
   const billing = await getBillingSummary(viewer.accessToken).catch(() => null);
+  const supabase = await createClient();
 
   const subscription = billing?.subscription ?? null;
   const invoices = billing?.invoices ?? [];
+
+  // Fetch active plans from DB
+  const { data: plansData } = await supabase.schema('billing').from('plans')
+    .select('id, code, name, interval, amount_minor, currency_code')
+    .eq('is_active', true)
+    .order('amount_minor', { ascending: true });
+
+  const plans = plansData || [];
+
+  if (action === 'checkout') {
+    return (
+      <div className="mx-auto w-full min-w-0 max-w-[1400px] space-y-8 p-4 sm:p-8 pb-24">
+        {/* Header */}
+        <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+          <div className="p-6 sm:p-8 border-b-[4px] border-dark bg-yellow/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-black text-dark tracking-tight">Choose a Plan</h1>
+              <p className="text-sm font-bold text-dark/70 mt-2">Activate or upgrade your family subscription to unlock student portals.</p>
+            </div>
+            <Link href="/dash/parent/billing" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 py-2 text-sm inline-flex items-center justify-center shrink-0">
+              Back to Billing
+            </Link>
+          </div>
+        </div>
+
+        {/* Plan Grid */}
+        {plans.length === 0 ? (
+          <div className="border-[3px] border-dark rounded-[20px] sm:rounded-[28px] bg-white p-12 text-center shadow-[4px_4px_0px_#060E1C]">
+            <p className="text-lg font-black text-dark">No billing plans configured.</p>
+            <p className="text-sm text-dark/60 mt-2 font-bold">Please contact support or configure subscription tiers in the Admin Console.</p>
+          </div>
+        ) : (
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-3">
+            {plans.map((plan) => (
+              <div
+                key={plan.id}
+                className="flex flex-col border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white p-6 sm:p-8 shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] transition-all hover:-translate-y-1"
+              >
+                <div className="mb-6">
+                  <h3 className="text-2xl font-black text-dark">{plan.name}</h3>
+                  <div className="mt-4 flex items-baseline">
+                    <span className="text-4xl sm:text-5xl font-black text-dark">
+                      {(plan.amount_minor / 100).toLocaleString()}
+                    </span>
+                    <span className="text-sm font-bold text-dark/60 ml-1 uppercase">
+                      {plan.currency_code} / {plan.interval}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs font-bold text-dark/40 uppercase tracking-widest leading-none">
+                    Plan Code: {plan.code}
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-6 border-t-[2px] border-dark/10 flex-1 flex flex-col justify-end">
+                  <CheckoutButton planId={plan.id} planName={plan.name} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">

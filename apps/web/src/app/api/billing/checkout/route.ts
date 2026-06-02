@@ -27,17 +27,18 @@ export async function POST(request: Request) {
     }
 
     // 2. Initialize Paystack Transaction
+    const paystackSecret = process.env.PAYSTACK_LIVE_SECRET_KEY_EDVOURA || process.env.PAYSTACK_SECRET_KEY || '';
     const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${paystackSecret}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         email: session.user.email,
         amount: plan.amount_minor,
         plan: plan.paystack_plan_code,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/dash/parent/billing/success`,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.edvouralearninghub.com'}/dash/parent/billing/success`,
         metadata: {
           userId: session.user.id,
           planId: plan.id,

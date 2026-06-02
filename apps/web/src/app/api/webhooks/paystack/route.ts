@@ -8,11 +8,12 @@ export async function POST(request: Request) {
   const rawBody = await request.text();
   const signature = request.headers.get('x-paystack-signature');
 
-  if (!process.env.PAYSTACK_WEBHOOK_SECRET) {
-    console.warn('PAYSTACK_WEBHOOK_SECRET not set — skipping signature verification in dev mode');
+  const webhookSecret = process.env.PAYSTACK_WEBHOOK_SECRET || process.env.PAYSTACK_LIVE_SECRET_KEY_EDVOURA || process.env.PAYSTACK_SECRET_KEY || '';
+  if (!webhookSecret) {
+    console.warn('PAYSTACK_WEBHOOK_SECRET/SECRET_KEY not set — skipping signature verification in dev mode');
   } else {
     const hash = crypto
-      .createHmac('sha512', process.env.PAYSTACK_WEBHOOK_SECRET)
+      .createHmac('sha512', webhookSecret)
       .update(rawBody)
       .digest('hex');
 
