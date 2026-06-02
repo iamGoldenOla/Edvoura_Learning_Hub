@@ -8,7 +8,8 @@ export default async function DashboardLayout(props: { children: ReactNode }) {
   const initialBand = gradeBandCodeToUiBand(viewer.currentUser.learnerProfile?.gradeBandCode ?? null);
   
   const billingSummary = await getBillingSummary(viewer.accessToken).catch(() => null);
-  const hasAccess = billingSummary?.entitlement.hasAccess ?? true;
+  const isStaff = ['tutor', 'admin', 'super_admin'].includes(role);
+  const hasAccess = isStaff ? true : (billingSummary?.entitlement.hasAccess ?? true);
   const subscriptionStatus = billingSummary?.subscription?.status ?? null;
 
   return (
