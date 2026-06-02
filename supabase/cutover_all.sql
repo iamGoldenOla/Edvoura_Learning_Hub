@@ -2289,9 +2289,9 @@ create or replace function public.create_tutor_live_slot(
   p_provider public.live_class_provider default 'google_meet'
 )
 returns table (
-  lesson_id uuid,
-  join_url text,
-  host_url text
+  out_lesson_id uuid,
+  out_join_url text,
+  out_host_url text
 )
 language plpgsql
 security definer
@@ -2329,6 +2329,7 @@ begin
     scheduled_end_at,
     provider,
     status,
+    tutor_user_id,
     created_by_user_id
   )
   values (
@@ -2338,6 +2339,7 @@ begin
     p_scheduled_end_at,
     p_provider,
     'scheduled',
+    auth.uid(),
     auth.uid()
   )
   returning id into v_lesson_id;

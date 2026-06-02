@@ -1,13 +1,15 @@
 import { ReactNode } from 'react';
 import DashboardClientShell from '@/components/dashboards/DashboardClientShell';
-import { gradeBandCodeToUiBand, requireAppViewer } from '@/lib/app-context';
-import { getSubscriptionStatusForUser } from '@/lib/billing';
+import { gradeBandCodeToUiBand, requireAppViewer, getBillingSummary } from '@/lib/app-context';
 
 export default async function DashboardLayout(props: { children: ReactNode }) {
   const viewer = await requireAppViewer();
   const role = viewer.currentUser.primaryRole;
   const initialBand = gradeBandCodeToUiBand(viewer.currentUser.learnerProfile?.gradeBandCode ?? null);
-  const subscriptionStatus = await getSubscriptionStatusForUser(viewer.currentUser.userId ?? viewer.currentUser.profile.id);
+  
+  const billingSummary = await getBillingSummary(viewer.accessToken).catch(() => null);
+  const hasAccess = billingSummary?.entitlement.hasAccess ?? true;
+  const subscriptionStatus = billingSummary?.subscription?.status ?? null;
 
   return (
     <DashboardClientShell
@@ -17,6 +19,7 @@ export default async function DashboardLayout(props: { children: ReactNode }) {
       viewerSecondaryLabel={viewer.currentUser.learnerProfile?.gradeLevelName ?? role.replace('_', ' ')}
       viewerAvatarPath={viewer.currentUser.profile.avatarPath}
       subscriptionStatus={subscriptionStatus}
+      hasAccess={hasAccess}
     >
       {props.children}
     </DashboardClientShell>

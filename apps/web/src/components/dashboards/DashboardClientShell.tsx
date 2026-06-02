@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import {
   BarChart3,
   ArrowLeft,
@@ -15,6 +15,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   Crown,
+  Info,
   DollarSign,
   Flame,
   Gamepad2,
@@ -85,6 +86,7 @@ export default function DashboardClientShell({
   viewerSecondaryLabel,
   viewerAvatarPath,
   subscriptionStatus,
+  hasAccess = true,
   children,
 }: {
   role: string;
@@ -93,10 +95,12 @@ export default function DashboardClientShell({
   viewerSecondaryLabel: string;
   viewerAvatarPath?: string | null;
   subscriptionStatus?: string | null;
+  hasAccess?: boolean;
   children: React.ReactNode;
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const isSuperAdmin = role === 'super_admin';
   
   const effectiveRole: 'student' | 'parent' | 'tutor' | 'admin' =
@@ -107,6 +111,16 @@ export default function DashboardClientShell({
         : pathname.startsWith('/dash/admin')
           ? 'admin'
           : 'student';
+
+  useEffect(() => {
+    if (hasAccess === false) {
+      if (effectiveRole === 'parent' && pathname !== '/dash/parent/billing' && pathname !== '/dash/profile') {
+        router.push('/dash/parent/billing');
+      } else if (effectiveRole === 'student' && pathname !== '/dash/student/subscription-inactive' && pathname !== '/dash/profile') {
+        router.push('/dash/student/subscription-inactive');
+      }
+    }
+  }, [hasAccess, effectiveRole, pathname, router]);
 
   const [timeLabel, setTimeLabel] = useState('--:--');
   const [avatarUrl, setAvatarUrl] = useState<string>(
@@ -205,17 +219,40 @@ export default function DashboardClientShell({
           <nav className="custom-scrollbar flex-1 space-y-1 overflow-y-auto pr-2 pb-6">
             <p className="px-4 mb-2 mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Navigation</p>
 
-            <NavItem
-              href={`/dash/${effectiveRole}`}
-              icon={Crown}
-              label="Overview"
-              active={pathname === `/dash/${effectiveRole}`}
-            />
+            {hasAccess === false ? (
+              <>
+                {effectiveRole === 'parent' ? (
+                  <NavItem
+                    href="/dash/parent/billing"
+                    icon={CreditCard}
+                    label="Billing & Subscription"
+                    active={pathname === '/dash/parent/billing'}
+                  />
+                ) : null}
+                {effectiveRole === 'student' ? (
+                  <NavItem
+                    href="/dash/student/subscription-inactive"
+                    icon={Info}
+                    label="Subscription Inactive"
+                    active={pathname === '/dash/student/subscription-inactive'}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <>
+                <NavItem
+                  href={`/dash/${effectiveRole}`}
+                  icon={Crown}
+                  label="Overview"
+                  active={pathname === `/dash/${effectiveRole}`}
+                />
 
-            {effectiveRole === 'student' ? <StudentSidebarNav initialBand={initialBand} /> : null}
-            {effectiveRole === 'tutor' ? <TutorSidebarNav /> : null}
-            {effectiveRole === 'parent' ? <ParentSidebarNav /> : null}
-            {effectiveRole === 'admin' ? <AdminSidebarNav isSuperAdmin={isSuperAdmin} /> : null}
+                {effectiveRole === 'student' ? <StudentSidebarNav initialBand={initialBand} /> : null}
+                {effectiveRole === 'tutor' ? <TutorSidebarNav /> : null}
+                {effectiveRole === 'parent' ? <ParentSidebarNav /> : null}
+                {effectiveRole === 'admin' ? <AdminSidebarNav isSuperAdmin={isSuperAdmin} /> : null}
+              </>
+            )}
 
             <p className="px-4 mb-2 mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">System</p>
             <NavItem href="/" icon={ArrowLeft} label="Exit Portal" />
