@@ -17,53 +17,128 @@ export async function createTutorLiveSlot(formData: FormData) {
 
   const subjectId = String(formData.get('subjectId') ?? '').trim();
   const gradeLevelId = String(formData.get('gradeLevelId') ?? '').trim();
+  const studentId = String(formData.get('studentId') ?? '').trim();
   const title = String(formData.get('title') ?? '').trim();
   const scheduledStartAt = String(formData.get('scheduledStartAt') ?? '').trim();
   const scheduledEndAt = String(formData.get('scheduledEndAt') ?? '').trim();
   const joinUrl = String(formData.get('joinUrl') ?? '').trim();
   const hostUrl = String(formData.get('hostUrl') ?? '').trim();
 
-  if (!subjectId || !gradeLevelId || !scheduledStartAt || !scheduledEndAt) {
+  if (!subjectId || (!studentId && !gradeLevelId) || !scheduledStartAt || !scheduledEndAt) {
     redirect('/dash/tutor/schedule?error=missing-fields');
   }
 
-  // Find or create the class for this tutor/subject/grade
-  const { data: existingClass, error: classError } = await supabase
-    .from('classes')
-    .select('id')
-    .eq('primary_tutor_user_id', session.user.id)
-    .eq('subject_id', subjectId)
-    .eq('grade_level_id', gradeLevelId)
-    .maybeSingle();
+  let classId: string | undefined;
 
-  let classId = existingClass?.id;
-
-  if (!classId) {
-    // Fetch subject and grade names for a nice class title, plus the band_id
-    const [{ data: sub }, { data: grd }] = await Promise.all([
-      supabase.from('subjects').select('name').eq('id', subjectId).single(),
-      supabase.from('grade_levels').select('display_name, band_id').eq('id', gradeLevelId).single(),
-    ]);
-
-    const { data: newClass, error: createClassError } = await supabase
+  if (studentId) {
+    // 1-on-1 private lesson logic
+    const { data: privateClasses } = await supabase
       .from('classes')
-      .insert({
-        title: `${sub?.name || 'New Class'} - ${grd?.display_name || 'All'}`,
-        subject_id: subjectId,
-        grade_level_id: gradeLevelId,
-        grade_band_id: grd?.band_id,
-        primary_tutor_user_id: session.user.id,
-        created_by_user_id: session.user.id,
-        status: 'active',
-      })
       .select('id')
-      .single();
+      .eq('primary_tutor_user_id', session.user.id)
+      .eq('subject_id', subjectId)
+      .is('grade_level_id', null);
 
-    if (createClassError) {
-      console.error('Failed to auto-create class:', createClassError);
-      redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to create class for this subject: ' + createClassError.message)}`);
+    if (privateClasses && privateClasses.length > 0) {
+      const privateClassIds = privateClasses.map((c) => c.id);
+      const { data: enrollments } = await supabase
+        .from('class_enrollments')
+        .select('class_id')
+        .in('class_id', privateClassIds)
+        .eq('student_user_id', studentId)
+        .maybeSingle();
+
+      classId = enrollments?.class_id;
     }
-    classId = newClass.id;
+
+    if (!classId) {
+      // Fetch student details, including learner band ID and name
+      const { data: studentProfile } = await supabase
+        .from('student_profiles')
+        .select('learner_band_id')
+        .eq('user_id', studentId)
+        .single();
+
+      const [{ data: sub }, { data: studentUser }] = await Promise.all([
+        supabase.from('subjects').select('name').eq('id', subjectId).single(),
+        supabase.from('profiles').select('full_name, email').eq('id', studentId).single(),
+      ]);
+
+      const studentName = studentUser?.full_name || studentUser?.email || 'Student';
+
+      // Create new private 1-on-1 class
+      const { data: newClass, error: createClassError } = await supabase
+        .from('classes')
+        .insert({
+          title: `${sub?.name || 'Session'} with ${studentName}`,
+          subject_id: subjectId,
+          grade_level_id: null, // Avoid auto-enrollment
+          grade_band_id: studentProfile?.learner_band_id,
+          primary_tutor_user_id: session.user.id,
+          created_by_user_id: session.user.id,
+          status: 'active',
+        })
+        .select('id')
+        .single();
+
+      if (createClassError) {
+        console.error('Failed to auto-create 1-on-1 class:', createClassError);
+        redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to create class for 1-on-1: ' + createClassError.message)}`);
+      }
+      classId = newClass.id;
+
+      // Enroll student manually to the private class
+      const { error: enrollError } = await supabase
+        .from('class_enrollments')
+        .insert({
+          class_id: classId,
+          student_user_id: studentId,
+          status: 'active',
+        });
+
+      if (enrollError) {
+        console.error('Failed to enroll student to 1-on-1 class:', enrollError);
+        redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to enroll student to 1-on-1: ' + enrollError.message)}`);
+      }
+    }
+  } else {
+    // Group lesson logic (default)
+    const { data: existingClass, error: classError } = await supabase
+      .from('classes')
+      .select('id')
+      .eq('primary_tutor_user_id', session.user.id)
+      .eq('subject_id', subjectId)
+      .eq('grade_level_id', gradeLevelId)
+      .maybeSingle();
+
+    classId = existingClass?.id;
+
+    if (!classId) {
+      const [{ data: sub }, { data: grd }] = await Promise.all([
+        supabase.from('subjects').select('name').eq('id', subjectId).single(),
+        supabase.from('grade_levels').select('display_name, band_id').eq('id', gradeLevelId).single(),
+      ]);
+
+      const { data: newClass, error: createClassError } = await supabase
+        .from('classes')
+        .insert({
+          title: `${sub?.name || 'New Class'} - ${grd?.display_name || 'All'}`,
+          subject_id: subjectId,
+          grade_level_id: gradeLevelId,
+          grade_band_id: grd?.band_id,
+          primary_tutor_user_id: session.user.id,
+          created_by_user_id: session.user.id,
+          status: 'active',
+        })
+        .select('id')
+        .single();
+
+      if (createClassError) {
+        console.error('Failed to auto-create class:', createClassError);
+        redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to create class for this subject: ' + createClassError.message)}`);
+      }
+      classId = newClass.id;
+    }
   }
 
   const startDateObj = new Date(scheduledStartAt);

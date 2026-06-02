@@ -1225,6 +1225,7 @@ using (
   id = auth.uid()
   or private.current_user_is_admin()
   or private.can_access_student(id)
+  or private.current_user_has_role('tutor'::public.app_role)
 );
 
 drop policy if exists "profiles_update_self" on public.profiles;
@@ -1276,6 +1277,7 @@ for select
 using (
   private.can_access_student(user_id)
   or private.current_user_is_admin()
+  or private.current_user_has_role('tutor'::public.app_role)
 );
 
 drop policy if exists "tutor_profiles_select_self_or_admin" on public.tutor_profiles;
@@ -1322,6 +1324,32 @@ using (
   or private.can_access_class(class_id)
   or private.current_user_is_admin()
 );
+
+-- Allow tutors to enroll students to classes they own
+drop policy if exists "tutors_insert_class_enrollments" on public.class_enrollments;
+create policy "tutors_insert_class_enrollments" on public.class_enrollments
+for insert
+to authenticated
+with check (
+  exists (
+    select 1 from public.classes c
+    where c.id = class_id
+      and (c.primary_tutor_user_id = auth.uid() or c.created_by_user_id = auth.uid())
+  )
+  or private.current_user_is_admin()
+);
+
+-- Allow tutors to delete classes they own/created (upon cascading cleanups)
+drop policy if exists "tutors_delete_classes" on public.classes;
+create policy "tutors_delete_classes" on public.classes
+for delete
+to authenticated
+using (
+  primary_tutor_user_id = auth.uid()
+  or created_by_user_id = auth.uid()
+  or private.current_user_is_admin()
+);
+
 
 drop policy if exists "lessons_select_authorized" on public.lessons;
 create policy "lessons_select_authorized" on public.lessons
@@ -2367,7 +2395,7 @@ as $$
     lesson.title,
     class.title as class_title,
     subject.name as subject_name,
-    grade_level.display_name as grade_level_name,
+    coalesce(grade_level.display_name, '1-on-1') as grade_level_name,
     lesson.scheduled_start_at,
     lesson.scheduled_end_at,
     lesson.status::text,
@@ -2379,7 +2407,7 @@ as $$
     on class.id = lesson.class_id
   join public.subjects subject
     on subject.id = class.subject_id
-  join public.grade_levels grade_level
+  left join public.grade_levels grade_level
     on grade_level.id = class.grade_level_id
   left join private.lesson_live_sessions live
     on live.lesson_id = lesson.id

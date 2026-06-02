@@ -50,11 +50,46 @@ export default async function TutorSchedulePage(props: {
   const errorParam = typeof searchParams.error === 'string' ? searchParams.error : null;
 
   const supabase = await createClient();
-  const [{ data: scheduleRows = [] }, { data: gradeLevels = [] }, { data: subjects = [] }] = await Promise.all([
+  const [
+    { data: scheduleRows = [] },
+    { data: gradeLevels = [] },
+    { data: subjects = [] },
+    { data: allStudentProfiles = [] }
+  ] = await Promise.all([
     supabase.rpc('list_tutor_live_schedule'),
     supabase.from('grade_levels').select('id, display_name').order('display_name'),
     supabase.from('subjects').select('id, name').order('name'),
+    supabase.from('student_profiles').select('user_id, grade_level_id'),
   ]);
+
+  const studentUserIds = (allStudentProfiles ?? []).map((sp) => sp.user_id);
+  const studentGradeIds = [...new Set((allStudentProfiles ?? []).map((sp) => sp.grade_level_id))];
+
+  const [{ data: studentProfilesInfo = [] }, { data: studentGradesInfo = [] }] = await Promise.all([
+    studentUserIds.length
+      ? supabase.from('profiles').select('id, full_name, email').in('id', studentUserIds)
+      : Promise.resolve({ data: [] }),
+    studentGradeIds.length
+      ? supabase.from('grade_levels').select('id, display_name').in('id', studentGradeIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+
+  const profilesMap = new Map<string, { full_name: string | null; email: string | null }>(
+    (studentProfilesInfo ?? []).map((p) => [p.id, p])
+  );
+  const gradesMap = new Map<string, string>(
+    (studentGradesInfo ?? []).map((g) => [g.id, g.display_name])
+  );
+
+  const studentOptions = (allStudentProfiles ?? []).map((sp) => {
+    const profile = profilesMap.get(sp.user_id);
+    const gradeName = gradesMap.get(sp.grade_level_id) ?? 'Grade pending';
+    return {
+      userId: sp.user_id,
+      name: profile?.full_name || profile?.email || 'Unnamed student',
+      gradeName,
+    };
+  }).sort((a, b) => a.name.localeCompare(b.name));
 
   const typedSchedule = (scheduleRows ?? []) as TutorLiveScheduleRow[];
   const upcomingSessions = typedSchedule.filter((session) => new Date(session.scheduled_end_at) >= new Date());
@@ -244,7 +279,7 @@ export default async function TutorSchedulePage(props: {
 
                     <div className="space-y-2">
                       <label htmlFor="gradeLevelId" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                        Grade Level
+                        Grade Level / Audience
                       </label>
                       <select
                         id="gradeLevelId"
@@ -259,6 +294,24 @@ export default async function TutorSchedulePage(props: {
                         ))}
                       </select>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="studentId" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
+                      Target Student (Optional - for 1-on-1 Sessions)
+                    </label>
+                    <select
+                      id="studentId"
+                      name="studentId"
+                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
+                    >
+                      <option value="">Group Session (All students in selected Grade Level)</option>
+                      {(studentOptions || []).map((item) => (
+                        <option key={item.userId} value={item.userId}>
+                          {item.name} ({item.gradeName})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="space-y-2">
