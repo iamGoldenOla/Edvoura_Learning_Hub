@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Bell, CreditCard, Users } from 'lucide-react';
 import { getAdminDashboardData } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
+import ParentAccessToggle from '@/components/dashboards/ParentAccessToggle';
 
 export default async function AdminParentsPage() {
   const dashboard = await getAdminDashboardData();
@@ -9,9 +10,25 @@ export default async function AdminParentsPage() {
 
   const [
     { count: linkedParentsCount },
+    { data: parentProfiles },
   ] = await Promise.all([
     supabase.from('parent_child_links').select('*', { count: 'exact', head: true }),
+    supabase.from('parent_profiles').select(`
+      user_id,
+      portal_access_blocked,
+      profiles (
+        full_name,
+        email
+      )
+    `),
   ]);
+
+  const parentList = (parentProfiles ?? []).map((p: any) => ({
+    userId: p.user_id,
+    portalAccessBlocked: p.portal_access_blocked,
+    fullName: p.profiles?.full_name || 'No Name',
+    email: p.profiles?.email || 'No Email',
+  }));
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
@@ -78,6 +95,37 @@ export default async function AdminParentsPage() {
           <Link href="/dash/admin/notifications?action=parent-broadcast" className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 inline-flex items-center">
             Send Parent Broadcast
           </Link>
+        </div>
+      </div>
+
+      {/* Parent Directory Table */}
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+        <div className="p-6 border-b-[4px] border-dark bg-sky-100 flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-black text-dark tracking-tight">Parent Directory & Access Control</h2>
+        </div>
+        <div className="p-6 sm:p-8 space-y-4">
+          {parentList.length === 0 ? (
+             <p className="text-sm font-bold text-dark/50">No parent accounts registered.</p>
+          ) : (
+             parentList.map((parent: any) => (
+               <div key={parent.userId} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C]">
+                 <div>
+                   <p className="font-black text-lg text-dark">{parent.fullName}</p>
+                   <p className="text-sm font-bold text-dark/60 mt-1">{parent.email}</p>
+                 </div>
+                 <div className="flex items-center gap-3 self-start sm:self-auto">
+                   <span className={`inline-flex items-center justify-center text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded border-[2px] border-dark ${
+                     parent.portalAccessBlocked 
+                       ? 'bg-rose-100 text-rose-800' 
+                       : 'bg-emerald-100 text-emerald-800'
+                   }`}>
+                     {parent.portalAccessBlocked ? 'Suspended' : 'Active Access'}
+                   </span>
+                   <ParentAccessToggle userId={parent.userId} initialBlocked={parent.portalAccessBlocked} />
+                 </div>
+               </div>
+             ))
+          )}
         </div>
       </div>
     </div>

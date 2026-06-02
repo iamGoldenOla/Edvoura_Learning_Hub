@@ -640,6 +640,17 @@ async function getDirectBillingSummaryFromSupabase(
     }
   }
 
+  let accessBlocked = false;
+  if (ownerIds.length > 0) {
+    const { data: parentProfiles } = await supabase
+      .from('parent_profiles')
+      .select('portal_access_blocked')
+      .in('user_id', ownerIds);
+    if (parentProfiles && parentProfiles.some((p: any) => p.portal_access_blocked)) {
+      accessBlocked = true;
+    }
+  }
+
   const { data: plansData } = await supabase.schema('billing').from('plans')
     .select('id, code, name, interval, amount_minor, currency_code')
     .eq('is_active', true)
@@ -682,16 +693,10 @@ async function getDirectBillingSummaryFromSupabase(
     planCurrencyCode: planDetails?.currency_code ?? null,
   } : null;
 
-  const entitlement =
-    subscription && ['active', 'trialing'].includes(subscription.status)
-      ? {
-          hasAccess: true,
-          reason: subscriptionData?.cancel_at_period_end ? 'active_until_period_end' : 'active_subscription',
-        }
-      : {
-          hasAccess: false,
-          reason: subscription?.status === 'past_due' ? 'payment_required' : 'no_active_subscription',
-        };
+  const entitlement = {
+    hasAccess: !accessBlocked,
+    reason: accessBlocked ? 'portal_access_blocked' : 'access_granted',
+  };
 
   return {
     entitlement,
