@@ -2159,6 +2159,8 @@ with check (
   and private.can_access_submission(((storage.foldername(name))[2])::uuid)
 );
 
+drop function if exists public.attach_assignment_asset(uuid, text, text);
+
 create or replace function public.attach_assignment_asset(
   target_assignment_id uuid,
   object_path text,
