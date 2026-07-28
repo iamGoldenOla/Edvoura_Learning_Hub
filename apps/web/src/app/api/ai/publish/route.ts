@@ -18,10 +18,12 @@ export async function POST(request: NextRequest) {
     .select('role')
     .eq('user_id', user.id);
 
-  const isSuperAdmin = (roles ?? []).some((entry) => entry.role === 'super_admin');
-  if (!isSuperAdmin) {
+  const isAuthorized = (roles ?? []).some((entry) =>
+    ['tutor', 'admin', 'super_admin'].includes(entry.role)
+  );
+  if (!isAuthorized) {
     return NextResponse.json(
-      { error: 'Only super admins can publish AI content to students.' },
+      { error: 'Only tutors and admins can publish content to students.' },
       { status: 403 },
     );
   }
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
   try {
     const result = await publishAiContentAndDistribute(String(body.contentId), {
       actorUserId: user.id,
-      allowedStatuses: ['APPROVED'],
+      allowedStatuses: ['DRAFT', 'APPROVED', 'PUBLISHED'],
     });
 
     return NextResponse.json({

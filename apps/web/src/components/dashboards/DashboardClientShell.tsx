@@ -292,7 +292,7 @@ export default function DashboardClientShell({
                   <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>
                 </div>
                 <p className="truncate text-xs sm:text-sm font-black text-dark/60 min-w-0">{roleLabel}</p>
-                {effectiveRole === 'student' ? <StudentBandSwitcher /> : null}
+                {effectiveRole === 'student' && role !== 'student' ? <StudentBandSwitcher /> : null}
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">

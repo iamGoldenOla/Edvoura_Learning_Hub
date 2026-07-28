@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { ArrowLeft, CheckCircle2, Languages, Mic2, PlayCircle, RefreshCw, Sparkles, Volume2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -79,6 +79,7 @@ export function SpellingBeeClient({
   const [accent, setAccent] = useState<AccentMode>('en-GB');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [usedPracticeWordKeys, setUsedPracticeWordKeys] = useState<string[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentWord = activeChallenge?.words[currentIndex] ?? null;
 
@@ -118,6 +119,18 @@ export function SpellingBeeClient({
   const correctCount = useMemo(() => results.filter((entry) => entry.correct).length, [results]);
 
   const speak = async (word: SpellingBeeWord) => {
+    if (isSpeaking) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      setIsSpeaking(false);
+      return;
+    }
+
     const text = `Spell the word. ${word.word}. ${word.exampleSentence}. The word again: ${word.word}.`;
     const langCode = accent === 'en-US' ? 'en-us' : 'en-gb';
 
@@ -126,11 +139,18 @@ export function SpellingBeeClient({
     try {
       const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${encodeURIComponent(langCode)}`;
       const audio = new Audio(audioUrl);
+      audioRef.current = audio;
       audio.playbackRate = 0.9;
 
       await new Promise<void>((resolve, reject) => {
-        audio.onended = () => resolve();
-        audio.onerror = () => reject(new Error('Audio playback failed'));
+        audio.onended = () => {
+          audioRef.current = null;
+          resolve();
+        };
+        audio.onerror = () => {
+          audioRef.current = null;
+          reject(new Error('Audio playback failed'));
+        };
         setTimeout(() => {
           audio.play().catch(reject);
         }, 50);
@@ -346,7 +366,7 @@ export function SpellingBeeClient({
           <div className="flex flex-col items-center gap-6 py-4 sm:gap-8 sm:py-6">
             <button
               type="button"
-              disabled={isSpeaking}
+              disabled={false}
               onClick={() => speak(currentWord)}
               className={`flex h-24 w-24 items-center justify-center rounded-full border-[4px] border-dark text-dark shadow-[6px_6px_0px_#060E1C] transition-all active:scale-95 ${
                 isSpeaking
@@ -358,7 +378,7 @@ export function SpellingBeeClient({
             </button>
             <div className="space-y-3 text-center">
               <p className="text-sm font-black uppercase tracking-widest text-dark/30">
-                {isSpeaking ? 'Playing pronunciation...' : 'Click to hear the word again'}
+                {isSpeaking ? 'Playing pronunciation... (Click to stop)' : 'Click to hear the word again'}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
