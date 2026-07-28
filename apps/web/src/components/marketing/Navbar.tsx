@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import Image from 'next/image';
+import { Menu, X, ArrowRight } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 
 import { createClient } from '@/utils/supabase/client';
@@ -28,6 +29,24 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showPromo, setShowPromo] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !user) {
+      const hasSeen = sessionStorage.getItem('edvoura_seen_flyer');
+      if (!hasSeen) {
+        const timer = setTimeout(() => {
+          setShowPromo(true);
+        }, 4000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [user]);
+
+  const closePromo = () => {
+    sessionStorage.setItem('edvoura_seen_flyer', 'true');
+    setShowPromo(false);
+  };
 
   useEffect(() => {
     const supabase = createClient();
@@ -91,7 +110,7 @@ export default function Navbar() {
         <div className="marketing-container flex h-16 items-center justify-between gap-3 sm:h-[72px]">
           <Link
             href="/"
-            className="group flex min-w-0 max-w-[calc(100%-4.5rem)] items-center gap-2.5 perspective-[1000px] sm:gap-3"
+            className="group flex min-w-0 max-w-[calc(100%-4.5rem)] items-center gap-2.5 perspective-[1000px] sm:gap-3 lg:-ml-6 xl:-ml-8"
           >
             <div className="kinetic-logo relative h-8 w-8 flex-shrink-0 sm:h-10 sm:w-10 xl:h-11 xl:w-11">
               <div className="absolute inset-0 rotate-12 rounded-xl bg-yellow shadow-[4px_4px_0px_rgba(0,0,0,0.2)] transition-transform duration-500 group-hover:rotate-[30deg]" />
@@ -331,6 +350,48 @@ export default function Navbar() {
                   </>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showPromo && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-navy/80 p-4 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="relative w-full max-w-[420px] border-8 border-navy bg-white p-4 shadow-[15px_15px_0px_#F5C518] rounded-[2rem] transform rotate-1 animate-in zoom-in-95 duration-300">
+            {/* Close Button */}
+            <button
+              onClick={closePromo}
+              className="absolute -right-3 -top-3 z-10 flex h-10 w-10 items-center justify-center rounded-xl border-4 border-navy bg-error text-white shadow-[4px_4px_0px_#0A1628] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#0A1628] transition-all"
+              aria-label="Close promotion"
+            >
+              <X className="h-5 w-5 stroke-[3px]" />
+            </button>
+
+            {/* Flyer Image */}
+            <div className="relative aspect-[3/4.2] w-full overflow-hidden rounded-2xl border-4 border-navy bg-off-white">
+              <Image
+                src="/images/flyer.png"
+                alt="Edvoura Tutoring Service Flyer"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="mt-5 flex flex-col gap-2.5">
+              <Link
+                href="/signup"
+                onClick={closePromo}
+                className="flex w-full items-center justify-center gap-2 bg-yellow text-navy border-4 border-navy font-heading font-black py-4 rounded-xl shadow-[4px_4px_0px_#0A1628] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#0A1628] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all text-base sm:text-lg uppercase tracking-wider"
+              >
+                Sign Up Now <ArrowRight className="w-5 h-5" />
+              </Link>
+              <button
+                onClick={closePromo}
+                className="text-center font-heading text-[10px] font-black uppercase tracking-widest text-navy/60 hover:text-navy transition-colors py-1"
+              >
+                No thanks, I will browse first
+              </button>
             </div>
           </div>
         </div>

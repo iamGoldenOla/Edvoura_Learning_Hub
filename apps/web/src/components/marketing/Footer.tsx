@@ -28,8 +28,8 @@ export default function Footer() {
   return (
     <footer className="bg-dark text-white">
       <div className="marketing-container py-12 md:py-16">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 lg:grid-cols-5 lg:gap-8">
-          <div className="lg:pr-8">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] lg:gap-8">
+          <div className="lg:pr-8 lg:-ml-6 xl:-ml-8">
             <Link href="/" className="group mb-6 flex items-center gap-3 perspective-[1000px]">
               <div className="kinetic-logo relative h-10 w-10 flex-shrink-0">
                 <div className="absolute inset-0 rotate-12 rounded-xl bg-yellow shadow-xl transition-transform duration-500 group-hover:rotate-[30deg]" />

@@ -8,12 +8,12 @@ import { siteContact } from '@/lib/site';
 // TODO: Replace with Supabase query → job_listings
 const openPositions = [
   {
-    title: 'Senior Frontend Engineer',
-    department: 'Engineering',
-    location: 'Remote Global',
-    type: 'Full-time',
-    salary: '$80k - $120k',
-    desc: 'Build and scale the Edvoura student and tutor dashboards using Next.js, Tailwind, and Supabase.',
+    title: 'Critical Thinking Skills Tutor',
+    department: 'Education',
+    location: 'Remote',
+    type: 'Part-time',
+    salary: '$25 - $40 /hr',
+    desc: 'Deliver engaging, high-impact tutoring sessions focusing on logical reasoning, analytical skills, and academic problem-solving.',
     color: 'bg-info',
     tilt: 'rotate-1'
   },
@@ -28,12 +28,12 @@ const openPositions = [
     tilt: '-rotate-1'
   },
   {
-    title: 'Full-Stack Developer (Go/Node)',
-    department: 'Engineering',
-    location: 'Remote Global',
-    type: 'Full-time',
-    salary: '$90k - $130k',
-    desc: 'Design robust real-time communication protocols for our live session infrastructure.',
+    title: 'Core Life Skills Tutor',
+    department: 'Education',
+    location: 'Remote',
+    type: 'Part-time',
+    salary: '$25 - $40 /hr',
+    desc: 'Deliver interactive sessions focusing on communication, time management, emotional intelligence, and leadership habits.',
     color: 'bg-success',
     tilt: 'rotate-2'
   },
