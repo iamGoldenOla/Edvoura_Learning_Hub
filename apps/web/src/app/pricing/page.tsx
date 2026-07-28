@@ -83,7 +83,7 @@ export default function PricingPage() {
 
       {/* Hero (Parallax) */}
       <section 
-        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-20 pt-[104px] sm:pb-24 sm:pt-[120px] md:pb-40 md:pt-[148px]"
+        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-36 sm:pb-44 md:pb-64 pt-[104px] sm:pt-[120px] md:pt-[148px]"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1427504494785-3a9a2753cd0e?q=80&w=2070&auto=format&fit=crop")' }}
       >
         <div className="absolute inset-0 bg-info/85 backdrop-blur-sm" />
@@ -102,9 +102,9 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="relative z-20 -mt-24 md:-mt-40 pb-24 border-b-8 border-navy bg-off-white">
+      <section className="relative z-20 -mt-12 md:-mt-20 pb-24 border-b-8 border-navy bg-off-white">
         <div className="marketing-container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 items-stretch">
             {plans.map((plan, i) => (
               <div
                 key={plan.name}

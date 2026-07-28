@@ -361,19 +361,9 @@ export default function Home() {
          </div>
       </section>
 
-      {/* ===== SOLID BRUTALIST CTA BANNER WITH VIDEO BACKGROUND ===== */}
-      <section className="relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10 bg-navy">
-        <video 
-          src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260325_120549_0cd82c36-56b3-4dd9-b190-069cfc3a623f.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-        />
-        <div className="absolute inset-0 bg-navy/60 z-10 pointer-events-none" />
-
-        <div className="marketing-container relative z-20 max-w-4xl text-center">
+      {/* ===== SOLID BRUTALIST CTA BANNER ===== */}
+      <section className="bg-error relative py-24 md:py-32 overflow-hidden border-b-8 border-navy z-10">
+        <div className="marketing-container relative z-10 max-w-4xl text-center">
           <h2 className="font-heading font-black text-white text-5xl md:text-7xl mb-8 tracking-tight drop-shadow-[6px_6px_0px_#0A1628] transform rotate-[-2deg]">
             READY TO JOIN THE ELITE?
           </h2>
