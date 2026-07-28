@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "../../dist/apps/worker",
+    "outDir": "dist",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },

@@ -1,8 +1,8 @@
 import { Module, type DynamicModule } from '@nestjs/common';
-import type { Environment } from '../../api/src/common/config/environment.js';
-import { EnvironmentModule } from '../../api/src/common/config/environment.module.js';
-import { DatabaseModule } from '../../api/src/common/database/database.module.js';
-import { SupabaseModule } from '../../api/src/common/supabase/supabase.module.js';
+import type { Environment } from './common/config/environment.js';
+import { EnvironmentModule } from './common/config/environment.module.js';
+import { DatabaseModule } from './common/database/database.module.js';
+import { SupabaseModule } from './common/supabase/supabase.module.js';
 import { NotificationQueueProcessor } from './processors/notification-queue.processor.js';
 import { BillingEventProcessor } from './processors/billing-event.processor.js';
 import { ProgressSnapshotProcessor } from './processors/progress-snapshot.processor.js';

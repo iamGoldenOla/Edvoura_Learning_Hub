@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node dist/apps/worker/src/main.js",
-    "start:dev": "tsx watch src/main.ts",
+    "start": "node --env-file=../../.env dist/apps/worker/src/main.js",
+    "start:dev": "pnpm run build && node --env-file=../../.env dist/apps/worker/src/main.js",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

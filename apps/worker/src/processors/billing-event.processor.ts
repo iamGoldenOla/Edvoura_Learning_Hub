@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 
-import { ENVIRONMENT } from '../../../api/src/common/config/environment.constants.js';
-import type { Environment } from '../../../api/src/common/config/environment.js';
-import { DatabaseService } from '../../../api/src/common/database/database.service.js';
+import { ENVIRONMENT } from '../common/config/environment.constants.js';
+import type { Environment } from '../common/config/environment.js';
+import { DatabaseService } from '../common/database/database.service.js';
 
 /**
  * BillingEventProcessor polls for billing-related follow-up work:

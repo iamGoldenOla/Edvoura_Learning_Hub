@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { sql } from 'kysely';
-import { DatabaseService } from '../../../api/src/common/database/database.service.js';
+import { DatabaseService } from '../common/database/database.service.js';
 
 @Injectable()
 export class LessonReminderProcessor {

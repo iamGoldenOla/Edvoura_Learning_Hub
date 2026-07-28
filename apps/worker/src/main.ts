@@ -4,7 +4,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { WorkerModule } from './worker.module.js';
-import { loadEnvironment } from '../../api/src/common/config/environment.js';
+import { loadEnvironment } from './common/config/environment.js';
 import { NotificationQueueProcessor } from './processors/notification-queue.processor.js';
 import { BillingEventProcessor } from './processors/billing-event.processor.js';
 import { ProgressSnapshotProcessor } from './processors/progress-snapshot.processor.js';
