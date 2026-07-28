@@ -127,19 +127,14 @@ export default function Navbar() {
                 </span>
                 <div className="hidden h-[2px] w-6 bg-yellow/50 lg:block xl:w-8" />
               </div>
-              <div className="flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2 xl:gap-3">
-                <span className="mt-0.5 font-heading text-[7px] font-black leading-none tracking-[0.14em] uppercase text-white shadow-sm sm:text-[9px] xl:text-[10px]">
+              <div className="flex min-w-0 flex-col mt-0.5">
+                <span className="font-heading text-[7px] font-black leading-none tracking-[0.14em] uppercase text-white shadow-sm sm:text-[9px] xl:text-[10px]">
                   LEARNING <span className="text-yellow">HUB</span>
                   <span className="text-yellow">.</span>
                 </span>
-                <span className="hidden text-[8px] font-black uppercase tracking-[0.08em] text-yellow min-[320px]:block lg:hidden">
-                  Where learners&apos; dreams come true
+                <span className="text-[6.5px] sm:text-[8.5px] font-black uppercase tracking-[0.08em] text-yellow mt-1 leading-none">
+                  Where Learners&apos; Dreams Come True
                 </span>
-                <div className="luxury-badge hidden overflow-hidden whitespace-nowrap rounded-full border border-navy/20 bg-yellow px-2.5 py-1 lg:block">
-                  <span className="text-[8px] font-black uppercase leading-none tracking-[0.1em] text-navy">
-                    Where Learners&apos; Dreams Come True
-                  </span>
-                </div>
               </div>
             </div>
           </Link>
