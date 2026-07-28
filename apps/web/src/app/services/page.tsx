@@ -36,20 +36,6 @@ export default function ServicesPage() {
             </Link>
           </div>
         </div>
-
-        {/* Dashboard 3D Preview Image */}
-        <div className="marketing-container relative z-10 mt-12 max-w-6xl perspective-[2000px]">
-          <div className="relative rounded-[2rem] overflow-hidden border-8 border-navy shadow-[20px_20px_0px_#F5C518] transform rotate-x-[8deg] rotate-y-[-2deg] hover:rotate-x-0 hover:rotate-y-0 transition-transform duration-700 bg-white group cursor-pointer">
-            <div className="absolute inset-0 bg-yellow/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
-            <Image
-              src="/images/learning_dashboard_ui.png"
-              alt="Edvoura Learning Dashboard"
-              width={1600}
-              height={900}
-              className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
-            />
-          </div>
-        </div>
       </section>
 
       {/* Core Services */}
