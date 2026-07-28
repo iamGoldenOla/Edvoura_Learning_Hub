@@ -27,8 +27,8 @@ const supportLinks = [
 export default function Footer() {
   return (
     <footer className="bg-dark text-white">
-      <div className="marketing-container py-16 md:py-20">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+      <div className="marketing-container py-12 md:py-16">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 lg:grid-cols-5 lg:gap-8">
           <div className="lg:pr-8">
             <Link href="/" className="group mb-6 flex items-center gap-3 perspective-[1000px]">
               <div className="kinetic-logo relative h-10 w-10 flex-shrink-0">
@@ -61,11 +61,6 @@ export default function Footer() {
             <p className="max-w-[240px] text-[12px] font-medium leading-relaxed text-grey opacity-50">
               A premium global learning ecosystem empowering the next generation of leaders.
             </p>
-            <div className="mt-6 space-y-2 text-[12px] font-semibold text-grey-light/80">
-              <p>{siteContact.email.info}</p>
-              <p>{siteContact.phone.support}</p>
-              <p>{siteContact.address}</p>
-            </div>
           </div>
 
           <div>
@@ -104,6 +99,19 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-grey">Contact</h4>
+            <ul className="space-y-3 text-sm text-grey-light/70 font-semibold">
+              <li className="hover:text-yellow transition-colors duration-200 break-all">
+                <a href={`mailto:${siteContact.email.info}`}>{siteContact.email.info}</a>
+              </li>
+              <li className="hover:text-yellow transition-colors duration-200">
+                <a href={`tel:${siteContact.phone.support}`}>{siteContact.phone.support}</a>
+              </li>
+              <li className="leading-relaxed">{siteContact.address}</li>
             </ul>
           </div>
         </div>
