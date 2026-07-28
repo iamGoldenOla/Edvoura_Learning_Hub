@@ -2,6 +2,7 @@ import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
 import { ArrowLeft, Clock, User, Share2 } from 'lucide-react';
+import BlogSidebar from '@/components/marketing/BlogSidebar';
 
 // TODO: Replace with Supabase query → blog_posts WHERE slug = params.slug
 const mockPost = {
@@ -67,40 +68,48 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
           </div>
         </div>
 
-        {/* Content */}
-        <div className="max-w-3xl mx-auto px-6 md:px-8 py-16">
-          <div className="prose prose-slate max-w-none text-grey leading-relaxed text-[15px]">
-            {post.content.split('\n\n').map((paragraph, i) => {
-              const trimmed = paragraph.trim();
-              if (!trimmed) return null;
-              if (trimmed.startsWith('## ')) {
-                return <h2 key={i} className="font-heading font-extrabold text-navy text-2xl mt-12 mb-4">{trimmed.replace('## ', '')}</h2>;
-              }
-              if (trimmed.startsWith('- ')) {
-                const items = trimmed.split('\n').filter(l => l.trim().startsWith('- '));
-                return (
-                  <ul key={i} className="my-6 space-y-2">
-                    {items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-2 text-grey text-sm">
-                        <span className="text-yellow mt-1">•</span>
-                        {item.replace('- ', '').trim()}
-                      </li>
-                    ))}
-                  </ul>
-                );
-              }
-              return <p key={i} className="mb-5">{trimmed}</p>;
-            })}
-          </div>
+        {/* Content with Sidebar */}
+        <div className="marketing-container py-16">
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+            {/* Left Content Column */}
+            <div className="flex-1 w-full min-w-0 max-w-3xl mx-auto lg:mx-0">
+              <div className="prose prose-slate max-w-none text-grey leading-relaxed text-[15px]">
+                {post.content.split('\n\n').map((paragraph, i) => {
+                  const trimmed = paragraph.trim();
+                  if (!trimmed) return null;
+                  if (trimmed.startsWith('## ')) {
+                    return <h2 key={i} className="font-heading font-extrabold text-navy text-2xl mt-12 mb-4">{trimmed.replace('## ', '')}</h2>;
+                  }
+                  if (trimmed.startsWith('- ')) {
+                    const items = trimmed.split('\n').filter(l => l.trim().startsWith('- '));
+                    return (
+                      <ul key={i} className="my-6 space-y-2">
+                        {items.map((item, j) => (
+                          <li key={j} className="flex items-start gap-2 text-grey text-sm">
+                            <span className="text-yellow mt-1">•</span>
+                            {item.replace('- ', '').trim()}
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  return <p key={i} className="mb-5">{trimmed}</p>;
+                })}
+              </div>
 
-          {/* Share */}
-          <div className="mt-16 pt-8 border-t border-grey-light flex items-center justify-between">
-            <Link href="/blog" className="text-sm text-grey hover:text-navy font-medium transition-colors inline-flex items-center gap-1.5">
-              <ArrowLeft className="w-4 h-4" /> More Articles
-            </Link>
-            <button className="flex items-center gap-2 text-sm text-grey hover:text-yellow font-medium transition-colors">
-              <Share2 className="w-4 h-4" /> Share
-            </button>
+              {/* Share */}
+              <div className="mt-16 pt-8 border-t border-grey-light flex items-center justify-between">
+                <Link href="/blog" className="text-sm text-grey hover:text-navy font-medium transition-colors inline-flex items-center gap-1.5">
+                  <ArrowLeft className="w-4 h-4" /> More Articles
+                </Link>
+                <button className="flex items-center gap-2 text-sm text-grey hover:text-yellow font-medium transition-colors">
+                  <Share2 className="w-4 h-4" /> Share
+                </button>
+              </div>
+            </div>
+
+            {/* Right Sidebar Column */}
+            <BlogSidebar />
           </div>
         </div>
       </article>

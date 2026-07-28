@@ -3,6 +3,7 @@ import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
 import { ArrowRight, Clock, Star, BookOpen, Search } from 'lucide-react';
 import Image from 'next/image';
+import BlogSidebar from '@/components/marketing/BlogSidebar';
 
 // TODO: Replace with Supabase query → blog_posts
 const blogPosts = [
@@ -86,51 +87,59 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Featured Grid */}
+      {/* Featured Grid with Sidebar */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy relative">
         <div className="marketing-container">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16">
-              {blogPosts.map((post, i) => (
-                <Link
-                  key={post.slug}
-                  href={`/blog/${post.slug}`}
-                  className={`group relative flex flex-col bg-white border-4 border-navy rounded-[2.5rem] p-8 shadow-[12px_12px_0px_#0A1628] hover:-translate-y-2 hover:shadow-[15px_15px_0px_#0A1628] transition-all duration-300 ${post.tilt}`}
-                >
-                  <div className="relative aspect-video rounded-[2rem] overflow-hidden border-4 border-navy mb-8 bg-navy shrink-0">
-                     <Image src={post.img} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
-                     <div className="absolute top-4 left-4 bg-white border-2 border-navy px-3 py-1 rounded-lg text-xs font-black shadow-[2px_2px_0px_#0A1628]">
-                        {post.category}
-                     </div>
-                  </div>
-                  
-                  <div className="flex-1 flex flex-col">
-                    <div className="flex items-center gap-4 mb-4 text-xs font-black uppercase tracking-widest text-navy/60">
-                       <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {post.readTime}</span>
-                       <span>{post.date}</span>
+          <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+            {/* Left Content Column */}
+            <div className="flex-1 w-full min-w-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {blogPosts.map((post, i) => (
+                  <Link
+                    key={post.slug}
+                    href={`/blog/${post.slug}`}
+                    className={`group relative flex flex-col bg-white border-4 border-navy rounded-[2.5rem] p-8 shadow-[12px_12px_0px_#0A1628] hover:-translate-y-2 hover:shadow-[15px_15px_0px_#0A1628] transition-all duration-300 ${post.tilt}`}
+                  >
+                    <div className="relative aspect-video rounded-[2rem] overflow-hidden border-4 border-navy mb-8 bg-navy shrink-0">
+                       <Image src={post.img} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform duration-1000" />
+                       <div className="absolute top-4 left-4 bg-white border-2 border-navy px-3 py-1 rounded-lg text-xs font-black shadow-[2px_2px_0px_#0A1628]">
+                          {post.category}
+                       </div>
                     </div>
-                    <h2 className="font-heading font-black text-navy text-2xl md:text-3xl mb-4 group-hover:text-info transition-colors leading-tight">
-                       {post.title}
-                    </h2>
-                    <p className="text-navy font-bold text-lg mb-8 line-clamp-3 opacity-80">{post.excerpt}</p>
                     
-                    <div className="mt-auto flex items-center justify-between border-t-2 border-navy/10 pt-6">
-                       <div className="flex items-center gap-2 text-navy font-black underline decoration-4 underline-offset-4">
-                          Read Now 
-                       </div>
-                       <div className="w-10 h-10 rounded-full border-4 border-navy flex items-center justify-center group-hover:bg-yellow group-hover:rotate-45 transition-all">
-                          <ArrowRight className="w-5 h-5 text-navy" />
-                       </div>
+                    <div className="flex-1 flex flex-col">
+                      <div className="flex items-center gap-4 mb-4 text-xs font-black uppercase tracking-widest text-navy/60">
+                         <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {post.readTime}</span>
+                         <span>{post.date}</span>
+                      </div>
+                      <h2 className="font-heading font-black text-navy text-xl sm:text-2xl mb-4 group-hover:text-info transition-colors leading-tight">
+                         {post.title}
+                      </h2>
+                      <p className="text-navy font-bold text-sm sm:text-base mb-8 line-clamp-3 opacity-80">{post.excerpt}</p>
+                      
+                      <div className="mt-auto flex items-center justify-between border-t-2 border-navy/10 pt-6">
+                         <div className="flex items-center gap-2 text-navy font-black underline decoration-4 underline-offset-4">
+                            Read Now 
+                         </div>
+                         <div className="w-10 h-10 rounded-full border-4 border-navy flex items-center justify-center group-hover:bg-yellow group-hover:rotate-45 transition-all">
+                            <ArrowRight className="w-5 h-5 text-navy" />
+                         </div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
-           </div>
-           
-           <div className="mt-20 flex justify-center">
-              <button className="bg-navy text-white border-4 border-navy font-heading font-black px-12 py-5 rounded-2xl shadow-[10px_10px_0px_#F5C518] hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_#F5C518] transition-all text-xl">
-                 Load More Articles
-              </button>
-           </div>
+                  </Link>
+                ))}
+              </div>
+              
+              <div className="mt-20 flex justify-center">
+                 <button className="bg-navy text-white border-4 border-navy font-heading font-black px-12 py-5 rounded-2xl shadow-[10px_10px_0px_#F5C518] hover:translate-x-1 hover:translate-y-1 hover:shadow-[6px_6px_0px_#F5C518] transition-all text-xl">
+                    Load More Articles
+                 </button>
+              </div>
+            </div>
+
+            {/* Right Sidebar Column */}
+            <BlogSidebar />
+          </div>
         </div>
       </section>
 
