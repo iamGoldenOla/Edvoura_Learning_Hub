@@ -105,6 +105,18 @@ export type StudentDashboardData = {
     masteryNotes: string | null;
     snapshotDate: string;
   }>;
+  sharedResources?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    className: string;
+    createdAt: string;
+    files: Array<{
+      id: string;
+      fileName: string;
+      downloadUrl: string | null;
+    }>;
+  }>;
 };
 
 type SessionUserLike = {
@@ -163,6 +175,7 @@ const buildFallbackStudentDashboard = (
     upcomingLessons: [],
     assignments: [],
     progress: [],
+    sharedResources: [],
   };
 };
 
@@ -389,6 +402,52 @@ async function getDirectStudentDashboardFromSupabase(
     .order('snapshot_date', { ascending: false })
     .limit(6);
 
+  const { data: sharedResourcesRows = [] } = classIds.length
+    ? await supabase
+        .from('learning_activity_events')
+        .select('id, payload, created_at, class_id, assignment_id')
+        .eq('event_type', 'lesson_resource_uploaded')
+        .in('class_id', classIds)
+        .order('created_at', { ascending: false })
+        .limit(3)
+    : { data: [] };
+
+  const sharedResourceAssignmentIds = (sharedResourcesRows ?? [])
+    .map((r) => r.assignment_id)
+    .filter(Boolean);
+
+  const { data: sharedFiles = [] } = sharedResourceAssignmentIds.length > 0
+    ? await supabase
+        .from('assignment_files')
+        .select('id, assignment_id, bucket_id, object_path')
+        .in('assignment_id', sharedResourceAssignmentIds)
+    : { data: [] };
+
+  const sharedResourcesWithUrls = await Promise.all(
+    (sharedResourcesRows ?? []).map(async (row) => {
+      const relatedFiles = (sharedFiles ?? []).filter((f) => f.assignment_id === row.assignment_id);
+      const filesWithUrls = await Promise.all(
+        relatedFiles.map(async (f) => {
+          const { data } = await supabase.storage.from(f.bucket_id).createSignedUrl(f.object_path, 3600);
+          return {
+            id: f.id,
+            fileName: f.object_path.split('/').pop() ?? f.object_path,
+            downloadUrl: data?.signedUrl ?? null,
+          };
+        })
+      );
+      const relatedClass = classById.get(row.class_id);
+      return {
+        id: row.id,
+        title: String(row.payload?.title || 'Shared Resource'),
+        description: String(row.payload?.description || ''),
+        className: relatedClass?.title ?? 'General Studies',
+        createdAt: row.created_at,
+        files: filesWithUrls,
+      };
+    })
+  );
+
   const normalizedGrades = gradesData ?? [];
   const normalizedLessons = lessonsData ?? [];
   const normalizedLiveLessonRows = (liveLessonRows ?? []) as StudentLiveLessonRow[];
@@ -545,6 +604,7 @@ async function getDirectStudentDashboardFromSupabase(
       masteryNotes: item.mastery_notes,
       snapshotDate: item.snapshot_date,
     })),
+    sharedResources: sharedResourcesWithUrls,
   };
 }
 

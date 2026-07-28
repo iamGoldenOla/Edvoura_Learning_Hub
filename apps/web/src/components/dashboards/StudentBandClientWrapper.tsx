@@ -9,6 +9,7 @@ import DashboardFeedWidget from './DashboardFeedWidget';
 import StudentLiveContentPanel from './StudentLiveContentPanel';
 import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
+import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 
 const bandCopy = {
   '1-3': {
@@ -144,6 +145,9 @@ export default function StudentBandClientWrapper({
     count: feedCounts[rule.feedKey] ?? 0,
   }));
 
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
+  const [activePdfTitle, setActivePdfTitle] = useState<string>('');
+
   if (band === '1-3') {
     const stars = dashboard.stats.completedAssignments * 8 + dashboard.stats.activeClasses * 4;
     const stickers = Math.max(2, dashboard.stats.completedAssignments);
@@ -212,6 +216,68 @@ export default function StudentBandClientWrapper({
                     <p className="font-bold text-dark/30 italic">All caught up! Great job! 🎉</p>
                   </div>
                 )}
+              </div>
+
+              {/* Classroom Resources Section */}
+              <div className="mt-8 space-y-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Classroom Resources</h2>
+                  <Link href="/dash/student/library" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">Go to Library</Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+                  {dashboard.sharedResources && dashboard.sharedResources.length > 0 ? (
+                    dashboard.sharedResources.map((res) => (
+                      <div key={res.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col min-w-0">
+                         <div className="h-10 w-10 rounded-2xl bg-sky-100 border-[2px] border-dark flex items-center justify-center text-xl mb-3 shrink-0">
+                            📂
+                         </div>
+                         <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{res.className}</p>
+                         <h3 className="text-base sm:text-lg font-black text-dark mb-1 break-words">{res.title}</h3>
+                         <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-2">{res.description}</p>
+                         
+                         {res.files && res.files.length > 0 ? (
+                           <div className="space-y-2 mt-auto">
+                             {res.files.map((file) => {
+                               const isPdf = file.fileName.toLowerCase().endsWith('.pdf');
+                               return (
+                                 <div key={file.id} className="flex gap-2 items-center min-w-0">
+                                   <span className="text-xs font-bold text-dark truncate flex-1">{file.fileName}</span>
+                                   {isPdf && file.downloadUrl && (
+                                     <button
+                                       onClick={() => {
+                                         setActivePdfUrl(file.downloadUrl);
+                                         setActivePdfTitle(file.fileName);
+                                       }}
+                                       className="bg-yellow border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase text-dark shrink-0 hover:translate-y-[-1px] transition-all"
+                                     >
+                                       View
+                                     </button>
+                                   )}
+                                   {file.downloadUrl && (
+                                     <a
+                                       href={file.downloadUrl}
+                                       download
+                                       className="bg-white border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase text-dark shrink-0 hover:translate-y-[-1px] transition-all"
+                                     >
+                                       Get
+                                     </a>
+                                   )}
+                                 </div>
+                               );
+                             })}
+                           </div>
+                         ) : (
+                           <p className="text-xs text-dark/40 italic mt-auto">No files attached.</p>
+                         )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[32px] p-8 text-center">
+                      <p className="font-bold text-dark/30 italic">No resources shared recently. 📂</p>
+                    </div>
+                  )}
+                </div>
               </div>
            </div>
 
@@ -387,6 +453,68 @@ export default function StudentBandClientWrapper({
               <ArrowRight className="h-5 w-5" />
             </Link>
           </Panel>
+
+          {/* Classroom Resources Section */}
+          <div className="mt-8 space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Classroom Resources</h2>
+              <Link href="/dash/student/library" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">Go to Library</Link>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+              {dashboard.sharedResources && dashboard.sharedResources.length > 0 ? (
+                dashboard.sharedResources.map((res) => (
+                  <div key={res.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col min-w-0">
+                     <div className="h-10 w-10 rounded-2xl bg-sky-100 border-[2px] border-dark flex items-center justify-center text-xl mb-3 shrink-0">
+                        📂
+                     </div>
+                     <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{res.className}</p>
+                     <h3 className="text-base sm:text-lg font-black text-dark mb-1 break-words">{res.title}</h3>
+                     <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-2">{res.description}</p>
+                     
+                     {res.files && res.files.length > 0 ? (
+                       <div className="space-y-2 mt-auto">
+                         {res.files.map((file) => {
+                           const isPdf = file.fileName.toLowerCase().endsWith('.pdf');
+                           return (
+                             <div key={file.id} className="flex gap-2 items-center min-w-0">
+                               <span className="text-xs font-bold text-dark truncate flex-1">{file.fileName}</span>
+                               {isPdf && file.downloadUrl && (
+                                 <button
+                                   onClick={() => {
+                                     setActivePdfUrl(file.downloadUrl);
+                                     setActivePdfTitle(file.fileName);
+                                   }}
+                                   className="bg-yellow border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase text-dark shrink-0 hover:translate-y-[-1px] transition-all"
+                                 >
+                                   View
+                                 </button>
+                               )}
+                               {file.downloadUrl && (
+                                 <a
+                                   href={file.downloadUrl}
+                                   download
+                                   className="bg-white border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase text-dark shrink-0 hover:translate-y-[-1px] transition-all"
+                                 >
+                                   Get
+                                 </a>
+                               )}
+                             </div>
+                           );
+                         })}
+                       </div>
+                     ) : (
+                       <p className="text-xs text-dark/40 italic mt-auto">No files attached.</p>
+                     )}
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[32px] p-8 text-center">
+                  <p className="font-bold text-dark/30 italic">No resources shared recently. 📂</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-6 sm:space-y-8 xl:col-span-4 flex flex-col">
@@ -449,6 +577,15 @@ export default function StudentBandClientWrapper({
           </Panel>
         </div>
       </section>
+      <PDFViewerModal
+        isOpen={activePdfUrl !== null}
+        onClose={() => {
+          setActivePdfUrl(null);
+          setActivePdfTitle('');
+        }}
+        pdfUrl={activePdfUrl}
+        title={activePdfTitle}
+      />
     </div>
   );
 }

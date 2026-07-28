@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { BookOpen, Star, CheckCircle2, PlayCircle, Clock, X, Upload, Send, ArrowLeft } from 'lucide-react';
+import { BookOpen, Star, CheckCircle2, PlayCircle, Clock, X, Upload, Send, ArrowLeft, Eye, Download } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 
 type Assignment = {
   id: string;
@@ -24,6 +25,8 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [note, setNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
+  const [activePdfTitle, setActivePdfTitle] = useState<string>('');
 
   const pending = assignments.filter(
     (a) =>
@@ -177,27 +180,45 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
                   <div className="space-y-4">
                     <h4 className="text-xs font-black uppercase tracking-widest text-dark/40">Mission Materials</h4>
                     <div className="grid gap-3">
-                      {activeMission.resources.map((res) => (
-                        res.downloadUrl ? (
-                          <a 
+                      {activeMission.resources.map((res) => {
+                        const isPdf = res.fileName.toLowerCase().endsWith('.pdf');
+                        return res.downloadUrl ? (
+                          <div 
                             key={res.id}
-                            href={res.downloadUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center justify-between gap-4 p-4 border-[3px] border-dark bg-yellow/10 rounded-2xl hover:bg-yellow/20 transition-all"
+                            className="flex items-center justify-between gap-4 p-4 border-[3px] border-dark bg-yellow/10 rounded-2xl transition-all"
                           >
-                            <div className="flex items-center gap-3">
-                              <BookOpen className="h-5 w-5 text-dark" />
-                              <span className="text-sm font-black text-dark truncate max-w-[200px]">{res.fileName}</span>
+                            <div className="flex items-center gap-3 truncate">
+                              <BookOpen className="h-5 w-5 text-dark shrink-0" />
+                              <span className="text-sm font-black text-dark truncate">{res.fileName}</span>
                             </div>
-                            <span className="px-3 py-1 bg-dark text-white text-[9px] font-black uppercase rounded-lg">View Material</span>
-                          </a>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {isPdf && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActivePdfUrl(res.downloadUrl);
+                                    setActivePdfTitle(res.fileName);
+                                  }}
+                                  className="flex items-center gap-1 bg-yellow border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all shadow-[1px_1px_0px_#000]"
+                                >
+                                  <Eye className="h-3.5 w-3.5" /> View
+                                </button>
+                              )}
+                              <a
+                                href={res.downloadUrl}
+                                download
+                                className="flex items-center gap-1 bg-white border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all shadow-[1px_1px_0px_#000]"
+                              >
+                                <Download className="h-3.5 w-3.5" /> Get
+                              </a>
+                            </div>
+                          </div>
                         ) : (
                           <div key={res.id} className="p-4 border-[3px] border-dark/10 bg-slate-50 rounded-2xl text-xs font-bold text-dark/30 italic">
                             {res.fileName} (Preparing...)
                           </div>
-                        )
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -254,6 +275,15 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
           </div>
         </section>
       )}
+      <PDFViewerModal
+        isOpen={activePdfUrl !== null}
+        onClose={() => {
+          setActivePdfUrl(null);
+          setActivePdfTitle('');
+        }}
+        pdfUrl={activePdfUrl}
+        title={activePdfTitle}
+      />
     </div>
   );
 }

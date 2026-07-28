@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-
 import { createClient } from '@/utils/supabase/client';
+import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
+import { Eye, Download } from 'lucide-react';
 
 type AssignmentCardProps = {
   id: string;
@@ -29,6 +30,8 @@ export default function StudentAssignmentUploadCard(props: AssignmentCardProps) 
   const [message, setMessage] = useState('');
   const [uploadedFile, setUploadedFile] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
+  const [activePdfTitle, setActivePdfTitle] = useState<string>('');
 
   return (
     <article className="border-[3px] border-dark rounded-2xl bg-white p-5">
@@ -151,24 +154,42 @@ export default function StudentAssignmentUploadCard(props: AssignmentCardProps) 
             <p className="text-sm font-black text-dark uppercase tracking-tight">Study Materials</p>
           </div>
           <div className="space-y-2">
-            {props.resources.map((resource) =>
-              resource.downloadUrl ? (
-                <a
+            {props.resources.map((resource) => {
+              const isPdf = resource.fileName.toLowerCase().endsWith('.pdf');
+              return resource.downloadUrl ? (
+                <div
                   key={resource.id}
-                  href={resource.downloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between gap-4 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#060E1C] transition-all"
+                  className="flex items-center justify-between gap-4 rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all"
                 >
-                  <span className="truncate">{resource.fileName}</span>
-                  <span className="shrink-0 text-[10px] bg-dark text-white px-2 py-1 rounded-md uppercase">View PDF</span>
-                </a>
+                  <span className="truncate flex-1">{resource.fileName}</span>
+                  <div className="flex gap-2 shrink-0">
+                    {isPdf && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActivePdfUrl(resource.downloadUrl);
+                          setActivePdfTitle(resource.fileName);
+                        }}
+                        className="flex items-center justify-center gap-1 bg-yellow border-[2px] border-dark rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase text-dark hover:translate-y-[-1px] transition-all shadow-[1px_1px_0px_#000]"
+                      >
+                        <Eye className="h-3 w-3" /> View
+                      </button>
+                    )}
+                    <a
+                      href={resource.downloadUrl}
+                      download
+                      className="flex items-center justify-center gap-1 bg-white border-[2px] border-dark rounded-lg px-2.5 py-1.5 text-[10px] font-black uppercase text-dark hover:translate-y-[-1px] transition-all shadow-[1px_1px_0px_#000]"
+                    >
+                      <Download className="h-3 w-3" /> Get
+                    </a>
+                  </div>
+                </div>
               ) : (
                 <div key={resource.id} className="rounded-xl border-[3px] border-dark/20 bg-white/50 px-4 py-3 text-sm font-bold text-dark/40 italic">
                   {resource.fileName} (Preparing...)
                 </div>
-              ),
-            )}
+              );
+            })}
           </div>
         </div>
       ) : null}
@@ -176,6 +197,16 @@ export default function StudentAssignmentUploadCard(props: AssignmentCardProps) 
       {props.feedbackText ? (
         <p className="mt-4 text-sm normal-case text-dark/70 font-semibold">{props.feedbackText}</p>
       ) : null}
+
+      <PDFViewerModal
+        isOpen={activePdfUrl !== null}
+        onClose={() => {
+          setActivePdfUrl(null);
+          setActivePdfTitle('');
+        }}
+        pdfUrl={activePdfUrl}
+        title={activePdfTitle}
+      />
     </article>
   );
 }

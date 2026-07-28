@@ -12,11 +12,14 @@ import {
   Edit3,
   ArrowRight,
   Sparkles,
+  Eye,
+  Download,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { createQuizOrResource, deleteAssignment, deleteQuiz, deleteResource } from "./actions";
+import { PDFViewerModal } from "@/components/ui/PDFViewerModal";
 
 type SubjectOption = {
   id: string;
@@ -86,10 +89,12 @@ type QuizCard = {
 type ResourceEventRow = {
   id: string;
   created_at: string;
+  assignment_id?: string | null;
   payload:
     | {
         title?: string;
         description?: string | null;
+        assignment_id?: string | null;
       }
     | null;
   classes:
@@ -108,6 +113,11 @@ type ResourceCard = {
   description: string;
   className: string;
   createdLabel: string;
+  files?: Array<{
+    id: string;
+    fileName: string;
+    downloadUrl: string | null;
+  }>;
 };
 
 const TOOL_OPTIONS = [
@@ -167,6 +177,8 @@ export default function TutorBuilderPage() {
   const [assignments, setAssignments] = useState<AssignmentCard[]>([]);
   const [quizzes, setQuizzes] = useState<QuizCard[]>([]);
   const [resources, setResources] = useState<ResourceCard[]>([]);
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
+  const [activePdfTitle, setActivePdfTitle] = useState<string>('');
 
   const [showAssignmentForm, setShowAssignmentForm] = useState(true);
   const [formTitle, setFormTitle] = useState("");
@@ -250,7 +262,7 @@ export default function TutorBuilderPage() {
       resolvedUserId
         ? supabase
             .from("learning_activity_events")
-            .select("id, created_at, payload, classes(title)")
+            .select("id, created_at, payload, classes(title), assignment_id")
             .eq("event_type", "lesson_resource_uploaded")
             .eq("actor_user_id", resolvedUserId)
             .order("created_at", { ascending: false })
@@ -282,28 +294,52 @@ export default function TutorBuilderPage() {
     const assignmentIds = ((assignmentRows ?? []) as AssignmentRow[]).map(
       (entry) => entry.id,
     );
-    const { data: assignmentFilesRows } = assignmentIds.length
+    const resourceAssignmentIds = ((resourceRows ?? []) as ResourceEventRow[]).map(
+      (entry) => entry.assignment_id || (entry.payload as any)?.assignment_id
+    ).filter(Boolean);
+    
+    const allAssignmentIds = [...new Set([...assignmentIds, ...resourceAssignmentIds])];
+
+    const { data: assignmentFilesRows } = allAssignmentIds.length
       ? await supabase
           .from("assignment_files")
-          .select("id, assignment_id, object_path")
-          .in("assignment_id", assignmentIds)
+          .select("id, assignment_id, bucket_id, object_path")
+          .in("assignment_id", allAssignmentIds)
       : {
           data: [] as Array<{
             id: string;
             assignment_id: string;
+            bucket_id: string;
             object_path: string;
           }>,
         };
 
+    const filesWithUrls = assignmentFilesRows && assignmentFilesRows.length > 0
+      ? await Promise.all(
+          assignmentFilesRows.map(async (file) => {
+            const { data } = await supabase.storage
+              .from(file.bucket_id)
+              .createSignedUrl(file.object_path, 3600);
+            return {
+              id: file.id,
+              assignment_id: file.assignment_id,
+              fileName: file.object_path.split("/").pop() ?? file.object_path,
+              downloadUrl: data?.signedUrl ?? null,
+            };
+          })
+        )
+      : [];
+
     const filesByAssignmentId = new Map<
       string,
-      Array<{ id: string; fileName: string }>
+      Array<{ id: string; fileName: string; downloadUrl: string | null }>
     >();
-    (assignmentFilesRows ?? []).forEach((file) => {
+    filesWithUrls.forEach((file) => {
       const current = filesByAssignmentId.get(file.assignment_id) ?? [];
       current.push({
         id: file.id,
-        fileName: file.object_path.split("/").pop() ?? file.object_path,
+        fileName: file.fileName,
+        downloadUrl: file.downloadUrl,
       });
       filesByAssignmentId.set(file.assignment_id, current);
     });
@@ -354,12 +390,16 @@ export default function TutorBuilderPage() {
             : entry.classes
           : null;
 
+        const assignmentId = entry.assignment_id || (entry.payload as any)?.assignment_id;
+        const files = assignmentId ? filesByAssignmentId.get(assignmentId) ?? [] : [];
+
         return {
           id: entry.id,
           title: entry.payload?.title?.trim() || "Untitled resource",
           description: entry.payload?.description?.trim() || "No description supplied.",
           className: relatedClass?.title ?? "General library",
           createdLabel: formatCreatedLabel(entry.created_at),
+          files,
         };
       }),
     );
@@ -1141,6 +1181,46 @@ export default function TutorBuilderPage() {
                                 Added {item.createdLabel}
                               </span>
                             </div>
+                            {item.files && item.files.length > 0 && (
+                              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+                                {item.files.map((file) => {
+                                  const isPdf = file.fileName.toLowerCase().endsWith('.pdf');
+                                  return (
+                                    <div 
+                                      key={file.id} 
+                                      className="flex flex-col gap-2 rounded-xl border-[2px] border-dark bg-white p-3 shadow-[2px_2px_0px_#060E1C]"
+                                    >
+                                      <span className="truncate text-xs font-black text-dark">{file.fileName}</span>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        {isPdf && file.downloadUrl && (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setActivePdfUrl(file.downloadUrl);
+                                              setActivePdfTitle(file.fileName);
+                                            }}
+                                            className="flex-1 flex items-center justify-center gap-1 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all"
+                                          >
+                                            <Eye className="h-3 w-3" />
+                                            View
+                                          </button>
+                                        )}
+                                        {file.downloadUrl && (
+                                          <a 
+                                            href={file.downloadUrl}
+                                            download
+                                            className="flex-1 flex items-center justify-center gap-1 rounded-lg border-[2px] border-dark bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all"
+                                          >
+                                            <Download className="h-3 w-3" />
+                                            Get
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -1515,6 +1595,15 @@ export default function TutorBuilderPage() {
           </section>
         </div>
       </section>
+      <PDFViewerModal
+        isOpen={activePdfUrl !== null}
+        onClose={() => {
+          setActivePdfUrl(null);
+          setActivePdfTitle("");
+        }}
+        pdfUrl={activePdfUrl}
+        title={activePdfTitle}
+      />
     </div>
   );
 }
