@@ -362,9 +362,9 @@ export default function Navbar() {
             </button>
 
             {/* Flyer Image */}
-            <div className="relative aspect-[3/4.2] w-full overflow-hidden rounded-2xl border-4 border-navy bg-off-white">
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border-4 border-navy bg-off-white">
               <Image
-                src="/images/flyer.png"
+                src="/images/flyer.jpg"
                 alt="Edvoura Tutoring Service Flyer"
                 fill
                 className="object-cover"

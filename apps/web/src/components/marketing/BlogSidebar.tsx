@@ -85,8 +85,8 @@ export default function BlogSidebar() {
           <div className="absolute top-4 right-4 z-10 bg-yellow border-2 border-navy text-[8px] font-black uppercase px-2 py-0.5 rounded shadow-[1px_1px_0px_#0A1628]">
             Ad
           </div>
-          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border-2 border-navy mb-4 bg-off-white">
-            <Image src="/images/flyer.png" alt="Edvoura Flyer" fill className="object-cover" />
+          <div className="relative aspect-square w-full overflow-hidden rounded-xl border-2 border-navy mb-4 bg-off-white">
+            <Image src="/images/flyer.jpg" alt="Edvoura Flyer" fill className="object-cover" />
           </div>
           <Link
             href="/signup"
