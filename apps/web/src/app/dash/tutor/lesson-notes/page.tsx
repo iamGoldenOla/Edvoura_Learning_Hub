@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BookOpen, CheckSquare, ClipboardList, FilePenLine, Pencil, PlusCircle, ShieldCheck, Sparkles, Target, Trash2 } from 'lucide-react';
 
@@ -93,6 +93,26 @@ export default function TutorLessonNotesPage() {
     nextStep: string;
   } | null>(null);
   const [isExplaining, setIsExplaining] = useState(false);
+
+  // Load lesson plans from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('edvoura_tutor_lesson_plans');
+      if (saved) {
+        const parsed = JSON.parse(saved) as LessonPlan[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setPlans(parsed);
+        }
+      }
+    } catch { /* ignore parse errors */ }
+  }, []);
+
+  // Persist lesson plans to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('edvoura_tutor_lesson_plans', JSON.stringify(plans));
+    } catch { /* ignore storage quota errors */ }
+  }, [plans]);
 
   const stats = useMemo(() => {
     const draftCount = plans.filter((plan) => plan.status === 'Draft').length;

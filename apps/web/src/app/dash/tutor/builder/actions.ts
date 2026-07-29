@@ -190,7 +190,7 @@ export async function createQuizOrResource(formData: FormData) {
     });
 
     return { success: true, id: data.id };
-  } else if (type === 'resource') {
+  } else if (type === 'resource' || type === 'resources') {
     // Resources are primarily events, but if they have files, they need a backing assignment
     const description = formData.get('description') as string;
     
@@ -291,6 +291,21 @@ export async function deleteResource(eventId: string) {
 
   if (error) throw new Error(error.message);
   
+  revalidatePath('/dash/tutor/builder');
+  return { success: true };
+}
+
+export async function updateAssignment(assignmentId: string, title: string, instructions: string) {
+  const { error } = await supabaseAdmin
+    .from('assignments')
+    .update({
+      title: title.trim(),
+      instructions: instructions?.trim() || null,
+    })
+    .eq('id', assignmentId);
+
+  if (error) throw new Error(error.message);
+
   revalidatePath('/dash/tutor/builder');
   return { success: true };
 }

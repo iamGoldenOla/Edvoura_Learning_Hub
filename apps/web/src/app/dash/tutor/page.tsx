@@ -245,9 +245,9 @@ export default async function TutorDashboard() {
                  <p className="text-dark/80 text-sm font-semibold leading-relaxed">
                    Need assistance with your lessons or tools? Our team is available 24/7.
                  </p>
-                 <button className="mt-8 w-full h-14 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center">
+                 <Link href="/dash/tutor/messages" className="mt-8 w-full h-14 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center">
                    Get Support
-                 </button>
+                 </Link>
               </div>
 
               <DashboardFeedWidget

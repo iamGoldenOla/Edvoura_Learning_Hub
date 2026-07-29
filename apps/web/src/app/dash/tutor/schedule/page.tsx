@@ -114,11 +114,11 @@ export default async function TutorSchedulePage(props: {
             </div>
 
             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto">
-              <Link href="/dash/tutor/schedule?action=sync-calendar" className="w-full sm:flex-1 lg:flex-none">
-                <button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
-                  <Clock className="mr-2 w-4 h-4" /> Sync Calendar
+              <div className="w-full sm:flex-1 lg:flex-none">
+                <button disabled className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] text-sm sm:text-base inline-flex items-center justify-center opacity-60 cursor-not-allowed">
+                  <Clock className="mr-2 w-4 h-4" /> Sync Calendar <span className="ml-1 text-[9px] uppercase tracking-widest text-dark/50">(Soon)</span>
                 </button>
-              </Link>
+              </div>
               <a href="#scheduler" className="w-full sm:flex-1 lg:flex-none">
                 <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <Plus className="mr-2 w-5 h-5" /> New Session

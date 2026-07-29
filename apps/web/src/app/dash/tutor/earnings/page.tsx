@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
+import { EarningsExportClient } from './EarningsExportClient';
 
 type PayoutRow = {
   id: string;
@@ -104,11 +105,33 @@ export default async function TutorEarningsPage(props: {
         </div>
 
         <div className="p-5 sm:p-8 md:p-12 space-y-6 sm:space-y-8 min-w-0">
-          {action ? (
-            <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-blue-100 p-4 sm:p-5 text-sm font-black text-dark shadow-[4px_4px_0px_#060E1C] break-words">
-              Action Center: <strong>{action}</strong> flow opened.
+          {action === 'export' && payouts.length > 0 && (
+            <EarningsExportClient payouts={payouts} />
+          )}
+          {action === 'export' && payouts.length === 0 && (
+            <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-amber-100 p-4 sm:p-5 text-sm font-bold text-dark shadow-[4px_4px_0px_#060E1C] break-words">
+              <p className="font-black mb-1">No Data to Export</p>
+              <p>There are no payout records to export yet.</p>
             </section>
-          ) : null}
+          )}
+          {action === 'update-bank-details' && (
+            <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-amber-100 p-4 sm:p-5 text-sm font-bold text-dark shadow-[4px_4px_0px_#060E1C] break-words">
+              <p className="font-black mb-1">Update Bank Details</p>
+              <p>Bank details are managed through your Paystack dashboard. Contact <strong>support@edvoura.com</strong> if you need assistance updating your payout account.</p>
+            </section>
+          )}
+          {action === 'download-invoice' && (
+            <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-blue-100 p-4 sm:p-5 text-sm font-bold text-dark shadow-[4px_4px_0px_#060E1C] break-words">
+              <p className="font-black mb-1">Invoice Export</p>
+              <p>Detailed payout invoices will be available in a future update. For now, use the CSV export to download your payout records.</p>
+            </section>
+          )}
+          {action === 'report-issue' && (
+            <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-rose-100 p-4 sm:p-5 text-sm font-bold text-dark shadow-[4px_4px_0px_#060E1C] break-words">
+              <p className="font-black mb-1">Report Payment Issue</p>
+              <p>To report a payment discrepancy, email <strong>finance@edvoura.com</strong> with your payout ID and a description of the issue. Our team responds within 24 hours.</p>
+            </section>
+          )}
 
           <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-4 min-w-0">
             <Stat

@@ -18,7 +18,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { createQuizOrResource, deleteAssignment, deleteQuiz, deleteResource } from "./actions";
+import { createQuizOrResource, deleteAssignment, deleteQuiz, deleteResource, updateAssignment } from "./actions";
 import { PDFViewerModal } from "@/components/ui/PDFViewerModal";
 
 type SubjectOption = {
@@ -181,6 +181,7 @@ export default function TutorBuilderPage() {
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
 
   const [showAssignmentForm, setShowAssignmentForm] = useState(true);
+  const [editingAssignmentId, setEditingAssignmentId] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState("");
   const [formSubject, setFormSubject] = useState("");
   const [formGradeCode, setFormGradeCode] = useState("");
@@ -874,8 +875,26 @@ export default function TutorBuilderPage() {
                                     );
                                   }
                                   await loadBuilderData();
+                                } else if (editingAssignmentId) {
+                                  // Update existing assignment
+                                  try {
+                                    await updateAssignment(editingAssignmentId, safeTitle, formInstructions.trim());
+                                    setFormTitle("");
+                                    setFormInstructions("");
+                                    setFormDueAt("");
+                                    setFormResourceName("");
+                                    setFormResourceFile(null);
+                                    setEditingAssignmentId(null);
+                                    setShowAssignmentForm(false);
+                                    setFeedback(`Assignment "${safeTitle}" updated successfully.`);
+                                    await loadBuilderData();
+                                  } catch (err: unknown) {
+                                    setFeedback((err instanceof Error ? err.message : null) || 'Failed to update assignment.');
+                                  }
+                                  setIsSavingAssignment(false);
+                                  return;
                                 } else {
-                                  // Legacy assignment logic
+                                  // Legacy assignment logic — create new
                                   const supabase = createClient();
                                   const { data, error } = await supabase.rpc(
                                     "create_tutor_assignment",
@@ -995,9 +1014,11 @@ export default function TutorBuilderPage() {
                                   className="h-10 w-10 p-0 rounded-xl border-[2px] border-dark bg-white hover:bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
                                   onClick={() => {
                                     setFormTitle(item.title);
+                                    setFormInstructions('');
+                                    setEditingAssignmentId(item.id);
                                     setShowAssignmentForm(true);
                                     setFeedback(
-                                      `Editing "${item.title}". Update the fields and publish again.`,
+                                      `Editing "${item.title}". Update the fields and click Publish to save changes.`,
                                     );
                                   }}
                                 >

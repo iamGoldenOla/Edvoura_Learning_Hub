@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
-import { Target, Clock, ArrowRight } from 'lucide-react';
+import { Target, Clock } from 'lucide-react';
 import { PracticeQuizClient, type QuizCard, type QuizPayload } from './PracticeQuizClient';
 import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
 
@@ -83,9 +83,9 @@ export default async function QuizPage() {
                   <Clock className="h-4 w-4" />
                   {quiz.time_limit_minutes ? `${quiz.time_limit_minutes} Mins` : 'No Time Limit'}
                 </span>
-                <button className="inline-flex items-center gap-2 bg-emerald-400 border-[3px] border-dark !text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-5 py-3 text-sm">
-                  Start Quiz <ArrowRight className="h-4 w-4" />
-                </button>
+                <span className="inline-flex items-center gap-2 bg-blue-100 border-[3px] border-dark text-dark font-black rounded-xl shadow-[2px_2px_0px_#060E1C] px-4 py-2.5 text-[10px] uppercase tracking-widest">
+                  Tutor-Administered
+                </span>
               </div>
             </div>
           ))
