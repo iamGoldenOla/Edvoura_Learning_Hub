@@ -96,7 +96,7 @@ export default function StudentSubjectsClient({
             <Library className="h-8 w-8 sm:h-10 sm:w-10 shrink-0" /> My Subjects
           </h1>
           <p className="mt-4 text-xs sm:text-sm md:text-base font-bold text-dark/70 max-w-xl break-words">
-            Explore AI-generated lesson notes, practice quizzes, and spelling challenges published by your tutor, organized subject by subject.
+            Explore lesson notes, practice quizzes, and spelling challenges published by your tutor, organized subject by subject.
           </p>
         </div>
       </div>
@@ -212,7 +212,7 @@ export default function StudentSubjectsClient({
             {(contentBySubject.get(selectedSubject) || []).length === 0 && (
               <div className="col-span-full py-12 text-center rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dashed border-dark/20 bg-white w-full min-w-0">
                 <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-dark/20 mx-auto mb-4" />
-                <p className="text-base sm:text-lg font-bold text-dark/50 break-words">No published AI content for this subject yet.</p>
+                <p className="text-base sm:text-lg font-bold text-dark/50 break-words">No published content for this subject yet.</p>
               </div>
             )}
           </div>

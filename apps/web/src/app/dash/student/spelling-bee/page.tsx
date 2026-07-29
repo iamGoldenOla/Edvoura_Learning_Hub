@@ -111,7 +111,7 @@ export default async function SpellingBeePage() {
 
       return {
         id: entry.id,
-        title: 'AI Spelling Challenge',
+        title: 'Spelling Challenge',
         instructions: String(newPayload.exercise ?? 'Practice these spelling words and use them in sentences.'),
         theme: 'Mixed Difficulty',
         words: allWords,

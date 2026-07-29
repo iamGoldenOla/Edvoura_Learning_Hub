@@ -52,8 +52,8 @@ export default async function QuizPage() {
     })
     .map((q) => ({
       id: q.id,
-      title: q.content_json.title || 'AI Practice Challenge',
-      instructions: q.content_json.description || 'Master this topic with Edvoura AI.',
+      title: q.content_json.title || 'Practice Challenge',
+      instructions: q.content_json.description || 'Master this topic and test your knowledge.',
       data: q.content_json,
     }));
 
@@ -62,10 +62,10 @@ export default async function QuizPage() {
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
         <div className="p-8 border-b-[4px] border-dark bg-purple-100">
           <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark flex items-center gap-4">
-            <Target className="h-10 w-10" /> AI Study Hub
+            <Target className="h-10 w-10" /> Study Hub
           </h1>
           <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Tutor-assigned AI challenges and practice quizzes.
+            Tutor-assigned challenges and practice quizzes.
           </p>
         </div>
       </div>

@@ -72,7 +72,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subjectName: quizData.title,
-          topic: quizData.description || 'AI Challenge',
+          topic: quizData.description || 'Practice Challenge',
           score: score,
           totalQuestions: quizData.questions.length
         })
@@ -107,7 +107,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
           aiQuizzes.map((q) => (
             <div key={q.id} className="flex flex-col rounded-[24px] border-[4px] border-dark bg-indigo-50 p-4 shadow-[6px_6px_0px_#060E1C] transition-all hover:-translate-y-1 sm:rounded-[28px] sm:p-6 sm:shadow-[8px_8px_0px_#060E1C]">
               <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
-                <Sparkles className="h-3 w-3" /> AI Challenge
+                <Sparkles className="h-3 w-3" /> Practice Challenge
               </div>
               <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-dark break-words sm:text-xl">
                 {q.title}
@@ -126,7 +126,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
         ) : (
           <div className="col-span-full flex flex-col items-center rounded-[24px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-8 text-center sm:rounded-[28px] sm:p-12">
             <Brain className="mb-4 h-10 w-10 text-dark/30" />
-            <p className="text-sm font-bold italic text-dark/60">No AI Study Hub challenges published yet by your tutors.</p>
+            <p className="text-sm font-bold italic text-dark/60">No Study Hub challenges published yet by your tutors.</p>
           </div>
         )}
       </div>

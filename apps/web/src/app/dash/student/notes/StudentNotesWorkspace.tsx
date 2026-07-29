@@ -345,16 +345,16 @@ export default function StudentNotesWorkspace({
       <section className="rounded-[24px] border-[4px] border-dark bg-white p-5 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-8">
         <h1 className="text-3xl font-heading tracking-tight text-dark sm:text-4xl">Notes and Resources</h1>
         <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
-          Keep study materials, tutor notes, AI lesson notes, and revision references in one academic base.
+          Keep study materials, tutor notes, lesson notes, and revision references in one academic base.
         </p>
       </section>
 
-      {/* AI-generated published lesson notes */}
+      {/* Published lesson notes */}
       {aiLessonNotes.length > 0 ? (
         <section className="rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <BookOpen className="h-6 w-6 text-dark" />
-            <h2 className="text-xl font-black text-dark sm:text-2xl">AI Lesson Notes</h2>
+            <h2 className="text-xl font-black text-dark sm:text-2xl">Lesson Notes</h2>
             <span className="rounded-lg border-[1.5px] border-dark bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-green-900">
               {aiLessonNotes.length} Available
             </span>
