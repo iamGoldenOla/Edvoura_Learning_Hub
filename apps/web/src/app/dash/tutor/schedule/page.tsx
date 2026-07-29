@@ -206,11 +206,11 @@ export default async function TutorSchedulePage(props: {
                         <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full sm:w-auto">
                           {session.status === 'live' ? (
                             (session.host_url || session.join_url) ? (
-                              <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                              <Link href={`/dash/tutor/live/classroom?lessonId=${session.id}`} className="w-full sm:w-auto">
                                 <Button className="w-full sm:w-auto h-12 px-4 sm:px-6 bg-emerald-400 border-[3px] border-dark text-dark rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base">
-                                  <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Join Classroom
+                                  <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Enter Classroom
                                 </Button>
-                              </a>
+                              </Link>
                             ) : (
                               <span className="text-xs font-bold text-amber-800 bg-amber-100 border-[3px] border-dark px-4 py-3 rounded-xl shadow-[2px_2px_0px_#060E1C]">
                                 No link — please delete, recreate & paste Meet link.
@@ -220,11 +220,11 @@ export default async function TutorSchedulePage(props: {
                             <>
                               <TutorLessonStartButton lessonId={session.id} status={session.status} />
                               {(session.host_url || session.join_url) && (
-                                <a href={session.host_url || session.join_url || ''} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                <Link href={`/dash/tutor/live/classroom?lessonId=${session.id}`} className="w-full sm:w-auto">
                                   <button className="w-full sm:w-auto h-12 px-4 sm:px-5 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
-                                    <ExternalLink className="w-4 h-4" /> Preview Link
+                                    Enter Classroom
                                   </button>
-                                </a>
+                                </Link>
                               )}
                             </>
                           )}

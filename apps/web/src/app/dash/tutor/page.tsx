@@ -142,19 +142,19 @@ export default async function TutorDashboard() {
                               {item.status !== 'live' ? (
                                 <TutorLessonStartButton lessonId={item.id} status={item.status} />
                               ) : (
-                                <a href={item.joinUrl || '#'} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                <Link href={`/dash/tutor/live/classroom?lessonId=${item.id}`} className="w-full sm:w-auto">
                                   <button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-8 bg-emerald-400 border-[3px] border-dark hover:bg-emerald-500 text-dark rounded-xl font-black flex items-center justify-center gap-2 shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base">
-                                    <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Join Classroom
+                                    <Video className="w-4 h-4 sm:w-5 sm:h-5 fill-current" /> Enter Classroom
                                   </button>
-                                </a>
+                                </Link>
                               )}
                               
                               {item.status !== 'live' && item.joinUrl && (
-                                <a href={item.joinUrl} target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+                                <Link href={`/dash/tutor/live/classroom?lessonId=${item.id}`} className="w-full sm:w-auto">
                                   <button className="w-full sm:w-auto h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark hover:bg-slate-50 text-dark rounded-xl font-black shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none text-sm sm:text-base flex items-center justify-center">
-                                    Preview Room
+                                    Enter Classroom
                                   </button>
-                                </a>
+                                </Link>
                               )}
                               <DeleteLessonButton lessonId={item.id} />
                            </div>

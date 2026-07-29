@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Video, PlayCircle, Clock, MessageCircle, Sparkles, Tv, Rocket } from 'lucide-react';
 import type { StudentDashboardData } from '@/lib/app-context';
 
@@ -142,14 +143,12 @@ export default function StudentLiveWaitingRoom({
               <p className="text-2xl font-bold text-dark/60 italic text-normal">The classroom door is open. Step inside!</p>
            </div>
            
-           <a 
-             href={nextLesson.joinUrl || '#'}
-             target="_blank"
-             rel="noreferrer"
-             className="inline-flex items-center gap-4 px-12 py-6 bg-red-600 text-white border-[4px] border-dark rounded-[32px] font-black uppercase text-xl tracking-widest shadow-[12px_12px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
-           >
-              <PlayCircle className="h-10 w-10" /> Join Live Meet
-           </a>
+           <Link 
+              href={`/dash/student/live/classroom?lessonId=${nextLesson.id}`}
+              className="inline-flex items-center gap-4 px-12 py-6 bg-red-600 text-white border-[4px] border-dark rounded-[32px] font-black uppercase text-xl tracking-widest shadow-[12px_12px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            >
+               <PlayCircle className="h-10 w-10" /> Join Live Class
+            </Link>
         </div>
       )}
     </div>
