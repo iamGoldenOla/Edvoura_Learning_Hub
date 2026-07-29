@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Circle } from 'lucide-react';
+import { Circle, Layers } from 'lucide-react';
 
 export default function AyoOpon() {
   const [board, setBoard] = useState(Array(12).fill(4));
@@ -11,6 +11,7 @@ export default function AyoOpon() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('Your turn!');
+  const [view3D, setView3D] = useState(true);
 
   const playMove = async (startIndex: number) => {
     if (isAnimating || gameOver) return;
@@ -221,7 +222,32 @@ export default function AyoOpon() {
       accentColor="#f97316"
       score={scores[0]}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '800px', margin: '0 auto', gap: '30px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '800px', margin: '0 auto', gap: '30px', position: 'relative', perspective: '1000px' }}>
+        
+        {/* 3D View Toggle */}
+        <button
+          onClick={() => setView3D(!view3D)}
+          style={{
+            position: 'absolute',
+            top: '-20px',
+            right: '20px',
+            padding: '6px 14px',
+            background: '#f97316',
+            border: '2px solid #000000',
+            borderRadius: '8px',
+            fontWeight: 800,
+            fontSize: '11px',
+            color: '#ffffff',
+            cursor: 'pointer',
+            boxShadow: '2px 2px 0px #000000',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            zIndex: 10
+          }}
+        >
+          <Layers size={12} /> {view3D ? 'Flat View' : '3D View'}
+        </button>
         
         <div style={{
           fontSize: '20px',
@@ -243,8 +269,11 @@ export default function AyoOpon() {
           background: '#0f172a',
           padding: '30px',
           borderRadius: '40px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-          border: '1px solid rgba(255,255,255,0.1)'
+          boxShadow: view3D ? '0 30px 50px rgba(0,0,0,0.5)' : '0 20px 40px rgba(0,0,0,0.4)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          transformStyle: 'preserve-3d',
+          transform: view3D ? 'rotateX(30deg) rotateY(-5deg) scale(0.95)' : 'none',
+          transition: 'transform 0.4s ease-out'
         }}>
           {/* AI Store */}
           <div style={{ 

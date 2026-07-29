@@ -533,6 +533,53 @@ export default function GamesPage() {
             </div>
           </div>
 
+          {/* Grade Championship Standing */}
+          <div style={{
+            borderRadius: '20px',
+            background: '#ffffff',
+            border: '3px solid #000000',
+            boxShadow: '4px 4px 0px #000000',
+            padding: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <Trophy size={18} style={{ color: '#fbbf24' }} />
+              <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#000000', margin: 0, textTransform: 'uppercase' }}>
+                Grade Championship
+              </h3>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+              {[
+                { rank: '🥇 1st', grade: 'Grade 3', points: '14,250 XP', color: '#fef9c3', border: '#fbbf24' },
+                { rank: '🥈 2nd', grade: 'Grade 5', points: '13,100 XP', color: '#f1f5f9', border: '#cbd5e1' },
+                { rank: '🥉 3rd', grade: 'Grade 4', points: '11,800 XP', color: '#ffedd5', border: '#fb923c' }
+              ].map((g, idx) => (
+                <div key={idx} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '8px 12px', borderRadius: '10px', border: '2px solid #000000',
+                  background: g.color
+                }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800 }}>{g.rank}</span>
+                  <span style={{ fontSize: '13px', fontWeight: 900 }}>{g.grade}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>{g.points}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => router.push('/dash/student/leaderboard')}
+              style={{
+                width: '100%', padding: '10px', borderRadius: '12px', border: '2px solid #000000',
+                cursor: 'pointer', fontSize: '12px', fontWeight: 900, background: '#fbbf24',
+                color: '#000000', boxShadow: '2px 2px 0px #000000', transition: 'transform 0.1s'
+              }}
+              onMouseDown={e => { e.currentTarget.style.transform = 'translate(1px, 1px)'; e.currentTarget.style.boxShadow = '1px 1px 0px #000000'; }}
+              onMouseUp={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '2px 2px 0px #000000'; }}
+            >
+              See All Rankings
+            </button>
+          </div>
+
           {/* Benefits Card */}
           <div style={{
             borderRadius: '20px',

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Crown, RefreshCw, Trophy } from 'lucide-react';
+import { Crown, RefreshCw, Layers } from 'lucide-react';
 
 type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 type Color = 'w' | 'b';
@@ -158,7 +158,7 @@ const simulateMove = (board: Board, from: Position, to: Position, enPassant: Pos
       newBoard[from.r][to.c] = null;
     }
     if (to.r === 0 || to.r === 7) {
-      newBoard[to.r][to.c] = { type: 'q', color: piece.color }; // Auto queen
+      newBoard[to.r][to.c] = { type: 'q', color: piece.color };
     }
   }
   if (piece.type === 'k' && Math.abs(to.c - from.c) === 2) {
@@ -177,7 +177,6 @@ const getLegalMoves = (board: Board, r: number, c: number, castling: GameState['
   const pseudoMoves = getPseudoLegalMoves(board, r, c, castling, enPassant);
   const color = board[r][c]!.color;
   return pseudoMoves.filter(m => {
-    // Prevent castling through check
     if (board[r][c]?.type === 'k' && Math.abs(m.c - c) === 2) {
       if (isInCheck(board, color)) return false;
       const step = m.c > c ? 1 : -1;
@@ -201,7 +200,6 @@ const getAllLegalMoves = (state: GameState): Move[] => {
   return moves;
 };
 
-// AI Evaluation
 const evaluateBoard = (board: Board): number => {
   let score = 0;
   for (let r = 0; r < 8; r++) {
@@ -259,7 +257,6 @@ const minimax = (state: GameState, depth: number, alpha: number, beta: number, i
 const colToChar = (c: number) => String.fromCharCode(97 + c);
 const posToString = (r: number, c: number) => `${colToChar(c)}${8 - r}`;
 
-// Helper for minimax recursive evaluation to avoid bloating history array
 const applyMoveWithoutHistory = (state: GameState, move: Move): GameState => {
   const piece = state.board[move.from.r][move.from.c]!;
   const newBoard = simulateMove(state.board, move.from, move.to, state.enPassant);
@@ -337,14 +334,13 @@ export default function ChessGame() {
   const [selected, setSelected] = useState<Position | null>(null);
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
+  const [view3D, setView3D] = useState(true);
 
-  // Derived check & end statuses directly in render loop to avoid recursive setState loops
   const inCheck = isInCheck(state.board, state.turn);
   const currentLegalMoves = getAllLegalMoves(state);
   const isGameOver = currentLegalMoves.length === 0;
   const gameStatus = isGameOver ? (inCheck ? 'checkmate' : 'stalemate') : 'playing';
 
-  // Find King pos for check highlighting
   let checkPos: Position | null = null;
   if (inCheck) {
     for (let r = 0; r < 8; r++) {
@@ -356,17 +352,14 @@ export default function ChessGame() {
     }
   }
 
-  // Trigger AI Turn
   useEffect(() => {
     if (state.turn === 'b' && gameStatus === 'playing' && !aiThinking) {
       setAiThinking(true);
       const timer = setTimeout(() => {
-        // Evaluate moves on latest board
         const result = minimax(state, 2, -Infinity, Infinity, true);
         if (result.move) {
           setState(s => applyMove(s, result.move!));
         } else {
-          // If no move found, make a random fallback move to ensure computer plays
           const moves = getAllLegalMoves(state);
           if (moves.length > 0) {
             const randomMove = moves[Math.floor(Math.random() * moves.length)];
@@ -409,32 +402,73 @@ export default function ChessGame() {
     setAiThinking(false);
   };
 
+  // Dimensions constrained to height of viewport min(85vw, 60vh, 460px) to ensure no vertical overflow
+  const boardSize = 'min(85vw, 60vh, 460px)';
+
   return (
-    <GameLayout title="Chess" icon={<Crown />} accentColor="#22c55e">
+    <GameLayout title="Chess 3D" icon={<Crown />} accentColor="#22c55e">
       <div style={{
         display: 'flex',
-        gap: '32px',
+        gap: '24px',
         flexWrap: 'wrap',
         justifyContent: 'center',
-        alignItems: 'flex-start',
-        color: '#0f172a'
+        alignItems: 'center',
+        color: '#0f172a',
+        paddingBottom: '40px'
       }}>
         
-        {/* Board Container - Neo-brutalist styling */}
+        {/* Board Container */}
         <div style={{
           background: '#ffffff',
           border: '4px solid #000000',
           borderRadius: '24px',
           padding: '16px',
           boxShadow: '8px 8px 0px #000000',
-          width: 'min(100vw - 2rem, 580px)'
+          width: boardSize,
+          height: boardSize,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          perspective: '1000px',
+          overflow: 'visible',
+          position: 'relative'
         }}>
+          {/* View Mode Toggle Overlay (top right of board card) */}
+          <button
+            onClick={() => setView3D(!view3D)}
+            style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '20px',
+              padding: '6px 14px',
+              background: '#fbbf24',
+              border: '2px solid #000000',
+              borderRadius: '8px',
+              fontWeight: 800,
+              fontSize: '11px',
+              cursor: 'pointer',
+              boxShadow: '2px 2px 0px #000000',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              zIndex: 10
+            }}
+          >
+            <Layers size={12} /> {view3D ? 'Flat View' : '3D View'}
+          </button>
+
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(8, 1fr)',
             borderRadius: '12px',
             overflow: 'hidden',
-            border: '2px solid #000000'
+            border: '2px solid #000000',
+            width: '100%',
+            height: '100%',
+            transformStyle: 'preserve-3d',
+            transform: view3D ? 'rotateX(25deg) translateY(-10px) scale(0.95)' : 'none',
+            transition: 'transform 0.4s ease-out',
+            boxShadow: view3D ? '0 15px 25px rgba(0,0,0,0.2)' : 'none'
           }}>
             {state.board.map((row, r) => row.map((piece, c) => {
               const isDark = (r + c) % 2 === 1;
@@ -447,10 +481,9 @@ export default function ChessGame() {
                   key={`${r}-${c}`}
                   onClick={() => handleSquareClick(r, c)}
                   style={{
-                    aspectRatio: '1',
-                    background: isSelected ? '#a7f3d0' // select
-                              : isCheck ? '#fecaca' // check
-                              : isDark ? '#15803d' : '#fef08a', // Forest green / soft warm yellow
+                    background: isSelected ? '#a7f3d0'
+                              : isCheck ? '#fecaca'
+                              : isDark ? '#15803d' : '#fef08a',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -461,14 +494,16 @@ export default function ChessGame() {
                 >
                   {piece && (
                     <span style={{ 
-                      fontSize: 'clamp(2rem, 6vw, 3.5rem)',
+                      fontSize: 'clamp(1.5rem, 5vh, 2.8rem)',
                       color: piece.color === 'w' ? '#ffffff' : '#000000',
-                      // Text stroke logic for white pieces to keep them highly visible on yellow/light squares
                       textShadow: piece.color === 'w' 
                         ? '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000' 
                         : 'none',
                       userSelect: 'none',
-                      zIndex: 2
+                      zIndex: 2,
+                      // Tilt pieces upright when in 3D view
+                      transform: view3D ? 'rotateX(-25deg) translateZ(4px)' : 'none',
+                      transition: 'transform 0.4s ease-out'
                     }}>
                       {PIECE_SYMBOLS[piece.color][piece.type]}
                     </span>
@@ -490,86 +525,82 @@ export default function ChessGame() {
           </div>
         </div>
 
-        {/* Sidebar Dashboard - High Contrast Neo-brutalist */}
+        {/* Sidebar Dashboard */}
         <div style={{
-          width: '320px',
+          width: '300px',
           background: '#ffffff',
           border: '3px solid #000000',
           borderRadius: '24px',
-          padding: '24px',
+          padding: '20px',
           boxShadow: '6px 6px 0px #000000',
           display: 'flex',
           flexDirection: 'column',
-          gap: '24px'
+          gap: '16px'
         }}>
           {/* Status Display */}
           <div style={{
             background: gameStatus !== 'playing' ? '#fecaca' : (state.turn === 'w' ? '#dbeafe' : '#fef9c3'),
             border: '2px solid #000000',
             borderRadius: '16px',
-            padding: '16px',
+            padding: '12px 16px',
             boxShadow: '3px 3px 0px #000000',
             textAlign: 'center'
           }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '12px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h3 style={{ margin: '0 0 4px 0', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Game Status
             </h3>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: '#000000' }}>
+            <div style={{ fontSize: '16px', fontWeight: 900, color: '#000000' }}>
               {gameStatus === 'playing' ? (
                 state.turn === 'w' ? "⬜ Your Turn (White)" : "⬛ AI Thinking... (Black)"
               ) : (
                 gameStatus === 'checkmate' ? "🏆 CHECKMATE!" : "🤝 DRAW (STALEMATE)"
               )}
             </div>
-            {aiThinking && <div style={{ fontSize: '12px', color: '#64748b', marginTop: '6px', fontWeight: 700 }}>AI is planning its next move...</div>}
+            {aiThinking && <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', fontWeight: 700 }}>AI is planning...</div>}
           </div>
 
           {/* Captured Pieces Display */}
           <div style={{
             border: '2px solid #000000',
             borderRadius: '16px',
-            padding: '16px',
+            padding: '12px 16px',
             background: '#fafaf9'
           }}>
-            <h3 style={{ margin: '0 0 10px 0', fontSize: '12px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '11px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Captured Pieces
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>White: </span>
-                <span style={{ fontSize: '20px', letterSpacing: '2px' }}>{state.captured.w.join(' ')}</span>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748b' }}>White: </span>
+                <span style={{ fontSize: '18px', letterSpacing: '2px' }}>{state.captured.w.join(' ')}</span>
               </div>
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Black: </span>
-                <span style={{ fontSize: '20px', letterSpacing: '2px', color: '#000000' }}>{state.captured.b.join(' ')}</span>
+              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '6px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748b' }}>Black: </span>
+                <span style={{ fontSize: '18px', letterSpacing: '2px', color: '#000000' }}>{state.captured.b.join(' ')}</span>
               </div>
             </div>
           </div>
 
           {/* Move History Panel */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            flex: 1
-          }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <h3 style={{ margin: '0 0 6px 0', fontSize: '11px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Move History
             </h3>
             <div style={{ 
-              height: '180px', 
+              height: '110px', 
               overflowY: 'auto', 
               background: '#fafaf9',
               border: '2px solid #000000',
-              padding: '12px',
+              padding: '10px',
               borderRadius: '12px',
-              fontSize: '13px',
+              fontSize: '12px',
               fontFamily: 'monospace',
               fontWeight: 700
             }}>
               {state.history.length === 0 ? (
                 <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>No moves yet...</div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                   {state.history.map((h, i) => (
                     <div key={i} style={{ color: '#0f172a' }}>
                       {i % 2 === 0 ? `${Math.floor(i/2) + 1}. ` : ''}{h.move}
@@ -580,16 +611,16 @@ export default function ChessGame() {
             </div>
           </div>
 
-          {/* New Game Button - Yellow Neo-brutalist */}
+          {/* New Game Button */}
           <button 
             onClick={resetGame}
             style={{
-              padding: '16px',
+              padding: '12px',
               background: '#fbbf24',
               color: '#000000',
               border: '2px solid #000000',
               borderRadius: '16px',
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 900,
               cursor: 'pointer',
               boxShadow: '3px 3px 0px #000000',
@@ -602,7 +633,7 @@ export default function ChessGame() {
             onMouseDown={e => { e.currentTarget.style.transform = 'translate(2px, 2px)'; e.currentTarget.style.boxShadow = '1px 1px 0px #000000'; }}
             onMouseUp={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0px #000000'; }}
           >
-            <RefreshCw size={16} /> New Game
+            <RefreshCw size={14} /> New Game
           </button>
         </div>
 

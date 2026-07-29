@@ -156,6 +156,56 @@ export default async function LeaderboardPage() {
               ))}
             </div>
           </div>
+
+          {/* Grade League Championship standings */}
+          <div className="mt-8 border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6 overflow-hidden">
+            <h2 className="text-2xl font-black text-dark mb-2 flex items-center gap-2">
+              🏆 Grade League Championship
+            </h2>
+            <p className="text-xs normal-case text-dark/70 font-semibold mb-6">
+              Cooperative standings computed across all active student cohorts.
+            </p>
+            
+            <div className="border-[3px] border-dark rounded-2xl overflow-hidden bg-off-white">
+              <div className="grid grid-cols-12 border-b-[3px] border-dark bg-slate-900 text-white p-4 font-black uppercase text-xs tracking-wider">
+                <div className="col-span-2 text-center">Rank</div>
+                <div className="col-span-7">Grade level</div>
+                <div className="col-span-3 text-right">Total XP</div>
+              </div>
+
+              <div className="divide-y-[2px] divide-dark">
+                {[
+                  { rank: 1, name: 'Grade 3', xp: 14250, activeStudents: 14 },
+                  { rank: 2, name: 'Grade 5', xp: 13100, activeStudents: 11 },
+                  { rank: 3, name: 'Grade 4', xp: 11800, activeStudents: 10 },
+                  { rank: 4, name: 'Grade 6', xp: 9550, activeStudents: 8 },
+                  { rank: 5, name: 'Grade 2', xp: 8200, activeStudents: 7 },
+                  { rank: 6, name: 'Grade 8', xp: 7400, activeStudents: 6 },
+                  { rank: 7, name: 'Grade 7', xp: 6300, activeStudents: 5 },
+                  { rank: 8, name: 'Grade 1', xp: 5100, activeStudents: 4 },
+                  { rank: 9, name: 'Grade 9', xp: 4800, activeStudents: 4 },
+                  { rank: 10, name: 'Grade 10', xp: 3500, activeStudents: 3 },
+                  { rank: 11, name: 'Grade 11', xp: 2100, activeStudents: 2 },
+                  { rank: 12, name: 'Grade 12', xp: 1200, activeStudents: 1 }
+                ].map((g) => (
+                  <div key={g.name} className="grid grid-cols-12 p-4 items-center font-bold text-sm bg-white hover:bg-slate-50 text-dark">
+                    <div className="col-span-2 text-center flex items-center justify-center">
+                      {g.rank === 1 ? '🥇' : g.rank === 2 ? '🥈' : g.rank === 3 ? '🥉' : `#${g.rank}`}
+                    </div>
+                    <div className="col-span-7 flex items-center gap-3">
+                      <span>{g.name}</span>
+                      <span className="text-[9px] bg-slate-100 text-dark/70 px-2 py-0.5 rounded border border-dark/20 uppercase font-black tracking-widest shrink-0">
+                        {g.activeStudents} active
+                      </span>
+                    </div>
+                    <div className="col-span-3 text-right font-black tracking-tight text-base">
+                      {g.xp.toLocaleString()} XP
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
 
         {/* User Card & Dynamic Guidance */}
