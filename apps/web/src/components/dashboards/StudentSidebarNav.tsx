@@ -207,6 +207,12 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       ],
     },
     {
+      title: 'Fun Zone',
+      items: [
+        { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
+      ],
+    },
+    {
       title: 'Account',
       items: [{ href: '/dash/profile', icon: UserCircle2, label: 'Profile' }],
     },
