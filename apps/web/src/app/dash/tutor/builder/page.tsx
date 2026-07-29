@@ -14,12 +14,14 @@ import {
   Sparkles,
   Eye,
   Download,
+  BookOpen,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { createQuizOrResource, deleteAssignment, deleteQuiz, deleteResource, updateAssignment } from "./actions";
 import { PDFViewerModal } from "@/components/ui/PDFViewerModal";
+import { ComprehensionLibrary } from "./ComprehensionLibrary";
 
 type SubjectOption = {
   id: string;
@@ -126,6 +128,7 @@ const TOOL_OPTIONS = [
   "resources",
   "spelling-bee",
   "ai-generator",
+  "comprehension",
 ] as const;
 
 type BuilderTool = (typeof TOOL_OPTIONS)[number];
@@ -573,7 +576,7 @@ export default function TutorBuilderPage() {
             </section>
           ) : null}
 
-          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4 min-w-0">
+          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 min-w-0">
             <ToolCard
               title="Assignments"
               subtitle="Send tasks to students"
@@ -601,6 +604,16 @@ export default function TutorBuilderPage() {
               icon={Star}
               active={activeTool === "spelling-bee"}
               onClick={() => setActiveTool("spelling-bee")}
+            />
+            <ToolCard
+              title="Comprehension Library"
+              subtitle="Pre-loaded reading texts"
+              icon={BookOpen}
+              active={activeTool === "comprehension"}
+              onClick={() => {
+                setActiveTool("comprehension");
+                setShowAssignmentForm(false);
+              }}
             />
             <ToolCard
               title="AI Generator"
@@ -1252,6 +1265,14 @@ export default function TutorBuilderPage() {
                       </div>
                     )
                   ) : null}
+
+                  {activeTool === "comprehension" && (
+                    <ComprehensionLibrary
+                      tutorId={userId}
+                      initialGradeCode={formGradeCode}
+                      gradeLevels={gradeLevels}
+                    />
+                  )}
 
                   {activeTool === "ai-generator" && (
                     <div className="space-y-6 min-w-0">
