@@ -2,6 +2,7 @@
 
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { revalidatePath } from 'next/cache';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export type PreloadedResource = {
   id: string;
@@ -17,6 +18,7 @@ export type PreloadedResource = {
  * Fetch all preloaded comprehension resources for a given grade code.
  */
 export async function getPreloadedResources(gradeCode: string) {
+  noStore();
   const { data, error } = await supabaseAdmin
     .from('preloaded_resources')
     .select('id, title, description, file_name, public_url, grade_level_code, resource_type')
