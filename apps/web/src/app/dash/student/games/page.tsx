@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Trophy, Star, RefreshCw, Crown, Circle, Grid3X3, ALargeSmall, Type, Dice1,
-  Gamepad2, Zap, ArrowRight, Sparkles, Brain
+  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket
 } from 'lucide-react';
 
 const GAMES = [
@@ -14,9 +14,9 @@ const GAMES = [
     description: 'Challenge the AI in the classic game of strategy. Full legal moves, check & checkmate detection.',
     icon: Crown,
     color: '#22c55e',
-    gradient: 'linear-gradient(135deg, #22c55e22, #16a34a11)',
+    badgeBg: '#dcfce7',
+    badgeText: '#15803d',
     difficulty: 'Hard',
-    difficultyColor: '#ef4444',
     emoji: '♟️',
     category: 'Strategy'
   },
@@ -25,10 +25,10 @@ const GAMES = [
     title: 'Monopoly: Edvoura Edition',
     description: 'Buy academic properties, answer quiz questions, and outsmart your friends in this educational twist!',
     icon: Dice1,
-    color: '#f59e0b',
-    gradient: 'linear-gradient(135deg, #f59e0b22, #d9770611)',
+    color: '#fbbf24',
+    badgeBg: '#fef9c3',
+    badgeText: '#a16207',
     difficulty: 'Medium',
-    difficultyColor: '#f59e0b',
     emoji: '🎲',
     category: 'Board Game'
   },
@@ -38,9 +38,9 @@ const GAMES = [
     description: 'Play the ancient Nigerian Mancala game! Sow seeds, capture from opponents, and master strategy.',
     icon: Circle,
     color: '#f97316',
-    gradient: 'linear-gradient(135deg, #f9731622, #ea580c11)',
+    badgeBg: '#ffedd5',
+    badgeText: '#c2410c',
     difficulty: 'Medium',
-    difficultyColor: '#f59e0b',
     emoji: '🫘',
     category: 'Traditional'
   },
@@ -50,9 +50,9 @@ const GAMES = [
     description: 'Solve number puzzles across 3 difficulty levels. Use pencil marks, hints, and beat the clock!',
     icon: Grid3X3,
     color: '#3b82f6',
-    gradient: 'linear-gradient(135deg, #3b82f622, #2563eb11)',
+    badgeBg: '#dbeafe',
+    badgeText: '#1d4ed8',
     difficulty: 'Easy – Hard',
-    difficultyColor: '#3b82f6',
     emoji: '🔢',
     category: 'Puzzle'
   },
@@ -62,9 +62,9 @@ const GAMES = [
     description: 'Place letter tiles on the board, form valid words, and score big with bonus squares!',
     icon: ALargeSmall,
     color: '#ec4899',
-    gradient: 'linear-gradient(135deg, #ec489922, #db277711)',
+    badgeBg: '#fce7f3',
+    badgeText: '#be185d',
     difficulty: 'Medium',
-    difficultyColor: '#f59e0b',
     emoji: '🔤',
     category: 'Word Game'
   },
@@ -74,11 +74,44 @@ const GAMES = [
     description: 'Three word games in one! Scramble, Hangman, and Word Search — test your vocabulary.',
     icon: Type,
     color: '#8b5cf6',
-    gradient: 'linear-gradient(135deg, #8b5cf622, #7c3aed11)',
+    badgeBg: '#f3e8ff',
+    badgeText: '#6d28d9',
     difficulty: 'Easy',
-    difficultyColor: '#22c55e',
     emoji: '📝',
     category: 'Word Game'
+  }
+];
+
+const EXTERNAL_GAMES = [
+  {
+    title: 'Arcademics',
+    description: 'Multiplayer educational games for math, spelling, and language arts.',
+    url: 'https://www.arcademics.com/',
+    icon: Gamepad2,
+    color: '#3b82f6',
+    badgeBg: '#dbeafe',
+    badgeText: '#1d4ed8',
+    category: 'Multiplayer'
+  },
+  {
+    title: 'Math Playground',
+    description: 'Action-packed math games, logic puzzles, and learning challenges for all ages.',
+    url: 'https://www.mathplayground.com/',
+    icon: Rocket,
+    color: '#8b5cf6',
+    badgeBg: '#f3e8ff',
+    badgeText: '#6d28d9',
+    category: 'Math'
+  },
+  {
+    title: 'PBS Kids Games',
+    description: 'Fun learning games featuring your favorite PBS Kids characters.',
+    url: 'https://pbskids.org/games/',
+    icon: Brain,
+    color: '#22c55e',
+    badgeBg: '#dcfce7',
+    badgeText: '#15803d',
+    category: 'General Kids'
   }
 ];
 
@@ -102,6 +135,7 @@ export default function GamesPage() {
   const [inputValue, setInputValue] = useState('');
   const [gameOver, setGameOver] = useState(false);
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
+  const [hoveredExternal, setHoveredExternal] = useState<string | null>(null);
 
   const handleAnswer = () => {
     const currentQ = MATH_QUESTIONS[currentQuestionIdx];
@@ -124,211 +158,298 @@ export default function GamesPage() {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 48px' }}>
-      {/* Hero Header */}
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px 48px', color: '#0f172a' }}>
+      {/* Hero Header Banner - Neo-brutalist Yellow */}
       <section style={{
-        borderRadius: '24px',
-        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        padding: '40px',
-        marginBottom: '32px',
+        borderRadius: '20px',
+        background: '#fbbf24',
+        border: '3px solid #000000',
+        padding: '36px',
+        marginBottom: '40px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: '24px',
         flexWrap: 'wrap',
+        boxShadow: '6px 6px 0px #000000',
         position: 'relative',
         overflow: 'hidden'
       }}>
-        {/* Decorative circles */}
-        <div style={{
-          position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px',
-          borderRadius: '50%', background: 'rgba(139,92,246,0.08)', filter: 'blur(40px)'
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-30px', left: '40%', width: '160px', height: '160px',
-          borderRadius: '50%', background: 'rgba(59,130,246,0.06)', filter: 'blur(30px)'
-        }} />
-
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
-              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-              borderRadius: '16px',
-              padding: '14px',
+              background: '#ffffff',
+              borderRadius: '12px',
+              border: '2px solid #000000',
+              padding: '12px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 8px 24px rgba(245,158,11,0.3)'
+              boxShadow: '3px 3px 0px #000000'
             }}>
-              <Gamepad2 size={28} color="white" />
+              <Gamepad2 size={28} color="#000000" />
             </div>
             <div>
               <h1 style={{
-                fontSize: '32px', fontWeight: 800, color: 'white', margin: 0,
-                letterSpacing: '-0.03em', lineHeight: 1.1
+                fontSize: '32px', fontWeight: 900, color: '#000000', margin: 0,
+                letterSpacing: '-0.02em', lineHeight: 1.1, textTransform: 'uppercase'
               }}>
                 Edvoura Play Zone
               </h1>
-              <p style={{ color: '#94a3b8', fontSize: '14px', margin: '4px 0 0 0' }}>
-                Learn while you play — 6 premium games built just for you
+              <p style={{ color: '#000000', fontSize: '15px', margin: '4px 0 0 0', fontWeight: 600 }}>
+                Learn while you play — 6 premium games + partner sites!
               </p>
             </div>
           </div>
         </div>
 
         <div style={{
-          background: 'rgba(245,158,11,0.08)',
-          border: '1px solid rgba(245,158,11,0.2)',
-          borderRadius: '20px',
-          padding: '20px 32px',
+          background: '#ffffff',
+          border: '3px solid #000000',
+          borderRadius: '16px',
+          padding: '16px 28px',
           textAlign: 'center',
+          boxShadow: '4px 4px 0px #000000',
           position: 'relative',
           zIndex: 1
         }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>
+          <p style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>
             Your Points
           </p>
           <p style={{
-            fontSize: '36px', fontWeight: 900, color: '#fbbf24', margin: 0,
+            fontSize: '32px', fontWeight: 900, color: '#000000', margin: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
           }}>
-            {score} <Star size={20} style={{ fill: '#f59e0b', color: '#f59e0b' }} />
+            {score} <Star size={22} style={{ fill: '#fbbf24', color: '#000000' }} />
           </p>
         </div>
       </section>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '32px', alignItems: 'start' }}>
-        {/* Game Grid */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <Sparkles size={18} style={{ color: '#8b5cf6' }} />
-            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#e2e8f0', margin: 0 }}>Choose Your Game</h2>
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px', alignItems: 'start' }}>
+        {/* Left Column - Games */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+          
+          {/* Custom Games Section */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+              <Sparkles size={20} style={{ color: '#8b5cf6' }} />
+              <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#000000', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
+                Edvoura Custom Games
+              </h2>
+            </div>
 
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '16px'
-          }}>
-            {GAMES.map(game => {
-              const isHovered = hoveredGame === game.id;
-              return (
-                <div
-                  key={game.id}
-                  onClick={() => router.push(`/dash/student/games/${game.id}`)}
-                  onMouseEnter={() => setHoveredGame(game.id)}
-                  onMouseLeave={() => setHoveredGame(null)}
-                  style={{
-                    borderRadius: '20px',
-                    background: isHovered ? game.gradient : 'rgba(255,255,255,0.03)',
-                    border: `1px solid ${isHovered ? game.color + '44' : 'rgba(255,255,255,0.06)'}`,
-                    padding: '24px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: isHovered ? 'translateY(-4px)' : 'none',
-                    boxShadow: isHovered ? `0 12px 32px ${game.color}22` : 'none',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {/* Category badge */}
-                  <div style={{
-                    position: 'absolute', top: '16px', right: '16px',
-                    padding: '4px 10px', borderRadius: '8px',
-                    background: 'rgba(255,255,255,0.06)',
-                    fontSize: '10px', fontWeight: 700, color: '#64748b',
-                    textTransform: 'uppercase', letterSpacing: '0.05em'
-                  }}>
-                    {game.category}
-                  </div>
-
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    <div style={{
-                      background: `${game.color}18`,
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '20px'
+            }}>
+              {GAMES.map(game => {
+                const isHovered = hoveredGame === game.id;
+                return (
+                  <div
+                    key={game.id}
+                    onClick={() => router.push(`/dash/student/games/${game.id}`)}
+                    onMouseEnter={() => setHoveredGame(game.id)}
+                    onMouseLeave={() => setHoveredGame(null)}
+                    style={{
                       borderRadius: '16px',
-                      padding: '14px',
+                      background: '#ffffff',
+                      border: '3px solid #000000',
+                      padding: '24px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      transform: isHovered ? 'translate(-4px, -4px)' : 'none',
+                      boxShadow: isHovered ? '8px 8px 0px #000000' : '4px 4px 0px #000000',
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: game.color,
-                      flexShrink: 0,
-                      transition: 'all 0.3s',
-                      transform: isHovered ? 'scale(1.1) rotate(-5deg)' : 'none'
-                    }}>
-                      <game.icon size={24} />
-                    </div>
-                    <div style={{ flex: 1, paddingRight: '50px' }}>
-                      <h3 style={{
-                        fontSize: '16px', fontWeight: 800, color: 'white', margin: '0 0 6px 0',
-                        transition: 'color 0.2s'
-                      }}>
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      minHeight: '220px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                        <div style={{
+                          background: `${game.color}22`,
+                          borderRadius: '12px',
+                          border: '2px solid #000000',
+                          padding: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#000000'
+                        }}>
+                          <game.icon size={22} />
+                        </div>
+                        <span style={{
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          background: game.badgeBg,
+                          color: game.badgeText,
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          border: '1.5px solid #000000'
+                        }}>
+                          {game.category}
+                        </span>
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000000', margin: '0 0 8px 0' }}>
                         {game.emoji} {game.title}
                       </h3>
-                      <p style={{
-                        fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.5
-                      }}>
+                      <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
                         {game.description}
                       </p>
                     </div>
-                  </div>
 
-                  <div style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    marginTop: '16px', paddingTop: '12px',
-                    borderTop: '1px solid rgba(255,255,255,0.05)'
-                  }}>
                     <div style={{
-                      padding: '4px 10px', borderRadius: '8px',
-                      background: `${game.difficultyColor}15`,
-                      fontSize: '11px', fontWeight: 700, color: game.difficultyColor
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      marginTop: '20px', paddingTop: '12px',
+                      borderTop: '2px solid #f1f5f9'
                     }}>
-                      {game.difficulty}
-                    </div>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '6px',
-                      fontSize: '12px', fontWeight: 700, color: game.color,
-                      transition: 'all 0.2s',
-                      transform: isHovered ? 'translateX(4px)' : 'none'
-                    }}>
-                      Play Now <ArrowRight size={14} />
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#64748b' }}>
+                        Difficulty: <span style={{ color: game.badgeText }}>{game.difficulty}</span>
+                      </span>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        fontSize: '13px', fontWeight: 800, color: '#000000',
+                        transition: 'transform 0.2s',
+                        transform: isHovered ? 'translateX(4px)' : 'none'
+                      }}>
+                        Play Now <ArrowRight size={14} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+
+          {/* External Partner Games Section */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
+              <Gamepad2 size={20} style={{ color: '#3b82f6' }} />
+              <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#000000', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
+                Partner Learning Games
+              </h2>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '20px'
+            }}>
+              {EXTERNAL_GAMES.map(game => {
+                const isHovered = hoveredExternal === game.title;
+                return (
+                  <a
+                    key={game.title}
+                    href={game.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    onMouseEnter={() => setHoveredExternal(game.title)}
+                    onMouseLeave={() => setHoveredExternal(null)}
+                    style={{
+                      borderRadius: '16px',
+                      background: '#ffffff',
+                      border: '3px solid #000000',
+                      padding: '24px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      transform: isHovered ? 'translate(-4px, -4px)' : 'none',
+                      boxShadow: isHovered ? '8px 8px 0px #000000' : '4px 4px 0px #000000',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      minHeight: '200px',
+                      textDecoration: 'none'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                        <div style={{
+                          background: `${game.color}22`,
+                          borderRadius: '12px',
+                          border: '2px solid #000000',
+                          padding: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#000000'
+                        }}>
+                          <game.icon size={22} />
+                        </div>
+                        <span style={{
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          background: game.badgeBg,
+                          color: game.badgeText,
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          border: '1.5px solid #000000'
+                        }}>
+                          {game.category}
+                        </span>
+                      </div>
+                      <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#000000', margin: '0 0 8px 0' }}>
+                        {game.title}
+                      </h3>
+                      <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
+                        {game.description}
+                      </p>
+                    </div>
+
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                      marginTop: '20px', paddingTop: '12px',
+                      borderTop: '2px solid #f1f5f9'
+                    }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                        fontSize: '13px', fontWeight: 800, color: '#000000',
+                        transition: 'transform 0.2s',
+                        transform: isHovered ? 'translateX(4px)' : 'none'
+                      }}>
+                        Visit Website <ArrowRight size={14} />
+                      </div>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+
         </div>
 
         {/* Right Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+          
           {/* Speed Math Mini Game */}
           <div style={{
             borderRadius: '20px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: '#ffffff',
+            border: '3px solid #000000',
+            boxShadow: '4px 4px 0px #000000',
             overflow: 'hidden'
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+              background: '#000000',
               padding: '16px 20px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              borderBottom: '1px solid rgba(255,255,255,0.06)'
+              borderBottom: '3px solid #000000'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Zap size={16} style={{ color: '#fbbf24' }} />
-                <span style={{ fontSize: '13px', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <Zap size={18} style={{ color: '#fbbf24' }} />
+                <span style={{ fontSize: '14px', fontWeight: 900, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Speed Math
                 </span>
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b' }}>Quick Challenge</span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#a1a1aa' }}>Quick Challenge</span>
             </div>
 
             <div style={{ padding: '24px', textAlign: 'center' }}>
               {!gameOver ? (
                 <div>
                   <p style={{
-                    fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 20px 0'
+                    fontSize: '36px', fontWeight: 900, color: '#000000', margin: '0 0 20px 0'
                   }}>
                     {MATH_QUESTIONS[currentQuestionIdx].q}
                   </p>
@@ -342,65 +463,67 @@ export default function GamesPage() {
                       placeholder="Answer..."
                       style={{
                         flex: 1, borderRadius: '12px',
-                        border: '2px solid rgba(255,255,255,0.1)',
-                        background: 'rgba(255,255,255,0.05)',
-                        padding: '14px 16px', fontSize: '18px', fontWeight: 700,
-                        color: 'white', outline: 'none',
-                        transition: 'border-color 0.2s'
+                        border: '2px solid #000000',
+                        background: '#ffffff',
+                        padding: '14px 16px', fontSize: '18px', fontWeight: 800,
+                        color: '#000000', outline: 'none'
                       }}
                       autoFocus
                     />
                     <button
                       onClick={handleAnswer}
                       style={{
-                        borderRadius: '12px', border: 'none', cursor: 'pointer',
-                        padding: '14px 24px', fontSize: '16px', fontWeight: 700,
-                        background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                        color: 'white', boxShadow: '0 4px 12px rgba(59,130,246,0.3)'
+                        borderRadius: '12px', border: '2px solid #000000', cursor: 'pointer',
+                        padding: '14px 24px', fontSize: '16px', fontWeight: 900,
+                        background: '#fbbf24',
+                        color: '#000000', boxShadow: '3px 3px 0px #000000',
+                        transition: 'transform 0.1s'
                       }}
+                      onMouseDown={e => { e.currentTarget.style.transform = 'translate(2px, 2px)'; e.currentTarget.style.boxShadow = '1px 1px 0px #000000'; }}
+                      onMouseUp={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0px #000000'; }}
                     >
                       Go!
                     </button>
                   </div>
 
                   <div style={{
-                    marginTop: '16px', height: '6px', borderRadius: '3px',
-                    background: 'rgba(255,255,255,0.06)', overflow: 'hidden'
+                    marginTop: '20px', height: '10px', borderRadius: '5px',
+                    background: '#e2e8f0', border: '2px solid #000000', overflow: 'hidden'
                   }}>
                     <div style={{
-                      height: '100%', borderRadius: '3px',
-                      background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                      height: '100%',
+                      background: '#fbbf24',
                       transition: 'width 0.5s',
                       width: `${((currentQuestionIdx + 1) / MATH_QUESTIONS.length) * 100}%`
                     }} />
                   </div>
-                  <p style={{ fontSize: '11px', color: '#64748b', marginTop: '8px' }}>
+                  <p style={{ fontSize: '12px', color: '#64748b', marginTop: '8px', fontWeight: 700 }}>
                     Question {currentQuestionIdx + 1} of {MATH_QUESTIONS.length}
                   </p>
                 </div>
               ) : (
                 <div>
                   <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
-                    <Trophy size={48} style={{ color: '#f59e0b' }} />
+                    <Trophy size={48} style={{ color: '#fbbf24' }} />
                     <Star size={20} style={{
-                      color: '#fbbf24', fill: '#fbbf24',
+                      color: '#000000', fill: '#fbbf24',
                       position: 'absolute', top: '-8px', right: '-12px'
                     }} />
                   </div>
-                  <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'white', margin: '0 0 8px 0' }}>
+                  <h3 style={{ fontSize: '22px', fontWeight: 900, color: '#000000', margin: '0 0 8px 0' }}>
                     Awesome!
                   </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 16px 0' }}>
-                    You earned <span style={{ color: '#fbbf24', fontWeight: 700 }}>{score} points</span>
+                  <p style={{ color: '#475569', fontSize: '15px', margin: '0 0 16px 0', fontWeight: 600 }}>
+                    You earned <span style={{ color: '#b45309', fontWeight: 800 }}>{score} points</span>
                   </p>
                   <button
                     onClick={resetGame}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto',
-                      padding: '12px 24px', borderRadius: '12px', cursor: 'pointer',
-                      fontSize: '14px', fontWeight: 700,
-                      background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-                      color: 'white', border: '1px solid rgba(255,255,255,0.1)'
+                      padding: '12px 24px', borderRadius: '12px', border: '2px solid #000000', cursor: 'pointer',
+                      fontSize: '14px', fontWeight: 800,
+                      background: '#ffffff',
+                      color: '#000000', boxShadow: '3px 3px 0px #000000'
                     }}
                   >
                     <RefreshCw size={16} /> Play Again
@@ -413,13 +536,14 @@ export default function GamesPage() {
           {/* Benefits Card */}
           <div style={{
             borderRadius: '20px',
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            background: '#ffffff',
+            border: '3px solid #000000',
+            boxShadow: '4px 4px 0px #000000',
             padding: '24px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
               <Brain size={18} style={{ color: '#8b5cf6' }} />
-              <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>Why Play Games?</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#000000', margin: 0, textTransform: 'uppercase' }}>Why Play Games?</h3>
             </div>
             {[
               'Sharpen your problem-solving and critical thinking',
@@ -427,14 +551,15 @@ export default function GamesPage() {
               'Learn Nigerian & world cultural heritage',
               'Compete with friends on the leaderboard'
             ].map((text, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '12px' }}>
                 <div style={{
                   width: '20px', height: '20px', borderRadius: '50%',
-                  background: 'rgba(34,197,94,0.12)', color: '#22c55e',
+                  background: '#dcfce7', color: '#15803d',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '10px', fontWeight: 700, flexShrink: 0, marginTop: '1px'
+                  fontSize: '11px', fontWeight: 800, flexShrink: 0, marginTop: '2px',
+                  border: '1.5px solid #000000'
                 }}>✓</div>
-                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>{text}</p>
+                <p style={{ fontSize: '13px', color: '#475569', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>{text}</p>
               </div>
             ))}
           </div>
@@ -442,20 +567,17 @@ export default function GamesPage() {
           {/* Pro Tip */}
           <div style={{
             borderRadius: '20px',
-            background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+            background: '#8b5cf6',
+            border: '3px solid #000000',
+            boxShadow: '4px 4px 0px #000000',
             padding: '24px',
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{
-              position: 'absolute', top: '-20px', right: '-20px',
-              width: '100px', height: '100px', borderRadius: '50%',
-              background: 'rgba(255,255,255,0.08)'
-            }} />
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'white', margin: '0 0 8px 0', position: 'relative' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#ffffff', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               💡 Pro Tip!
             </h3>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: 1.6, position: 'relative' }}>
+            <p style={{ fontSize: '13px', color: '#ffffff', margin: 0, lineHeight: 1.6, fontWeight: 600 }}>
               Try Ayò Ọ̀pọ́n to learn about Nigerian culture while sharpening your math skills. Challenge a friend in Monopoly to practice teamwork!
             </p>
           </div>
