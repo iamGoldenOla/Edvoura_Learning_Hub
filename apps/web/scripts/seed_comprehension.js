@@ -6,7 +6,7 @@
  * and inserts records into the preloaded_resources table.
  * 
  * Usage:
- *   node scripts/seed_comprehension.js
+ *   node scripts/seed_comprehension.js [--remote]
  * 
  * Requirements:
  *   - Supabase running (local or remote)
@@ -37,7 +37,17 @@ function parseEnv(filePath) {
 const rootEnv = parseEnv(path.resolve(__dirname, '../../../.env'));
 const localEnv = parseEnv(path.resolve(__dirname, '../../../.env.local'));
 const webEnv = parseEnv(path.resolve(__dirname, '../.env.local'));
-const env = { ...rootEnv, ...localEnv, ...webEnv };
+
+// By default, merge them (local .env.local overrides root)
+let env = { ...rootEnv, ...localEnv, ...webEnv };
+
+const isRemote = process.argv.includes('--remote');
+
+// If --remote is passed, force using production settings from root .env
+if (isRemote) {
+  console.log('Force connecting to production/remote Supabase database...');
+  env = rootEnv;
+}
 
 const SUPABASE_URL = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL;
 const SUPABASE_KEY = env.SUPABASE_SERVICE_ROLE_KEY;
@@ -50,7 +60,6 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── Grade Mapping ───────────────────────────────────────────────────────
-// Maps each PDF filename to its grade level code (grade_1 through grade_12)
 const PDF_GRADE_MAP = [
   // Grade 1
   { file: 'Year 1 Comprehension.pdf', grade: 'grade_1', title: 'Year 1 Comprehension Workbook' },
