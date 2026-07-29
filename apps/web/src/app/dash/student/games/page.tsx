@@ -1,52 +1,113 @@
 'use client';
 
 import { useState } from 'react';
-import { Trophy, Star, RefreshCw, Gamepad2, Rocket, Brain } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  Trophy, Star, RefreshCw, Crown, Circle, Grid3X3, ALargeSmall, Type, Dice1,
+  Gamepad2, Zap, ArrowRight, Sparkles, Brain
+} from 'lucide-react';
 
-const EXTERNAL_GAMES = [
+const GAMES = [
   {
-    title: "Arcademics",
-    description: "Multiplayer educational games for math and language arts.",
-    url: "https://www.arcademics.com/",
-    icon: Gamepad2,
-    color: "bg-blue-500"
+    id: 'chess',
+    title: 'Chess',
+    description: 'Challenge the AI in the classic game of strategy. Full legal moves, check & checkmate detection.',
+    icon: Crown,
+    color: '#22c55e',
+    gradient: 'linear-gradient(135deg, #22c55e22, #16a34a11)',
+    difficulty: 'Hard',
+    difficultyColor: '#ef4444',
+    emoji: '♟️',
+    category: 'Strategy'
   },
   {
-    title: "Math Playground",
-    description: "Action-packed math games for every grade level.",
-    url: "https://www.mathplayground.com/",
-    icon: Rocket,
-    color: "bg-purple-500"
+    id: 'monopoly',
+    title: 'Monopoly: Edvoura Edition',
+    description: 'Buy academic properties, answer quiz questions, and outsmart your friends in this educational twist!',
+    icon: Dice1,
+    color: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #f59e0b22, #d9770611)',
+    difficulty: 'Medium',
+    difficultyColor: '#f59e0b',
+    emoji: '🎲',
+    category: 'Board Game'
   },
   {
-    title: "PBS Kids Games",
-    description: "Fun learning games with your favorite characters.",
-    url: "https://pbskids.org/games/",
-    icon: Brain,
-    color: "bg-green-500"
+    id: 'ayo-opon',
+    title: 'Ayò Ọ̀pọ́n',
+    description: 'Play the ancient Nigerian Mancala game! Sow seeds, capture from opponents, and master strategy.',
+    icon: Circle,
+    color: '#f97316',
+    gradient: 'linear-gradient(135deg, #f9731622, #ea580c11)',
+    difficulty: 'Medium',
+    difficultyColor: '#f59e0b',
+    emoji: '🫘',
+    category: 'Traditional'
+  },
+  {
+    id: 'sudoku',
+    title: 'Sudoku',
+    description: 'Solve number puzzles across 3 difficulty levels. Use pencil marks, hints, and beat the clock!',
+    icon: Grid3X3,
+    color: '#3b82f6',
+    gradient: 'linear-gradient(135deg, #3b82f622, #2563eb11)',
+    difficulty: 'Easy – Hard',
+    difficultyColor: '#3b82f6',
+    emoji: '🔢',
+    category: 'Puzzle'
+  },
+  {
+    id: 'scrabble',
+    title: 'Scrabble',
+    description: 'Place letter tiles on the board, form valid words, and score big with bonus squares!',
+    icon: ALargeSmall,
+    color: '#ec4899',
+    gradient: 'linear-gradient(135deg, #ec489922, #db277711)',
+    difficulty: 'Medium',
+    difficultyColor: '#f59e0b',
+    emoji: '🔤',
+    category: 'Word Game'
+  },
+  {
+    id: 'word-play',
+    title: 'Word Play',
+    description: 'Three word games in one! Scramble, Hangman, and Word Search — test your vocabulary.',
+    icon: Type,
+    color: '#8b5cf6',
+    gradient: 'linear-gradient(135deg, #8b5cf622, #7c3aed11)',
+    difficulty: 'Easy',
+    difficultyColor: '#22c55e',
+    emoji: '📝',
+    category: 'Word Game'
   }
 ];
 
 const MATH_QUESTIONS = [
-  { q: "What is 12 + 15?", a: 27 },
-  { q: "What is 8 x 7?", a: 56 },
-  { q: "What is 144 / 12?", a: 12 },
-  { q: "What is 45 - 19?", a: 26 },
-  { q: "What is 9 x 9?", a: 81 },
+  { q: 'What is 12 + 15?', a: 27 },
+  { q: 'What is 8 × 7?', a: 56 },
+  { q: 'What is 144 ÷ 12?', a: 12 },
+  { q: 'What is 45 - 19?', a: 26 },
+  { q: 'What is 9 × 9?', a: 81 },
+  { q: 'What is 25 + 38?', a: 63 },
+  { q: 'What is 7 × 6?', a: 42 },
+  { q: 'What is 100 - 37?', a: 63 },
+  { q: 'What is 15 × 4?', a: 60 },
+  { q: 'What is 96 ÷ 8?', a: 12 },
 ];
 
 export default function GamesPage() {
+  const router = useRouter();
   const [score, setScore] = useState(0);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [gameOver, setGameOver] = useState(false);
+  const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   const handleAnswer = () => {
     const currentQ = MATH_QUESTIONS[currentQuestionIdx];
     if (parseInt(inputValue, 10) === currentQ.a) {
       setScore(score + 10);
     }
-
     if (currentQuestionIdx + 1 < MATH_QUESTIONS.length) {
       setCurrentQuestionIdx(currentQuestionIdx + 1);
       setInputValue('');
@@ -63,149 +124,343 @@ export default function GamesPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-12">
-      <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-bold text-edvoura-navy flex items-center gap-3">
-            <Trophy className="text-amber-500 h-8 w-8" />
-            Edvoura Play Zone
-          </h1>
-          <p className="mt-2 text-sm text-slate-600 max-w-md">
-            The best way to learn is to play! Dive into our internal challenges or explore our partner games on Arcademics.
-          </p>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px 48px' }}>
+      {/* Hero Header */}
+      <section style={{
+        borderRadius: '24px',
+        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%)',
+        border: '1px solid rgba(255,255,255,0.08)',
+        padding: '40px',
+        marginBottom: '32px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '24px',
+        flexWrap: 'wrap',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Decorative circles */}
+        <div style={{
+          position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px',
+          borderRadius: '50%', background: 'rgba(139,92,246,0.08)', filter: 'blur(40px)'
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-30px', left: '40%', width: '160px', height: '160px',
+          borderRadius: '50%', background: 'rgba(59,130,246,0.06)', filter: 'blur(30px)'
+        }} />
+
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              borderRadius: '16px',
+              padding: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 24px rgba(245,158,11,0.3)'
+            }}>
+              <Gamepad2 size={28} color="white" />
+            </div>
+            <div>
+              <h1 style={{
+                fontSize: '32px', fontWeight: 800, color: 'white', margin: 0,
+                letterSpacing: '-0.03em', lineHeight: 1.1
+              }}>
+                Edvoura Play Zone
+              </h1>
+              <p style={{ color: '#94a3b8', fontSize: '14px', margin: '4px 0 0 0' }}>
+                Learn while you play — 6 premium games built just for you
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="text-center rounded-xl bg-amber-50 p-4 border border-amber-200 min-w-[140px]">
-          <p className="text-xs font-semibold text-amber-700 uppercase tracking-widest">Your Points</p>
-          <p className="text-3xl font-black text-amber-600 flex items-center justify-center gap-2">
-            {score} <Star className="h-5 w-5 fill-amber-500" />
+
+        <div style={{
+          background: 'rgba(245,158,11,0.08)',
+          border: '1px solid rgba(245,158,11,0.2)',
+          borderRadius: '20px',
+          padding: '20px 32px',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>
+            Your Points
+          </p>
+          <p style={{
+            fontSize: '36px', fontWeight: 900, color: '#fbbf24', margin: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+          }}>
+            {score} <Star size={20} style={{ fill: '#f59e0b', color: '#f59e0b' }} />
           </p>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8 space-y-8">
-          <section className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-            <div className="bg-slate-900 p-4 text-white flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-widest">Internal Challenge: Speed Math</h2>
-              <span className="text-xs font-medium text-slate-400">Level 1</span>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '32px', alignItems: 'start' }}>
+        {/* Game Grid */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <Sparkles size={18} style={{ color: '#8b5cf6' }} />
+            <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#e2e8f0', margin: 0 }}>Choose Your Game</h2>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '16px'
+          }}>
+            {GAMES.map(game => {
+              const isHovered = hoveredGame === game.id;
+              return (
+                <div
+                  key={game.id}
+                  onClick={() => router.push(`/dash/student/games/${game.id}`)}
+                  onMouseEnter={() => setHoveredGame(game.id)}
+                  onMouseLeave={() => setHoveredGame(null)}
+                  style={{
+                    borderRadius: '20px',
+                    background: isHovered ? game.gradient : 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${isHovered ? game.color + '44' : 'rgba(255,255,255,0.06)'}`,
+                    padding: '24px',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: isHovered ? 'translateY(-4px)' : 'none',
+                    boxShadow: isHovered ? `0 12px 32px ${game.color}22` : 'none',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {/* Category badge */}
+                  <div style={{
+                    position: 'absolute', top: '16px', right: '16px',
+                    padding: '4px 10px', borderRadius: '8px',
+                    background: 'rgba(255,255,255,0.06)',
+                    fontSize: '10px', fontWeight: 700, color: '#64748b',
+                    textTransform: 'uppercase', letterSpacing: '0.05em'
+                  }}>
+                    {game.category}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                    <div style={{
+                      background: `${game.color}18`,
+                      borderRadius: '16px',
+                      padding: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: game.color,
+                      flexShrink: 0,
+                      transition: 'all 0.3s',
+                      transform: isHovered ? 'scale(1.1) rotate(-5deg)' : 'none'
+                    }}>
+                      <game.icon size={24} />
+                    </div>
+                    <div style={{ flex: 1, paddingRight: '50px' }}>
+                      <h3 style={{
+                        fontSize: '16px', fontWeight: 800, color: 'white', margin: '0 0 6px 0',
+                        transition: 'color 0.2s'
+                      }}>
+                        {game.emoji} {game.title}
+                      </h3>
+                      <p style={{
+                        fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.5
+                      }}>
+                        {game.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginTop: '16px', paddingTop: '12px',
+                    borderTop: '1px solid rgba(255,255,255,0.05)'
+                  }}>
+                    <div style={{
+                      padding: '4px 10px', borderRadius: '8px',
+                      background: `${game.difficultyColor}15`,
+                      fontSize: '11px', fontWeight: 700, color: game.difficultyColor
+                    }}>
+                      {game.difficulty}
+                    </div>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      fontSize: '12px', fontWeight: 700, color: game.color,
+                      transition: 'all 0.2s',
+                      transform: isHovered ? 'translateX(4px)' : 'none'
+                    }}>
+                      Play Now <ArrowRight size={14} />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Right Sidebar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {/* Speed Math Mini Game */}
+          <div style={{
+            borderRadius: '20px',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+              padding: '16px 20px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              borderBottom: '1px solid rgba(255,255,255,0.06)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Zap size={16} style={{ color: '#fbbf24' }} />
+                <span style={{ fontSize: '13px', fontWeight: 800, color: 'white', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Speed Math
+                </span>
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b' }}>Quick Challenge</span>
             </div>
-            
-            <div className="p-8 text-center">
+
+            <div style={{ padding: '24px', textAlign: 'center' }}>
               {!gameOver ? (
-                <div className="max-w-md mx-auto py-4">
-                  <p className="text-5xl font-black text-slate-800 animate-in fade-in zoom-in duration-300">
+                <div>
+                  <p style={{
+                    fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 20px 0'
+                  }}>
                     {MATH_QUESTIONS[currentQuestionIdx].q}
                   </p>
-                  
-                  <div className="mt-10 flex gap-3">
-                    <input 
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input
                       type="number"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAnswer()}
                       placeholder="Answer..."
-                      className="flex-1 rounded-xl border-2 border-slate-200 px-4 py-4 text-xl font-bold text-slate-800 focus:border-blue-500 focus:outline-none transition-all"
+                      style={{
+                        flex: 1, borderRadius: '12px',
+                        border: '2px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(255,255,255,0.05)',
+                        padding: '14px 16px', fontSize: '18px', fontWeight: 700,
+                        color: 'white', outline: 'none',
+                        transition: 'border-color 0.2s'
+                      }}
                       autoFocus
                     />
-                    <button 
+                    <button
                       onClick={handleAnswer}
-                      className="rounded-xl bg-blue-600 px-8 py-4 text-lg font-bold text-white hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 active:scale-95"
+                      style={{
+                        borderRadius: '12px', border: 'none', cursor: 'pointer',
+                        padding: '14px 24px', fontSize: '16px', fontWeight: 700,
+                        background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                        color: 'white', boxShadow: '0 4px 12px rgba(59,130,246,0.3)'
+                      }}
                     >
                       Go!
                     </button>
                   </div>
-                  
-                  <div className="mt-8 h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-blue-500 transition-all duration-500" 
-                      style={{ width: `${((currentQuestionIdx + 1) / MATH_QUESTIONS.length) * 100}%` }}
-                    />
+
+                  <div style={{
+                    marginTop: '16px', height: '6px', borderRadius: '3px',
+                    background: 'rgba(255,255,255,0.06)', overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      height: '100%', borderRadius: '3px',
+                      background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                      transition: 'width 0.5s',
+                      width: `${((currentQuestionIdx + 1) / MATH_QUESTIONS.length) * 100}%`
+                    }} />
                   </div>
+                  <p style={{ fontSize: '11px', color: '#64748b', marginTop: '8px' }}>
+                    Question {currentQuestionIdx + 1} of {MATH_QUESTIONS.length}
+                  </p>
                 </div>
               ) : (
-                <div className="py-8">
-                  <div className="relative inline-block">
-                    <Trophy className="h-20 w-20 text-amber-500 mb-4 mx-auto" />
-                    <Star className="absolute -top-2 -right-2 h-8 w-8 text-amber-400 animate-bounce" />
+                <div>
+                  <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
+                    <Trophy size={48} style={{ color: '#f59e0b' }} />
+                    <Star size={20} style={{
+                      color: '#fbbf24', fill: '#fbbf24',
+                      position: 'absolute', top: '-8px', right: '-12px'
+                    }} />
                   </div>
-                  <h2 className="text-3xl font-black text-slate-900">Awesome Job!</h2>
-                  <p className="mt-2 text-slate-600">You earned <span className="font-bold text-amber-600">{score} tokens</span> for your collection.</p>
-                  
-                  <button 
+                  <h3 style={{ fontSize: '22px', fontWeight: 800, color: 'white', margin: '0 0 8px 0' }}>
+                    Awesome!
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '14px', margin: '0 0 16px 0' }}>
+                    You earned <span style={{ color: '#fbbf24', fontWeight: 700 }}>{score} points</span>
+                  </p>
+                  <button
                     onClick={resetGame}
-                    className="mt-8 flex items-center gap-2 mx-auto rounded-xl bg-slate-900 px-8 py-4 text-white font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-xl"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px', margin: '0 auto',
+                      padding: '12px 24px', borderRadius: '12px', cursor: 'pointer',
+                      fontSize: '14px', fontWeight: 700,
+                      background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                      color: 'white', border: '1px solid rgba(255,255,255,0.1)'
+                    }}
                   >
-                    <RefreshCw className="h-5 w-5" /> Play Again
+                    <RefreshCw size={16} /> Play Again
                   </button>
                 </div>
               )}
             </div>
-          </section>
+          </div>
 
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             {EXTERNAL_GAMES.map((game) => (
-               <a 
-                key={game.title}
-                href={game.url}
-                target="_blank"
-                rel="noreferrer"
-                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-500 hover:shadow-md transition-all"
-               >
-                 <div className="flex items-start gap-4">
-                   <div className={`p-3 rounded-xl ${game.color} text-white`}>
-                     <game.icon className="h-6 w-6" />
-                   </div>
-                   <div className="flex-1">
-                     <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{game.title}</h3>
-                     <p className="mt-1 text-xs text-slate-600 leading-relaxed">{game.description}</p>
-                   </div>
-                 </div>
-                 <div className="mt-4 flex items-center justify-end">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-blue-600 group-hover:translate-x-1 transition-transform">
-                      Play Now →
-                    </span>
-                 </div>
-               </a>
-             ))}
-          </section>
-        </div>
-
-        <div className="lg:col-span-4 space-y-6">
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-4">Why Play Games?</h3>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">✓</div>
-                <p className="text-xs text-slate-600">Improve your reaction speed and memory.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">✓</div>
-                <p className="text-xs text-slate-600">Practice math and vocabulary in a fun way.</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="h-6 w-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">✓</div>
-                <p className="text-xs text-slate-600">Compete with friends on the leaderboard.</p>
-              </div>
+          {/* Benefits Card */}
+          <div style={{
+            borderRadius: '20px',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            padding: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <Brain size={18} style={{ color: '#8b5cf6' }} />
+              <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: 0 }}>Why Play Games?</h3>
             </div>
-          </section>
+            {[
+              'Sharpen your problem-solving and critical thinking',
+              'Build vocabulary and mathematical fluency',
+              'Learn Nigerian & world cultural heritage',
+              'Compete with friends on the leaderboard'
+            ].map((text, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%',
+                  background: 'rgba(34,197,94,0.12)', color: '#22c55e',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '10px', fontWeight: 700, flexShrink: 0, marginTop: '1px'
+                }}>✓</div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>{text}</p>
+              </div>
+            ))}
+          </div>
 
-          <section className="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-6 text-white shadow-lg">
-            <h3 className="font-bold text-lg">Pro Tip!</h3>
-            <p className="mt-2 text-sm text-blue-100 leading-relaxed">
-              Playing Arcademics games with your friends helps you learn teamwork and healthy competition. Invite a classmate to a race!
+          {/* Pro Tip */}
+          <div style={{
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, #4f46e5, #7c3aed)',
+            padding: '24px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute', top: '-20px', right: '-20px',
+              width: '100px', height: '100px', borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)'
+            }} />
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'white', margin: '0 0 8px 0', position: 'relative' }}>
+              💡 Pro Tip!
+            </h3>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)', margin: 0, lineHeight: 1.6, position: 'relative' }}>
+              Try Ayò Ọ̀pọ́n to learn about Nigerian culture while sharpening your math skills. Challenge a friend in Monopoly to practice teamwork!
             </p>
-            <a 
-              href="https://www.arcademics.com/"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 block text-center rounded-xl bg-white px-4 py-3 text-sm font-bold text-blue-700 hover:bg-blue-50 transition-colors"
-            >
-              Open Arcademics
-            </a>
-          </section>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
