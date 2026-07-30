@@ -371,11 +371,11 @@ export default function ChessGame() {
       {/* ─── TOP BAR ─── */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '8px 16px', color: '#fff', background: '#111827',
-        borderBottom: '2px solid #1e293b'
+        padding: '4px 12px', color: '#fff', background: '#111827',
+        borderBottom: '1px solid #1e293b'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => setMode('lobby')} style={{ background: 'none', border: '2px solid #334155', borderRadius: '8px', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
+          <button onClick={() => setMode('lobby')} style={{ background: 'none', border: '2px solid #334155', borderRadius: '8px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
             <ArrowLeft size={14} />
           </button>
           <span style={{ fontSize: '13px', fontWeight: 800 }}>♟ You <span style={{ color: '#475569', margin: '0 6px' }}>vs</span> 🤖 {oppName}</span>
@@ -396,7 +396,7 @@ export default function ChessGame() {
       {/* ─── MAIN AREA: LEFT PANEL | BOARD | RIGHT PANEL ─── */}
       <div style={{
         display: 'flex', alignItems: 'stretch',
-        overflow: 'hidden', padding: '8px 6px', gap: '4px'
+        overflow: 'hidden', padding: '4px 6px', gap: '4px'
       }}>
         {/* LEFT PANEL */}
         <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
@@ -478,10 +478,10 @@ export default function ChessGame() {
             display: 'grid',
             gridTemplateColumns: 'repeat(8, 1fr)',
             gridTemplateRows: 'repeat(8, 1fr)',
-            borderRadius: '12px',
+            borderRadius: '8px',
             overflow: 'hidden',
-            border: '3px solid #000',
-            boxShadow: '6px 6px 0px #000',
+            border: '2px solid #000',
+            boxShadow: '3px 3px 0px #000',
             transformStyle: 'preserve-3d',
             transform: flat ? 'none' : 'rotateX(12deg) scale(0.97)',
             transition: 'transform .4s cubic-bezier(.16,1,.3,1)',
@@ -594,7 +594,7 @@ export default function ChessGame() {
       {/* ─── BOTTOM BAR ─── */}
       <div style={{
         display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
-        padding: '8px 16px', background: '#111827', borderTop: '2px solid #1e293b'
+        padding: '4px 12px', background: '#111827', borderTop: '1px solid #1e293b'
       }}>
         <button onClick={undo} disabled={gs.history.length === 0 || thinking} className="ch-btn" style={{ padding: '5px 14px', background: '#3b82f6', color: '#fff', border: '2px solid #000', borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: (gs.history.length === 0 || thinking) ? 'not-allowed' : 'pointer', opacity: (gs.history.length === 0 || thinking) ? .5 : 1, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '2px 2px 0 #000' }}>
           <Undo2 size={12} /> Undo
