@@ -399,7 +399,7 @@ export default function ChessGame() {
         overflow: 'hidden', padding: '12px 16px', gap: '16px'
       }}>
         {/* LEFT PANEL */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '120px', overflow: 'hidden' }}>
+        <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
           {/* Computer Card */}
           <div style={{
             background: gs.turn === 'b' ? '#1a1a2e' : '#111827',
@@ -529,7 +529,7 @@ export default function ChessGame() {
         </div>
 
         {/* RIGHT PANEL */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '120px', overflow: 'hidden' }}>
+        <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
           {/* You Card */}
           <div style={{
             background: gs.turn === 'w' ? '#0f2a1a' : '#111827',
