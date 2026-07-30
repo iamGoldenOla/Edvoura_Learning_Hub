@@ -551,23 +551,122 @@ export default function ChessGame() {
     <GameLayout title="Chess 3D" icon={<Crown />} accentColor="#22c55e">
       <div style={{
         display: 'flex',
-        gap: '32px',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center',
         color: '#0f172a',
-        paddingBottom: '40px'
+        gap: '24px',
+        width: '100%'
       }}>
         
-        {/* Chess Board Panel */}
+        {/* Top Banner Dashboard instead of Sidebar */}
+        <div style={{
+          width: '100%',
+          maxWidth: '750px',
+          background: '#ffffff',
+          border: '3px solid #000000',
+          borderRadius: '24px',
+          padding: '16px 24px',
+          boxShadow: '4px 4px 0px #000000',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '20px',
+          alignItems: 'center',
+          boxSizing: 'border-box'
+        }}>
+          {/* Column 1: Opponent & Status */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{
+              padding: '6px 12px', borderRadius: '10px', border: '1.5px solid #000000', background: '#fafaf9',
+              display: 'flex', alignItems: 'center', gap: '6px'
+            }}>
+              <User size={12} />
+              <div style={{ fontSize: '11px', fontWeight: 900 }}>{matchedOpponent}</div>
+            </div>
+            <div style={{
+              background: gameStatus !== 'playing' ? '#fecaca' : (state.turn === 'w' ? '#dbeafe' : '#fef9c3'),
+              border: '1.5px solid #000000', borderRadius: '10px', padding: '6px 12px', textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '12px', fontWeight: 900 }}>
+                {gameStatus === 'playing' ? (
+                  state.turn === 'w' ? "Your Turn (White)" : (opponentType === 'local' ? "Player 2's Turn" : "Thinking...")
+                ) : (
+                  gameStatus === 'checkmate' ? "🏆 CHECKMATE!" : "🤝 DRAW"
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2: Captured Pieces */}
+          <div style={{
+            border: '1.5px solid #000000', borderRadius: '14px', padding: '10px 14px', background: '#fafaf9',
+            display: 'flex', flexDirection: 'column', gap: '4px'
+          }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Captured Pieces</div>
+            <div style={{ fontSize: '13px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700 }}>White:</span>
+              <span style={{ letterSpacing: '1px' }}>{state.captured.w.join('') || '-'}</span>
+            </div>
+            <div style={{ fontSize: '13px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700 }}>Black:</span>
+              <span style={{ letterSpacing: '1px' }}>{state.captured.b.join('') || '-'}</span>
+            </div>
+          </div>
+
+          {/* Column 3: Move History */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Recent Moves</div>
+            <div style={{
+              height: '52px', overflowY: 'auto', background: '#fafaf9', border: '1.5px solid #000000',
+              padding: '6px 8px', borderRadius: '10px', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700
+            }}>
+              {state.history.length === 0 ? (
+                <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>No moves...</div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
+                  {state.history.slice(-6).map((h, i) => (
+                    <div key={i} style={{ color: '#0f172a' }}>
+                      {h.move}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Column 4: Controls */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button 
+              onClick={resetGame}
+              style={{
+                width: '100%', padding: '8px', background: '#ffffff', color: '#000000', border: '1.5px solid #000000',
+                borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', boxShadow: '1.5px 1.5px 0px #000000',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+              }}
+            >
+              <RefreshCw size={12} /> Restart
+            </button>
+            <button 
+              onClick={quitToLobby}
+              style={{
+                width: '100%', padding: '8px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000000',
+                borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', boxShadow: '1.5px 1.5px 0px #000000',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+              }}
+            >
+              <ShieldAlert size={12} /> Quit Lobby
+            </button>
+          </div>
+        </div>
+
+        {/* Centered Chess Board Panel */}
         <div style={{
           background: '#ffffff',
           border: '4px solid #000000',
           borderRadius: '24px',
           padding: '16px',
           boxShadow: '8px 8px 0px #000000',
-          width: boardSize,
-          height: boardSize,
+          width: 'min(94vw, 55vh, 480px)',
+          height: 'min(94vw, 55vh, 480px)',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -580,30 +679,30 @@ export default function ChessGame() {
             onClick={() => setView3D(!view3D)}
             style={{
               position: 'absolute',
-              top: '-20px',
-              right: '20px',
-              padding: '6px 14px',
+              top: '-15px',
+              right: '15px',
+              padding: '4px 10px',
               background: '#fbbf24',
               border: '2px solid #000000',
-              borderRadius: '8px',
+              borderRadius: '6px',
               fontWeight: 800,
-              fontSize: '11px',
+              fontSize: '10px',
               cursor: 'pointer',
-              boxShadow: '2px 2px 0px #000000',
+              boxShadow: '1.5px 1.5px 0px #000000',
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '4px',
               zIndex: 10
             }}
           >
-            <Layers size={12} /> {view3D ? 'Flat View' : '3D View'}
+            <Layers size={10} /> {view3D ? 'Flat View' : '3D View'}
           </button>
 
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(8, 1fr)',
             borderRadius: '12px',
-            overflow: 'hidden',
+            overflow: 'visible', // Set overflow to visible to prevent 3D standing pieces from clipping!
             border: '2px solid #000000',
             width: '100%',
             height: '100%',
@@ -618,6 +717,12 @@ export default function ChessGame() {
               const isValidMove = validMoves.some(m => m.r === r && m.c === c);
               const isCheck = checkPos?.r === r && checkPos?.c === c;
 
+              // Keep rounded corners intact by manually styling outer squares
+              const borderTopLeftRadius = (r === 0 && c === 0) ? '10px' : '0px';
+              const borderTopRightRadius = (r === 0 && c === 7) ? '10px' : '0px';
+              const borderBottomLeftRadius = (r === 7 && c === 0) ? '10px' : '0px';
+              const borderBottomRightRadius = (r === 7 && c === 7) ? '10px' : '0px';
+
               return (
                 <div
                   key={`${r}-${c}`}
@@ -627,6 +732,10 @@ export default function ChessGame() {
                     background: isSelected ? '#a7f3d0'
                               : isCheck ? '#fecaca'
                               : isDark ? '#15803d' : '#fef08a',
+                    borderTopLeftRadius,
+                    borderTopRightRadius,
+                    borderBottomLeftRadius,
+                    borderBottomRightRadius,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -637,14 +746,14 @@ export default function ChessGame() {
                 >
                   {piece && (
                     <span style={{ 
-                      fontSize: 'clamp(2rem, 6vh, 3.8rem)',
+                      fontSize: 'clamp(1.8rem, 5.5vh, 3.4rem)',
                       color: piece.color === 'w' ? '#ffffff' : '#000000',
                       textShadow: piece.color === 'w' 
                         ? '2.5px 2.5px 0px #000000, -2.5px -2.5px 0px #000000, 2.5px -2.5px 0px #000000, -2.5px 2.5px 0px #000000' 
                         : 'none',
                       userSelect: 'none',
                       zIndex: 2,
-                      transform: view3D ? 'rotateX(-25deg) translateZ(4px)' : 'none',
+                      transform: view3D ? 'rotateX(-25deg) translateZ(6px)' : 'none',
                       transition: 'transform 0.4s ease-out'
                     }}>
                       {PIECE_SYMBOLS[piece.color][piece.type]}
@@ -664,131 +773,6 @@ export default function ChessGame() {
                 </div>
               );
             }))}
-          </div>
-        </div>
-
-        {/* Sidebar Dashboard */}
-        <div style={{
-          width: '320px',
-          background: '#ffffff',
-          border: '3px solid #000000',
-          borderRadius: '24px',
-          padding: '24px',
-          boxShadow: '6px 6px 0px #000000',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '20px'
-        }}>
-          {/* Opponent Info Box */}
-          <div style={{
-            padding: '12px 16px', borderRadius: '16px', border: '2px solid #000000', background: '#fafaf9',
-            display: 'flex', alignItems: 'center', gap: '10px'
-          }}>
-            <div style={{ padding: '8px', background: '#dbeafe', borderRadius: '8px', border: '1.5px solid #000000' }}>
-              <User size={18} />
-            </div>
-            <div>
-              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800 }}>OPPONENT</div>
-              <div style={{ fontSize: '13px', fontWeight: 900, color: '#000000' }}>{matchedOpponent}</div>
-            </div>
-          </div>
-
-          {/* Status Display */}
-          <div style={{
-            background: gameStatus !== 'playing' ? '#fecaca' : (state.turn === 'w' ? '#dbeafe' : '#fef9c3'),
-            border: '2px solid #000000',
-            borderRadius: '16px',
-            padding: '14px 16px',
-            boxShadow: '3px 3px 0px #000000',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ margin: '0 0 4px 0', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Game Status
-            </h3>
-            <div style={{ fontSize: '16px', fontWeight: 900, color: '#000000' }}>
-              {gameStatus === 'playing' ? (
-                state.turn === 'w' ? "⬜ Your Turn (White)" : `⬛ ${opponentType === 'local' ? "Player 2's Turn" : "Thinking..."}`
-              ) : (
-                gameStatus === 'checkmate' ? "🏆 CHECKMATE!" : "🤝 DRAW (STALEMATE)"
-              )}
-            </div>
-            {aiThinking && <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', fontWeight: 700 }}>Evaluating moves...</div>}
-          </div>
-
-          {/* Captured Pieces Display */}
-          <div style={{
-            border: '2px solid #000000',
-            borderRadius: '16px',
-            padding: '12px 16px',
-            background: '#fafaf9'
-          }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '11px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Captured Pieces
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748b' }}>White: </span>
-                <span style={{ fontSize: '18px', letterSpacing: '2px' }}>{state.captured.w.join(' ')}</span>
-              </div>
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '6px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: '#64748b' }}>Black: </span>
-                <span style={{ fontSize: '18px', letterSpacing: '2px', color: '#000000' }}>{state.captured.b.join(' ')}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Move History Panel */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ margin: '0 0 6px 0', fontSize: '11px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Move History
-            </h3>
-            <div style={{ 
-              height: '110px', 
-              overflowY: 'auto', 
-              background: '#fafaf9',
-              border: '2px solid #000000',
-              padding: '10px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontFamily: 'monospace',
-              fontWeight: 700
-            }}>
-              {state.history.length === 0 ? (
-                <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>No moves yet...</div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
-                  {state.history.map((h, i) => (
-                    <div key={i} style={{ color: '#0f172a' }}>
-                      {i % 2 === 0 ? `${Math.floor(i/2) + 1}. ` : ''}{h.move}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Control Actions */}
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              onClick={resetGame}
-              style={{
-                flex: 1, padding: '12px', background: '#ffffff', color: '#000000', border: '2px solid #000000',
-                borderRadius: '16px', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0px #000000',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-              }}
-            >
-              <RefreshCw size={14} /> Restart
-            </button>
-            <button 
-              onClick={quitToLobby}
-              style={{
-                flex: 1, padding: '12px', background: '#fee2e2', color: '#ef4444', border: '2px solid #000000',
-                borderRadius: '16px', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0px #000000',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
-              }}
-            >
-              <ShieldAlert size={14} /> Quit
-            </button>
           </div>
         </div>
 
