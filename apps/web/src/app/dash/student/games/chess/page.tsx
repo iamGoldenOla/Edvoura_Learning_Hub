@@ -329,7 +329,7 @@ const applyMove = (state: GameState, move: Move): GameState => {
     if (move.from.r === 0 && move.from.c === 7) newCastling.bK = false;
   }
 
-  const moveStr = `${piece.type !== 'p' ? piece.type.toUpperCase() : ''}${posToString(move.from.r, move.from.c)}-${posToString(move.to.r, move.to.c)}`;
+  const moveStr = `${piece.type !== 'p' ? piece.type.toUpperCase() : ''}${posToString(move.from.r, move.from.c)}→${posToString(move.to.r, move.to.c)}`;
 
   const captured = { w: [...state.captured.w], b: [...state.captured.b] };
   if (target) {
@@ -361,12 +361,14 @@ export default function ChessGame() {
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
   const [view3D, setView3D] = useState(true);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const resetGame = () => {
     setState(INITIAL_STATE);
     setSelected(null);
     setValidMoves([]);
     setAiThinking(false);
+    setElapsedTime(0);
   };
 
   const undoMove = () => {
@@ -467,6 +469,23 @@ export default function ChessGame() {
     }
   }, [gameMode]);
 
+  // Elapsed game timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (gameStatus === 'playing' && gameMode === 'playing') {
+      timer = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [gameStatus, gameMode]);
+
+  const formatTimer = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   // AI Turn trigger
   useEffect(() => {
     const isBotTurn = state.turn === 'b' && (opponentType === 'ai' || opponentType === 'matchmaker');
@@ -484,13 +503,13 @@ export default function ChessGame() {
           }
         }
         setAiThinking(false);
-      }, 700);
+      }, 1200); // 1.2s thinking time for a more realistic feel
       return () => clearTimeout(timer);
     }
   }, [state.turn, gameStatus, gameMode]);
 
   const handleSquareClick = (r: number, c: number) => {
-    if (gameStatus !== 'playing') return;
+    if (gameStatus !== 'playing' || aiThinking) return;
     
     const isBotTurn = state.turn === 'b' && (opponentType === 'ai' || opponentType === 'matchmaker');
     if (isBotTurn) return;
@@ -523,6 +542,7 @@ export default function ChessGame() {
     setSelected(null);
     setValidMoves([]);
     setAiThinking(false);
+    setElapsedTime(0);
     
     if (type === 'matchmaker') {
       setGameMode('matching');
@@ -650,9 +670,11 @@ export default function ChessGame() {
     );
   }
 
-  // Sizing formulas derived automatically from available heights and widths
-  const boardSizeCalc = 'min(72vw - 260px, 68vh - 80px)';
+  // Expanded Responsive sizing rules to occupy 90-95% content width
+  const boardSizeCalc = 'min(76vw - 260px, 55vh)';
+  const gutterWidth = 'calc(' + boardSizeCalc + ' * 0.15)';
   const lastMoveStr = state.history.length > 0 ? state.history[state.history.length - 1].move : 'None';
+  const formattedLastMove = lastMoveStr;
 
   return (
     <div className="chess-hud-wrapper" style={{
@@ -666,18 +688,19 @@ export default function ChessGame() {
       flexDirection: 'column',
       justifyContent: 'space-between',
       alignItems: 'center',
-      padding: '16px 20px',
-      boxSizing: 'border-box'
+      padding: '14px 18px',
+      boxSizing: 'border-box',
+      gap: '12px'
     }}>
       
       {/* 1. COMPACT HUD HEADER */}
       <div className="chess-compact-header" style={{
         width: '100%',
-        maxWidth: '1200px',
+        maxWidth: '1250px',
         background: '#1e293b',
         border: '3px solid #000000',
         borderRadius: '20px',
-        padding: '10px 20px',
+        padding: '8px 20px',
         boxShadow: '4px 4px 0px #000000',
         display: 'flex',
         justifyContent: 'space-between',
@@ -685,13 +708,13 @@ export default function ChessGame() {
         color: '#ffffff',
         flexShrink: 0
       }}>
-        {/* Left Info: Back & Opponent */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Left Info: Back & Player Info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <button
             onClick={quitToLobby}
             style={{
               background: 'rgba(255,255,255,0.08)',
-              border: '2.5px solid #000000',
+              border: '2px solid #000000',
               borderRadius: '8px',
               width: '32px',
               height: '32px',
@@ -705,46 +728,44 @@ export default function ChessGame() {
           >
             <ArrowLeft size={16} />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '18px' }}>♟️</span>
-            <div style={{ fontSize: '14px', fontWeight: 900 }}>
-              You vs <span style={{ color: '#fbbf24' }}>{matchedOpponent}</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: 900 }}>
+            <span>♟️ You (White)</span>
+            <span style={{ color: '#64748b' }}>vs</span>
+            <span>🤖 {matchedOpponent}</span>
           </div>
         </div>
 
-        {/* Center Indicator */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'rgba(255,255,255,0.06)',
-          padding: '6px 14px',
-          borderRadius: '10px',
-          border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <div className="pulse-dot" style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: gameStatus !== 'playing' ? '#ef4444' : (state.turn === 'w' ? '#3b82f6' : '#fbbf24'),
-            boxShadow: gameStatus === 'playing' ? '0 0 10px currentColor' : 'none',
-            animation: gameStatus === 'playing' ? 'pulsePulse 1s infinite alternate' : 'none'
-          }} />
-          <div style={{ fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {gameStatus === 'playing' ? (
-              state.turn === 'w' ? 'Your Turn' : (opponentType === 'local' ? "Player 2's Turn" : 'Evaluating...')
-            ) : (
-              gameStatus === 'checkmate' ? 'Checkmate' : 'Stalemate'
-            )}
+        {/* Center Indicator with Live Game Timer */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.08)',
+            border: '2px solid #000000',
+            padding: '5px 12px',
+            borderRadius: '10px',
+            fontSize: '12px',
+            fontWeight: 800,
+            fontFamily: 'monospace',
+            boxShadow: '1.5px 1.5px 0px #000000'
+          }}>
+            ⏱️ {formatTimer(elapsedTime)}
+          </div>
+          <div style={{
+            background: 'rgba(255,255,255,0.06)',
+            padding: '5px 12px',
+            borderRadius: '10px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            fontSize: '11px',
+            fontWeight: 900
+          }}>
+            Difficulty: <span style={{ color: '#fbbf24' }}>Beginner</span>
           </div>
         </div>
 
-        {/* Right Toggle Controls */}
+        {/* Right view toggle controls */}
         <button
           onClick={() => setView3D(!view3D)}
           style={{
-            padding: '6px 12px',
+            padding: '5px 12px',
             background: '#fbbf24',
             border: '2.5px solid #000000',
             borderRadius: '8px',
@@ -762,7 +783,39 @@ export default function ChessGame() {
         </button>
       </div>
 
-      {/* 2. MAIN ROW CONTAINER */}
+      {/* 2. COMPUTER PLAYER STATUS CARD */}
+      <div className="player-status-card" style={{
+        width: boardSizeCalc,
+        background: '#1e293b',
+        border: '2.5px solid #000000',
+        borderRadius: '12px',
+        padding: '6px 16px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        flexShrink: 0,
+        opacity: state.turn === 'b' ? 1 : 0.6,
+        transition: 'all 0.2s ease',
+        borderColor: state.turn === 'b' ? '#fbbf24' : '#000000',
+        boxShadow: state.turn === 'b' ? '0 0 12px rgba(251, 191, 36, 0.4)' : 'none'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff', fontSize: '12px', fontWeight: 800 }}>
+          <span>🤖</span>
+          <span>Computer (Black)</span>
+        </div>
+        <div style={{ fontSize: '11px', fontWeight: 900, color: state.turn === 'b' ? '#fbbf24' : '#94a3b8' }}>
+          {state.turn === 'b' ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="spinner-hud" /> Computer is thinking...
+            </span>
+          ) : (
+            '💤 Waiting'
+          )}
+        </div>
+      </div>
+
+      {/* 3. MAIN ROW PLAYING AREA */}
       <div className="main-game-row" style={{
         display: 'flex',
         alignItems: 'center',
@@ -772,36 +825,63 @@ export default function ChessGame() {
         gap: '16px',
         overflow: 'hidden'
       }}>
-        {/* Left Gutter: Captured Black Pieces */}
+        
+        {/* Left Gutter: Black Captured Panel (Lighter Background #273246, Border #42516B) */}
         <div style={{
-          width: 'calc(' + boardSizeCalc + ' * 0.12)',
+          width: gutterWidth,
           height: boardSizeCalc,
-          background: '#1e293b',
-          border: '3px solid #000000',
+          background: '#273246',
+          border: '2.5px solid #42516B',
           borderRadius: '20px',
-          padding: '12px 6px',
+          padding: '12px 8px',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
           boxSizing: 'border-box',
-          boxShadow: '4px 4px 0px #000000'
+          boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.3), 3px 3px 0px #000000',
+          transition: 'all 0.2s ease'
         }}>
-          <span style={{ fontSize: '8px', fontWeight: 950, color: '#94a3b8', transform: 'rotate(-90deg)', margin: '10px 0', whiteSpace: 'nowrap' }}>CAPTURED</span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: 'min(3.2vw, 3.2vh, 20px)', flex: 1, justifyContent: 'center' }}>
-            {state.captured.w.map((sym, idx) => (
-              <span key={idx} style={{ color: '#000000', filter: 'drop-shadow(1px 1px 0px rgba(255,255,255,0.3))' }}>{sym}</span>
-            ))}
+          <div style={{ 
+            fontSize: '9px', fontWeight: 950, color: '#94a3b8', 
+            textAlign: 'center', borderBottom: '1.5px solid #42516B', 
+            paddingBottom: '6px', marginBottom: '8px', textTransform: 'uppercase' 
+          }}>
+            ⬛ Black Captured ({state.captured.w.length})
+          </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
+            gap: '8px', 
+            justifyItems: 'center',
+            alignContent: 'start',
+            overflowY: 'auto',
+            flex: 1,
+            padding: '2px'
+          }}>
+            {state.captured.w.length === 0 ? (
+              <div style={{ gridColumn: 'span 2', color: '#64748b', fontSize: '9px', fontStyle: 'italic', marginTop: '12px', textAlign: 'center' }}>
+                Empty
+              </div>
+            ) : (
+              state.captured.w.map((sym, idx) => (
+                <span key={idx} style={{ 
+                  color: '#000000', 
+                  fontSize: 'min(3.6vw, 3.6vh, 26px)',
+                  textShadow: '0 0 4px #ffffff, 0 0 2px #ffffff',
+                  userSelect: 'none',
+                  animation: 'piecePop 0.2s ease-out'
+                }}>{sym}</span>
+              ))
+            )}
           </div>
         </div>
 
-        {/* Centered Board Casing */}
+        {/* Center Board Wrapper */}
         <div style={{
           background: '#ffffff',
-          border: '4px solid #000000',
-          borderRadius: '24px',
-          padding: '12px',
-          boxShadow: '8px 8px 0px #000000',
+          border: '4.5px solid #000000',
+          borderRadius: '28px',
+          padding: '14px',
+          boxShadow: '10px 10px 0px #000000',
           width: boardSizeCalc,
           height: boardSizeCalc,
           display: 'flex',
@@ -809,13 +889,14 @@ export default function ChessGame() {
           justifyContent: 'center',
           perspective: '1200px',
           overflow: 'visible',
-          position: 'relative'
+          position: 'relative',
+          transition: 'all 0.2s ease-out'
         }}>
           {/* Green and Cream Chessboard Grid */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(8, 1fr)',
-            borderRadius: '12px',
+            borderRadius: '16px',
             overflow: 'visible',
             border: '2.5px solid #000000',
             width: '100%',
@@ -823,7 +904,7 @@ export default function ChessGame() {
             transformStyle: 'preserve-3d',
             transform: view3D ? 'rotateX(22deg) scale(0.96)' : 'none',
             transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: view3D ? '0 16px 30px rgba(0,0,0,0.2)' : 'none'
+            boxShadow: view3D ? '0 18px 30px rgba(0,0,0,0.22)' : 'none'
           }}>
             {state.board.map((row, r) => row.map((piece, c) => {
               const isDark = (r + c) % 2 === 1;
@@ -831,10 +912,10 @@ export default function ChessGame() {
               const isValidMove = validMoves.some(m => m.r === r && m.c === c);
               const isCheck = checkPos?.r === r && checkPos?.c === c;
 
-              const borderTopLeftRadius = (r === 0 && c === 0) ? '10px' : '0px';
-              const borderTopRightRadius = (r === 0 && c === 7) ? '10px' : '0px';
-              const borderBottomLeftRadius = (r === 7 && c === 0) ? '10px' : '0px';
-              const borderBottomRightRadius = (r === 7 && c === 7) ? '10px' : '0px';
+              const borderTopLeftRadius = (r === 0 && c === 0) ? '13px' : '0px';
+              const borderTopRightRadius = (r === 0 && c === 7) ? '13px' : '0px';
+              const borderBottomLeftRadius = (r === 7 && c === 0) ? '13px' : '0px';
+              const borderBottomRightRadius = (r === 7 && c === 7) ? '13px' : '0px';
 
               return (
                 <div
@@ -852,14 +933,15 @@ export default function ChessGame() {
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    cursor: 'pointer',
+                    cursor: (aiThinking || isGameOver) ? 'not-allowed' : 'pointer',
                     position: 'relative',
-                    transition: 'background-color 0.15s ease'
+                    transition: 'background-color 0.2s ease, transform 0.15s ease'
                   }}
+                  className="chess-square"
                 >
                   {piece && (
                     <span style={{ 
-                      fontSize: 'clamp(1.4rem, calc(' + boardSizeCalc + ' * 0.08), 3.2rem)',
+                      fontSize: 'clamp(1.8rem, calc(' + boardSizeCalc + ' * 0.095), 3.8rem)',
                       color: piece.color === 'w' ? '#ffffff' : '#000000',
                       textShadow: piece.color === 'w' 
                         ? '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000' 
@@ -889,83 +971,164 @@ export default function ChessGame() {
           </div>
         </div>
 
-        {/* Right Gutter: Captured White Pieces */}
+        {/* Right Gutter: White Captured Panel (Lighter Background #273246, Border #42516B) */}
         <div style={{
-          width: 'calc(' + boardSizeCalc + ' * 0.12)',
+          width: gutterWidth,
           height: boardSizeCalc,
-          background: '#1e293b',
-          border: '3px solid #000000',
+          background: '#273246',
+          border: '2.5px solid #42516B',
           borderRadius: '20px',
-          padding: '12px 6px',
+          padding: '12px 8px',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
           boxSizing: 'border-box',
-          boxShadow: '4px 4px 0px #000000'
+          boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.3), 3px 3px 0px #000000',
+          transition: 'all 0.2s ease'
         }}>
-          <span style={{ fontSize: '8px', fontWeight: 950, color: '#94a3b8', transform: 'rotate(90deg)', margin: '10px 0', whiteSpace: 'nowrap' }}>LOST</span>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontSize: 'min(3.2vw, 3.2vh, 20px)', flex: 1, justifyContent: 'center' }}>
-            {state.captured.b.map((sym, idx) => (
-              <span key={idx} style={{ color: '#000000', filter: 'drop-shadow(1px 1px 0px rgba(255,255,255,0.3))' }}>{sym}</span>
-            ))}
+          <div style={{ 
+            fontSize: '9px', fontWeight: 950, color: '#94a3b8', 
+            textAlign: 'center', borderBottom: '1.5px solid #42516B', 
+            paddingBottom: '6px', marginBottom: '8px', textTransform: 'uppercase' 
+          }}>
+            ⬜ White Captured ({state.captured.b.length})
+          </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
+            gap: '8px', 
+            justifyItems: 'center',
+            alignContent: 'start',
+            overflowY: 'auto',
+            flex: 1,
+            padding: '2px'
+          }}>
+            {state.captured.b.length === 0 ? (
+              <div style={{ gridColumn: 'span 2', color: '#64748b', fontSize: '9px', fontStyle: 'italic', marginTop: '12px', textAlign: 'center' }}>
+                Empty
+              </div>
+            ) : (
+              state.captured.b.map((sym, idx) => (
+                <span key={idx} style={{ 
+                  color: '#ffffff', 
+                  fontSize: 'min(3.6vw, 3.6vh, 26px)',
+                  textShadow: '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000',
+                  userSelect: 'none',
+                  animation: 'piecePop 0.2s ease-out'
+                }}>{sym}</span>
+              ))
+            )}
           </div>
         </div>
       </div>
 
-      {/* 3. BOTTOM HUD (Matches board width exactly) */}
+      {/* 4. PLAYER 1 (YOU) STATUS CARD */}
+      <div className="player-status-card" style={{
+        width: boardSizeCalc,
+        background: '#1e293b',
+        border: '2.5px solid #000000',
+        borderRadius: '12px',
+        padding: '6px 16px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        flexShrink: 0,
+        opacity: state.turn === 'w' ? 1 : 0.6,
+        transition: 'all 0.2s ease',
+        borderColor: state.turn === 'w' ? '#22c55e' : '#000000',
+        boxShadow: state.turn === 'w' ? '0 0 12px rgba(34, 197, 94, 0.4)' : 'none'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#ffffff', fontSize: '12px', fontWeight: 800 }}>
+          <span>🙂</span>
+          <span>You (White)</span>
+        </div>
+        <div style={{ fontSize: '11px', fontWeight: 900, color: state.turn === 'w' ? '#22c55e' : '#94a3b8' }}>
+          {state.turn === 'w' ? (
+            <span>✓ Your Turn</span>
+          ) : (
+            '💤 Waiting'
+          )}
+        </div>
+      </div>
+
+      {/* 5. BOTTOM DETAILS HUD */}
       <div className="chess-hud-bottom" style={{
         width: boardSizeCalc,
         background: '#1e293b',
         border: '3px solid #000000',
         borderRadius: '18px',
-        padding: '10px 16px',
+        padding: '10px 18px',
         boxShadow: '4px 4px 0px #000000',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         color: '#ffffff',
-        flexShrink: 0
+        flexShrink: 0,
+        boxSizing: 'border-box'
       }}>
-        {/* Left Info slots */}
-        <div style={{ display: 'flex', gap: '16px', fontSize: '11px' }}>
+        {/* Left detailed Grid slots */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: '12px',
+          flex: 1,
+          fontSize: '11px',
+          color: '#e2e8f0',
+          marginRight: '12px'
+        }}>
           <div>
-            <span style={{ color: '#94a3b8', fontWeight: 700 }}>LAST MOVE: </span>
-            <span style={{ fontWeight: 900, color: '#fbbf24' }}>{lastMoveStr}</span>
+            <div style={{ color: '#94a3b8', fontWeight: 700, fontSize: '8px', textTransform: 'uppercase' }}>Last Move</div>
+            <div style={{ fontWeight: 900, color: '#fbbf24', fontSize: '12px', whiteSpace: 'nowrap', transition: 'all 0.15s' }}>{formattedLastMove}</div>
           </div>
           <div>
-            <span style={{ color: '#94a3b8', fontWeight: 700 }}>MOVES: </span>
-            <span style={{ fontWeight: 900 }}>{state.history.length}</span>
+            <div style={{ color: '#94a3b8', fontWeight: 700, fontSize: '8px', textTransform: 'uppercase' }}>Move Number</div>
+            <div style={{ fontWeight: 900, fontSize: '12px' }}>{state.history.length}</div>
           </div>
           <div>
-            <span style={{ color: '#94a3b8', fontWeight: 700 }}>STATUS: </span>
-            <span style={{ fontWeight: 900, color: inCheck ? '#ef4444' : '#16a34a' }}>
-              {inCheck ? 'Check!' : 'Normal'}
-            </span>
+            <div style={{ color: '#94a3b8', fontWeight: 700, fontSize: '8px', textTransform: 'uppercase' }}>Turn</div>
+            <div style={{ fontWeight: 900, fontSize: '12px', color: state.turn === 'w' ? '#3b82f6' : '#fbbf24' }}>
+              {state.turn === 'w' ? 'White' : 'Black'}
+            </div>
+          </div>
+          <div>
+            <div style={{ color: '#94a3b8', fontWeight: 700, fontSize: '8px', textTransform: 'uppercase' }}>Game Status</div>
+            <div style={{ fontWeight: 900, fontSize: '12px', color: inCheck ? '#ef4444' : '#16a34a', whiteSpace: 'nowrap' }}>
+              {gameStatus === 'playing' ? (inCheck ? 'In Check' : 'In Progress') : (gameStatus === 'checkmate' ? 'Checkmate' : 'Draw')}
+            </div>
+          </div>
+          <div>
+            <div style={{ color: '#94a3b8', fontWeight: 700, fontSize: '8px', textTransform: 'uppercase' }}>Captured</div>
+            <div style={{ fontWeight: 900, fontSize: '12px' }}>
+              W: {state.captured.b.length} • B: {state.captured.w.length}
+            </div>
           </div>
         </div>
 
         {/* Action Controls: Undo and Reset */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
           <button
             onClick={undoMove}
-            disabled={state.history.length === 0}
+            disabled={state.history.length === 0 || aiThinking}
             style={{
               padding: '6px 12px', background: '#3b82f6', color: '#ffffff', border: '2.5px solid #000000',
-              borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: state.history.length === 0 ? 'not-allowed' : 'pointer',
-              boxShadow: '2px 2px 0px #000000', opacity: state.history.length === 0 ? 0.5 : 1,
-              display: 'flex', alignItems: 'center', gap: '4px'
+              borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: (state.history.length === 0 || aiThinking) ? 'not-allowed' : 'pointer',
+              boxShadow: '2px 2px 0px #000000', opacity: (state.history.length === 0 || aiThinking) ? 0.5 : 1,
+              display: 'flex', alignItems: 'center', gap: '4px', transition: 'all 0.15s'
             }}
+            className="hud-action-btn"
           >
             <Undo2 size={12} /> Undo
           </button>
           <button
             onClick={resetGame}
+            disabled={aiThinking}
             style={{
               padding: '6px 12px', background: '#ef4444', color: '#ffffff', border: '2.5px solid #000000',
-              borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: 'pointer',
-              boxShadow: '2px 2px 0px #000000', display: 'flex', alignItems: 'center', gap: '4px'
+              borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: aiThinking ? 'not-allowed' : 'pointer',
+              boxShadow: '2px 2px 0px #000000', display: 'flex', alignItems: 'center', gap: '4px', opacity: aiThinking ? 0.5 : 1,
+              transition: 'all 0.15s'
             }}
+            className="hud-action-btn"
           >
             <RotateCcw size={12} /> Reset
           </button>
@@ -982,6 +1145,45 @@ export default function ChessGame() {
 
         .chess-hud-wrapper * {
           box-sizing: border-box;
+        }
+
+        /* Hover animation effects */
+        .chess-square:hover {
+          transform: scale(1.04);
+          z-index: 5;
+        }
+
+        .hud-action-btn:hover:not(:disabled) {
+          transform: translate(-1px, -1px);
+          box-shadow: 3.5px 3.5px 0px #000000 !important;
+        }
+        
+        .hud-action-btn:active:not(:disabled) {
+          transform: translate(1px, 1px);
+          box-shadow: 1px 1px 0px #000000 !important;
+        }
+
+        /* Jumping animation pop for captured pieces */
+        @keyframes piecePop {
+          0% { transform: scale(0.6); opacity: 0.2; }
+          70% { transform: scale(1.25); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Continuous thinking spinner */
+        .spinner-hud {
+          width: 10px;
+          height: 10px;
+          border: 2px solid rgba(251, 191, 36, 0.25);
+          border-top-color: #fbbf24;
+          border-radius: 50%;
+          display: inline-block;
+          animation: spin-hud-rot 0.8s infinite linear;
+        }
+
+        @keyframes spin-hud-rot {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
         @keyframes pulsePulse {
