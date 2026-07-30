@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Crown, RefreshCw, Layers, User, Monitor, Users, ShieldAlert } from 'lucide-react';
+import { Crown, RotateCcw, Layers, LogOut, Play, User, Users, Monitor, Sparkles } from 'lucide-react';
 
 type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 type Color = 'w' | 'b';
@@ -93,7 +93,6 @@ const getPseudoLegalMoves = (board: Board, r: number, c: number, castling: GameS
         if (!target || target.color !== color) moves.push({ r: r + dr, c: c + dc });
       }
     }
-    // Castling
     if (color === 'w' && r === 7 && c === 4) {
       if (castling.wK && !board[7][5] && !board[7][6] && board[7][7]?.type === 'r') moves.push({ r: 7, c: 6 });
       if (castling.wQ && !board[7][3] && !board[7][2] && !board[7][1] && board[7][0]?.type === 'r') moves.push({ r: 7, c: 2 });
@@ -377,7 +376,7 @@ export default function ChessGame() {
     }
   }, [gameMode]);
 
-  // AI Turn triggering (No aiThinking in dependency to avoid immediate cancel cleanup!)
+  // AI Turn triggering (no aiThinking dependency)
   useEffect(() => {
     const isBotTurn = state.turn === 'b' && (opponentType === 'ai' || opponentType === 'matchmaker');
     if (isBotTurn && gameStatus === 'playing' && !aiThinking && gameMode === 'playing') {
@@ -402,7 +401,6 @@ export default function ChessGame() {
   const handleSquareClick = (r: number, c: number) => {
     if (gameStatus !== 'playing') return;
     
-    // Disable clicks during Bot thinking phase
     const isBotTurn = state.turn === 'b' && (opponentType === 'ai' || opponentType === 'matchmaker');
     if (isBotTurn) return;
 
@@ -417,7 +415,6 @@ export default function ChessGame() {
     }
 
     const piece = state.board[r][c];
-    // In local mode, click pieces matching the current turn's color. In bot modes, click only white ('w')
     const correctColor = opponentType === 'local' ? state.turn : 'w';
     
     if (piece && piece.color === correctColor) {
@@ -447,9 +444,6 @@ export default function ChessGame() {
   const quitToLobby = () => {
     setGameMode('lobby');
   };
-
-  // Increased Chess Board size min(94vw, 75vh, 580px) for maximum visibility
-  const boardSize = 'min(94vw, 75vh, 580px)';
 
   if (gameMode === 'lobby') {
     return (
@@ -505,7 +499,6 @@ export default function ChessGame() {
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
         }}>
-          {/* Radar scan animation */}
           <div className="radar-container" style={{
             position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
@@ -535,7 +528,6 @@ export default function ChessGame() {
           >
             Cancel Search
           </button>
-
           <style jsx>{`
             @keyframes ping {
               0% { transform: scale(0.6); opacity: 1; }
@@ -547,6 +539,9 @@ export default function ChessGame() {
     );
   }
 
+  // Get last move for minimal bottom status displays
+  const lastMoveStr = state.history.length > 0 ? state.history[state.history.length - 1].move : 'None';
+
   return (
     <GameLayout title="Chess 3D" icon={<Crown />} accentColor="#22c55e">
       <div style={{
@@ -554,229 +549,286 @@ export default function ChessGame() {
         flexDirection: 'column',
         alignItems: 'center',
         color: '#0f172a',
-        gap: '24px',
-        width: '100%'
+        gap: '20px',
+        width: '100%',
+        margin: '0 auto',
+        maxWidth: '900px'
       }}>
         
-        {/* Top Banner Dashboard instead of Sidebar */}
+        {/* Sleek Minimalist Top HUD Bar */}
         <div style={{
           width: '100%',
-          maxWidth: '750px',
-          background: '#ffffff',
-          border: '3px solid #000000',
-          borderRadius: '24px',
-          padding: '16px 24px',
+          background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+          border: '3.5px solid #000000',
+          borderRadius: '20px',
+          padding: '12px 24px',
           boxShadow: '4px 4px 0px #000000',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '20px',
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          color: '#ffffff'
         }}>
-          {/* Column 1: Opponent & Status */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{
-              padding: '6px 12px', borderRadius: '10px', border: '1.5px solid #000000', background: '#fafaf9',
-              display: 'flex', alignItems: 'center', gap: '6px'
-            }}>
-              <User size={12} />
-              <div style={{ fontSize: '11px', fontWeight: 900 }}>{matchedOpponent}</div>
-            </div>
-            <div style={{
-              background: gameStatus !== 'playing' ? '#fecaca' : (state.turn === 'w' ? '#dbeafe' : '#fef9c3'),
-              border: '1.5px solid #000000', borderRadius: '10px', padding: '6px 12px', textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '12px', fontWeight: 900 }}>
-                {gameStatus === 'playing' ? (
-                  state.turn === 'w' ? "Your Turn (White)" : (opponentType === 'local' ? "Player 2's Turn" : "Thinking...")
-                ) : (
-                  gameStatus === 'checkmate' ? "🏆 CHECKMATE!" : "🤝 DRAW"
-                )}
-              </div>
+          {/* Left: Player vs Opponent */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px' }}>⚔️</span>
+            <div style={{ fontSize: '13px', fontWeight: 900 }}>
+              You vs <span style={{ color: '#22c55e' }}>{matchedOpponent}</span>
             </div>
           </div>
 
-          {/* Column 2: Captured Pieces */}
+          {/* Center: Turn Status HUD with Pulse Ring */}
           <div style={{
-            border: '1.5px solid #000000', borderRadius: '14px', padding: '10px 14px', background: '#fafaf9',
-            display: 'flex', flexDirection: 'column', gap: '4px'
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            background: 'rgba(255,255,255,0.06)',
+            padding: '6px 16px',
+            borderRadius: '12px',
+            border: '1.5px solid rgba(255,255,255,0.1)'
           }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Captured Pieces</div>
-            <div style={{ fontSize: '13px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700 }}>White:</span>
-              <span style={{ letterSpacing: '1px' }}>{state.captured.w.join('') || '-'}</span>
-            </div>
-            <div style={{ fontSize: '13px', display: 'flex', gap: '6px', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700 }}>Black:</span>
-              <span style={{ letterSpacing: '1px' }}>{state.captured.b.join('') || '-'}</span>
-            </div>
-          </div>
-
-          {/* Column 3: Move History */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Recent Moves</div>
             <div style={{
-              height: '52px', overflowY: 'auto', background: '#fafaf9', border: '1.5px solid #000000',
-              padding: '6px 8px', borderRadius: '10px', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700
-            }}>
-              {state.history.length === 0 ? (
-                <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>No moves...</div>
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: gameStatus !== 'playing' ? '#ef4444' : (state.turn === 'w' ? '#3b82f6' : '#f59e0b'),
+              boxShadow: gameStatus === 'playing' ? '0 0 10px currentColor' : 'none',
+              animation: gameStatus === 'playing' ? 'pulsePulse 1s infinite alternate' : 'none'
+            }} />
+            <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {gameStatus === 'playing' ? (
+                state.turn === 'w' ? 'Your Turn (White)' : (opponentType === 'local' ? "Player 2's Turn" : 'AI is Thinking...')
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px' }}>
-                  {state.history.slice(-6).map((h, i) => (
-                    <div key={i} style={{ color: '#0f172a' }}>
-                      {h.move}
-                    </div>
-                  ))}
-                </div>
+                gameStatus === 'checkmate' ? 'Checkmate!' : 'Stalemate Draw'
               )}
             </div>
           </div>
 
-          {/* Column 4: Controls */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button 
+          {/* Right: Sleek Control Actions */}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
               onClick={resetGame}
+              title="Restart Game"
               style={{
-                width: '100%', padding: '8px', background: '#ffffff', color: '#000000', border: '1.5px solid #000000',
-                borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', boxShadow: '1.5px 1.5px 0px #000000',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                width: '36px', height: '36px', borderRadius: '10px', border: '2px solid #000000',
+                background: '#ffffff', color: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', boxShadow: '2px 2px 0px #000000', transition: 'all 0.1s'
               }}
+              onMouseDown={e => { e.currentTarget.style.transform = 'translate(1px, 1px)'; e.currentTarget.style.boxShadow = '1px 1px 0px #000000'; }}
+              onMouseUp={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '2px 2px 0px #000000'; }}
             >
-              <RefreshCw size={12} /> Restart
+              <RotateCcw size={16} />
             </button>
-            <button 
+            <button
               onClick={quitToLobby}
+              title="Exit to Lobby"
               style={{
-                width: '100%', padding: '8px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000000',
-                borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', boxShadow: '1.5px 1.5px 0px #000000',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                width: '36px', height: '36px', borderRadius: '10px', border: '2px solid #000000',
+                background: '#fee2e2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', boxShadow: '2px 2px 0px #000000', transition: 'all 0.1s'
               }}
+              onMouseDown={e => { e.currentTarget.style.transform = 'translate(1px, 1px)'; e.currentTarget.style.boxShadow = '1px 1px 0px #000000'; }}
+              onMouseUp={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '2px 2px 0px #000000'; }}
             >
-              <ShieldAlert size={12} /> Quit Lobby
+              <LogOut size={16} />
             </button>
           </div>
         </div>
 
-        {/* Centered Chess Board Panel */}
+        {/* 3-Column Board Row: Captured Pieces on left/right gutters, Board centered */}
         <div style={{
-          background: '#ffffff',
-          border: '4px solid #000000',
-          borderRadius: '24px',
-          padding: '16px',
-          boxShadow: '8px 8px 0px #000000',
-          width: 'min(94vw, 55vh, 480px)',
-          height: 'min(94vw, 55vh, 480px)',
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
           justifyContent: 'center',
-          perspective: '1000px',
-          overflow: 'visible',
-          position: 'relative'
+          width: '100%',
+          gap: '24px'
         }}>
-          {/* View Toggle */}
-          <button
-            onClick={() => setView3D(!view3D)}
-            style={{
-              position: 'absolute',
-              top: '-15px',
-              right: '15px',
-              padding: '4px 10px',
-              background: '#fbbf24',
-              border: '2px solid #000000',
-              borderRadius: '6px',
-              fontWeight: 800,
-              fontSize: '10px',
-              cursor: 'pointer',
-              boxShadow: '1.5px 1.5px 0px #000000',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              zIndex: 10
-            }}
-          >
-            <Layers size={10} /> {view3D ? 'Flat View' : '3D View'}
-          </button>
-
+          {/* Left Gutter: Captured Black Pieces */}
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(8, 1fr)',
-            borderRadius: '12px',
-            overflow: 'visible', // Set overflow to visible to prevent 3D standing pieces from clipping!
-            border: '2px solid #000000',
-            width: '100%',
-            height: '100%',
-            transformStyle: 'preserve-3d',
-            transform: view3D ? 'rotateX(25deg) translateY(-10px) scale(0.95)' : 'none',
-            transition: 'transform 0.4s ease-out',
-            boxShadow: view3D ? '0 15px 25px rgba(0,0,0,0.2)' : 'none'
+            width: '45px',
+            background: 'rgba(255,255,255,0.8)',
+            border: '2.5px solid #000000',
+            borderRadius: '16px',
+            padding: '16px 8px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '260px',
+            boxShadow: '3px 3px 0px #000000'
           }}>
-            {state.board.map((row, r) => row.map((piece, c) => {
-              const isDark = (r + c) % 2 === 1;
-              const isSelected = selected?.r === r && selected?.c === c;
-              const isValidMove = validMoves.some(m => m.r === r && m.c === c);
-              const isCheck = checkPos?.r === r && checkPos?.c === c;
-
-              // Keep rounded corners intact by manually styling outer squares
-              const borderTopLeftRadius = (r === 0 && c === 0) ? '10px' : '0px';
-              const borderTopRightRadius = (r === 0 && c === 7) ? '10px' : '0px';
-              const borderBottomLeftRadius = (r === 7 && c === 0) ? '10px' : '0px';
-              const borderBottomRightRadius = (r === 7 && c === 7) ? '10px' : '0px';
-
-              return (
-                <div
-                  key={`${r}-${c}`}
-                  onClick={() => handleSquareClick(r, c)}
-                  style={{
-                    aspectRatio: '1',
-                    background: isSelected ? '#a7f3d0'
-                              : isCheck ? '#fecaca'
-                              : isDark ? '#15803d' : '#fef08a',
-                    borderTopLeftRadius,
-                    borderTopRightRadius,
-                    borderBottomLeftRadius,
-                    borderBottomRightRadius,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    transition: 'background-color 0.15s ease'
-                  }}
-                >
-                  {piece && (
-                    <span style={{ 
-                      fontSize: 'clamp(1.8rem, 5.5vh, 3.4rem)',
-                      color: piece.color === 'w' ? '#ffffff' : '#000000',
-                      textShadow: piece.color === 'w' 
-                        ? '2.5px 2.5px 0px #000000, -2.5px -2.5px 0px #000000, 2.5px -2.5px 0px #000000, -2.5px 2.5px 0px #000000' 
-                        : 'none',
-                      userSelect: 'none',
-                      zIndex: 2,
-                      transform: view3D ? 'rotateX(-25deg) translateZ(6px)' : 'none',
-                      transition: 'transform 0.4s ease-out'
-                    }}>
-                      {PIECE_SYMBOLS[piece.color][piece.type]}
-                    </span>
-                  )}
-                  {isValidMove && (
-                    <div style={{
-                      position: 'absolute',
-                      width: '28%',
-                      height: '28%',
-                      borderRadius: '50%',
-                      background: piece ? 'rgba(239, 68, 68, 0.6)' : 'rgba(34, 197, 94, 0.6)',
-                      border: '1.5px solid #000000',
-                      zIndex: 3
-                    }} />
-                  )}
-                </div>
-              );
-            }))}
+            <span style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', transform: 'rotate(-90deg)', margin: '12px 0' }}>CAPTURED</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '20px' }}>
+              {state.captured.w.map((sym, idx) => (
+                <span key={idx} style={{ color: '#000000' }}>{sym}</span>
+              ))}
+            </div>
           </div>
+
+          {/* Centered Board Wrapper */}
+          <div style={{
+            background: '#ffffff',
+            border: '4px solid #000000',
+            borderRadius: '28px',
+            padding: '18px',
+            boxShadow: '8px 8px 0px #000000',
+            width: 'min(94vw, 53vh, 460px)',
+            height: 'min(94vw, 53vh, 460px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            perspective: '1200px',
+            overflow: 'visible',
+            position: 'relative'
+          }}>
+            {/* 3D isometric view toggle */}
+            <button
+              onClick={() => setView3D(!view3D)}
+              style={{
+                position: 'absolute',
+                top: '-15px',
+                right: '20px',
+                padding: '5px 12px',
+                background: '#fbbf24',
+                border: '2.5px solid #000000',
+                borderRadius: '8px',
+                fontWeight: 900,
+                fontSize: '10px',
+                cursor: 'pointer',
+                boxShadow: '2px 2px 0px #000000',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                zIndex: 10
+              }}
+            >
+              <Layers size={11} /> {view3D ? 'Flat View' : '3D View'}
+            </button>
+
+            {/* High-Contrast Beautiful Virtual Table */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(8, 1fr)',
+              borderRadius: '16px',
+              overflow: 'visible',
+              border: '3px solid #000000',
+              width: '100%',
+              height: '100%',
+              transformStyle: 'preserve-3d',
+              transform: view3D ? 'rotateX(22deg) scale(0.96)' : 'none',
+              transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              boxShadow: view3D ? '0 20px 35px rgba(0,0,0,0.18)' : 'none'
+            }}>
+              {state.board.map((row, r) => row.map((piece, c) => {
+                const isDark = (r + c) % 2 === 1;
+                const isSelected = selected?.r === r && selected?.c === c;
+                const isValidMove = validMoves.some(m => m.r === r && m.c === c);
+                const isCheck = checkPos?.r === r && checkPos?.c === c;
+
+                // Edge rounded cell corners
+                const borderTopLeftRadius = (r === 0 && c === 0) ? '13px' : '0px';
+                const borderTopRightRadius = (r === 0 && c === 7) ? '13px' : '0px';
+                const borderBottomLeftRadius = (r === 7 && c === 0) ? '13px' : '0px';
+                const borderBottomRightRadius = (r === 7 && c === 7) ? '13px' : '0px';
+
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    onClick={() => handleSquareClick(r, c)}
+                    style={{
+                      aspectRatio: '1',
+                      // Deep forest dark green & cream light square colors
+                      background: isSelected ? '#a7f3d0'
+                                : isCheck ? '#fca5a5'
+                                : isDark ? '#1b4332' : '#f5f3f0',
+                      borderTopLeftRadius,
+                      borderTopRightRadius,
+                      borderBottomLeftRadius,
+                      borderBottomRightRadius,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      transition: 'background-color 0.15s ease'
+                    }}
+                  >
+                    {piece && (
+                      <span style={{ 
+                        fontSize: 'clamp(1.8rem, 5vh, 3.4rem)',
+                        color: piece.color === 'w' ? '#ffffff' : '#000000',
+                        // Elegant stroke shadows for White Unicode pieces so they pop on cream squares
+                        textShadow: piece.color === 'w' 
+                          ? '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000' 
+                          : 'none',
+                        userSelect: 'none',
+                        zIndex: 2,
+                        transform: view3D ? 'rotateX(-22deg) translateZ(8px)' : 'none',
+                        transition: 'transform 0.4s ease-out'
+                      }}>
+                        {PIECE_SYMBOLS[piece.color][piece.type]}
+                      </span>
+                    )}
+                    {isValidMove && (
+                      <div style={{
+                        position: 'absolute',
+                        width: '28%',
+                        height: '28%',
+                        borderRadius: '50%',
+                        background: piece ? 'rgba(239, 68, 68, 0.6)' : 'rgba(34, 197, 94, 0.6)',
+                        border: '1.5px solid #000000',
+                        zIndex: 3
+                      }} />
+                    )}
+                  </div>
+                );
+              }))}
+            </div>
+          </div>
+
+          {/* Right Gutter: Captured White Pieces */}
+          <div style={{
+            width: '45px',
+            background: 'rgba(255,255,255,0.8)',
+            border: '2.5px solid #000000',
+            borderRadius: '16px',
+            padding: '16px 8px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '8px',
+            minHeight: '260px',
+            boxShadow: '3px 3px 0px #000000'
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', transform: 'rotate(90deg)', margin: '12px 0' }}>LOST</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '20px' }}>
+              {state.captured.b.map((sym, idx) => (
+                <span key={idx} style={{ color: '#000000' }}>{sym}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Tiny Bottom Status Gutter */}
+        <div style={{
+          width: '100%', maxWidth: '460px', display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', padding: '6px 12px', background: '#fafaf9', border: '2px solid #000000',
+          borderRadius: '12px', boxShadow: '2px 2px 0px #000000', fontSize: '11px', fontWeight: 700
+        }}>
+          <span style={{ color: '#64748b' }}>Last Move: <span style={{ color: '#000000' }}>{lastMoveStr}</span></span>
+          <span style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Sparkles size={11} /> 10 XP Multiplier active
+          </span>
         </div>
 
       </div>
+      
+      <style jsx global>{`
+        @keyframes pulsePulse {
+          0% { transform: scale(0.9); opacity: 0.7; }
+          100% { transform: scale(1.15); opacity: 1; }
+        }
+      `}</style>
     </GameLayout>
   );
 }
