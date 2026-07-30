@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Dice1, RotateCcw, Layers, User, Users, Monitor, Shield, Trophy, Building2, Landmark, ArrowRightLeft, Gavel, DollarSign } from 'lucide-react';
+import { Dice1, RotateCcw, Layers, User, Users, Monitor, Landmark, ArrowRightLeft, Gavel } from 'lucide-react';
 
 /* ═══════════════════════ TYPES ═══════════════════════ */
 export type SpaceType = 'property' | 'railroad' | 'utility' | 'start' | 'tax' | 'chance' | 'quiz' | 'jail' | 'go-to-jail' | 'free-parking';
@@ -35,7 +35,7 @@ export interface PlayerState {
   balance: number;
   position: number;
   color: string;
-  emoji: string;
+  token: 'car' | 'hat' | 'ship' | 'thimble';
   inJail: boolean;
   jailTurns: number;
   isBot: boolean;
@@ -47,6 +47,52 @@ export interface BoardSpace {
   type: SpaceType;
   property?: Property;
   special?: SpecialProperty;
+}
+
+/* ═══════════════════════ REAL MONOPOLY SVG TOKENS ═══════════════════════ */
+const CarToken = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+    <path d="M3 13C3 11.9 3.9 11 5 11H6.5L8.2 6.9C8.5 6.3 9.1 6 9.8 6H14.2C14.9 6 15.5 6.3 15.8 6.9L17.5 11H19C20.1 11 21 11.9 21 13V15.5C21 16.3 20.3 17 19.5 17H19C19 18.1 18.1 19 17 19C15.9 19 15 18.1 15 17H9C9 18.1 8.1 19 7 19C5.9 19 5 18.1 5 17H4.5C3.7 17 3 16.3 3 15.5V13Z" fill={color} stroke="#000000" strokeWidth="1.5" strokeLinejoin="round"/>
+    <circle cx="7" cy="17" r="1.5" fill="#ffffff" stroke="#000000" strokeWidth="1"/>
+    <circle cx="17" cy="17" r="1.5" fill="#ffffff" stroke="#000000" strokeWidth="1"/>
+    <path d="M8.5 11H15.5L14.2 7.5H9.8L8.5 11Z" fill="#ffffff" opacity="0.4"/>
+  </svg>
+);
+
+const HatToken = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+    <path d="M2 18C2 17.45 2.45 17 3 17H21C21.55 17 22 17.45 22 18C22 18.55 21.55 19 21 19H3C2.45 19 2 18.55 2 18Z" fill="#0f172a" stroke="#000000" strokeWidth="1.5"/>
+    <path d="M6 17V8C6 6.9 6.9 6 8 6H16C17.1 6 18 6.9 18 8V17H6Z" fill={color} stroke="#000000" strokeWidth="1.5"/>
+    <rect x="6" y="14" width="12" height="3" fill="#fbbf24" stroke="#000000" strokeWidth="1"/>
+  </svg>
+);
+
+const ShipToken = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+    <path d="M2 15L4 18.5H20L22 15H2Z" fill={color} stroke="#000000" strokeWidth="1.5"/>
+    <path d="M7 15V10H17V15" fill={color} stroke="#000000" strokeWidth="1.5"/>
+    <rect x="10" y="6" width="4" height="4" fill="#ffffff" stroke="#000000" strokeWidth="1"/>
+    <line x1="12" y1="2" x2="12" y2="6" stroke="#000000" strokeWidth="1.5"/>
+  </svg>
+);
+
+const ThimbleToken = ({ color, size = 16 }: { color: string; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+    <path d="M7 18H17L18.5 8.5C18.5 6 15.5 4 12 4C8.5 4 5.5 6 5.5 8.5L7 18Z" fill={color} stroke="#000000" strokeWidth="1.5"/>
+    <ellipse cx="12" cy="18" rx="5" ry="1.5" fill="#ffffff" stroke="#000000" strokeWidth="1.5"/>
+    <circle cx="10" cy="9" r="0.8" fill="#ffffff"/>
+    <circle cx="14" cy="9" r="0.8" fill="#ffffff"/>
+    <circle cx="12" cy="12" r="0.8" fill="#ffffff"/>
+    <circle cx="10" cy="15" r="0.8" fill="#ffffff"/>
+    <circle cx="14" cy="15" r="0.8" fill="#ffffff"/>
+  </svg>
+);
+
+function RenderToken({ token, color, size = 16 }: { token: 'car' | 'hat' | 'ship' | 'thimble'; color: string; size?: number }) {
+  if (token === 'car') return <CarToken color={color} size={size} />;
+  if (token === 'hat') return <HatToken color={color} size={size} />;
+  if (token === 'ship') return <ShipToken color={color} size={size} />;
+  return <ThimbleToken color={color} size={size} />;
 }
 
 /* ═══════════════════════ QUIZ & CHANCE DATA ═══════════════════════ */
@@ -156,11 +202,11 @@ function getGridCoords(pos: number): { r: number; c: number } {
   return { r: p - 33, c: 13 };
 }
 
-const PLAYER_CONFIGS = [
-  { name: 'Player 1', color: '#3b82f6', emoji: '🎓' },
-  { name: 'Player 2', color: '#ef4444', emoji: '📚' },
-  { name: 'Player 3', color: '#22c55e', emoji: '🔬' },
-  { name: 'Player 4', color: '#f59e0b', emoji: '🎨' },
+const PLAYER_CONFIGS: { name: string; color: string; token: 'car' | 'hat' | 'ship' | 'thimble' }[] = [
+  { name: 'Player 1', color: '#3b82f6', token: 'car' },
+  { name: 'Player 2', color: '#ef4444', token: 'hat' },
+  { name: 'Player 3', color: '#22c55e', token: 'ship' },
+  { name: 'Player 4', color: '#f59e0b', token: 'thimble' },
 ];
 
 const BOT_NAMES = ['Aisha Bello (Grade 4)', 'Chinedu Okafor (Grade 5)', 'Oluwaseun Adebayo (Grade 4)'];
@@ -231,7 +277,7 @@ export default function MonopolyPage() {
         list.push({
           name: BOT_NAMES[i - 1] || `AI Bot ${i}`,
           color: PLAYER_CONFIGS[i].color,
-          emoji: PLAYER_CONFIGS[i].emoji,
+          token: PLAYER_CONFIGS[i].token,
           balance: 1500,
           position: 0,
           inJail: false,
@@ -244,7 +290,7 @@ export default function MonopolyPage() {
       list.push({
         name: matchedPlayerName || 'Classmate (Grade 4)',
         color: PLAYER_CONFIGS[1].color,
-        emoji: PLAYER_CONFIGS[1].emoji,
+        token: PLAYER_CONFIGS[1].token,
         balance: 1500,
         position: 0,
         inJail: false,
@@ -256,7 +302,7 @@ export default function MonopolyPage() {
         list.push({
           name: `AI Bot ${i}`,
           color: PLAYER_CONFIGS[i].color,
-          emoji: PLAYER_CONFIGS[i].emoji,
+          token: PLAYER_CONFIGS[i].token,
           balance: 1500,
           position: 0,
           inJail: false,
@@ -309,14 +355,12 @@ export default function MonopolyPage() {
       const prop = space.property;
       if (prop.isMortgaged) return 0;
 
-      // Base rent or house multipliers
       let r = prop.rent;
       if (prop.houses === 1) r *= 4;
       else if (prop.houses === 2) r *= 10;
       else if (prop.houses === 3) r *= 20;
       else if (prop.houses === 4) r *= 35; // Hotel
 
-      // Color monopoly check (2x rent if 0 houses and owns full color set)
       if (prop.houses === 0) {
         const sameGroupProps = board.filter(s => s.property && s.property.colorGroup === prop.colorGroup);
         const ownsAll = sameGroupProps.every(s => s.property?.owner === prop.owner);
@@ -372,7 +416,6 @@ export default function MonopolyPage() {
       const total = d1 + d2;
       const player = players[currentPlayer];
 
-      // Interest on loan if player holds a bank loan
       if (player.bankLoan > 0) {
         const updated = [...players];
         const interest = 10;
@@ -386,19 +429,19 @@ export default function MonopolyPage() {
           const updated = [...players];
           updated[currentPlayer] = { ...player, inJail: false, jailTurns: 0 };
           setPlayers(updated);
-          addLog(`${player.emoji} ${player.name} rolled doubles and escaped jail!`);
+          addLog(`🚗 ${player.name} rolled doubles and escaped jail!`);
           animatePlayerMove(player.position, total, updated, total);
         } else if (player.jailTurns >= 2) {
           const updated = [...players];
           updated[currentPlayer] = { ...player, inJail: false, jailTurns: 0, balance: player.balance - 50 };
           setPlayers(updated);
-          addLog(`${player.emoji} ${player.name} paid $50 fine to leave jail.`);
+          addLog(`💸 ${player.name} paid $50 fine to leave jail.`);
           animatePlayerMove(player.position, total, updated, total);
         } else {
           const updated = [...players];
           updated[currentPlayer] = { ...player, jailTurns: player.jailTurns + 1 };
           setPlayers(updated);
-          addLog(`${player.emoji} ${player.name} is stuck in jail. Turn ${player.jailTurns + 1}/3.`);
+          addLog(`🔒 ${player.name} is stuck in jail. Turn ${player.jailTurns + 1}/3.`);
           setPhase('action');
           setActionMessage(`In jail! Roll doubles to escape.`);
         }
@@ -430,7 +473,7 @@ export default function MonopolyPage() {
           next[currentPlayer] = { ...next[currentPlayer], balance: next[currentPlayer].balance + 200 };
           return next;
         });
-        addLog(`${currentPlayers[currentPlayer].emoji} Passed START! Earned $200.`);
+        addLog(`🏁 ${currentPlayers[currentPlayer].name} passed START! Earned $200.`);
       }
 
       if (stepCount === steps) {
@@ -449,13 +492,13 @@ export default function MonopolyPage() {
     if (space.type === 'go-to-jail') {
       updatedPlayers[currentPlayer] = { ...player, position: 13, inJail: true, jailTurns: 0 };
       setPlayers(updatedPlayers);
-      addLog(`${player.emoji} ${player.name} sent to Jail!`);
+      addLog(`👮 ${player.name} sent to Jail!`);
       setActionMessage('👮 Go to Jail!');
       setPhase('action');
     } else if (space.type === 'tax') {
       updatedPlayers[currentPlayer] = { ...player, balance: player.balance - 150 };
       setPlayers(updatedPlayers);
-      addLog(`${player.emoji} ${player.name} paid $150 tax.`);
+      addLog(`💰 ${player.name} paid $150 tax.`);
       setActionMessage('💰 Paid $150 tax.');
       setPhase('action');
     } else if (space.type === 'quiz') {
@@ -467,7 +510,7 @@ export default function MonopolyPage() {
       setCurrentChance(card);
       updatedPlayers[currentPlayer] = { ...player, balance: player.balance + card.effect };
       setPlayers(updatedPlayers);
-      addLog(`${player.emoji} ${player.name}: ${card.text}`);
+      addLog(`🎴 ${player.name}: ${card.text}`);
       setPhase('chance');
     } else if (space.type === 'property' && space.property) {
       const prop = space.property;
@@ -486,7 +529,7 @@ export default function MonopolyPage() {
             balance: updatedPlayers[prop.owner].balance + rentAmt
           };
           setPlayers(updatedPlayers);
-          addLog(`${player.emoji} ${player.name} paid $${rentAmt} rent to ${updatedPlayers[prop.owner].name}.`);
+          addLog(`🏠 ${player.name} paid $${rentAmt} rent to ${updatedPlayers[prop.owner].name}.`);
           setActionMessage(`Paid $${rentAmt} rent for ${space.name}.`);
           setPhase('action');
         }
@@ -511,7 +554,7 @@ export default function MonopolyPage() {
             balance: updatedPlayers[spec.owner].balance + rentAmt
           };
           setPlayers(updatedPlayers);
-          addLog(`${player.emoji} ${player.name} paid $${rentAmt} rent to ${updatedPlayers[spec.owner].name}.`);
+          addLog(`🚆 ${player.name} paid $${rentAmt} rent to ${updatedPlayers[spec.owner].name}.`);
           setActionMessage(`Paid $${rentAmt} rent for ${spec.name}.`);
           setPhase('action');
         }
@@ -532,7 +575,7 @@ export default function MonopolyPage() {
         setWinner(remaining[0].name);
         setPhase('gameover');
       }
-      addLog(`${updatedPlayers[bankrupt].emoji} ${updatedPlayers[bankrupt].name} went bankrupt!`);
+      addLog(`💀 ${updatedPlayers[bankrupt].name} went bankrupt!`);
     }
   }, [board, players, currentPlayer, addLog, calculateRent]);
 
@@ -556,7 +599,7 @@ export default function MonopolyPage() {
         property: { ...space.property, owner: currentPlayer }
       };
       setBoard(newBoard);
-      addLog(`${player.emoji} ${player.name} bought ${space.name} for $${space.property.price}.`);
+      addLog(`🏡 ${player.name} bought ${space.name} for $${space.property.price}.`);
       setActionMessage(`Bought ${space.name}!`);
     } else if ((space.type === 'railroad' || space.type === 'utility') && space.special && space.special.owner === null) {
       if (player.balance < space.special.price) {
@@ -573,7 +616,7 @@ export default function MonopolyPage() {
         special: { ...space.special, owner: currentPlayer }
       };
       setBoard(newBoard);
-      addLog(`${player.emoji} ${player.name} bought ${space.special.name} for $${space.special.price}.`);
+      addLog(`🚉 ${player.name} bought ${space.special.name} for $${space.special.price}.`);
       setActionMessage(`Bought ${space.special.name}!`);
     }
   }, [players, board, currentPlayer, addLog]);
@@ -592,7 +635,7 @@ export default function MonopolyPage() {
     if (players[bidderIdx].balance < amt) return;
     setCurrentBid(amt);
     setHighestBidder(bidderIdx);
-    addLog(`🔨 ${players[bidderIdx].emoji} ${players[bidderIdx].name} bid $${amt}.`);
+    addLog(`🔨 ${players[bidderIdx].name} bid $${amt}.`);
   }, [currentBid, players, addLog]);
 
   const finalizeAuction = useCallback(() => {
@@ -639,13 +682,11 @@ export default function MonopolyPage() {
       const newPlayers = [...players];
 
       if (!prop.isMortgaged) {
-        // Mortgage for 50% price
         const cash = Math.floor(prop.price / 2);
         newPlayers[currentPlayer] = { ...player, balance: player.balance + cash };
         newBoard[spaceIdx] = { ...space, property: { ...prop, isMortgaged: true, houses: 0 } };
         addLog(`🏦 ${player.name} mortgaged ${space.name} for $${cash}.`);
       } else {
-        // Unmortgage for 50% price + 10% interest
         const cost = Math.floor(prop.price * 0.55);
         if (player.balance < cost) return;
         newPlayers[currentPlayer] = { ...player, balance: player.balance - cost };
@@ -684,7 +725,6 @@ export default function MonopolyPage() {
 
     if (prop.houses >= 4 || prop.isMortgaged) return;
 
-    // Check full color group ownership
     const groupProps = board.filter(s => s.property?.colorGroup === prop.colorGroup);
     const ownsAll = groupProps.every(s => s.property?.owner === currentPlayer);
     if (!ownsAll) {
@@ -787,11 +827,11 @@ export default function MonopolyPage() {
     const updated = [...players];
     if (correct) {
       updated[currentPlayer] = { ...player, balance: player.balance + 60 };
-      addLog(`${player.emoji} ${player.name} answered correctly! Earned $60.`);
+      addLog(`📝 ${player.name} answered correctly! Earned $60.`);
       setActionMessage('Correct! +$60');
     } else {
       updated[currentPlayer] = { ...player, balance: player.balance - 30 };
-      addLog(`${player.emoji} ${player.name} answered incorrectly. Lost $30.`);
+      addLog(`📝 ${player.name} answered incorrectly. Lost $30.`);
       setActionMessage('Incorrect! -$30');
     }
     setPlayers(updated);
@@ -826,7 +866,6 @@ export default function MonopolyPage() {
             if (active.balance >= price + 100) {
               buyProperty();
             } else {
-              // Bot passes on buy and starts auction
               startAuction();
               return;
             }
@@ -835,7 +874,6 @@ export default function MonopolyPage() {
         }, 1200);
         return () => clearTimeout(timer);
       } else if (phase === 'auction') {
-        // Bot auto bidding
         const timer = setTimeout(() => {
           if (Math.random() < 0.6 && active.balance > currentBid + 20) {
             placeBid(currentPlayer, currentBid + 10);
@@ -871,7 +909,7 @@ export default function MonopolyPage() {
               🎲 Monopoly Play Zone
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '540px', fontWeight: 600, margin: '0 auto' }}>
-              Buy properties, build Study Hubs, take Bank Loans, trade with classmates, and master academic quizzes!
+              Play with real classic Monopoly SVG tokens (Racecar, Top Hat, Battleship, Thimble)! Buy properties, build Study Hubs, take Bank Loans, trade with classmates, and master academic quizzes!
             </p>
           </div>
 
@@ -1026,9 +1064,7 @@ export default function MonopolyPage() {
           {isMortgaged ? (
             <span style={{ fontSize: '7px', background: '#ef4444', color: '#fff', padding: '0 2px', borderRadius: '2px', fontWeight: 900 }}>MORT</span>
           ) : ownerIdx !== null ? (
-            <span style={{ color: players[ownerIdx]?.color, fontWeight: 900 }}>
-              {players[ownerIdx]?.emoji}
-            </span>
+            <RenderToken token={players[ownerIdx]?.token} color={players[ownerIdx]?.color} size={11} />
           ) : null}
         </div>
 
@@ -1048,11 +1084,11 @@ export default function MonopolyPage() {
               <span
                 key={p.name}
                 style={{
-                  fontSize: '12px',
+                  display: 'inline-flex',
                   animation: (isAnimating && players[currentPlayer].name === p.name) ? 'pawnHop 0.28s infinite alternate' : 'none'
                 }}
               >
-                {p.emoji}
+                <RenderToken token={p.token} color={p.color} size={14} />
               </span>
             ))}
           </div>
@@ -1155,7 +1191,7 @@ export default function MonopolyPage() {
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '14px' }}>{p.emoji}</span>
+                        <RenderToken token={p.token} color={p.color} size={16} />
                         <span style={{ fontSize: '11px', fontWeight: 900, color: '#e2e8f0' }}>{p.name}</span>
                       </div>
                       {p.isBot && <span style={{ fontSize: '8px', background: '#334155', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>BOT</span>}
@@ -1302,8 +1338,9 @@ export default function MonopolyPage() {
                     boxShadow: '1.5px 1.5px 0px #000000'
                   }}>
                     <div style={{ fontSize: '8.5px', color: '#64748b', fontWeight: 700 }}>Current Turn</div>
-                    <div style={{ fontSize: '11px', fontWeight: 900, color: players[currentPlayer]?.color }}>
-                      {players[currentPlayer]?.emoji} {players[currentPlayer]?.name}
+                    <div style={{ fontSize: '11px', fontWeight: 900, color: players[currentPlayer]?.color, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <RenderToken token={players[currentPlayer]?.token} color={players[currentPlayer]?.color} size={14} />
+                      {players[currentPlayer]?.name}
                     </div>
                   </div>
 
@@ -1634,7 +1671,7 @@ export default function MonopolyPage() {
                 style={{ marginLeft: '8px', padding: '4px', borderRadius: '6px', border: '1.5px solid #000', fontWeight: 800 }}
               >
                 {players.map((p, i) => i !== currentPlayer && (
-                  <option key={i} value={i}>{p.emoji} {p.name}</option>
+                  <option key={i} value={i}>{p.name}</option>
                 ))}
               </select>
             </div>
