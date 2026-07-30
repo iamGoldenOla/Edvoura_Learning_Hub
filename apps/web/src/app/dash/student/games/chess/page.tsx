@@ -396,7 +396,7 @@ export default function ChessGame() {
       {/* ─── MAIN AREA: LEFT PANEL | BOARD | RIGHT PANEL ─── */}
       <div style={{
         display: 'flex', alignItems: 'stretch',
-        overflow: 'hidden', padding: '12px 16px', gap: '16px'
+        overflow: 'hidden', padding: '8px 6px', gap: '4px'
       }}>
         {/* LEFT PANEL */}
         <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
@@ -460,14 +460,14 @@ export default function ChessGame() {
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
-          padding: '4px'
+          padding: '0'
         }}>
           <div style={{
             height: '100%',
             maxWidth: '100%',
             aspectRatio: '1 / 1',
             borderRadius: '16px',
-            padding: '6px',
+            padding: '2px',
             boxSizing: 'border-box',
             display: 'flex',
             alignItems: 'center',
