@@ -452,19 +452,27 @@ export default function ChessGame() {
           </div>
         </div>
 
-        {/* ─── CHESSBOARD (height-locked, square via aspect-ratio) ─── */}
+        {/* ─── CHESSBOARD (fills all remaining space, square board centered inside) ─── */}
         <div style={{
+          flex: 1,
           height: '100%',
-          aspectRatio: '1 / 1',
-          flexShrink: 0,
-          background: '#0b0f19',
-          borderRadius: '20px',
-          padding: '8px',
-          boxSizing: 'border-box',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          overflow: 'hidden',
+          padding: '4px'
         }}>
+          <div style={{
+            height: '100%',
+            maxWidth: '100%',
+            aspectRatio: '1 / 1',
+            borderRadius: '16px',
+            padding: '6px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
           <div style={{
             width: '100%', height: '100%',
             display: 'grid',
@@ -525,6 +533,7 @@ export default function ChessGame() {
                 </div>
               );
             }))}
+          </div>
           </div>
         </div>
 
