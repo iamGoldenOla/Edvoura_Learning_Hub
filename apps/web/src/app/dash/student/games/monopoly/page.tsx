@@ -2,18 +2,35 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Dice1, RotateCcw, Layers, User, Users, Monitor, Shield, Trophy } from 'lucide-react';
+import { Dice1, RotateCcw, Layers, User, Users, Monitor, Shield, Trophy, Building2, Landmark, ArrowRightLeft, Gavel, DollarSign } from 'lucide-react';
 
-interface Property {
+/* ═══════════════════════ TYPES ═══════════════════════ */
+export type SpaceType = 'property' | 'railroad' | 'utility' | 'start' | 'tax' | 'chance' | 'quiz' | 'jail' | 'go-to-jail' | 'free-parking';
+
+export interface Property {
+  id: string;
   name: string;
   subject: string;
   price: number;
   rent: number;
   color: string;
+  colorGroup: string;
   owner: number | null;
+  houses: number; // 0 to 4 (4 = Hotel/Campus)
+  housePrice: number;
+  isMortgaged: boolean;
 }
 
-interface PlayerState {
+export interface SpecialProperty {
+  id: string;
+  name: string;
+  type: 'railroad' | 'utility';
+  price: number;
+  owner: number | null;
+  isMortgaged: boolean;
+}
+
+export interface PlayerState {
   name: string;
   balance: number;
   position: number;
@@ -22,17 +39,17 @@ interface PlayerState {
   inJail: boolean;
   jailTurns: number;
   isBot: boolean;
+  bankLoan: number;
 }
 
-type SpaceType = 'property' | 'start' | 'tax' | 'chance' | 'quiz' | 'jail' | 'go-to-jail' | 'free-parking';
-
-interface BoardSpace {
+export interface BoardSpace {
   name: string;
   type: SpaceType;
   property?: Property;
-  colorBg?: string;
+  special?: SpecialProperty;
 }
 
+/* ═══════════════════════ QUIZ & CHANCE DATA ═══════════════════════ */
 const QUIZ_QUESTIONS = [
   { q: 'What is the capital of France?', options: ['London', 'Paris', 'Berlin', 'Madrid'], answer: 1 },
   { q: 'What is 15 × 12?', options: ['170', '180', '160', '150'], answer: 1 },
@@ -59,31 +76,40 @@ const CHANCE_CARDS = [
   { text: 'Broke a lab beaker. Pay $50.', effect: -50 },
 ];
 
+/* ═══════════════════════ BOARD BUILDER ═══════════════════════ */
 function createBoard(): BoardSpace[] {
-  const props: Omit<Property, 'owner'>[] = [
-    { name: 'Algebra Lane', subject: 'Math', price: 60, rent: 6, color: '#8b5cf6' },
-    { name: 'Grammar Gardens', subject: 'English', price: 60, rent: 6, color: '#8b5cf6' },
-    { name: 'History Heights', subject: 'History', price: 100, rent: 10, color: '#38bdf8' },
-    { name: 'Geography Grove', subject: 'Geography', price: 100, rent: 10, color: '#38bdf8' },
-    { name: 'Biology Blvd', subject: 'Biology', price: 120, rent: 12, color: '#38bdf8' },
-    { name: 'Chemistry Close', subject: 'Chemistry', price: 140, rent: 14, color: '#f472b6' },
-    { name: 'Physics Park', subject: 'Physics', price: 140, rent: 14, color: '#f472b6' },
-    { name: 'Art Avenue', subject: 'Art', price: 160, rent: 16, color: '#f472b6' },
-    { name: 'Music Manor', subject: 'Music', price: 180, rent: 18, color: '#fb923c' },
-    { name: 'Literature Lane', subject: 'Literature', price: 180, rent: 18, color: '#fb923c' },
-    { name: 'Economics Estate', subject: 'Economics', price: 200, rent: 20, color: '#fb923c' },
-    { name: 'Computer Court', subject: 'Computing', price: 220, rent: 22, color: '#ef4444' },
-    { name: 'Sports Stadium', subject: 'P.E.', price: 220, rent: 22, color: '#ef4444' },
-    { name: 'Drama Drive', subject: 'Drama', price: 240, rent: 24, color: '#ef4444' },
-    { name: 'Calculus Castle', subject: 'Math', price: 280, rent: 28, color: '#22c55e' },
-    { name: 'Robotics Road', subject: 'Engineering', price: 300, rent: 30, color: '#22c55e' },
-    { name: 'Philosophy Plaza', subject: 'Philosophy', price: 320, rent: 32, color: '#facc15' },
-    { name: 'Astronomy Ave', subject: 'Astronomy', price: 350, rent: 35, color: '#facc15' },
-    { name: 'Medicine Mile', subject: 'Medicine', price: 400, rent: 40, color: '#06b6d4' },
-    { name: 'Law Library', subject: 'Law', price: 400, rent: 40, color: '#06b6d4' },
-    { name: 'Coding Corner', subject: 'Coding', price: 450, rent: 45, color: '#22c55e' },
-    { name: 'Lab Lane', subject: 'Lab', price: 450, rent: 45, color: '#38bdf8' }
+  const academicProps: Omit<Property, 'owner' | 'houses' | 'isMortgaged'>[] = [
+    { id: 'p1', name: 'Algebra Lane', subject: 'Math', price: 60, rent: 8, color: '#8b5cf6', colorGroup: 'purple', housePrice: 50 },
+    { id: 'p2', name: 'Grammar Gardens', subject: 'English', price: 60, rent: 8, color: '#8b5cf6', colorGroup: 'purple', housePrice: 50 },
+    
+    { id: 'p3', name: 'History Heights', subject: 'History', price: 100, rent: 12, color: '#38bdf8', colorGroup: 'light-blue', housePrice: 50 },
+    { id: 'p4', name: 'Geography Grove', subject: 'Geography', price: 100, rent: 12, color: '#38bdf8', colorGroup: 'light-blue', housePrice: 50 },
+    { id: 'p5', name: 'Biology Blvd', subject: 'Biology', price: 120, rent: 14, color: '#38bdf8', colorGroup: 'light-blue', housePrice: 50 },
+    
+    { id: 'p6', name: 'Chemistry Close', subject: 'Chemistry', price: 140, rent: 16, color: '#f472b6', colorGroup: 'pink', housePrice: 100 },
+    { id: 'p7', name: 'Physics Park', subject: 'Physics', price: 140, rent: 16, color: '#f472b6', colorGroup: 'pink', housePrice: 100 },
+    { id: 'p8', name: 'Art Avenue', subject: 'Art', price: 160, rent: 18, color: '#f472b6', colorGroup: 'pink', housePrice: 100 },
+    
+    { id: 'p9', name: 'Music Manor', subject: 'Music', price: 180, rent: 20, color: '#fb923c', colorGroup: 'orange', housePrice: 100 },
+    { id: 'p10', name: 'Literature Lane', subject: 'Literature', price: 180, rent: 20, color: '#fb923c', colorGroup: 'orange', housePrice: 100 },
+    { id: 'p11', name: 'Economics Estate', subject: 'Economics', price: 200, rent: 22, color: '#fb923c', colorGroup: 'orange', housePrice: 100 },
+    
+    { id: 'p12', name: 'Computer Court', subject: 'Computing', price: 220, rent: 24, color: '#ef4444', colorGroup: 'red', housePrice: 150 },
+    { id: 'p13', name: 'Sports Stadium', subject: 'P.E.', price: 220, rent: 24, color: '#ef4444', colorGroup: 'red', housePrice: 150 },
+    { id: 'p14', name: 'Drama Drive', subject: 'Drama', price: 240, rent: 26, color: '#ef4444', colorGroup: 'red', housePrice: 150 },
+    
+    { id: 'p15', name: 'Calculus Castle', subject: 'Math', price: 280, rent: 30, color: '#22c55e', colorGroup: 'green', housePrice: 150 },
+    { id: 'p16', name: 'Robotics Road', subject: 'Engineering', price: 300, rent: 32, color: '#22c55e', colorGroup: 'green', housePrice: 150 },
+    { id: 'p17', name: 'Coding Corner', subject: 'Coding', price: 320, rent: 34, color: '#22c55e', colorGroup: 'green', housePrice: 150 },
+    
+    { id: 'p18', name: 'Philosophy Plaza', subject: 'Philosophy', price: 350, rent: 40, color: '#facc15', colorGroup: 'yellow', housePrice: 200 },
+    { id: 'p19', name: 'Astronomy Ave', subject: 'Astronomy', price: 350, rent: 40, color: '#facc15', colorGroup: 'yellow', housePrice: 200 },
+    { id: 'p20', name: 'Medicine Mile', subject: 'Medicine', price: 400, rent: 50, color: '#06b6d4', colorGroup: 'dark-blue', housePrice: 200 },
+    { id: 'p21', name: 'Law Library', subject: 'Law', price: 400, rent: 50, color: '#06b6d4', colorGroup: 'dark-blue', housePrice: 200 },
+    { id: 'p22', name: 'Lab Lane', subject: 'Lab', price: 450, rent: 60, color: '#06b6d4', colorGroup: 'dark-blue', housePrice: 200 }
   ];
+
+  let pIdx = 0;
 
   const spaces: BoardSpace[] = Array.from({ length: 40 }, (_, idx) => {
     if (idx === 0) return { name: 'START', type: 'start' };
@@ -91,18 +117,28 @@ function createBoard(): BoardSpace[] {
     if (idx === 20) return { name: 'Free Parking', type: 'free-parking' };
     if (idx === 33) return { name: 'Go To Jail', type: 'go-to-jail' };
     
+    // Railroads at 5, 15, 25, 35
+    if (idx === 5) return { name: 'Edvoura Express', type: 'railroad', special: { id: 'r1', name: 'Edvoura Express', type: 'railroad', price: 200, owner: null, isMortgaged: false } };
+    if (idx === 15) return { name: 'Transit Hub', type: 'railroad', special: { id: 'r2', name: 'Transit Hub', type: 'railroad', price: 200, owner: null, isMortgaged: false } };
+    if (idx === 25) return { name: 'Bus Depot', type: 'railroad', special: { id: 'r3', name: 'Bus Depot', type: 'railroad', price: 200, owner: null, isMortgaged: false } };
+    if (idx === 35) return { name: 'Metro Station', type: 'railroad', special: { id: 'r4', name: 'Metro Station', type: 'railroad', price: 200, owner: null, isMortgaged: false } };
+    
+    // Utilities at 12, 28
+    if (idx === 12) return { name: 'Electric Power', type: 'utility', special: { id: 'u1', name: 'Electric Power', type: 'utility', price: 150, owner: null, isMortgaged: false } };
+    if (idx === 28) return { name: 'Water Works', type: 'utility', special: { id: 'u2', name: 'Water Works', type: 'utility', price: 150, owner: null, isMortgaged: false } };
+
     if (idx === 4 || idx === 38) return { name: 'Income Tax', type: 'tax' };
     
     if (idx === 2 || idx === 7 || idx === 17 || idx === 24 || idx === 30 || idx === 36) {
       return idx % 2 === 0 ? { name: 'Quiz Time!', type: 'quiz' } : { name: 'Chance', type: 'chance' };
     }
-    
-    const pIdx = idx % props.length;
-    const p = props[pIdx];
+
+    const p = academicProps[pIdx % academicProps.length];
+    pIdx++;
     return {
       name: p.name,
       type: 'property',
-      property: { ...p, owner: null }
+      property: { ...p, owner: null, houses: 0, isMortgaged: false }
     };
   });
 
@@ -110,12 +146,7 @@ function createBoard(): BoardSpace[] {
 }
 
 /**
- * 14-column x 8-row Rectangular Monopoly Board Grid Mapping (1.75:1 Widescreen Ratio)
- * 40 spaces total:
- * - Bottom row: pos 0..13 (r=7, c=13..0)
- * - Left column: pos 13..20 (r=7..0, c=0)
- * - Top row: pos 20..33 (r=0, c=0..13)
- * - Right column: pos 33..39 (r=0..6, c=13)
+ * 14-column x 8-row Rectangular Monopoly Board Grid Mapping (1.75:1 Aspect Ratio)
  */
 function getGridCoords(pos: number): { r: number; c: number } {
   const p = pos % 40;
@@ -143,7 +174,7 @@ export default function MonopolyPage() {
   const [board, setBoard] = useState<BoardSpace[]>(createBoard);
   const [currentPlayer, setCurrentPlayer] = useState(0);
   const [dice, setDice] = useState<[number, number]>([0, 0]);
-  const [phase, setPhase] = useState<'roll' | 'action' | 'quiz' | 'chance' | 'gameover'>('roll');
+  const [phase, setPhase] = useState<'roll' | 'action' | 'quiz' | 'chance' | 'auction' | 'gameover'>('roll');
   const [actionMessage, setActionMessage] = useState('');
   const [currentQuiz, setCurrentQuiz] = useState<typeof QUIZ_QUESTIONS[0] | null>(null);
   const [currentChance, setCurrentChance] = useState<typeof CHANCE_CARDS[0] | null>(null);
@@ -152,6 +183,20 @@ export default function MonopolyPage() {
   const [view3D, setView3D] = useState(true);
   const [isRolling, setIsRolling] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Modals & Advanced Systems
+  const [showBankingModal, setShowBankingModal] = useState(false);
+  const [showTradeModal, setShowTradeModal] = useState(false);
+  const [auctionTargetPos, setAuctionTargetPos] = useState<number | null>(null);
+  const [currentBid, setCurrentBid] = useState(10);
+  const [highestBidder, setHighestBidder] = useState<number | null>(null);
+
+  // Trade Modal State
+  const [tradeTargetPlayer, setTradeTargetPlayer] = useState<number>(1);
+  const [tradeMyCash, setTradeMyCash] = useState<number>(50);
+  const [tradeTheirCash, setTradeTheirCash] = useState<number>(0);
+  const [tradeMyPropertyIndex, setTradeMyPropertyIndex] = useState<number | null>(null);
+  const [tradeTheirPropertyIndex, setTradeTheirPropertyIndex] = useState<number | null>(null);
 
   const addLog = useCallback((msg: string) => {
     setGameLog(prev => [msg, ...prev].slice(0, 50));
@@ -171,18 +216,17 @@ export default function MonopolyPage() {
   const setupGameMode = (type: 'local' | 'ai' | 'matchmaker', n: number, matchedPlayerName?: string) => {
     const list: PlayerState[] = [];
     
-    // Human Player 1
     list.push({
       ...PLAYER_CONFIGS[0],
       balance: 1500,
       position: 0,
       inJail: false,
       jailTurns: 0,
-      isBot: false
+      isBot: false,
+      bankLoan: 0
     });
 
     if (type === 'ai') {
-      // Add Bot opponents
       for (let i = 1; i < n; i++) {
         list.push({
           name: BOT_NAMES[i - 1] || `AI Bot ${i}`,
@@ -192,11 +236,11 @@ export default function MonopolyPage() {
           position: 0,
           inJail: false,
           jailTurns: 0,
-          isBot: true
+          isBot: true,
+          bankLoan: 0
         });
       }
     } else if (type === 'matchmaker') {
-      // Add matched grade classmate and remaining bots if needed
       list.push({
         name: matchedPlayerName || 'Classmate (Grade 4)',
         color: PLAYER_CONFIGS[1].color,
@@ -205,7 +249,8 @@ export default function MonopolyPage() {
         position: 0,
         inJail: false,
         jailTurns: 0,
-        isBot: true
+        isBot: true,
+        bankLoan: 0
       });
       for (let i = 2; i < n; i++) {
         list.push({
@@ -216,11 +261,11 @@ export default function MonopolyPage() {
           position: 0,
           inJail: false,
           jailTurns: 0,
-          isBot: true
+          isBot: true,
+          bankLoan: 0
         });
       }
     } else {
-      // Local multiplayer
       for (let i = 1; i < n; i++) {
         list.push({
           ...PLAYER_CONFIGS[i],
@@ -228,7 +273,8 @@ export default function MonopolyPage() {
           position: 0,
           inJail: false,
           jailTurns: 0,
-          isBot: false
+          isBot: false,
+          bankLoan: 0
         });
       }
     }
@@ -244,7 +290,6 @@ export default function MonopolyPage() {
     setGameMode('playing');
   };
 
-  // Simulated matchmaking timer
   useEffect(() => {
     if (gameMode === 'matching') {
       const timer = setTimeout(() => {
@@ -254,6 +299,52 @@ export default function MonopolyPage() {
       return () => clearTimeout(timer);
     }
   }, [gameMode]);
+
+  /* ═══════════════════════ CALCULATE RENT ═══════════════════════ */
+  const calculateRent = useCallback((spacePos: number, currentDiceSum: number): number => {
+    const space = board[spacePos];
+    if (!space) return 0;
+
+    if (space.type === 'property' && space.property && space.property.owner !== null) {
+      const prop = space.property;
+      if (prop.isMortgaged) return 0;
+
+      // Base rent or house multipliers
+      let r = prop.rent;
+      if (prop.houses === 1) r *= 4;
+      else if (prop.houses === 2) r *= 10;
+      else if (prop.houses === 3) r *= 20;
+      else if (prop.houses === 4) r *= 35; // Hotel
+
+      // Color monopoly check (2x rent if 0 houses and owns full color set)
+      if (prop.houses === 0) {
+        const sameGroupProps = board.filter(s => s.property && s.property.colorGroup === prop.colorGroup);
+        const ownsAll = sameGroupProps.every(s => s.property?.owner === prop.owner);
+        if (ownsAll) r *= 2;
+      }
+      return r;
+    }
+
+    if (space.type === 'railroad' && space.special && space.special.owner !== null) {
+      const owner = space.special.owner;
+      if (space.special.isMortgaged) return 0;
+      const rCount = board.filter(s => s.special?.type === 'railroad' && s.special.owner === owner).length;
+      if (rCount === 1) return 25;
+      if (rCount === 2) return 50;
+      if (rCount === 3) return 100;
+      return 200;
+    }
+
+    if (space.type === 'utility' && space.special && space.special.owner !== null) {
+      const owner = space.special.owner;
+      if (space.special.isMortgaged) return 0;
+      const uCount = board.filter(s => s.special?.type === 'utility' && s.special.owner === owner).length;
+      const mult = uCount >= 2 ? 10 : 4;
+      return (currentDiceSum || 7) * mult;
+    }
+
+    return 0;
+  }, [board]);
 
   const rollDice = useCallback(() => {
     if (isRolling || isAnimating) return;
@@ -281,19 +372,28 @@ export default function MonopolyPage() {
       const total = d1 + d2;
       const player = players[currentPlayer];
 
+      // Interest on loan if player holds a bank loan
+      if (player.bankLoan > 0) {
+        const updated = [...players];
+        const interest = 10;
+        updated[currentPlayer] = { ...player, balance: player.balance - interest };
+        setPlayers(updated);
+        addLog(`🏦 Bank deducted $${interest} loan interest from ${player.name}.`);
+      }
+
       if (player.inJail) {
         if (d1 === d2) {
           const updated = [...players];
           updated[currentPlayer] = { ...player, inJail: false, jailTurns: 0 };
           setPlayers(updated);
           addLog(`${player.emoji} ${player.name} rolled doubles and escaped jail!`);
-          animatePlayerMove(player.position, total, updated);
+          animatePlayerMove(player.position, total, updated, total);
         } else if (player.jailTurns >= 2) {
           const updated = [...players];
           updated[currentPlayer] = { ...player, inJail: false, jailTurns: 0, balance: player.balance - 50 };
           setPlayers(updated);
-          addLog(`${player.emoji} ${player.name} paid $50 to escape jail.`);
-          animatePlayerMove(player.position, total, updated);
+          addLog(`${player.emoji} ${player.name} paid $50 fine to leave jail.`);
+          animatePlayerMove(player.position, total, updated, total);
         } else {
           const updated = [...players];
           updated[currentPlayer] = { ...player, jailTurns: player.jailTurns + 1 };
@@ -305,11 +405,11 @@ export default function MonopolyPage() {
         return;
       }
 
-      animatePlayerMove(player.position, total, [...players]);
+      animatePlayerMove(player.position, total, [...players], total);
     };
   }, [players, currentPlayer, isRolling, isAnimating, addLog]);
 
-  const animatePlayerMove = (startPos: number, steps: number, currentPlayers: PlayerState[]) => {
+  const animatePlayerMove = (startPos: number, steps: number, currentPlayers: PlayerState[], diceSum: number) => {
     setIsAnimating(true);
     let stepCount = 0;
     let currPos = startPos;
@@ -336,12 +436,12 @@ export default function MonopolyPage() {
       if (stepCount === steps) {
         clearInterval(interval);
         setIsAnimating(false);
-        handleSpaceLanding(currPos);
+        handleSpaceLanding(currPos, diceSum);
       }
-    }, 280);
+    }, 240);
   };
 
-  const handleSpaceLanding = useCallback((targetPos: number) => {
+  const handleSpaceLanding = useCallback((targetPos: number, diceSum: number) => {
     const updatedPlayers = [...players];
     const player = updatedPlayers[currentPlayer];
     const space = board[targetPos];
@@ -370,22 +470,53 @@ export default function MonopolyPage() {
       addLog(`${player.emoji} ${player.name}: ${card.text}`);
       setPhase('chance');
     } else if (space.type === 'property' && space.property) {
-      if (space.property.owner === null) {
-        setActionMessage(`Buy ${space.name} (${space.property.subject}) for $${space.property.price}?`);
+      const prop = space.property;
+      if (prop.owner === null) {
+        setActionMessage(`Buy ${space.name} for $${prop.price} or Auction?`);
         setPhase('action');
-      } else if (space.property.owner !== currentPlayer) {
-        const rent = space.property.rent;
-        updatedPlayers[currentPlayer] = { ...player, balance: player.balance - rent };
-        updatedPlayers[space.property.owner] = {
-          ...updatedPlayers[space.property.owner],
-          balance: updatedPlayers[space.property.owner].balance + rent
-        };
-        setPlayers(updatedPlayers);
-        addLog(`${player.emoji} ${player.name} paid $${rent} rent to ${updatedPlayers[space.property.owner].name}.`);
-        setActionMessage(`Paid $${rent} rent for ${space.name}.`);
-        setPhase('action');
+      } else if (prop.owner !== currentPlayer) {
+        if (prop.isMortgaged) {
+          setActionMessage(`${space.name} is mortgaged. No rent due.`);
+          setPhase('action');
+        } else {
+          const rentAmt = calculateRent(targetPos, diceSum);
+          updatedPlayers[currentPlayer] = { ...player, balance: player.balance - rentAmt };
+          updatedPlayers[prop.owner] = {
+            ...updatedPlayers[prop.owner],
+            balance: updatedPlayers[prop.owner].balance + rentAmt
+          };
+          setPlayers(updatedPlayers);
+          addLog(`${player.emoji} ${player.name} paid $${rentAmt} rent to ${updatedPlayers[prop.owner].name}.`);
+          setActionMessage(`Paid $${rentAmt} rent for ${space.name}.`);
+          setPhase('action');
+        }
       } else {
         setActionMessage(`You own ${space.name}.`);
+        setPhase('action');
+      }
+    } else if ((space.type === 'railroad' || space.type === 'utility') && space.special) {
+      const spec = space.special;
+      if (spec.owner === null) {
+        setActionMessage(`Buy ${spec.name} for $${spec.price} or Auction?`);
+        setPhase('action');
+      } else if (spec.owner !== currentPlayer) {
+        if (spec.isMortgaged) {
+          setActionMessage(`${spec.name} is mortgaged. No rent due.`);
+          setPhase('action');
+        } else {
+          const rentAmt = calculateRent(targetPos, diceSum);
+          updatedPlayers[currentPlayer] = { ...player, balance: player.balance - rentAmt };
+          updatedPlayers[spec.owner] = {
+            ...updatedPlayers[spec.owner],
+            balance: updatedPlayers[spec.owner].balance + rentAmt
+          };
+          setPlayers(updatedPlayers);
+          addLog(`${player.emoji} ${player.name} paid $${rentAmt} rent to ${updatedPlayers[spec.owner].name}.`);
+          setActionMessage(`Paid $${rentAmt} rent for ${spec.name}.`);
+          setPhase('action');
+        }
+      } else {
+        setActionMessage(`You own ${spec.name}.`);
         setPhase('action');
       }
     } else {
@@ -393,40 +524,260 @@ export default function MonopolyPage() {
       setPhase('action');
     }
 
+    // Check Bankruptcy
     const bankrupt = updatedPlayers.findIndex(p => p.balance < 0);
     if (bankrupt !== -1) {
-      const remainingPlayers = updatedPlayers.filter((_, i) => i !== bankrupt);
-      if (remainingPlayers.length === 1) {
-        setWinner(remainingPlayers[0].name);
+      const remaining = updatedPlayers.filter((_, i) => i !== bankrupt);
+      if (remaining.length === 1) {
+        setWinner(remaining[0].name);
         setPhase('gameover');
       }
-      addLog(`${updatedPlayers[bankrupt].emoji} ${updatedPlayers[bankrupt].name} is bankrupt!`);
+      addLog(`${updatedPlayers[bankrupt].emoji} ${updatedPlayers[bankrupt].name} went bankrupt!`);
     }
-  }, [board, players, currentPlayer, addLog]);
+  }, [board, players, currentPlayer, addLog, calculateRent]);
 
+  /* ═══════════════════════ BUY PROPERTY / SPECIAL ═══════════════════════ */
   const buyProperty = useCallback(() => {
     const player = players[currentPlayer];
     const space = board[player.position];
 
-    if (space.type !== 'property' || !space.property || space.property.owner !== null) return;
-    if (player.balance < space.property.price) {
-      setActionMessage('Not enough money!');
+    if (space.type === 'property' && space.property && space.property.owner === null) {
+      if (player.balance < space.property.price) {
+        setActionMessage('Not enough money!');
+        return;
+      }
+      const newPlayers = [...players];
+      newPlayers[currentPlayer] = { ...player, balance: player.balance - space.property.price };
+      setPlayers(newPlayers);
+
+      const newBoard = [...board];
+      newBoard[player.position] = {
+        ...space,
+        property: { ...space.property, owner: currentPlayer }
+      };
+      setBoard(newBoard);
+      addLog(`${player.emoji} ${player.name} bought ${space.name} for $${space.property.price}.`);
+      setActionMessage(`Bought ${space.name}!`);
+    } else if ((space.type === 'railroad' || space.type === 'utility') && space.special && space.special.owner === null) {
+      if (player.balance < space.special.price) {
+        setActionMessage('Not enough money!');
+        return;
+      }
+      const newPlayers = [...players];
+      newPlayers[currentPlayer] = { ...player, balance: player.balance - space.special.price };
+      setPlayers(newPlayers);
+
+      const newBoard = [...board];
+      newBoard[player.position] = {
+        ...space,
+        special: { ...space.special, owner: currentPlayer }
+      };
+      setBoard(newBoard);
+      addLog(`${player.emoji} ${player.name} bought ${space.special.name} for $${space.special.price}.`);
+      setActionMessage(`Bought ${space.special.name}!`);
+    }
+  }, [players, board, currentPlayer, addLog]);
+
+  /* ═══════════════════════ AUCTION SYSTEM ═══════════════════════ */
+  const startAuction = useCallback(() => {
+    setAuctionTargetPos(players[currentPlayer].position);
+    setCurrentBid(20);
+    setHighestBidder(null);
+    setPhase('auction');
+    addLog(`🔨 Auction started for ${board[players[currentPlayer].position]?.name}!`);
+  }, [players, currentPlayer, board, addLog]);
+
+  const placeBid = useCallback((bidderIdx: number, amt: number) => {
+    if (amt <= currentBid) return;
+    if (players[bidderIdx].balance < amt) return;
+    setCurrentBid(amt);
+    setHighestBidder(bidderIdx);
+    addLog(`🔨 ${players[bidderIdx].emoji} ${players[bidderIdx].name} bid $${amt}.`);
+  }, [currentBid, players, addLog]);
+
+  const finalizeAuction = useCallback(() => {
+    if (auctionTargetPos === null) return;
+    const targetSpace = board[auctionTargetPos];
+
+    if (highestBidder !== null && targetSpace) {
+      const winnerPlayer = players[highestBidder];
+      const updatedPlayers = [...players];
+      updatedPlayers[highestBidder] = { ...winnerPlayer, balance: winnerPlayer.balance - currentBid };
+      setPlayers(updatedPlayers);
+
+      const updatedBoard = [...board];
+      if (targetSpace.type === 'property' && targetSpace.property) {
+        updatedBoard[auctionTargetPos] = {
+          ...targetSpace,
+          property: { ...targetSpace.property, owner: highestBidder }
+        };
+      } else if (targetSpace.special) {
+        updatedBoard[auctionTargetPos] = {
+          ...targetSpace,
+          special: { ...targetSpace.special, owner: highestBidder }
+        };
+      }
+      setBoard(updatedBoard);
+      addLog(`🏆 ${winnerPlayer.name} won the auction for ${targetSpace.name} at $${currentBid}!`);
+    } else {
+      addLog(`🔨 Auction for ${targetSpace?.name} ended with no bids.`);
+    }
+
+    setPhase('action');
+    setAuctionTargetPos(null);
+  }, [auctionTargetPos, board, highestBidder, currentBid, players, addLog]);
+
+  /* ═══════════════════════ MORTGAGE / UNMORTGAGE / BUILD ═══════════════════════ */
+  const toggleMortgage = useCallback((spaceIdx: number) => {
+    const space = board[spaceIdx];
+    const player = players[currentPlayer];
+    if (!space) return;
+
+    if (space.type === 'property' && space.property && space.property.owner === currentPlayer) {
+      const prop = space.property;
+      const newBoard = [...board];
+      const newPlayers = [...players];
+
+      if (!prop.isMortgaged) {
+        // Mortgage for 50% price
+        const cash = Math.floor(prop.price / 2);
+        newPlayers[currentPlayer] = { ...player, balance: player.balance + cash };
+        newBoard[spaceIdx] = { ...space, property: { ...prop, isMortgaged: true, houses: 0 } };
+        addLog(`🏦 ${player.name} mortgaged ${space.name} for $${cash}.`);
+      } else {
+        // Unmortgage for 50% price + 10% interest
+        const cost = Math.floor(prop.price * 0.55);
+        if (player.balance < cost) return;
+        newPlayers[currentPlayer] = { ...player, balance: player.balance - cost };
+        newBoard[spaceIdx] = { ...space, property: { ...prop, isMortgaged: false } };
+        addLog(`🔓 ${player.name} unmortgaged ${space.name} for $${cost}.`);
+      }
+      setPlayers(newPlayers);
+      setBoard(newBoard);
+    } else if (space.special && space.special.owner === currentPlayer) {
+      const spec = space.special;
+      const newBoard = [...board];
+      const newPlayers = [...players];
+
+      if (!spec.isMortgaged) {
+        const cash = Math.floor(spec.price / 2);
+        newPlayers[currentPlayer] = { ...player, balance: player.balance + cash };
+        newBoard[spaceIdx] = { ...space, special: { ...spec, isMortgaged: true } };
+        addLog(`🏦 ${player.name} mortgaged ${spec.name} for $${cash}.`);
+      } else {
+        const cost = Math.floor(spec.price * 0.55);
+        if (player.balance < cost) return;
+        newPlayers[currentPlayer] = { ...player, balance: player.balance - cost };
+        newBoard[spaceIdx] = { ...space, special: { ...spec, isMortgaged: false } };
+        addLog(`🔓 ${player.name} unmortgaged ${spec.name} for $${cost}.`);
+      }
+      setPlayers(newPlayers);
+      setBoard(newBoard);
+    }
+  }, [board, players, currentPlayer, addLog]);
+
+  const buildHouse = useCallback((spaceIdx: number) => {
+    const space = board[spaceIdx];
+    const player = players[currentPlayer];
+    if (space?.type !== 'property' || !space.property || space.property.owner !== currentPlayer) return;
+    const prop = space.property;
+
+    if (prop.houses >= 4 || prop.isMortgaged) return;
+
+    // Check full color group ownership
+    const groupProps = board.filter(s => s.property?.colorGroup === prop.colorGroup);
+    const ownsAll = groupProps.every(s => s.property?.owner === currentPlayer);
+    if (!ownsAll) {
+      setActionMessage('Must own all properties in color group to build!');
+      return;
+    }
+
+    if (player.balance < prop.housePrice) {
+      setActionMessage('Not enough cash to build!');
       return;
     }
 
     const newPlayers = [...players];
-    newPlayers[currentPlayer] = { ...player, balance: player.balance - space.property.price };
+    newPlayers[currentPlayer] = { ...player, balance: player.balance - prop.housePrice };
     setPlayers(newPlayers);
 
     const newBoard = [...board];
-    newBoard[player.position] = {
+    newBoard[spaceIdx] = {
       ...space,
-      property: { ...space.property, owner: currentPlayer }
+      property: { ...prop, houses: prop.houses + 1 }
     };
     setBoard(newBoard);
-    addLog(`${player.emoji} ${player.name} bought ${space.name} for $${space.property.price}.`);
-    setActionMessage(`You bought ${space.name}!`);
-  }, [players, board, currentPlayer, addLog]);
+
+    const label = prop.houses + 1 === 4 ? '🏫 Campus/Hotel' : '🏠 Study Hub';
+    addLog(`🏗️ ${player.name} built ${label} on ${space.name} for $${prop.housePrice}.`);
+    setActionMessage(`Built ${label}!`);
+  }, [board, players, currentPlayer, addLog]);
+
+  /* ═══════════════════════ BANK LOAN SYSTEM ═══════════════════════ */
+  const takeBankLoan = useCallback((amt: number) => {
+    const player = players[currentPlayer];
+    const updated = [...players];
+    updated[currentPlayer] = {
+      ...player,
+      balance: player.balance + amt,
+      bankLoan: player.bankLoan + amt
+    };
+    setPlayers(updated);
+    addLog(`🏦 ${player.name} took a $${amt} Bank Loan.`);
+    setShowBankingModal(false);
+  }, [players, currentPlayer, addLog]);
+
+  const repayBankLoan = useCallback(() => {
+    const player = players[currentPlayer];
+    if (player.bankLoan <= 0 || player.balance < player.bankLoan) return;
+    const updated = [...players];
+    updated[currentPlayer] = {
+      ...player,
+      balance: player.balance - player.bankLoan,
+      bankLoan: 0
+    };
+    setPlayers(updated);
+    addLog(`💳 ${player.name} fully repaid their $${player.bankLoan} Bank Loan.`);
+    setShowBankingModal(false);
+  }, [players, currentPlayer, addLog]);
+
+  /* ═══════════════════════ TRADE SYSTEM ═══════════════════════ */
+  const executeTrade = useCallback(() => {
+    if (tradeTargetPlayer === currentPlayer) return;
+    const myP = players[currentPlayer];
+    const targetP = players[tradeTargetPlayer];
+
+    if (myP.balance < tradeMyCash || targetP.balance < tradeTheirCash) return;
+
+    const newPlayers = [...players];
+    newPlayers[currentPlayer] = { ...myP, balance: myP.balance - tradeMyCash + tradeTheirCash };
+    newPlayers[tradeTargetPlayer] = { ...targetP, balance: targetP.balance - tradeTheirCash + tradeMyCash };
+
+    const newBoard = [...board];
+
+    if (tradeMyPropertyIndex !== null) {
+      const sp = newBoard[tradeMyPropertyIndex];
+      if (sp.property && sp.property.owner === currentPlayer) {
+        newBoard[tradeMyPropertyIndex] = { ...sp, property: { ...sp.property, owner: tradeTargetPlayer } };
+      } else if (sp.special && sp.special.owner === currentPlayer) {
+        newBoard[tradeMyPropertyIndex] = { ...sp, special: { ...sp.special, owner: tradeTargetPlayer } };
+      }
+    }
+
+    if (tradeTheirPropertyIndex !== null) {
+      const sp = newBoard[tradeTheirPropertyIndex];
+      if (sp.property && sp.property.owner === tradeTargetPlayer) {
+        newBoard[tradeTheirPropertyIndex] = { ...sp, property: { ...sp.property, owner: currentPlayer } };
+      } else if (sp.special && sp.special.owner === tradeTargetPlayer) {
+        newBoard[tradeTheirPropertyIndex] = { ...sp, special: { ...sp.special, owner: currentPlayer } };
+      }
+    }
+
+    setPlayers(newPlayers);
+    setBoard(newBoard);
+    addLog(`🤝 Trade executed between ${myP.name} and ${targetP.name}!`);
+    setShowTradeModal(false);
+  }, [currentPlayer, tradeTargetPlayer, players, tradeMyCash, tradeTheirCash, tradeMyPropertyIndex, tradeTheirPropertyIndex, board, addLog]);
 
   const answerQuiz = useCallback((optionIdx: number) => {
     if (!currentQuiz) return;
@@ -460,7 +811,7 @@ export default function MonopolyPage() {
     setGameMode('lobby');
   };
 
-  // Bot Turn Automation handling
+  /* ═══════════════════════ BOT AUTOMATION ═══════════════════════ */
   useEffect(() => {
     const active = players[currentPlayer];
     if (gameMode === 'playing' && active?.isBot && !isRolling && !isAnimating) {
@@ -470,18 +821,31 @@ export default function MonopolyPage() {
       } else if (phase === 'action') {
         const timer = setTimeout(() => {
           const space = board[active.position];
-          if (space.type === 'property' && space.property && space.property.owner === null) {
-            // Bot decides to buy if they have spare cash
-            if (active.balance >= space.property.price + 150) {
+          if ((space.type === 'property' && space.property?.owner === null) || (space.special?.owner === null)) {
+            const price = space.property?.price || space.special?.price || 150;
+            if (active.balance >= price + 100) {
               buyProperty();
+            } else {
+              // Bot passes on buy and starts auction
+              startAuction();
+              return;
             }
           }
           endTurn();
         }, 1200);
         return () => clearTimeout(timer);
+      } else if (phase === 'auction') {
+        // Bot auto bidding
+        const timer = setTimeout(() => {
+          if (Math.random() < 0.6 && active.balance > currentBid + 20) {
+            placeBid(currentPlayer, currentBid + 10);
+          } else {
+            finalizeAuction();
+          }
+        }, 1000);
+        return () => clearTimeout(timer);
       } else if (phase === 'quiz' && currentQuiz) {
         const timer = setTimeout(() => {
-          // Bot answers with 70% accuracy
           const correctChance = Math.random() < 0.7;
           const ans = correctChance ? currentQuiz.answer : (currentQuiz.answer + 1) % 4;
           answerQuiz(ans);
@@ -492,8 +856,9 @@ export default function MonopolyPage() {
         return () => clearTimeout(timer);
       }
     }
-  }, [currentPlayer, phase, gameMode, isRolling, isAnimating, board, currentQuiz, rollDice, buyProperty, endTurn, answerQuiz]);
+  }, [currentPlayer, phase, gameMode, isRolling, isAnimating, board, currentQuiz, currentBid, rollDice, buyProperty, startAuction, placeBid, finalizeAuction, endTurn, answerQuiz]);
 
+  /* ═══════════════════════ LOBBY & MATCHMAKING ═══════════════════════ */
   if (gameMode === 'lobby') {
     return (
       <GameLayout title="Monopoly Lobby" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
@@ -506,7 +871,7 @@ export default function MonopolyPage() {
               🎲 Monopoly Play Zone
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '540px', fontWeight: 600, margin: '0 auto' }}>
-              Buy properties, answer academic quizzes, and outsmart your opponents in a widescreen 16:9 board layout!
+              Buy properties, build Study Hubs, take Bank Loans, trade with classmates, and master academic quizzes!
             </p>
           </div>
 
@@ -598,7 +963,8 @@ export default function MonopolyPage() {
   }
 
   const currentSpace = board[players[currentPlayer]?.position ?? 0];
-  const canBuy = currentSpace?.type === 'property' && currentSpace.property?.owner === null && phase === 'action';
+  const canBuy = (currentSpace?.type === 'property' && currentSpace.property?.owner === null) ||
+                 ((currentSpace?.type === 'railroad' || currentSpace?.type === 'utility') && currentSpace.special?.owner === null);
 
   const renderBoardSpace = (idx: number) => {
     const space = board[idx];
@@ -606,8 +972,13 @@ export default function MonopolyPage() {
     const { r, c } = getGridCoords(idx);
 
     const playersHere = players.filter(p => p.position === idx);
+    const isMortgaged = space.property?.isMortgaged || space.special?.isMortgaged;
+    const houses = space.property?.houses || 0;
+
     const bgColor = space.type === 'property' && space.property
       ? space.property.color + '22'
+      : space.type === 'railroad' ? '#f1f5f9'
+      : space.type === 'utility' ? '#fef3c7'
       : space.type === 'start' ? '#dcfce7'
       : space.type === 'jail' ? '#fee2e2'
       : space.type === 'go-to-jail' ? '#fca5a5'
@@ -616,7 +987,9 @@ export default function MonopolyPage() {
       : space.type === 'tax' ? '#fee2e2'
       : '#f8fafc';
 
-    const borderTopColor = space.type === 'property' && space.property ? space.property.color : '#000000';
+    const borderTopColor = space.type === 'property' && space.property ? space.property.color : space.type === 'railroad' ? '#0f172a' : space.type === 'utility' ? '#d97706' : '#000000';
+
+    const ownerIdx = space.property?.owner ?? space.special?.owner ?? null;
 
     return (
       <div
@@ -624,7 +997,7 @@ export default function MonopolyPage() {
         style={{
           gridRow: r + 1,
           gridColumn: c + 1,
-          background: bgColor,
+          background: isMortgaged ? '#94a3b833' : bgColor,
           border: '1.5px solid #000000',
           borderTop: `3px solid ${borderTopColor}`,
           borderRadius: '3px',
@@ -637,19 +1010,27 @@ export default function MonopolyPage() {
           boxSizing: 'border-box'
         }}
       >
-        <div style={{ fontSize: '8px', fontWeight: 800, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {space.name}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '7.5px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {space.name}
+          </span>
+          {houses > 0 && (
+            <span style={{ fontSize: '8px' }}>
+              {houses === 4 ? '🏫' : '🏠'.repeat(houses)}
+            </span>
+          )}
         </div>
-        {space.type === 'property' && space.property && (
-          <div style={{ fontSize: '8px', color: '#475569', fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>${space.property.price}</span>
-            {space.property.owner !== null && (
-              <span style={{ color: players[space.property.owner]?.color, fontWeight: 900 }}>
-                {players[space.property.owner]?.emoji}
-              </span>
-            )}
-          </div>
-        )}
+
+        <div style={{ fontSize: '7.5px', color: '#475569', fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>${space.property?.price || space.special?.price || ''}</span>
+          {isMortgaged ? (
+            <span style={{ fontSize: '7px', background: '#ef4444', color: '#fff', padding: '0 2px', borderRadius: '2px', fontWeight: 900 }}>MORT</span>
+          ) : ownerIdx !== null ? (
+            <span style={{ color: players[ownerIdx]?.color, fontWeight: 900 }}>
+              {players[ownerIdx]?.emoji}
+            </span>
+          ) : null}
+        </div>
 
         {playersHere.length > 0 && (
           <div style={{
@@ -667,7 +1048,7 @@ export default function MonopolyPage() {
               <span
                 key={p.name}
                 style={{
-                  fontSize: '13px',
+                  fontSize: '12px',
                   animation: (isAnimating && players[currentPlayer].name === p.name) ? 'pawnHop 0.28s infinite alternate' : 'none'
                 }}
               >
@@ -708,40 +1089,64 @@ export default function MonopolyPage() {
           overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
         }}>
           
-          {/* ─── LEFT SIDEBAR: MATCH BADGE & PLAYERS CARDS ─── */}
+          {/* ─── LEFT SIDEBAR: PLAYERS & QUICK ACTIONS ─── */}
           <div style={{
-            flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '8px',
+            flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '6px',
             overflow: 'hidden'
           }}>
             {/* Header Badge */}
             <div style={{
               background: '#111827', border: '2px solid #1e293b', borderRadius: '12px',
-              padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+              padding: '6px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
             }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24', textTransform: 'uppercase' }}>🎲 Monopoly</div>
-                <div style={{ fontSize: '10px', fontWeight: 600, color: '#64748b' }}>Edvoura Edition</div>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#fbbf24', textTransform: 'uppercase' }}>🎲 Monopoly</div>
+                <div style={{ fontSize: '9px', fontWeight: 600, color: '#64748b' }}>Edvoura Edition</div>
               </div>
               <button
                 onClick={quitToLobby}
                 style={{
-                  padding: '4px 8px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000',
-                  borderRadius: '6px', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                  padding: '3px 6px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000',
+                  borderRadius: '6px', fontSize: '9px', fontWeight: 900, cursor: 'pointer'
                 }}
               >
                 Quit
               </button>
             </div>
 
-            {/* Players Cards */}
+            {/* Quick Financial Action Buttons */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+              <button
+                onClick={() => setShowBankingModal(true)}
+                style={{
+                  padding: '6px', background: '#3b82f6', color: '#fff', border: '1.5px solid #000',
+                  borderRadius: '8px', fontSize: '10px', fontWeight: 900, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000'
+                }}
+              >
+                <Landmark size={12} /> Bank Loan
+              </button>
+              <button
+                onClick={() => setShowTradeModal(true)}
+                style={{
+                  padding: '6px', background: '#8b5cf6', color: '#fff', border: '1.5px solid #000',
+                  borderRadius: '8px', fontSize: '10px', fontWeight: 900, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000'
+                }}
+              >
+                <ArrowRightLeft size={12} /> Trade Deal
+              </button>
+            </div>
+
+            {/* Players Cards List */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
               {players.map((p, i) => {
                 const isActive = i === currentPlayer;
-                const propCount = board.filter(s => s.property?.owner === i).length;
+                const propCount = board.filter(s => s.property?.owner === i || s.special?.owner === i).length;
                 return (
                   <div key={i} style={{
-                    padding: '8px 10px',
-                    borderRadius: '12px',
+                    padding: '6px 8px',
+                    borderRadius: '10px',
                     background: isActive ? '#1e293b' : '#111827',
                     border: isActive ? `2px solid ${p.color}` : '2px solid #1e293b',
                     boxShadow: isActive ? `0 0 8px ${p.color}40` : 'none',
@@ -750,16 +1155,17 @@ export default function MonopolyPage() {
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '15px' }}>{p.emoji}</span>
+                        <span style={{ fontSize: '14px' }}>{p.emoji}</span>
                         <span style={{ fontSize: '11px', fontWeight: 900, color: '#e2e8f0' }}>{p.name}</span>
                       </div>
                       {p.isBot && <span style={{ fontSize: '8px', background: '#334155', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>BOT</span>}
                     </div>
-                    <div style={{ fontSize: '15px', fontWeight: 900, color: '#22c55e', marginTop: '2px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 900, color: '#22c55e', marginTop: '1px' }}>
                       ${p.balance.toLocaleString()}
                     </div>
-                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '1px', fontWeight: 700 }}>
-                      Properties: {propCount}
+                    <div style={{ fontSize: '8.5px', color: '#64748b', marginTop: '1px', fontWeight: 700, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Properties: {propCount}</span>
+                      {p.bankLoan > 0 && <span style={{ color: '#ef4444' }}>Loan: ${p.bankLoan}</span>}
                     </div>
                     {p.inJail && (
                       <div style={{ position: 'absolute', top: '4px', right: '4px', fontSize: '8px', background: '#ef4444', color: '#fff', padding: '1px 4px', borderRadius: '4px', fontWeight: 900 }}>
@@ -767,7 +1173,7 @@ export default function MonopolyPage() {
                       </div>
                     )}
                     {isActive && (
-                      <div style={{ fontSize: '9px', fontWeight: 900, color: p.color, marginTop: '4px' }}>
+                      <div style={{ fontSize: '8.5px', fontWeight: 900, color: p.color, marginTop: '2px' }}>
                         ⚡ YOUR TURN
                       </div>
                     )}
@@ -849,14 +1255,14 @@ export default function MonopolyPage() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '10px',
-                  gap: '6px',
+                  padding: '8px',
+                  gap: '5px',
                   border: '1.5px dashed #000000',
                   zIndex: 2,
                   transform: view3D ? 'translateZ(8px)' : 'none',
                   transition: 'transform 0.4s ease-out'
                 }}>
-                  <div style={{ fontSize: '16px', fontWeight: 950, color: '#000000', letterSpacing: '0.05em' }}>
+                  <div style={{ fontSize: '15px', fontWeight: 950, color: '#000000', letterSpacing: '0.05em' }}>
                     🎓 EDVOURA MONOPOLY
                   </div>
 
@@ -866,15 +1272,15 @@ export default function MonopolyPage() {
                       <div
                         key={i}
                         style={{
-                          width: '34px',
-                          height: '34px',
+                          width: '32px',
+                          height: '32px',
                           borderRadius: '8px',
                           background: d ? '#fbbf24' : '#e2e8f0',
                           border: '2px solid #000000',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '18px',
+                          fontSize: '16px',
                           fontWeight: 900,
                           color: '#000000',
                           animation: isRolling ? 'diceSpin 0.3s infinite linear' : 'none',
@@ -888,27 +1294,27 @@ export default function MonopolyPage() {
 
                   {/* Turn Status */}
                   <div style={{
-                    padding: '4px 10px',
-                    borderRadius: '8px',
+                    padding: '3px 8px',
+                    borderRadius: '6px',
                     background: '#ffffff',
                     border: `1.5px solid #000000`,
                     textAlign: 'center',
                     boxShadow: '1.5px 1.5px 0px #000000'
                   }}>
-                    <div style={{ fontSize: '9px', color: '#64748b', fontWeight: 700 }}>Current Turn</div>
-                    <div style={{ fontSize: '12px', fontWeight: 900, color: players[currentPlayer]?.color }}>
+                    <div style={{ fontSize: '8.5px', color: '#64748b', fontWeight: 700 }}>Current Turn</div>
+                    <div style={{ fontSize: '11px', fontWeight: 900, color: players[currentPlayer]?.color }}>
                       {players[currentPlayer]?.emoji} {players[currentPlayer]?.name}
                     </div>
                   </div>
 
                   {/* Action Controls */}
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', justifyContent: 'center' }}>
                     {phase === 'roll' && !players[currentPlayer]?.isBot && (
                       <button
                         onClick={rollDice}
                         disabled={isRolling || isAnimating}
                         style={{
-                          padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
+                          padding: '5px 12px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
                           fontSize: '11px', fontWeight: 900, background: '#fbbf24',
                           color: '#000000', boxShadow: '2px 2px 0px #000000'
                         }}
@@ -919,23 +1325,35 @@ export default function MonopolyPage() {
                     {phase === 'action' && !isAnimating && !players[currentPlayer]?.isBot && (
                       <>
                         {canBuy && (
-                          <button
-                            onClick={buyProperty}
-                            style={{
-                              padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
-                              fontSize: '11px', fontWeight: 900, background: '#22c55e',
-                              color: '#ffffff', boxShadow: '2px 2px 0px #000000'
-                            }}
-                          >
-                            Buy (${currentSpace.property?.price})
-                          </button>
+                          <>
+                            <button
+                              onClick={buyProperty}
+                              style={{
+                                padding: '5px 10px', borderRadius: '6px', border: '1.5px solid #000000', cursor: 'pointer',
+                                fontSize: '10.5px', fontWeight: 900, background: '#22c55e',
+                                color: '#ffffff', boxShadow: '1.5px 1.5px 0px #000000'
+                              }}
+                            >
+                              Buy (${currentSpace.property?.price || currentSpace.special?.price})
+                            </button>
+                            <button
+                              onClick={startAuction}
+                              style={{
+                                padding: '5px 10px', borderRadius: '6px', border: '1.5px solid #000000', cursor: 'pointer',
+                                fontSize: '10.5px', fontWeight: 900, background: '#f59e0b',
+                                color: '#ffffff', boxShadow: '1.5px 1.5px 0px #000000', display: 'flex', alignItems: 'center', gap: '3px'
+                              }}
+                            >
+                              <Gavel size={11} /> Auction
+                            </button>
+                          </>
                         )}
                         <button
                           onClick={endTurn}
                           style={{
-                            padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000',
-                            cursor: 'pointer', fontSize: '11px', fontWeight: 900,
-                            background: '#ffffff', color: '#000000', boxShadow: '2px 2px 0px #000000'
+                            padding: '5px 10px', borderRadius: '6px', border: '1.5px solid #000000',
+                            cursor: 'pointer', fontSize: '10.5px', fontWeight: 900,
+                            background: '#ffffff', color: '#000000', boxShadow: '1.5px 1.5px 0px #000000'
                           }}
                         >
                           End Turn
@@ -946,20 +1364,57 @@ export default function MonopolyPage() {
                       <button
                         onClick={endTurn}
                         style={{
-                          padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
-                          fontSize: '11px', fontWeight: 900, background: '#38bdf8',
-                          color: '#ffffff', boxShadow: '2px 2px 0px #000000'
+                          padding: '5px 10px', borderRadius: '6px', border: '1.5px solid #000000', cursor: 'pointer',
+                          fontSize: '10.5px', fontWeight: 900, background: '#38bdf8',
+                          color: '#ffffff', boxShadow: '1.5px 1.5px 0px #000000'
                         }}
                       >
                         Continue
                       </button>
                     )}
                     {players[currentPlayer]?.isBot && (
-                      <div style={{ fontSize: '11px', fontWeight: 900, color: '#f59e0b', animation: 'pulse 1s infinite alternate' }}>
+                      <div style={{ fontSize: '10.5px', fontWeight: 900, color: '#f59e0b', animation: 'pulse 1s infinite alternate' }}>
                         🤖 AI is thinking...
                       </div>
                     )}
                   </div>
+
+                  {/* Auction Modal Overlay */}
+                  {phase === 'auction' && (
+                    <div style={{
+                      padding: '8px 12px', borderRadius: '10px', background: '#fffbe8',
+                      border: '2px solid #000', width: '220px', textAlign: 'center', boxShadow: '3px 3px 0 #000'
+                    }}>
+                      <div style={{ fontSize: '11px', fontWeight: 900, color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                        <Gavel size={14} /> AUCTION IN PROGRESS
+                      </div>
+                      <div style={{ fontSize: '10px', fontWeight: 800, marginTop: '2px' }}>
+                        Highest Bid: <span style={{ color: '#22c55e' }}>${currentBid}</span> ({highestBidder !== null ? players[highestBidder]?.name : 'No bids'})
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '6px' }}>
+                        <button
+                          onClick={() => placeBid(currentPlayer, currentBid + 10)}
+                          disabled={players[currentPlayer]?.isBot}
+                          style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #000', fontSize: '9.5px', fontWeight: 900, background: '#22c55e', color: '#fff', cursor: 'pointer' }}
+                        >
+                          Bid +$10
+                        </button>
+                        <button
+                          onClick={() => placeBid(currentPlayer, currentBid + 25)}
+                          disabled={players[currentPlayer]?.isBot}
+                          style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #000', fontSize: '9.5px', fontWeight: 900, background: '#3b82f6', color: '#fff', cursor: 'pointer' }}
+                        >
+                          Bid +$25
+                        </button>
+                        <button
+                          onClick={finalizeAuction}
+                          style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #000', fontSize: '9.5px', fontWeight: 900, background: '#ef4444', color: '#fff', cursor: 'pointer' }}
+                        >
+                          Pass / End
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Quiz Overlay */}
                   {phase === 'quiz' && currentQuiz && (
@@ -1019,8 +1474,8 @@ export default function MonopolyPage() {
                   {/* Action Banner */}
                   {actionMessage && phase === 'action' && !isAnimating && (
                     <div style={{
-                      padding: '4px 10px', borderRadius: '6px', background: '#f8fafc',
-                      border: '1px solid #000000', fontSize: '10px', color: '#000000', textAlign: 'center', maxWidth: '240px', fontWeight: 700
+                      padding: '3px 8px', borderRadius: '6px', background: '#f8fafc',
+                      border: '1px solid #000000', fontSize: '9.5px', color: '#000000', textAlign: 'center', maxWidth: '240px', fontWeight: 700
                     }}>
                       {actionMessage}
                     </div>
@@ -1030,51 +1485,203 @@ export default function MonopolyPage() {
             </div>
           </div>
 
-          {/* ─── RIGHT SIDEBAR: GAME LOG & PORTFOLIO ─── */}
+          {/* ─── RIGHT SIDEBAR: GAME LOG & PROPERTY MANAGEMENT ─── */}
           <div style={{
-            flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
+            flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '6px',
             overflow: 'hidden'
           }}>
             {/* Game Logs */}
             <div style={{
-              flex: 1, padding: '10px', borderRadius: '12px', background: '#111827',
+              flex: 1, padding: '8px', borderRadius: '12px', background: '#111827',
               border: '2px solid #1e293b', overflowY: 'auto'
             }}>
-              <h4 style={{ margin: '0 0 6px 0', fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '9.5px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 📜 Game Log
               </h4>
               {gameLog.map((log, i) => (
-                <div key={i} style={{ fontSize: '10px', color: '#94a3b8', padding: '3px 0', borderBottom: '1px solid #1e293b', fontWeight: 600 }}>
+                <div key={i} style={{ fontSize: '9.5px', color: '#94a3b8', padding: '2px 0', borderBottom: '1px solid #1e293b', fontWeight: 600 }}>
                   {log}
                 </div>
               ))}
             </div>
 
-            {/* Properties Overview */}
+            {/* Properties Overview & Actions (Build / Mortgage) */}
             <div style={{
-              padding: '10px', borderRadius: '12px', background: '#111827',
-              border: '2px solid #1e293b', maxHeight: '120px', overflowY: 'auto'
+              padding: '8px', borderRadius: '12px', background: '#111827',
+              border: '2px solid #1e293b', maxHeight: '150px', overflowY: 'auto'
             }}>
-              <h4 style={{ margin: '0 0 4px 0', fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                🏠 Properties Owned
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '9.5px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                🏠 Properties Management
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {board.filter(s => s.property?.owner !== null && s.property?.owner !== undefined).length === 0 ? (
-                  <div style={{ fontSize: '10px', color: '#475569', fontStyle: 'italic' }}>No properties owned yet</div>
+                {board.filter(s => (s.property && s.property.owner === currentPlayer) || (s.special && s.special.owner === currentPlayer)).length === 0 ? (
+                  <div style={{ fontSize: '9.5px', color: '#475569', fontStyle: 'italic' }}>You own no properties yet</div>
                 ) : (
-                  board.filter(s => s.property?.owner !== null && s.property?.owner !== undefined).map((s, i) => (
-                    <div key={i} style={{ fontSize: '10px', fontWeight: 700, color: '#e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.property?.color }} />
-                        {s.name}
-                      </span>
-                      <span style={{ color: players[s.property!.owner!]?.color, fontWeight: 900 }}>
-                        {players[s.property!.owner!]?.emoji}
-                      </span>
-                    </div>
-                  ))
+                  board.map((s, idx) => {
+                    const isMyProp = s.property?.owner === currentPlayer;
+                    const isMySpec = s.special?.owner === currentPlayer;
+                    if (!isMyProp && !isMySpec) return null;
+
+                    const prop = s.property;
+                    const spec = s.special;
+
+                    return (
+                      <div key={idx} style={{ fontSize: '9px', fontWeight: 700, color: '#e2e8f0', background: '#1e293b', padding: '4px 6px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ width: '6px', height: '6px', borderRadius: '2px', background: prop?.color || '#38bdf8' }} />
+                          {s.name} {prop?.houses ? `(${'🏠'.repeat(prop.houses)})` : ''}
+                        </span>
+                        <div style={{ display: 'flex', gap: '2px' }}>
+                          {prop && prop.houses < 4 && !prop.isMortgaged && (
+                            <button
+                              onClick={() => buildHouse(idx)}
+                              style={{ fontSize: '7.5px', padding: '1px 3px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '3px', fontWeight: 900, cursor: 'pointer' }}
+                              title={`Build House ($${prop.housePrice})`}
+                            >
+                              +House
+                            </button>
+                          )}
+                          <button
+                            onClick={() => toggleMortgage(idx)}
+                            style={{ fontSize: '7.5px', padding: '1px 3px', background: (prop?.isMortgaged || spec?.isMortgaged) ? '#fbbf24' : '#ef4444', color: (prop?.isMortgaged || spec?.isMortgaged) ? '#000' : '#fff', border: 'none', borderRadius: '3px', fontWeight: 900, cursor: 'pointer' }}
+                          >
+                            {(prop?.isMortgaged || spec?.isMortgaged) ? 'Unmort' : 'Mort'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── BANK LOAN MODAL ─── */}
+      {showBankingModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '16px', border: '3px solid #000',
+            padding: '20px', width: '320px', boxShadow: '6px 6px 0 #000', color: '#000'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 950, marginBottom: '8px', color: '#3b82f6' }}>
+              <Landmark size={22} /> Edvoura Bank Loans
+            </div>
+            <p style={{ fontSize: '11px', color: '#475569', fontWeight: 600, margin: '0 0 16px 0' }}>
+              Take an emergency loan to buy properties or pay rent. Loans carry a $10 interest fee per turn.
+            </p>
+
+            <div style={{ fontSize: '12px', fontWeight: 800, marginBottom: '12px' }}>
+              Current Loan Balance: <span style={{ color: '#ef4444' }}>${players[currentPlayer]?.bankLoan || 0}</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={() => takeBankLoan(200)}
+                style={{ padding: '10px', background: '#3b82f6', color: '#fff', border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0 #000' }}
+              >
+                Take $200 Bank Loan
+              </button>
+              <button
+                onClick={() => takeBankLoan(500)}
+                style={{ padding: '10px', background: '#22c55e', color: '#fff', border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0 #000' }}
+              >
+                Take $500 Bank Loan
+              </button>
+              {players[currentPlayer]?.bankLoan > 0 && (
+                <button
+                  onClick={repayBankLoan}
+                  disabled={players[currentPlayer]?.balance < players[currentPlayer]?.bankLoan}
+                  style={{ padding: '10px', background: '#f59e0b', color: '#000', border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0 #000' }}
+                >
+                  Repay Full Loan (${players[currentPlayer]?.bankLoan})
+                </button>
+              )}
+              <button
+                onClick={() => setShowBankingModal(false)}
+                style={{ padding: '8px', background: '#e2e8f0', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontWeight: 800, cursor: 'pointer', marginTop: '4px' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── TRADE DEAL MODAL ─── */}
+      {showTradeModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '16px', border: '3px solid #000',
+            padding: '20px', width: '360px', boxShadow: '6px 6px 0 #000', color: '#000'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', fontWeight: 950, marginBottom: '8px', color: '#8b5cf6' }}>
+              <ArrowRightLeft size={22} /> Propose Trade Deal
+            </div>
+
+            <div style={{ fontSize: '11px', fontWeight: 800, marginBottom: '8px' }}>
+              Trade Partner:
+              <select
+                value={tradeTargetPlayer}
+                onChange={e => setTradeTargetPlayer(Number(e.target.value))}
+                style={{ marginLeft: '8px', padding: '4px', borderRadius: '6px', border: '1.5px solid #000', fontWeight: 800 }}
+              >
+                {players.map((p, i) => i !== currentPlayer && (
+                  <option key={i} value={i}>{p.emoji} {p.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '12px 0' }}>
+              {/* You Offer */}
+              <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '8px', border: '1.5px solid #000' }}>
+                <div style={{ fontSize: '10px', fontWeight: 900, color: '#3b82f6' }}>YOU GIVE</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, marginTop: '4px' }}>
+                  Cash Offer ($):
+                  <input
+                    type="number"
+                    value={tradeMyCash}
+                    onChange={e => setTradeMyCash(Number(e.target.value))}
+                    style={{ width: '100%', padding: '3px', marginTop: '2px', border: '1px solid #000', borderRadius: '4px' }}
+                  />
+                </div>
+              </div>
+
+              {/* They Offer */}
+              <div style={{ background: '#f8fafc', padding: '8px', borderRadius: '8px', border: '1.5px solid #000' }}>
+                <div style={{ fontSize: '10px', fontWeight: 900, color: '#ef4444' }}>THEY GIVE</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, marginTop: '4px' }}>
+                  Cash Ask ($):
+                  <input
+                    type="number"
+                    value={tradeTheirCash}
+                    onChange={e => setTradeTheirCash(Number(e.target.value))}
+                    style={{ width: '100%', padding: '3px', marginTop: '2px', border: '1px solid #000', borderRadius: '4px' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <button
+                onClick={executeTrade}
+                style={{ padding: '10px', background: '#8b5cf6', color: '#fff', border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0 #000' }}
+              >
+                Confirm Trade Deal
+              </button>
+              <button
+                onClick={() => setShowTradeModal(false)}
+                style={{ padding: '8px', background: '#e2e8f0', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontWeight: 800, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
