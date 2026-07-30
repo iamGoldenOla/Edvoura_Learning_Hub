@@ -559,25 +559,50 @@ export default function ChessGame() {
   if (gameMode === 'lobby') {
     return (
       <div className="fullscreen-chess-lobby" style={{
-        position: 'absolute', inset: 0, height: '100%', width: '100%', overflow: 'hidden',
-        background: '#0b0f19', display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', padding: '24px', boxSizing: 'border-box'
+        width: '100%',
+        minHeight: 'calc(100vh - 150px)',
+        background: '#0b0f19',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px 24px',
+        borderRadius: '28px',
+        boxSizing: 'border-box',
+        border: '3px solid #000000',
+        boxShadow: '8px 8px 0px #000000'
       }}>
         <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: '32px', color: '#ffffff', textAlign: 'center', maxWidth: '600px'
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '24px',
+          color: '#ffffff',
+          textAlign: 'center',
+          maxWidth: '650px',
+          width: '100%'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#fbbf24' }}>
-            <Crown size={48} />
-            <h1 style={{ fontSize: '32px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
+            <Crown size={40} />
+            <h1 style={{ fontSize: '32px', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
               Chess Zone
             </h1>
           </div>
-          <p style={{ color: '#94a3b8', fontSize: '15px', fontWeight: 600, margin: '0 auto', lineHeight: '1.6' }}>
+          <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 600, margin: '0 auto', lineHeight: '1.6' }}>
             Select your game mode. Challenge the computer evaluate system, play local hotseat pass-and-play with a classmate, or match across student grades.
           </p>
 
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* Cards Row (Forced on the same line) */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '16px', 
+            flexDirection: 'row', 
+            flexWrap: 'nowrap', 
+            justifyContent: 'center',
+            width: '100%',
+            marginTop: '12px'
+          }}>
             {[
               { type: 'ai', title: 'Play vs Computer', desc: 'Minimax AI engine', icon: Monitor },
               { type: 'local', title: 'Pass & Play', desc: 'Local 2-player mode', icon: Users },
@@ -587,18 +612,19 @@ export default function ChessGame() {
                 key={m.type}
                 onClick={() => startMode(m.type as any)}
                 style={{
-                  padding: '24px', borderRadius: '20px', border: '3px solid #000000',
-                  cursor: 'pointer', fontSize: '16px', fontWeight: 900, background: '#ffffff',
+                  padding: '16px 12px', borderRadius: '16px', border: '3px solid #000000',
+                  cursor: 'pointer', fontSize: '13px', fontWeight: 900, background: '#ffffff',
                   color: '#000000', boxShadow: '4px 4px 0px #fbbf24', transition: 'all 0.15s ease',
-                  width: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                  minWidth: '150px', maxWidth: '190px'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-4px, -4px)'; e.currentTarget.style.boxShadow = '8px 8px 0px #fbbf24'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px, -2px)'; e.currentTarget.style.boxShadow = '6px 6px 0px #fbbf24'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #fbbf24'; }}
               >
-                <m.icon size={36} style={{ color: '#22c55e' }} />
+                <m.icon size={28} style={{ color: '#22c55e' }} />
                 <div>
-                  <div style={{ fontSize: '16px', fontWeight: 950 }}>{m.title}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{m.desc}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 950 }}>{m.title}</div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{m.desc}</div>
                 </div>
               </button>
             ))}
@@ -607,10 +633,13 @@ export default function ChessGame() {
           <button
             onClick={() => router.push('/dash/student/games')}
             style={{
-              marginTop: '12px', padding: '10px 20px', background: 'rgba(255,255,255,0.08)',
+              marginTop: '16px', padding: '10px 20px', background: 'rgba(255,255,255,0.08)',
               border: '2px solid rgba(255,255,255,0.15)', borderRadius: '12px', color: 'white',
-              fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px'
+              fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+              transition: 'background 0.2s'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
           >
             <ArrowLeft size={16} /> Back to Hub
           </button>
