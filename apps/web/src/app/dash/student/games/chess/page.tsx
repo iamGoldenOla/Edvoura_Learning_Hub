@@ -896,7 +896,7 @@ export default function ChessGame() {
             display: 'grid',
             placeItems: 'center',
             perspective: '1200px',
-            overflow: 'hidden',
+            overflow: 'visible', // Set to visible to prevent 3D rotation clipping!
             position: 'relative',
             transition: 'all 0.2s ease-out'
           }}>
@@ -904,6 +904,7 @@ export default function ChessGame() {
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(8, 1fr)',
+              gridTemplateRows: 'repeat(8, 1fr)', // Force exactly 8 equal rows!
               borderRadius: '16px',
               overflow: 'visible',
               border: '2.5px solid #000000',
@@ -931,7 +932,6 @@ export default function ChessGame() {
                     key={`${r}-${c}`}
                     onClick={() => handleSquareClick(r, c)}
                     style={{
-                      aspectRatio: '1',
                       background: isSelected ? '#a7f3d0'
                                 : isCheck ? '#fca5a5'
                                 : isDark ? '#1b4332' : '#f5f3f0',
