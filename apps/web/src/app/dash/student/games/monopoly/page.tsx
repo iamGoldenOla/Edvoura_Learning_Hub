@@ -742,7 +742,7 @@ export default function MonopolyPage() {
                   <div key={i} style={{
                     padding: '8px 10px',
                     borderRadius: '12px',
-                    background: isActive ? `${p.color}20` : '#111827',
+                    background: isActive ? '#1e293b' : '#111827',
                     border: isActive ? `2px solid ${p.color}` : '2px solid #1e293b',
                     boxShadow: isActive ? `0 0 8px ${p.color}40` : 'none',
                     transition: 'all 0.2s',
@@ -842,8 +842,7 @@ export default function MonopolyPage() {
                 <div style={{
                   gridRow: '2 / 8',
                   gridColumn: '2 / 14',
-                  background: 'rgba(255,255,255,0.85)',
-                  backdropFilter: 'blur(4px)',
+                  background: '#ffffff',
                   margin: '2px',
                   borderRadius: '6px',
                   display: 'flex',
