@@ -1,5 +1,6 @@
 'use client';
 
+// Trigger comment for Vercel deployment refetch
 import React, { useState, useEffect, useCallback } from 'react';
 import GameLayout from '@/components/games/GameLayout';
 import { Crown, RotateCcw, Layers, LogOut, Play, User, Users, Monitor, Sparkles } from 'lucide-react';
