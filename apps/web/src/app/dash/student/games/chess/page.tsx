@@ -549,7 +549,7 @@ export default function ChessGame() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#fbbf24' }}>
             <Crown size={48} />
-            <h1 style={{ fontSize: '32px', fontWeight: 900, textTransform: 'uppercase', tracking: '-0.02em', margin: 0 }}>
+            <h1 style={{ fontSize: '32px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>
               Chess Zone
             </h1>
           </div>
