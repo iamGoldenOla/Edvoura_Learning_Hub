@@ -99,7 +99,7 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', flex: 1, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '400px' }}>
         <div style={{ fontSize: '18px', color: '#94a3b8' }}>Streak: <span style={{ color: 'white', fontWeight: 'bold' }}>{streak}🔥</span></div>
       </div>
@@ -247,7 +247,7 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
 
   const drawHangman = () => {
     return (
-      <svg width="100%" height="100%" viewBox="0 0 200 250" style={{ maxHeight: '250px' }} fill="none" stroke="white" strokeWidth="4" strokeLinecap="round">
+      <svg width="200" height="250" viewBox="0 0 200 250" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round">
         {/* Base and pole */}
         <path d="M20,230 L100,230" />
         <path d="M60,230 L60,20" />
@@ -271,14 +271,14 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', flex: 1, overflow: 'hidden' }}>
-      <div style={{ fontSize: '18px', color: '#94a3b8', flexShrink: 0 }}>Category: <span style={{ color: ACCENT_COLOR, fontWeight: 'bold' }}>{category}</span></div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+      <div style={{ fontSize: '18px', color: '#94a3b8' }}>Category: <span style={{ color: ACCENT_COLOR, fontWeight: 'bold' }}>{category}</span></div>
       
-      <div style={{ flex: 1, minHeight: 0, padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '400px' }}>
+      <div style={{ padding: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>
         {drawHangman()}
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', margin: '20px 0' }}>
         {word.split('').map((letter, i) => (
           <div key={i} style={{ 
             width: '40px', 
@@ -493,26 +493,23 @@ function WordSearch({ addScore }: { addScore: (points: number) => void }) {
   const isGameWon = wordsToFind.length > 0 && foundWords.size === wordsToFind.length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', userSelect: 'none', flex: 1, overflow: 'hidden' }} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', userSelect: 'none' }} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
       {isGameWon && (
-        <div style={{ textAlign: 'center', background: 'rgba(34, 197, 94, 0.2)', padding: '12px', borderRadius: '12px', flexShrink: 0 }}>
-          <div style={{ color: '#22c55e', fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' }}>Puzzle Completed!</div>
+        <div style={{ textAlign: 'center', background: 'rgba(34, 197, 94, 0.2)', padding: '16px', borderRadius: '12px' }}>
+          <div style={{ color: '#22c55e', fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>Puzzle Completed!</div>
           <button onClick={initGame} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: '#22c55e', color: 'white', fontWeight: 'bold', cursor: 'pointer' }}>Next Puzzle</button>
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: '24px', flexWrap: 'nowrap', justifyContent: 'center', flex: 1, overflow: 'hidden', minHeight: 0, width: '100%' }}>
+      <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-          gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
-          gap: '2px',
+          gap: '4px',
           background: 'rgba(255,255,255,0.05)',
-          padding: '8px',
+          padding: '12px',
           borderRadius: '12px',
-          touchAction: 'none',
-          aspectRatio: '1 / 1',
-          height: '100%'
+          touchAction: 'none'
         }}>
           {grid.map((row, r) => (
             row.map((cell, c) => (
@@ -521,8 +518,8 @@ function WordSearch({ addScore }: { addScore: (points: number) => void }) {
                 onPointerDown={() => handlePointerDown(r, c)}
                 onPointerEnter={() => handlePointerEnter(r, c)}
                 style={{
-                  width: '100%',
-                  height: '100%',
+                  width: '32px',
+                  height: '32px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -541,8 +538,8 @@ function WordSearch({ addScore }: { addScore: (points: number) => void }) {
           ))}
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px', overflowY: 'auto' }}>
-          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#94a3b8', marginBottom: '4px' }}>Find Words:</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px' }}>
+          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#94a3b8', marginBottom: '8px' }}>Find Words:</div>
           {wordsToFind.map(word => (
             <div key={word} style={{ 
               fontSize: '16px',
@@ -584,9 +581,8 @@ export default function WordPlayGame() {
       score={score}
       showTimer={false}
       accentColor={ACCENT_COLOR}
-      fullscreen={true}
     >
-      <div style={{ maxWidth: '800px', width: '100%', height: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px', padding: '16px 0' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Tabs */}
         <div style={{ 
@@ -596,8 +592,7 @@ export default function WordPlayGame() {
           padding: '8px', 
           borderRadius: '100px',
           justifyContent: 'center',
-          flexWrap: 'wrap',
-          flexShrink: 0
+          flexWrap: 'wrap'
         }}>
           {tabs.map(tab => (
             <button
@@ -624,12 +619,9 @@ export default function WordPlayGame() {
         <div style={{ 
           background: 'rgba(255,255,255,0.02)', 
           borderRadius: '24px', 
-          padding: '24px',
-          border: '1px solid rgba(255,255,255,0.05)',
-          flex: 1,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
+          padding: '32px',
+          minHeight: '400px',
+          border: '1px solid rgba(255,255,255,0.05)'
         }}>
           {activeTab === 'scramble' && <WordScramble addScore={addScore} />}
           {activeTab === 'hangman' && <Hangman addScore={addScore} />}

@@ -270,10 +270,10 @@ export default function AyoOpon() {
 
   if (gameMode === 'lobby') {
     return (
-      <GameLayout title="Ayo Opon Lobby" icon={<Circle />} accentColor="#f97316" fullscreen={true}>
+      <GameLayout title="Ayo Opon Lobby" icon={<Circle />} accentColor="#f97316">
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: '32px', color: '#0f172a', textAlign: 'center', overflow: 'auto'
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
         }}>
           <div>
             <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#000000', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
@@ -317,10 +317,10 @@ export default function AyoOpon() {
 
   if (gameMode === 'matching') {
     return (
-      <GameLayout title="Matchmaking" icon={<Circle />} accentColor="#f97316" fullscreen={true}>
+      <GameLayout title="Matchmaking" icon={<Circle />} accentColor="#f97316">
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: '32px', color: '#0f172a', textAlign: 'center'
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
         }}>
           <div className="radar-container" style={{
             position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -369,15 +369,14 @@ export default function AyoOpon() {
       icon={<Circle style={{ width: '24px', height: '24px' }} />}
       accentColor="#f97316"
       score={scores[0]}
-      fullscreen={true}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%', maxWidth: '800px', margin: '0 auto', gap: '10px', paddingBottom: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '800px', margin: '0 auto', gap: '30px' }}>
         
         {/* Top Control Bar with permanent Restart and Lobby options */}
         <div style={{
           width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.05)', padding: '10px 20px', borderRadius: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.1)', flexShrink: 0
+          background: 'rgba(255, 255, 255, 0.05)', padding: '12px 20px', borderRadius: '20px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
           <button
             onClick={resetGame}
@@ -401,20 +400,19 @@ export default function AyoOpon() {
         </div>
 
         <div style={{
-          fontSize: '18px',
+          fontSize: '20px',
           fontWeight: 'bold',
           color: turn === 0 ? '#f97316' : '#94a3b8',
           background: 'rgba(255,255,255,0.05)',
-          padding: '8px 20px',
-          borderRadius: '16px',
-          transition: 'all 0.3s',
-          flexShrink: 0
+          padding: '10px 20px',
+          borderRadius: '20px',
+          transition: 'all 0.3s'
         }}>
           {message}
         </div>
 
         {/* 3D Board Viewport */}
-        <div style={{ position: 'relative', width: '100%', flex: 1, minHeight: 0, perspective: '1000px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: '100%', perspective: '1000px', display: 'flex', justifyContent: 'center' }}>
           
           <button
             onClick={() => setView3D(!view3D)}
@@ -502,14 +500,12 @@ export default function AyoOpon() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', flexShrink: 1, overflow: 'auto' }}>
         {/* Expandable How To Play / Game Rules Section */}
         <div style={{
           width: '100%',
           background: 'rgba(255,255,255,0.03)',
-          borderRadius: '16px',
+          borderRadius: '20px',
           border: '1px solid rgba(255,255,255,0.08)',
-          flexShrink: 0,
           overflow: 'hidden'
         }}>
           <button
@@ -556,19 +552,17 @@ export default function AyoOpon() {
 
         {/* Cultural Context */}
         <div style={{
-          padding: '15px',
+          padding: '25px',
           background: 'rgba(255,255,255,0.03)',
-          borderRadius: '16px',
+          borderRadius: '20px',
           border: '1px solid rgba(255,255,255,0.05)',
           textAlign: 'center',
-          lineHeight: '1.4',
-          flexShrink: 0
+          lineHeight: '1.6'
         }}>
-          <h3 style={{ color: '#fff', margin: '0 0 5px 0', fontSize: '16px' }}>Cultural Heritage</h3>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '14px' }}>
+          <h3 style={{ color: '#fff', margin: '0 0 10px 0', fontSize: '18px' }}>Cultural Heritage</h3>
+          <p style={{ color: '#94a3b8', margin: 0, fontSize: '15px' }}>
             Ayò Ọ̀pọ́n is one of the oldest known board games, originating from the Yoruba people of Nigeria. Played for centuries across West Africa, it teaches mathematical thinking, strategy, and patience. The name means 'game of counting' in Yoruba.
           </p>
-        </div>
         </div>
 
       </div>

@@ -511,12 +511,14 @@ export default function ScrabblePage() {
     }
   }, [turn, opponentType, gameMode, matchedOpponent]);
 
+  const cellSize = 38;
+
   if (gameMode === 'lobby') {
     return (
-      <GameLayout title="Scrabble Lobby" icon={<ALargeSmall size={24} />} score={0} accentColor="#ec4899" fullscreen={true}>
+      <GameLayout title="Scrabble Lobby" icon={<ALargeSmall size={24} />} score={0} accentColor="#ec4899">
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: '32px', color: '#0f172a', textAlign: 'center'
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
         }}>
           <div>
             <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#000000', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
@@ -561,10 +563,10 @@ export default function ScrabblePage() {
 
   if (gameMode === 'matching') {
     return (
-      <GameLayout title="Matchmaking" icon={<ALargeSmall size={24} />} score={0} accentColor="#ec4899" fullscreen={true}>
+      <GameLayout title="Matchmaking" icon={<ALargeSmall size={24} />} score={0} accentColor="#ec4899">
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: '32px', color: '#0f172a', textAlign: 'center'
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
         }}>
           <div className="radar-container" style={{
             position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -608,58 +610,44 @@ export default function ScrabblePage() {
   }
 
   return (
-    <GameLayout title="Scrabble" icon={<ALargeSmall size={24} />} score={score} accentColor="#ec4899" fullscreen={true}>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-        {/* Top Header Controls */}
-        <div style={{
-          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          background: '#1e293b', padding: '12px 24px', borderRadius: '16px', border: '3px solid #000000',
-          boxShadow: '4px 4px 0px #000000', marginBottom: '16px', boxSizing: 'border-box', color: '#ffffff',
-          flexShrink: 0
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 800 }}>Mode: {opponentType.toUpperCase()}</span>
-            {opponentType !== 'solo' && (
-              <span style={{ fontSize: '13px', fontWeight: 800, color: turn === 0 ? '#10b981' : '#f59e0b' }}>
-                • {turn === 0 ? 'Your Turn' : `${matchedOpponent}'s Turn`}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={() => setGameMode('lobby')}
-            style={{
-              padding: '6px 12px', background: '#fee2e2', color: '#ef4444', border: '2px solid #000000',
-              borderRadius: '8px', fontSize: '12px', fontWeight: 800, cursor: 'pointer'
-            }}
-          >
-            Quit Game
-          </button>
+    <GameLayout title="Scrabble" icon={<ALargeSmall size={24} />} score={score} accentColor="#ec4899">
+      {/* Top Header Controls */}
+      <div style={{
+        width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: '#1e293b', padding: '12px 24px', borderRadius: '16px', border: '3px solid #000000',
+        boxShadow: '4px 4px 0px #000000', marginBottom: '24px', boxSizing: 'border-box', color: '#ffffff'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800 }}>Mode: {opponentType.toUpperCase()}</span>
+          {opponentType !== 'solo' && (
+            <span style={{ fontSize: '13px', fontWeight: 800, color: turn === 0 ? '#10b981' : '#f59e0b' }}>
+              • {turn === 0 ? 'Your Turn' : `${matchedOpponent}'s Turn`}
+            </span>
+          )}
         </div>
+        <button
+          onClick={() => setGameMode('lobby')}
+          style={{
+            padding: '6px 12px', background: '#fee2e2', color: '#ef4444', border: '2px solid #000000',
+            borderRadius: '8px', fontSize: '12px', fontWeight: 800, cursor: 'pointer'
+          }}
+        >
+          Quit Game
+        </button>
+      </div>
 
-        <div style={{ display: 'flex', gap: '24px', flex: 1, overflow: 'hidden' }}>
-          {/* Main Board Area */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0, overflow: 'hidden' }}>
-            <div style={{
-              flex: 1,
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 0
-            }}>
-              <div style={{
-                aspectRatio: '1/1',
-                height: '100%',
-                maxHeight: '100%',
-                display: 'grid',
-                gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
-                gridTemplateRows: `repeat(${BOARD_SIZE}, 1fr)`,
-                gap: '2px',
-                background: 'rgba(255,255,255,0.06)',
-                padding: '8px',
-                borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.1)'
-              }}>
+      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* Board */}
+        <div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${BOARD_SIZE}, ${cellSize}px)`,
+            gap: '2px',
+            background: 'rgba(255,255,255,0.06)',
+            padding: '8px',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
             {board.map((row, r) =>
               row.map((cell, c) => {
                 const bonus = getBonusType(r, c);
@@ -671,8 +659,8 @@ export default function ScrabblePage() {
                     key={`${r}-${c}`}
                     onClick={() => handleCellClick(r, c)}
                     style={{
-                      width: '100%',
-                      height: '100%',
+                      width: cellSize,
+                      height: cellSize,
                       borderRadius: '4px',
                       display: 'flex',
                       alignItems: 'center',
@@ -720,21 +708,19 @@ export default function ScrabblePage() {
                 );
               })
             )}
-              </div>
-            </div>
+          </div>
 
-            {/* Tile Rack */}
-            <div style={{
-              marginTop: '16px',
-              display: 'flex',
-              gap: '8px',
-              justifyContent: 'center',
-              padding: '16px',
-              background: 'rgba(255,255,255,0.04)',
-              borderRadius: '16px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              flexShrink: 0
-            }}>
+          {/* Tile Rack */}
+          <div style={{
+            marginTop: '16px',
+            display: 'flex',
+            gap: '8px',
+            justifyContent: 'center',
+            padding: '16px',
+            background: 'rgba(255,255,255,0.04)',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.08)'
+          }}>
             {rack.map((letter, i) => (
               <div
                 key={`${letter}-${i}`}
@@ -787,8 +773,7 @@ export default function ScrabblePage() {
             display: 'flex',
             gap: '8px',
             justifyContent: 'center',
-            flexWrap: 'wrap',
-            flexShrink: 0
+            flexWrap: 'wrap'
           }}>
             <button
               onClick={handleSubmit}
@@ -865,7 +850,7 @@ export default function ScrabblePage() {
         </div>
 
         {/* Side Panel */}
-        <div style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, overflowY: 'auto' }}>
+        <div style={{ width: '260px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Message */}
           <div style={{
             padding: '16px',
@@ -953,7 +938,6 @@ export default function ScrabblePage() {
             )}
           </div>
         </div>
-      </div>
       </div>
     </GameLayout>
   );

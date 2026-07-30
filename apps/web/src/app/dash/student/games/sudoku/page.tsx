@@ -225,7 +225,6 @@ export default function SudokuGame() {
 
   return (
     <GameLayout
-      fullscreen={true}
       title="Sudoku Master"
       icon={<Grid3X3 className="w-6 h-6" />}
       score={score}
@@ -236,14 +235,12 @@ export default function SudokuGame() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '12px',
-        padding: '12px',
+        gap: '24px',
+        padding: '20px',
         color: '#f8fafc',
         width: '100%',
-        maxWidth: '800px',
-        margin: '0 auto',
-        flex: 1,
-        overflow: 'hidden'
+        maxWidth: '600px',
+        margin: '0 auto'
       }}>
 
         {/* Controls Header */}
@@ -288,207 +285,190 @@ export default function SudokuGame() {
           </div>
         </div>
 
-        {/* Game Board Wrapper */}
+        {/* Game Board */}
         <div style={{
-          display: 'flex',
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(9, 1fr)',
           width: '100%',
-          minHeight: 0
+          aspectRatio: '1',
+          background: '#0f172a',
+          border: '3px solid #475569',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
         }}>
-          {/* Game Board */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(9, 1fr)',
-            height: '100%',
-            aspectRatio: '1/1',
-            maxWidth: '100%',
-            background: '#0f172a',
-            border: '3px solid #475569',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
-          }}>
-            {board.map((row, r) => (
-              row.map((cellVal, c) => {
-                const isSelected = selectedCell?.r === r && selectedCell?.c === c;
-                const isRelated = isRelatedCell(r, c);
-                const isGiven = initialBoard[r][c] !== 0;
-                const isError = cellVal !== 0 && cellVal !== solution[r][c];
-                const isSameNumber = selectedCell && board[selectedCell.r][selectedCell.c] === cellVal && cellVal !== 0;
-                
-                let bgColor = 'transparent';
-                if (isSelected) bgColor = 'rgba(59, 130, 246, 0.4)';
-                else if (isError) bgColor = 'rgba(239, 68, 68, 0.25)';
-                else if (isSameNumber) bgColor = 'rgba(59, 130, 246, 0.25)';
-                else if (isRelated) bgColor = 'rgba(255, 255, 255, 0.04)';
-                
-                return (
-                  <div
-                    key={`${r}-${c}`}
-                    onClick={() => handleCellClick(r, c)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderRight: c % 3 === 2 && c !== 8 ? '2px solid #475569' : '1px solid #1e293b',
-                      borderBottom: r % 3 === 2 && r !== 8 ? '2px solid #475569' : '1px solid #1e293b',
-                      background: bgColor,
-                      cursor: isGiven ? 'default' : 'pointer',
-                      position: 'relative',
-                      transition: 'background 0.1s'
-                    }}
-                  >
-                    {cellVal !== 0 ? (
-                      <span style={{
-                        fontSize: 'clamp(1rem, 4vmin, 2rem)',
-                        fontWeight: isGiven ? 700 : 500,
-                        color: isError ? '#ef4444' : isGiven ? '#f1f5f9' : '#60a5fa',
-                        fontFamily: 'monospace'
-                      }}>
-                        {cellVal}
-                      </span>
-                    ) : (
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(3, 1fr)',
-                        gridTemplateRows: 'repeat(3, 1fr)',
-                        width: '100%',
-                        height: '100%',
-                        padding: '2px'
-                      }}>
-                        {[1,2,3,4,5,6,7,8,9].map(num => (
-                          <span key={num} style={{
-                            fontSize: 'clamp(0.5rem, 1.2vmin, 0.75rem)',
-                            color: '#94a3b8',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            opacity: pencilMarks[r][c]?.has(num) ? 1 : 0
-                          }}>
-                            {num}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            ))}
-          </div>
+          {board.map((row, r) => (
+            row.map((cellVal, c) => {
+              const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+              const isRelated = isRelatedCell(r, c);
+              const isGiven = initialBoard[r][c] !== 0;
+              const isError = cellVal !== 0 && cellVal !== solution[r][c];
+              const isSameNumber = selectedCell && board[selectedCell.r][selectedCell.c] === cellVal && cellVal !== 0;
+              
+              let bgColor = 'transparent';
+              if (isSelected) bgColor = 'rgba(59, 130, 246, 0.4)';
+              else if (isError) bgColor = 'rgba(239, 68, 68, 0.25)';
+              else if (isSameNumber) bgColor = 'rgba(59, 130, 246, 0.25)';
+              else if (isRelated) bgColor = 'rgba(255, 255, 255, 0.04)';
+              
+              return (
+                <div
+                  key={`${r}-${c}`}
+                  onClick={() => handleCellClick(r, c)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRight: c % 3 === 2 && c !== 8 ? '2px solid #475569' : '1px solid #1e293b',
+                    borderBottom: r % 3 === 2 && r !== 8 ? '2px solid #475569' : '1px solid #1e293b',
+                    background: bgColor,
+                    cursor: isGiven ? 'default' : 'pointer',
+                    position: 'relative',
+                    transition: 'background 0.1s'
+                  }}
+                >
+                  {cellVal !== 0 ? (
+                    <span style={{
+                      fontSize: 'clamp(1rem, 5vmin, 2rem)',
+                      fontWeight: isGiven ? 700 : 500,
+                      color: isError ? '#ef4444' : isGiven ? '#f1f5f9' : '#60a5fa',
+                      fontFamily: 'monospace'
+                    }}>
+                      {cellVal}
+                    </span>
+                  ) : (
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gridTemplateRows: 'repeat(3, 1fr)',
+                      width: '100%',
+                      height: '100%',
+                      padding: '2px'
+                    }}>
+                      {[1,2,3,4,5,6,7,8,9].map(num => (
+                        <span key={num} style={{
+                          fontSize: 'clamp(0.5rem, 1.5vmin, 0.75rem)',
+                          color: '#94a3b8',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: pencilMarks[r][c]?.has(num) ? 1 : 0
+                        }}>
+                          {num}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ))}
         </div>
 
-        {/* Action Buttons & Number Pad Container */}
+        {/* Action Buttons */}
         <div style={{
           display: 'flex',
-          flexDirection: 'column',
           gap: '12px',
           width: '100%',
-          maxWidth: '600px'
+          justifyContent: 'center'
         }}>
-          {/* Action Buttons */}
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            width: '100%',
-            justifyContent: 'center'
-          }}>
-            <button
-              onClick={() => setPencilMode(!pencilMode)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                flex: 1,
-                padding: '8px',
-                background: pencilMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                border: `1px solid ${pencilMode ? '#3b82f6' : 'transparent'}`,
-                borderRadius: '12px',
-                color: pencilMode ? '#60a5fa' : '#94a3b8',
-                cursor: 'pointer'
-              }}
-            >
-              <Edit2 size={18} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>Pencil</span>
-            </button>
-            
-            <button
-              onClick={handleHint}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                flex: 1,
-                padding: '8px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: 'none',
-                borderRadius: '12px',
-                color: '#94a3b8',
-                cursor: 'pointer'
-              }}
-            >
-              <HelpCircle size={18} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>Hint</span>
-            </button>
-            
-            <button
-              onClick={() => initGame(difficulty)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                flex: 1,
-                padding: '8px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: 'none',
-                borderRadius: '12px',
-                color: '#94a3b8',
-                cursor: 'pointer'
-              }}
-            >
-              <RefreshCw size={18} />
-              <span style={{ fontSize: '14px', fontWeight: 600 }}>New</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setPencilMode(!pencilMode)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              flex: 1,
+              padding: '12px',
+              background: pencilMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+              border: `1px solid ${pencilMode ? '#3b82f6' : 'transparent'}`,
+              borderRadius: '12px',
+              color: pencilMode ? '#60a5fa' : '#94a3b8',
+              cursor: 'pointer'
+            }}
+          >
+            <Edit2 size={20} />
+            <span style={{ fontSize: '12px', fontWeight: 600 }}>Pencil</span>
+          </button>
+          
+          <button
+            onClick={handleHint}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              flex: 1,
+              padding: '12px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: 'none',
+              borderRadius: '12px',
+              color: '#94a3b8',
+              cursor: 'pointer'
+            }}
+          >
+            <HelpCircle size={20} />
+            <span style={{ fontSize: '12px', fontWeight: 600 }}>Hint</span>
+          </button>
+          
+          <button
+            onClick={() => initGame(difficulty)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              flex: 1,
+              padding: '12px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: 'none',
+              borderRadius: '12px',
+              color: '#94a3b8',
+              cursor: 'pointer'
+            }}
+          >
+            <RefreshCw size={20} />
+            <span style={{ fontSize: '12px', fontWeight: 600 }}>New</span>
+          </button>
+        </div>
 
-          {/* Number Pad */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(9, 1fr)',
-            gap: '6px',
-            width: '100%'
-          }}>
-            {[1,2,3,4,5,6,7,8,9].map(num => (
-              <button
-                key={num}
-                onClick={() => handleNumberInput(num)}
-                style={{
-                  aspectRatio: '1',
-                  borderRadius: '8px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  color: '#f8fafc',
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s, transform 0.1s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                {num}
-              </button>
-            ))}
-          </div>
+        {/* Number Pad */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(9, 1fr)',
+          gap: '8px',
+          width: '100%'
+        }}>
+          {[1,2,3,4,5,6,7,8,9].map(num => (
+            <button
+              key={num}
+              onClick={() => handleNumberInput(num)}
+              style={{
+                aspectRatio: '1',
+                borderRadius: '8px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.05)',
+                color: '#f8fafc',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s, transform 0.1s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
+              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {num}
+            </button>
+          ))}
         </div>
 
         {/* Victory Overlay */}
