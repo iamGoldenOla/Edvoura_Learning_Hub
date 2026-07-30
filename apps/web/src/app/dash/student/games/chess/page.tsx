@@ -646,7 +646,7 @@ export default function ChessGame() {
         }}>
           {/* Left Gutter: Captured Black Pieces */}
           <div style={{
-            width: '45px',
+            width: '50px',
             background: 'rgba(255,255,255,0.8)',
             border: '2.5px solid #000000',
             borderRadius: '16px',
@@ -655,7 +655,7 @@ export default function ChessGame() {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '8px',
-            minHeight: '260px',
+            minHeight: '320px',
             boxShadow: '3px 3px 0px #000000'
           }}>
             <span style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', transform: 'rotate(-90deg)', margin: '12px 0' }}>CAPTURED</span>
@@ -673,8 +673,8 @@ export default function ChessGame() {
             borderRadius: '28px',
             padding: '18px',
             boxShadow: '8px 8px 0px #000000',
-            width: 'min(94vw, 53vh, 460px)',
-            height: 'min(94vw, 53vh, 460px)',
+            width: 'min(95vw, 68vh, 600px)',
+            height: 'min(95vw, 68vh, 600px)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -756,7 +756,7 @@ export default function ChessGame() {
                   >
                     {piece && (
                       <span style={{ 
-                        fontSize: 'clamp(1.8rem, 5vh, 3.4rem)',
+                        fontSize: 'clamp(2.4rem, 6.5vh, 4.4rem)',
                         color: piece.color === 'w' ? '#ffffff' : '#000000',
                         // Elegant stroke shadows for White Unicode pieces so they pop on cream squares
                         textShadow: piece.color === 'w' 
@@ -789,7 +789,7 @@ export default function ChessGame() {
 
           {/* Right Gutter: Captured White Pieces */}
           <div style={{
-            width: '45px',
+            width: '50px',
             background: 'rgba(255,255,255,0.8)',
             border: '2.5px solid #000000',
             borderRadius: '16px',
@@ -798,7 +798,7 @@ export default function ChessGame() {
             flexDirection: 'column',
             alignItems: 'center',
             gap: '8px',
-            minHeight: '260px',
+            minHeight: '320px',
             boxShadow: '3px 3px 0px #000000'
           }}>
             <span style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', transform: 'rotate(90deg)', margin: '12px 0' }}>LOST</span>
@@ -812,7 +812,7 @@ export default function ChessGame() {
 
         {/* Tiny Bottom Status Gutter */}
         <div style={{
-          width: '100%', maxWidth: '460px', display: 'flex', justifyContent: 'space-between',
+          width: '100%', maxWidth: '600px', display: 'flex', justifyContent: 'space-between',
           alignItems: 'center', padding: '6px 12px', background: '#fafaf9', border: '2px solid #000000',
           borderRadius: '12px', boxShadow: '2px 2px 0px #000000', fontSize: '11px', fontWeight: 700
         }}>
