@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Dice1, RotateCcw, Layers, User, Users, Monitor } from 'lucide-react';
+import { Dice1, RotateCcw, Layers, User, Users, Monitor, Shield, Trophy } from 'lucide-react';
 
 interface Property {
   name: string;
@@ -87,13 +87,13 @@ function createBoard(): BoardSpace[] {
 
   const spaces: BoardSpace[] = Array.from({ length: 40 }, (_, idx) => {
     if (idx === 0) return { name: 'START', type: 'start' };
-    if (idx === 10) return { name: 'Jail / Visit', type: 'jail' };
+    if (idx === 13) return { name: 'Jail / Visit', type: 'jail' };
     if (idx === 20) return { name: 'Free Parking', type: 'free-parking' };
-    if (idx === 30) return { name: 'Go To Jail', type: 'go-to-jail' };
+    if (idx === 33) return { name: 'Go To Jail', type: 'go-to-jail' };
     
     if (idx === 4 || idx === 38) return { name: 'Income Tax', type: 'tax' };
     
-    if (idx === 2 || idx === 7 || idx === 17 || idx === 22 || idx === 33 || idx === 36) {
+    if (idx === 2 || idx === 7 || idx === 17 || idx === 24 || idx === 30 || idx === 36) {
       return idx % 2 === 0 ? { name: 'Quiz Time!', type: 'quiz' } : { name: 'Chance', type: 'chance' };
     }
     
@@ -109,11 +109,20 @@ function createBoard(): BoardSpace[] {
   return spaces;
 }
 
+/**
+ * 14-column x 8-row Rectangular Monopoly Board Grid Mapping (1.75:1 Widescreen Ratio)
+ * 40 spaces total:
+ * - Bottom row: pos 0..13 (r=7, c=13..0)
+ * - Left column: pos 13..20 (r=7..0, c=0)
+ * - Top row: pos 20..33 (r=0, c=0..13)
+ * - Right column: pos 33..39 (r=0..6, c=13)
+ */
 function getGridCoords(pos: number): { r: number; c: number } {
-  if (pos >= 0 && pos <= 10) return { r: 10, c: 10 - pos };
-  if (pos > 10 && pos <= 20) return { r: 10 - (pos - 10), c: 0 };
-  if (pos > 20 && pos <= 30) return { r: 0, c: pos - 20 };
-  return { r: pos - 30, c: 10 };
+  const p = pos % 40;
+  if (p >= 0 && p <= 13) return { r: 7, c: 13 - p };
+  if (p > 13 && p <= 20) return { r: 20 - p, c: 0 };
+  if (p > 20 && p <= 33) return { r: 0, c: p - 20 };
+  return { r: p - 33, c: 13 };
 }
 
 const PLAYER_CONFIGS = [
@@ -196,7 +205,7 @@ export default function MonopolyPage() {
         position: 0,
         inJail: false,
         jailTurns: 0,
-        isBot: true // Classmate matches are bot-driven for offline support
+        isBot: true
       });
       for (let i = 2; i < n; i++) {
         list.push({
@@ -338,7 +347,7 @@ export default function MonopolyPage() {
     const space = board[targetPos];
 
     if (space.type === 'go-to-jail') {
-      updatedPlayers[currentPlayer] = { ...player, position: 10, inJail: true, jailTurns: 0 };
+      updatedPlayers[currentPlayer] = { ...player, position: 13, inJail: true, jailTurns: 0 };
       setPlayers(updatedPlayers);
       addLog(`${player.emoji} ${player.name} sent to Jail!`);
       setActionMessage('👮 Go to Jail!');
@@ -398,6 +407,7 @@ export default function MonopolyPage() {
   const buyProperty = useCallback(() => {
     const player = players[currentPlayer];
     const space = board[player.position];
+
     if (space.type !== 'property' || !space.property || space.property.owner !== null) return;
     if (player.balance < space.property.price) {
       setActionMessage('Not enough money!');
@@ -482,64 +492,64 @@ export default function MonopolyPage() {
         return () => clearTimeout(timer);
       }
     }
-  }, [currentPlayer, phase, gameMode, isRolling, isAnimating, board, currentQuiz]);
+  }, [currentPlayer, phase, gameMode, isRolling, isAnimating, board, currentQuiz, rollDice, buyProperty, endTurn, answerQuiz]);
 
   if (gameMode === 'lobby') {
     return (
-      <GameLayout title="Monopoly Lobby" icon={<Dice1 size={24} />} accentColor="#f59e0b">
+      <GameLayout title="Monopoly Lobby" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+          height: '100%', gap: '24px', color: '#0f172a', textAlign: 'center', padding: '16px'
         }}>
           <div>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#000000', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#ffffff', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               🎲 Monopoly Play Zone
             </h2>
-            <p style={{ color: '#475569', fontSize: '15px', maxWidth: '500px', fontWeight: 600, margin: '0 auto' }}>
-              Buy properties, answer academic quizzes, and outsmart your opponents. Choose to play against AI bots or other grade cohorts!
+            <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '540px', fontWeight: 600, margin: '0 auto' }}>
+              Buy properties, answer academic quizzes, and outsmart your opponents in a widescreen 16:9 board layout!
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 800 }}>Number of Players:</span>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'center' }}>
+            <span style={{ fontSize: '13px', fontWeight: 800, color: '#e2e8f0' }}>Players:</span>
             {[2, 3, 4].map(n => (
               <button
                 key={n}
                 onClick={() => setNumPlayers(n)}
                 style={{
-                  padding: '10px 20px', borderRadius: '10px', border: '2px solid #000000',
-                  cursor: 'pointer', fontSize: '14px', fontWeight: 900,
+                  padding: '8px 16px', borderRadius: '10px', border: '2px solid #000000',
+                  cursor: 'pointer', fontSize: '13px', fontWeight: 900,
                   background: numPlayers === n ? '#fbbf24' : '#ffffff',
                   boxShadow: '2px 2px 0px #000000'
                 }}
               >
-                {n}
+                {n} Players
               </button>
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {[
-              { type: 'ai', title: 'Play vs computer', desc: 'vs AI bots', icon: Monitor },
-              { type: 'local', title: 'Pass & Play', desc: 'Local hot-seat mode', icon: Users },
-              { type: 'matchmaker', title: 'Grade Matchmaking', desc: 'Find other grades', icon: User }
+              { type: 'ai', title: 'Play vs Computer', desc: 'vs AI bots', icon: Monitor },
+              { type: 'local', title: 'Pass & Play', desc: 'Local 2-player', icon: Users },
+              { type: 'matchmaker', title: 'Grade Match', desc: 'Find classmates', icon: User }
             ].map(m => (
               <button
                 key={m.type}
                 onClick={() => startGame(m.type as any, numPlayers)}
                 style={{
-                  padding: '24px', borderRadius: '20px', border: '3px solid #000000',
-                  cursor: 'pointer', fontSize: '16px', fontWeight: 900, background: '#ffffff',
-                  color: '#000000', boxShadow: '4px 4px 0px #000000', transition: 'all 0.15s ease',
-                  width: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
+                  padding: '20px 16px', borderRadius: '18px', border: '3px solid #000000',
+                  cursor: 'pointer', background: '#ffffff', color: '#000000',
+                  boxShadow: '4px 4px 0px #fbbf24', transition: 'all 0.15s ease',
+                  width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-4px, -4px)'; e.currentTarget.style.boxShadow = '8px 8px 0px #000000'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #000000'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px, -2px)'; e.currentTarget.style.boxShadow = '6px 6px 0px #fbbf24'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #fbbf24'; }}
               >
-                <m.icon size={36} style={{ color: '#f59e0b' }} />
+                <m.icon size={32} style={{ color: '#f59e0b' }} />
                 <div>
-                  <div style={{ fontSize: '16px', fontWeight: 900 }}>{m.title}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{m.desc}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 950 }}>{m.title}</div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{m.desc}</div>
                 </div>
               </button>
             ))}
@@ -551,41 +561,31 @@ export default function MonopolyPage() {
 
   if (gameMode === 'matching') {
     return (
-      <GameLayout title="Matchmaking" icon={<Dice1 size={24} />} accentColor="#f59e0b">
+      <GameLayout title="Matchmaking" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+          height: '100%', gap: '24px', color: '#0f172a', textAlign: 'center'
         }}>
-          <div className="radar-container" style={{
-            position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div className="pulse" style={{
-              position: 'absolute', width: '100%', height: '100%', borderRadius: '50%',
-              border: '3px solid #f59e0b', animation: 'ping 1.5s infinite ease-out'
-            }} />
-            <div style={{
-              width: '80px', height: '80px', borderRadius: '50%', border: '3px solid #000000',
-              background: '#fafaf9', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '3px 3px 0px #000000', zIndex: 2
-            }}>
-              <Users size={32} color="#f59e0b" />
+          <div style={{ position: 'relative', width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', border: '3px solid #f59e0b', animation: 'ping 1.5s infinite ease-out' }} />
+            <div style={{ width: '70px', height: '70px', borderRadius: '50%', border: '3px solid #000000', background: '#fafaf9', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '3px 3px 0px #000000', zIndex: 2 }}>
+              <Users size={28} color="#f59e0b" />
             </div>
           </div>
           <div>
-            <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 6px 0' }}>Searching for matches...</h3>
-            <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 700 }}>Finding students in Grade 3, 4 or 5 to link on the board...</p>
+            <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', margin: '0 0 4px 0' }}>Searching for matches...</h3>
+            <p style={{ color: '#94a3b8', fontSize: '13px', fontWeight: 600 }}>Connecting with grade classmates on the board...</p>
           </div>
           <button
             onClick={quitToLobby}
             style={{
-              padding: '12px 24px', borderRadius: '12px', border: '2px solid #000000',
-              cursor: 'pointer', fontSize: '13px', fontWeight: 900, background: '#fee2e2',
+              padding: '10px 20px', borderRadius: '10px', border: '2px solid #000000',
+              cursor: 'pointer', fontSize: '12px', fontWeight: 900, background: '#fee2e2',
               color: '#ef4444', boxShadow: '2px 2px 0px #000000'
             }}
           >
             Cancel Search
           </button>
-
           <style jsx>{`
             @keyframes ping {
               0% { transform: scale(0.6); opacity: 1; }
@@ -626,26 +626,25 @@ export default function MonopolyPage() {
           gridColumn: c + 1,
           background: bgColor,
           border: '1.5px solid #000000',
-          borderTop: `4px solid ${borderTopColor}`,
-          borderRadius: '4px',
-          padding: '4px',
+          borderTop: `3px solid ${borderTopColor}`,
+          borderRadius: '3px',
+          padding: '2px 3px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           position: 'relative',
           overflow: 'hidden',
-          minHeight: '44px',
           boxSizing: 'border-box'
         }}
       >
-        <div style={{ fontSize: '7px', fontWeight: 800, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>
+        <div style={{ fontSize: '8px', fontWeight: 800, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.01em', lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {space.name}
         </div>
         {space.type === 'property' && space.property && (
-          <div style={{ fontSize: '7px', color: '#475569', fontWeight: 700 }}>
-            ${space.property.price}
+          <div style={{ fontSize: '8px', color: '#475569', fontWeight: 800, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>${space.property.price}</span>
             {space.property.owner !== null && (
-              <span style={{ color: players[space.property.owner]?.color, marginLeft: '3px' }}>
+              <span style={{ color: players[space.property.owner]?.color, fontWeight: 900 }}>
                 {players[space.property.owner]?.emoji}
               </span>
             )}
@@ -655,12 +654,12 @@ export default function MonopolyPage() {
         {playersHere.length > 0 && (
           <div style={{
             display: 'flex',
-            gap: '3px',
+            gap: '2px',
             flexWrap: 'wrap',
             position: 'absolute',
-            bottom: '2px',
-            left: '2px',
-            right: '2px',
+            bottom: '1px',
+            left: '1px',
+            right: '1px',
             justifyContent: 'center',
             zIndex: 5
           }}>
@@ -668,7 +667,7 @@ export default function MonopolyPage() {
               <span
                 key={p.name}
                 style={{
-                  fontSize: '14px',
+                  fontSize: '13px',
                   animation: (isAnimating && players[currentPlayer].name === p.name) ? 'pawnHop 0.28s infinite alternate' : 'none'
                 }}
               >
@@ -682,340 +681,401 @@ export default function MonopolyPage() {
   };
 
   return (
-    <GameLayout title="Monopoly 3D" icon={<Dice1 size={24} />} accentColor="#f59e0b">
+    <GameLayout title="Monopoly 3D" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
       {phase === 'gameover' && winner ? (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          minHeight: '60vh', gap: '24px', textAlign: 'center', color: '#0f172a'
+          height: '100%', gap: '20px', textAlign: 'center', color: '#ffffff'
         }}>
-          <div style={{ fontSize: '64px' }}>🏆</div>
-          <h2 style={{ fontSize: '36px', fontWeight: 900, color: '#fbbf24' }}>{winner} Wins!</h2>
+          <div style={{ fontSize: '56px' }}>🏆</div>
+          <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#fbbf24' }}>{winner} Wins!</h2>
           <button
             onClick={() => setGameMode('lobby')}
             style={{
-              padding: '16px 32px', borderRadius: '14px', border: '2px solid #000000', cursor: 'pointer',
-              fontSize: '16px', fontWeight: 900, background: '#fbbf24',
+              padding: '12px 24px', borderRadius: '12px', border: '2px solid #000000', cursor: 'pointer',
+              fontSize: '14px', fontWeight: 900, background: '#fbbf24',
               color: '#000000', display: 'flex', alignItems: 'center', gap: '8px',
               boxShadow: '3px 3px 0px #000000'
             }}
           >
-            <RotateCcw size={18} /> Exit to Lobby
+            <RotateCcw size={16} /> Exit to Lobby
           </button>
         </div>
       ) : (
-        // Stacked Viewport Layout to allow the board to expand to full size
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', width: '100%', color: '#0f172a' }}>
+        /* Widescreen 16:9 Zero-Scroll Main Play Area */
+        <div style={{
+          display: 'flex', alignItems: 'stretch', height: '100%',
+          overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
+        }}>
           
-          {/* Header Card (White Title text instead of black!) */}
+          {/* ─── LEFT SIDEBAR: MATCH BADGE & PLAYERS CARDS ─── */}
           <div style={{
-            width: '100%', maxWidth: '850px', background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-            border: '3px solid #000000', borderRadius: '20px', padding: '16px 24px',
-            boxShadow: '4px 4px 0px #000000', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '8px',
+            overflow: 'hidden'
           }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', textTransform: 'uppercase', margin: 0 }}>
-              🎲 Monopoly: Edvoura Edition
-            </h2>
-            <button
-              onClick={quitToLobby}
-              style={{
-                padding: '8px 16px', background: '#fee2e2', color: '#ef4444', border: '2px solid #000000',
-                borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '2px 2px 0px #000000'
-              }}
-            >
-              Quit Game
-            </button>
-          </div>
+            {/* Header Badge */}
+            <div style={{
+              background: '#111827', border: '2px solid #1e293b', borderRadius: '12px',
+              padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            }}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24', textTransform: 'uppercase' }}>🎲 Monopoly</div>
+                <div style={{ fontSize: '10px', fontWeight: 600, color: '#64748b' }}>Edvoura Edition</div>
+              </div>
+              <button
+                onClick={quitToLobby}
+                style={{
+                  padding: '4px 8px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000',
+                  borderRadius: '6px', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                }}
+              >
+                Quit
+              </button>
+            </div>
 
-          {/* Large Monopoly Board Viewport */}
-          <div style={{
-            background: '#ffffff',
-            border: '4px solid #000000',
-            borderRadius: '24px',
-            padding: '20px',
-            boxShadow: '8px 8px 0px #000000',
-            position: 'relative',
-            width: '100%',
-            maxWidth: '850px', // Enlarged Board Viewport Width
-            perspective: '1200px',
-            boxSizing: 'border-box'
-          }}>
-            {/* 3D View Toggle */}
+            {/* Players Cards */}
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', overflowY: 'auto' }}>
+              {players.map((p, i) => {
+                const isActive = i === currentPlayer;
+                const propCount = board.filter(s => s.property?.owner === i).length;
+                return (
+                  <div key={i} style={{
+                    padding: '8px 10px',
+                    borderRadius: '12px',
+                    background: isActive ? `${p.color}20` : '#111827',
+                    border: isActive ? `2px solid ${p.color}` : '2px solid #1e293b',
+                    boxShadow: isActive ? `0 0 8px ${p.color}40` : 'none',
+                    transition: 'all 0.2s',
+                    position: 'relative'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '15px' }}>{p.emoji}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 900, color: '#e2e8f0' }}>{p.name}</span>
+                      </div>
+                      {p.isBot && <span style={{ fontSize: '8px', background: '#334155', color: '#94a3b8', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>BOT</span>}
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 900, color: '#22c55e', marginTop: '2px' }}>
+                      ${p.balance.toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#64748b', marginTop: '1px', fontWeight: 700 }}>
+                      Properties: {propCount}
+                    </div>
+                    {p.inJail && (
+                      <div style={{ position: 'absolute', top: '4px', right: '4px', fontSize: '8px', background: '#ef4444', color: '#fff', padding: '1px 4px', borderRadius: '4px', fontWeight: 900 }}>
+                        JAIL
+                      </div>
+                    )}
+                    {isActive && (
+                      <div style={{ fontSize: '9px', fontWeight: 900, color: p.color, marginTop: '4px' }}>
+                        ⚡ YOUR TURN
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 3D View Toggle Button */}
             <button
               onClick={() => setView3D(!view3D)}
               style={{
-                position: 'absolute',
-                top: '-20px',
-                right: '20px',
-                padding: '6px 14px',
+                padding: '6px 10px',
                 background: '#fbbf24',
                 border: '2px solid #000000',
                 borderRadius: '8px',
-                fontWeight: 800,
+                fontWeight: 900,
                 fontSize: '11px',
                 cursor: 'pointer',
                 boxShadow: '2px 2px 0px #000000',
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: '6px',
-                zIndex: 10
+                color: '#000'
               }}
             >
               <Layers size={12} /> {view3D ? 'Flat View' : '3D View'}
             </button>
+          </div>
 
-            {/* Grid */}
+          {/* ─── CENTER AREA: 14×8 RECTANGULAR WIDESCREEN BOARD ─── */}
+          <div style={{
+            flex: 1,
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            padding: '0'
+          }}>
             <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(11, 1fr)',
-              gridTemplateRows: 'repeat(11, 1fr)',
-              width: '100%',
-              aspectRatio: '1',
-              border: '2px solid #000000',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              background: '#f1f5f9',
-              transformStyle: 'preserve-3d',
-              transform: view3D ? 'rotateX(30deg) rotateZ(-12deg) scale(0.92)' : 'none',
-              transition: 'transform 0.4s ease-out',
-              boxShadow: view3D ? '0 20px 30px rgba(0,0,0,0.2)' : 'none'
+              height: '100%',
+              maxWidth: '100%',
+              aspectRatio: '14 / 8',
+              borderRadius: '16px',
+              padding: '2px',
+              boxSizing: 'border-box',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              {Array.from({ length: 40 }).map((_, i) => renderBoardSpace(i))}
-
-              {/* Central Controller Box */}
+              {/* 14x8 Grid Board */}
               <div style={{
-                gridRow: '2 / 11',
-                gridColumn: '2 / 11',
-                background: 'rgba(255,255,255,0.7)',
-                margin: '3px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(14, 1fr)',
+                gridTemplateRows: 'repeat(8, 1fr)',
+                width: '100%',
+                height: '100%',
+                border: '2px solid #000000',
                 borderRadius: '8px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '16px',
-                gap: '10px',
-                border: '1.5px dashed #000000',
-                zIndex: 2,
-                transform: view3D ? 'translateZ(10px)' : 'none',
-                transition: 'transform 0.4s ease-out'
+                overflow: 'hidden',
+                background: '#f1f5f9',
+                transformStyle: 'preserve-3d',
+                transform: view3D ? 'rotateX(22deg) rotateZ(-3deg) scale(0.96)' : 'none',
+                transition: 'transform 0.4s ease-out',
+                boxShadow: view3D ? '0 16px 24px rgba(0,0,0,0.3)' : 'none'
               }}>
-                <div style={{ fontSize: '20px', fontWeight: 900, color: '#000000', letterSpacing: '0.05em' }}>
-                  🎓 EDVOURA
-                </div>
+                {Array.from({ length: 40 }).map((_, i) => renderBoardSpace(i))}
 
-                <div style={{ display: 'flex', gap: '8px', margin: '4px 0' }}>
-                  {dice.map((d, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '8px',
-                        background: d ? '#fbbf24' : '#e2e8f0',
-                        border: '2px solid #000000',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '20px',
-                        fontWeight: 900,
-                        color: '#000000',
-                        animation: isRolling ? 'diceSpin 0.3s infinite linear' : 'none',
-                        boxShadow: d ? '2px 2px 0px #000000' : 'none'
-                      }}
-                    >
-                      {d || '?'}
-                    </div>
-                  ))}
-                </div>
-
+                {/* Central Controller Box Spanning Columns 2-13, Rows 2-7 */}
                 <div style={{
-                  padding: '6px 14px',
-                  borderRadius: '10px',
-                  background: '#ffffff',
-                  border: `2px solid #000000`,
-                  textAlign: 'center',
-                  boxShadow: '2px 2px 0px #000000'
+                  gridRow: '2 / 8',
+                  gridColumn: '2 / 14',
+                  background: 'rgba(255,255,255,0.85)',
+                  backdropFilter: 'blur(4px)',
+                  margin: '2px',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '10px',
+                  gap: '6px',
+                  border: '1.5px dashed #000000',
+                  zIndex: 2,
+                  transform: view3D ? 'translateZ(8px)' : 'none',
+                  transition: 'transform 0.4s ease-out'
                 }}>
-                  <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 700 }}>Current Turn</div>
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: players[currentPlayer]?.color }}>
-                    {players[currentPlayer]?.emoji} {players[currentPlayer]?.name}
+                  <div style={{ fontSize: '16px', fontWeight: 950, color: '#000000', letterSpacing: '0.05em' }}>
+                    🎓 EDVOURA MONOPOLY
                   </div>
-                </div>
 
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  {phase === 'roll' && !players[currentPlayer]?.isBot && (
-                    <button
-                      onClick={rollDice}
-                      disabled={isRolling || isAnimating}
-                      style={{
-                        padding: '8px 16px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
-                        fontSize: '12px', fontWeight: 900, background: '#fbbf24',
-                        color: '#000000', boxShadow: '2px 2px 0px #000000'
-                      }}
-                    >
-                      {isRolling ? 'Rolling...' : '🎲 Roll'}
-                    </button>
-                  )}
-                  {phase === 'action' && !isAnimating && !players[currentPlayer]?.isBot && (
-                    <>
-                      {canBuy && (
+                  {/* Dice Display */}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {dice.map((d, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          width: '34px',
+                          height: '34px',
+                          borderRadius: '8px',
+                          background: d ? '#fbbf24' : '#e2e8f0',
+                          border: '2px solid #000000',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '18px',
+                          fontWeight: 900,
+                          color: '#000000',
+                          animation: isRolling ? 'diceSpin 0.3s infinite linear' : 'none',
+                          boxShadow: d ? '2px 2px 0px #000000' : 'none'
+                        }}
+                      >
+                        {d || '?'}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Turn Status */}
+                  <div style={{
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    background: '#ffffff',
+                    border: `1.5px solid #000000`,
+                    textAlign: 'center',
+                    boxShadow: '1.5px 1.5px 0px #000000'
+                  }}>
+                    <div style={{ fontSize: '9px', color: '#64748b', fontWeight: 700 }}>Current Turn</div>
+                    <div style={{ fontSize: '12px', fontWeight: 900, color: players[currentPlayer]?.color }}>
+                      {players[currentPlayer]?.emoji} {players[currentPlayer]?.name}
+                    </div>
+                  </div>
+
+                  {/* Action Controls */}
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {phase === 'roll' && !players[currentPlayer]?.isBot && (
+                      <button
+                        onClick={rollDice}
+                        disabled={isRolling || isAnimating}
+                        style={{
+                          padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
+                          fontSize: '11px', fontWeight: 900, background: '#fbbf24',
+                          color: '#000000', boxShadow: '2px 2px 0px #000000'
+                        }}
+                      >
+                        {isRolling ? 'Rolling...' : '🎲 Roll Dice'}
+                      </button>
+                    )}
+                    {phase === 'action' && !isAnimating && !players[currentPlayer]?.isBot && (
+                      <>
+                        {canBuy && (
+                          <button
+                            onClick={buyProperty}
+                            style={{
+                              padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
+                              fontSize: '11px', fontWeight: 900, background: '#22c55e',
+                              color: '#ffffff', boxShadow: '2px 2px 0px #000000'
+                            }}
+                          >
+                            Buy (${currentSpace.property?.price})
+                          </button>
+                        )}
                         <button
-                          onClick={buyProperty}
+                          onClick={endTurn}
                           style={{
-                            padding: '8px 16px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
-                            fontSize: '12px', fontWeight: 900, background: '#22c55e',
-                            color: '#ffffff', boxShadow: '2px 2px 0px #000000'
+                            padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000',
+                            cursor: 'pointer', fontSize: '11px', fontWeight: 900,
+                            background: '#ffffff', color: '#000000', boxShadow: '2px 2px 0px #000000'
                           }}
                         >
-                          Buy (${currentSpace.property?.price})
+                          End Turn
                         </button>
-                      )}
+                      </>
+                    )}
+                    {phase === 'chance' && !players[currentPlayer]?.isBot && (
                       <button
                         onClick={endTurn}
                         style={{
-                          padding: '8px 16px', borderRadius: '8px', border: '2px solid #000000',
-                          cursor: 'pointer', fontSize: '12px', fontWeight: 900,
-                          background: '#ffffff', color: '#000000', boxShadow: '2px 2px 0px #000000'
+                          padding: '6px 14px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
+                          fontSize: '11px', fontWeight: 900, background: '#38bdf8',
+                          color: '#ffffff', boxShadow: '2px 2px 0px #000000'
                         }}
                       >
-                        End Turn
+                        Continue
                       </button>
-                    </>
+                    )}
+                    {players[currentPlayer]?.isBot && (
+                      <div style={{ fontSize: '11px', fontWeight: 900, color: '#f59e0b', animation: 'pulse 1s infinite alternate' }}>
+                        🤖 AI is thinking...
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quiz Overlay */}
+                  {phase === 'quiz' && currentQuiz && (
+                    <div style={{
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      background: '#faf5ff',
+                      border: '1.5px solid #000000',
+                      maxWidth: '260px',
+                      boxShadow: '2px 2px 0px #000000',
+                      textAlign: 'left'
+                    }}>
+                      <div style={{ fontSize: '11px', fontWeight: 900, color: '#8b5cf6', marginBottom: '4px' }}>
+                        📝 Quiz Time!
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#000000', fontWeight: 700, marginBottom: '6px' }}>
+                        {currentQuiz.q}
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                        {currentQuiz.options.map((opt, i) => (
+                          <button
+                            key={i}
+                            onClick={() => !players[currentPlayer]?.isBot && answerQuiz(i)}
+                            style={{
+                              padding: '4px 6px', borderRadius: '6px',
+                              border: '1px solid #000000', cursor: players[currentPlayer]?.isBot ? 'default' : 'pointer',
+                              fontSize: '10px', fontWeight: 700, background: '#ffffff',
+                              color: '#000000', textAlign: 'left'
+                            }}
+                            disabled={players[currentPlayer]?.isBot}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                  {phase === 'chance' && !players[currentPlayer]?.isBot && (
-                    <button
-                      onClick={endTurn}
-                      style={{
-                        padding: '8px 16px', borderRadius: '8px', border: '2px solid #000000', cursor: 'pointer',
-                        fontSize: '12px', fontWeight: 900, background: '#38bdf8',
-                        color: '#ffffff', boxShadow: '2px 2px 0px #000000'
-                      }}
-                    >
-                      Continue
-                    </button>
+
+                  {/* Chance Card Overlay */}
+                  {phase === 'chance' && currentChance && (
+                    <div style={{
+                      padding: '8px 12px',
+                      borderRadius: '10px',
+                      background: '#ecfeff',
+                      border: '1.5px solid #000000',
+                      maxWidth: '220px',
+                      textAlign: 'center',
+                      boxShadow: '2px 2px 0px #000000'
+                    }}>
+                      <div style={{ fontSize: '16px', marginBottom: '2px' }}>🎴</div>
+                      <div style={{ fontSize: '10px', color: '#000000', fontWeight: 700 }}>
+                        {currentChance.text}
+                      </div>
+                    </div>
                   )}
-                  {players[currentPlayer]?.isBot && (
-                    <div style={{ fontSize: '12.5px', fontWeight: 900, color: '#f59e0b', animation: 'pulse 1s infinite alternate' }}>
-                      🤖 AI is thinking...
+
+                  {/* Action Banner */}
+                  {actionMessage && phase === 'action' && !isAnimating && (
+                    <div style={{
+                      padding: '4px 10px', borderRadius: '6px', background: '#f8fafc',
+                      border: '1px solid #000000', fontSize: '10px', color: '#000000', textAlign: 'center', maxWidth: '240px', fontWeight: 700
+                    }}>
+                      {actionMessage}
                     </div>
                   )}
                 </div>
-
-                {phase === 'quiz' && currentQuiz && (
-                  <div style={{
-                    padding: '12px',
-                    borderRadius: '12px',
-                    background: '#faf5ff',
-                    border: '2px solid #000000',
-                    maxWidth: '240px',
-                    boxShadow: '3px 3px 0px #000000',
-                    textAlign: 'left'
-                  }}>
-                    <div style={{ fontSize: '12px', fontWeight: 900, color: '#8b5cf6', marginBottom: '6px' }}>
-                      📝 Quiz Time!
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#000000', fontWeight: 700, marginBottom: '8px' }}>
-                      {currentQuiz.q}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      {currentQuiz.options.map((opt, i) => (
-                        <button
-                          key={i}
-                          onClick={() => !players[currentPlayer]?.isBot && answerQuiz(i)}
-                          style={{
-                            padding: '6px 10px', borderRadius: '6px',
-                            border: '1.5px solid #000000', cursor: players[currentPlayer]?.isBot ? 'default' : 'pointer',
-                            fontSize: '11px', fontWeight: 700, background: '#ffffff',
-                            color: '#000000', textAlign: 'left'
-                          }}
-                          disabled={players[currentPlayer]?.isBot}
-                        >
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {phase === 'chance' && currentChance && (
-                  <div style={{
-                    padding: '12px',
-                    borderRadius: '12px',
-                    background: '#ecfeff',
-                    border: '2px solid #000000',
-                    maxWidth: '200px',
-                    textAlign: 'center',
-                    boxShadow: '3px 3px 0px #000000'
-                  }}>
-                    <div style={{ fontSize: '20px', marginBottom: '4px' }}>🎴</div>
-                    <div style={{ fontSize: '11px', color: '#000000', fontWeight: 700 }}>
-                      {currentChance.text}
-                    </div>
-                  </div>
-                )}
-
-                {actionMessage && phase === 'action' && !isAnimating && (
-                  <div style={{
-                    padding: '6px 12px', borderRadius: '8px', background: '#f8fafc',
-                    border: '1.5px solid #000000', fontSize: '11px', color: '#000000', textAlign: 'center', maxWidth: '240px', fontWeight: 700
-                  }}>
-                    {actionMessage}
-                  </div>
-                )}
               </div>
             </div>
           </div>
 
-          {/* Bottom Panel containing Player Cards & Log side by side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', width: '100%', maxWidth: '850px' }}>
-            
-            {/* Status grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
-              {players.map((p, i) => (
-                <div key={i} style={{
-                  padding: '12px',
-                  borderRadius: '16px',
-                  background: i === currentPlayer ? `${p.color}15` : '#ffffff',
-                  border: '3px solid #000000',
-                  boxShadow: i === currentPlayer ? '4px 4px 0px #000000' : '2px 2px 0px #000000',
-                  transition: 'all 0.2s',
-                  position: 'relative'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '16px' }}>{p.emoji}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 900, color: '#000000' }}>{p.name}</span>
-                    </div>
-                    {p.isBot && <span style={{ fontSize: '8px', background: '#e2e8f0', border: '1px solid #000', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>BOT</span>}
-                  </div>
-                  <div style={{ fontSize: '18px', fontWeight: 900, color: '#16a34a', marginTop: '4px' }}>
-                    ${p.balance.toLocaleString()}
-                  </div>
-                  <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px', fontWeight: 700 }}>
-                    Properties: {board.filter(s => s.property?.owner === i).length}
-                  </div>
-                  {p.inJail && (
-                    <div style={{ position: 'absolute', top: '4px', right: '4px', fontSize: '9px', background: '#fca5a5', border: '1px solid #000', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>
-                      JAIL
-                    </div>
-                  )}
+          {/* ─── RIGHT SIDEBAR: GAME LOG & PORTFOLIO ─── */}
+          <div style={{
+            flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
+            overflow: 'hidden'
+          }}>
+            {/* Game Logs */}
+            <div style={{
+              flex: 1, padding: '10px', borderRadius: '12px', background: '#111827',
+              border: '2px solid #1e293b', overflowY: 'auto'
+            }}>
+              <h4 style={{ margin: '0 0 6px 0', fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                📜 Game Log
+              </h4>
+              {gameLog.map((log, i) => (
+                <div key={i} style={{ fontSize: '10px', color: '#94a3b8', padding: '3px 0', borderBottom: '1px solid #1e293b', fontWeight: 600 }}>
+                  {log}
                 </div>
               ))}
             </div>
 
-            {/* Game Logs */}
+            {/* Properties Overview */}
             <div style={{
-              padding: '16px', borderRadius: '16px', background: '#ffffff',
-              border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', maxHeight: '160px', overflowY: 'auto'
+              padding: '10px', borderRadius: '12px', background: '#111827',
+              border: '2px solid #1e293b', maxHeight: '120px', overflowY: 'auto'
             }}>
-              <h4 style={{ margin: '0 0 8px 0', fontSize: '11px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Game Log
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                🏠 Properties Owned
               </h4>
-              {gameLog.map((log, i) => (
-                <div key={i} style={{ fontSize: '11px', color: '#475569', padding: '4px 0', borderBottom: '1px solid #f1f5f9', fontWeight: 600 }}>
-                  {log}
-                </div>
-              ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {board.filter(s => s.property?.owner !== null && s.property?.owner !== undefined).length === 0 ? (
+                  <div style={{ fontSize: '10px', color: '#475569', fontStyle: 'italic' }}>No properties owned yet</div>
+                ) : (
+                  board.filter(s => s.property?.owner !== null && s.property?.owner !== undefined).map((s, i) => (
+                    <div key={i} style={{ fontSize: '10px', fontWeight: 700, color: '#e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.property?.color }} />
+                        {s.name}
+                      </span>
+                      <span style={{ color: players[s.property!.owner!]?.color, fontWeight: 900 }}>
+                        {players[s.property!.owner!]?.emoji}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -1029,7 +1089,7 @@ export default function MonopolyPage() {
         }
         @keyframes pawnHop {
           0% { transform: translateY(0); }
-          100% { transform: translateY(-16px); }
+          100% { transform: translateY(-12px); }
         }
         @keyframes pulse {
           0% { opacity: 0.6; }
