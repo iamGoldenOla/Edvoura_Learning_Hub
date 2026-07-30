@@ -11,9 +11,11 @@ interface GameLayoutProps {
   score?: number;
   showTimer?: boolean;
   accentColor?: string;
+  /** When true, the layout fills the viewport with no scrolling */
+  fullscreen?: boolean;
 }
 
-export default function GameLayout({ title, icon, children, score, showTimer = false, accentColor = '#6366f1' }: GameLayoutProps) {
+export default function GameLayout({ title, icon, children, score, showTimer = false, accentColor = '#6366f1', fullscreen = false }: GameLayoutProps) {
   const router = useRouter();
   const [elapsed, setElapsed] = useState(0);
 
@@ -29,26 +31,35 @@ export default function GameLayout({ title, icon, children, score, showTimer = f
     return `${m}:${s}`;
   };
 
+  const rootStyle: React.CSSProperties = fullscreen
+    ? { position: 'absolute', inset: 0, overflow: 'hidden', background: '#0f172a', display: 'grid', gridTemplateRows: 'auto 1fr', boxSizing: 'border-box' }
+    : { minHeight: '100vh', background: '#0f172a' };
+
+  const contentStyle: React.CSSProperties = fullscreen
+    ? { overflow: 'hidden', display: 'flex', flexDirection: 'column', width: '100%', height: '100%', boxSizing: 'border-box' }
+    : { padding: '24px', maxWidth: '1200px', margin: '0 auto' };
+
   return (
-    <div style={{ minHeight: '100vh', background: '#0f172a' }}>
+    <div style={rootStyle}>
       {/* Header */}
       <div style={{
         background: `linear-gradient(135deg, #1e293b 0%, ${accentColor}22 100%)`,
         borderBottom: `1px solid ${accentColor}33`,
-        padding: '16px 24px',
+        padding: fullscreen ? '6px 16px' : '16px 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '16px'
+        gap: '12px',
+        flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             onClick={() => router.push('/dash/student/games')}
             style={{
               background: 'rgba(255,255,255,0.08)',
               border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: '12px',
-              padding: '10px',
+              borderRadius: fullscreen ? '8px' : '12px',
+              padding: fullscreen ? '6px' : '10px',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -59,13 +70,13 @@ export default function GameLayout({ title, icon, children, score, showTimer = f
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={fullscreen ? 16 : 20} />
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{
               background: `${accentColor}33`,
-              borderRadius: '12px',
-              padding: '10px',
+              borderRadius: fullscreen ? '8px' : '12px',
+              padding: fullscreen ? '6px' : '10px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -74,7 +85,7 @@ export default function GameLayout({ title, icon, children, score, showTimer = f
               {icon}
             </div>
             <h1 style={{
-              fontSize: '20px',
+              fontSize: fullscreen ? '16px' : '20px',
               fontWeight: 800,
               color: 'white',
               margin: 0,
@@ -85,19 +96,19 @@ export default function GameLayout({ title, icon, children, score, showTimer = f
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {showTimer && (
             <div style={{
               background: 'rgba(255,255,255,0.08)',
-              borderRadius: '12px',
-              padding: '8px 16px',
+              borderRadius: '10px',
+              padding: fullscreen ? '4px 12px' : '8px 16px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              gap: '6px',
               color: '#94a3b8'
             }}>
-              <Clock size={16} />
-              <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 700, color: 'white' }}>
+              <Clock size={14} />
+              <span style={{ fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, color: 'white' }}>
                 {formatTime(elapsed)}
               </span>
             </div>
@@ -106,23 +117,29 @@ export default function GameLayout({ title, icon, children, score, showTimer = f
             <div style={{
               background: 'linear-gradient(135deg, #f59e0b22, #f59e0b11)',
               border: '1px solid #f59e0b33',
-              borderRadius: '12px',
-              padding: '8px 16px',
+              borderRadius: '10px',
+              padding: fullscreen ? '4px 12px' : '8px 16px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px'
+              gap: '6px'
             }}>
-              <Star size={16} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
-              <span style={{ fontSize: '16px', fontWeight: 800, color: '#fbbf24' }}>{score}</span>
+              <Star size={14} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#fbbf24' }}>{score}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Game Content */}
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={contentStyle}>
         {children}
       </div>
+
+      {fullscreen && (
+        <style jsx global>{`
+          html, body, #__next { overflow: hidden !important; }
+        `}</style>
+      )}
     </div>
   );
 }

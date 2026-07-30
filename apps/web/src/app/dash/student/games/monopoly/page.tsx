@@ -486,7 +486,7 @@ export default function MonopolyPage() {
 
   if (gameMode === 'lobby') {
     return (
-      <GameLayout title="Monopoly Lobby" icon={<Dice1 size={24} />} accentColor="#f59e0b">
+      <GameLayout title="Monopoly Lobby" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
@@ -551,7 +551,7 @@ export default function MonopolyPage() {
 
   if (gameMode === 'matching') {
     return (
-      <GameLayout title="Matchmaking" icon={<Dice1 size={24} />} accentColor="#f59e0b">
+      <GameLayout title="Matchmaking" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
@@ -682,7 +682,7 @@ export default function MonopolyPage() {
   };
 
   return (
-    <GameLayout title="Monopoly 3D" icon={<Dice1 size={24} />} accentColor="#f59e0b">
+    <GameLayout title="Monopoly 3D" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
       {phase === 'gameover' && winner ? (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -704,7 +704,7 @@ export default function MonopolyPage() {
         </div>
       ) : (
         // Stacked Viewport Layout to allow the board to expand to full size
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '32px', width: '100%', color: '#0f172a' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', width: '100%', height: '100%', color: '#0f172a', overflow: 'hidden' }}>
           
           {/* Header Card (White Title text instead of black!) */}
           <div style={{
@@ -728,14 +728,19 @@ export default function MonopolyPage() {
 
           {/* Large Monopoly Board Viewport */}
           <div style={{
+            flex: 1,
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             background: '#ffffff',
             border: '4px solid #000000',
             borderRadius: '24px',
-            padding: '20px',
+            padding: '10px',
             boxShadow: '8px 8px 0px #000000',
             position: 'relative',
             width: '100%',
-            maxWidth: '850px', // Enlarged Board Viewport Width
+            maxWidth: '850px',
             perspective: '1200px',
             boxSizing: 'border-box'
           }}>
@@ -768,7 +773,7 @@ export default function MonopolyPage() {
               display: 'grid',
               gridTemplateColumns: 'repeat(11, 1fr)',
               gridTemplateRows: 'repeat(11, 1fr)',
-              width: '100%',
+              height: '100%',
               aspectRatio: '1',
               border: '2px solid #000000',
               borderRadius: '12px',
@@ -967,35 +972,39 @@ export default function MonopolyPage() {
           </div>
 
           {/* Bottom Panel containing Player Cards & Log side by side */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', width: '100%', maxWidth: '850px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '16px', width: '100%', maxWidth: '850px', flexShrink: 0, height: '140px', overflow: 'hidden' }}>
             
             {/* Status grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '4px' }}>
               {players.map((p, i) => (
                 <div key={i} style={{
-                  padding: '12px',
+                  minWidth: '150px',
+                  padding: '10px',
                   borderRadius: '16px',
                   background: i === currentPlayer ? `${p.color}15` : '#ffffff',
                   border: '3px solid #000000',
                   boxShadow: i === currentPlayer ? '4px 4px 0px #000000' : '2px 2px 0px #000000',
                   transition: 'all 0.2s',
-                  position: 'relative'
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '16px' }}>{p.emoji}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 900, color: '#000000' }}>{p.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '14px' }}>{p.emoji}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 900, color: '#000000', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>{p.name}</span>
                     </div>
                     {p.isBot && <span style={{ fontSize: '8px', background: '#e2e8f0', border: '1px solid #000', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>BOT</span>}
                   </div>
-                  <div style={{ fontSize: '18px', fontWeight: 900, color: '#16a34a', marginTop: '4px' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#16a34a', marginTop: '2px' }}>
                     ${p.balance.toLocaleString()}
                   </div>
                   <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px', fontWeight: 700 }}>
                     Properties: {board.filter(s => s.property?.owner === i).length}
                   </div>
                   {p.inJail && (
-                    <div style={{ position: 'absolute', top: '4px', right: '4px', fontSize: '9px', background: '#fca5a5', border: '1px solid #000', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>
+                    <div style={{ position: 'absolute', top: '4px', right: '4px', fontSize: '8px', background: '#fca5a5', border: '1px solid #000', padding: '1px 4px', borderRadius: '4px', fontWeight: 800 }}>
                       JAIL
                     </div>
                   )}
@@ -1005,8 +1014,8 @@ export default function MonopolyPage() {
 
             {/* Game Logs */}
             <div style={{
-              padding: '16px', borderRadius: '16px', background: '#ffffff',
-              border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', maxHeight: '160px', overflowY: 'auto'
+              padding: '12px', borderRadius: '16px', background: '#ffffff',
+              border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', height: '100%', overflowY: 'auto'
             }}>
               <h4 style={{ margin: '0 0 8px 0', fontSize: '11px', fontWeight: 900, color: '#000000', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Game Log
