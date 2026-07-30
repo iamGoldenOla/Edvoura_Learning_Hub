@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { ALargeSmall, RotateCcw, Sparkles, Lightbulb } from 'lucide-react';
+import { ALargeSmall, RotateCcw, Sparkles, Lightbulb, User, Users, Monitor, ShieldAlert } from 'lucide-react';
 
 const LETTER_VALUES: Record<string, number> = {
   A:1,B:3,C:3,D:2,E:1,F:4,G:2,H:4,I:1,J:8,K:5,L:1,M:3,N:1,O:1,P:3,Q:10,R:1,S:1,T:1,U:1,V:4,W:4,X:8,Y:4,Z:10
@@ -10,72 +10,18 @@ const LETTER_VALUES: Record<string, number> = {
 
 const LETTER_DIST = 'AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNNOOOOOOOOPPQRRRRRRSSSSTTTTTTUUUUVVWWXYYZ';
 
+const OPPONENT_NAMES = ['Aisha Bello (Grade 4)', 'Chinedu Okafor (Grade 5)', 'Oluwaseun Adebayo (Grade 4)', 'Amara Egwu (Grade 5)', 'Tunde Cole (Grade 6)'];
+
 const VALID_WORDS = new Set([
-  'THE','AND','FOR','ARE','BUT','NOT','YOU','ALL','HER','WAS','ONE','OUR','OUT',
-  'DAY','HAD','HAS','HIS','HOW','ITS','LET','MAY','NEW','NOW','OLD','SEE','WAY',
-  'WHO','BOY','DID','GET','HIM','HIT','MAN','RAN','SAT','SHE','TOP','TWO',
-  'CAT','DOG','EAR','EYE','FAR','FEW','GOT','HAT','JOB','KEY','LAY','MAP',
-  'NET','OWN','PEN','RED','RUN','SAY','TEN','USE','VAN','WAR','YES','ZOO',
-  'ABLE','ALSO','AREA','ARMY','AWAY','BACK','BALL','BAND','BANK','BASE',
-  'BATH','BEAN','BEAR','BEAT','BEEN','BELL','BEST','BILL','BIRD','BITE',
-  'BLUE','BOAT','BODY','BOMB','BOND','BONE','BOOK','BORN','BOSS','BOTH',
-  'BURN','BUSY','CAKE','CALL','CALM','CAME','CAMP','CARD','CARE','CASE',
-  'CASH','CAST','CELL','CHAT','CHIP','CITY','CLUB','COAT','CODE','COLD',
-  'COME','COOK','COOL','COPY','CORE','COST','CREW','CROP','DARK','DATA',
-  'DATE','DEAD','DEAL','DEAR','DEEP','DENY','DESK','DIAL','DIET','DIRT',
-  'DISH','DISK','DOES','DONE','DOOR','DOWN','DRAW','DROP','DRUG','DUAL',
-  'DUKE','DUST','DUTY','EACH','EARN','EASE','EAST','EASY','EDGE','ELSE',
-  'EVEN','EVER','EVIL','EXAM','FACE','FACT','FAIL','FAIR','FALL','FAME',
-  'FARM','FAST','FATE','FEAR','FEED','FEEL','FELL','FELT','FILE','FILL',
-  'FILM','FIND','FINE','FIRE','FIRM','FISH','FLAG','FLAT','FLEW','FLOW',
-  'FOLD','FOLK','FOOD','FOOL','FOOT','FORD','FORM','FORT','FOUR','FREE',
-  'FROM','FUEL','FULL','FUND','FURY','GAIN','GAME','GANG','GATE','GAVE',
-  'GEAR','GENE','GIFT','GIRL','GIVE','GLAD','GLOW','GOAL','GOES','GOLD',
-  'GOLF','GONE','GOOD','GRAB','GRAY','GREW','GREY','GRIP','GROW','GULF',
-  'GURU','HAIR','HALF','HALL','HAND','HANG','HARD','HARM','HATE','HAVE',
-  'HEAD','HEAL','HEAR','HEAT','HELD','HELL','HELP','HERE','HERO','HIGH',
-  'HILL','HINT','HIRE','HOLD','HOLE','HOME','HOPE','HOST','HOUR','HUGE',
-  'HUNG','HUNT','HURT','IDEA','INCH','INTO','IRON','ITEM','JACK','JANE',
-  'JEAN','JOHN','JOIN','JOKE','JUMP','JURY','JUST','KEEN','KEEP','KENT',
-  'KEPT','KICK','KILL','KIND','KING','KNEE','KNEW','KNOW','LACK','LADY',
-  'LAID','LAKE','LAND','LANE','LAST','LATE','LEAD','LEFT','LEND','LESS',
-  'LIFE','LIFT','LIKE','LINE','LINK','LIST','LIVE','LOAD','LOAN','LOCK',
-  'LOGO','LONG','LOOK','LORD','LOSE','LOSS','LOST','LOVE','LUCK','MADE',
-  'MAIL','MAIN','MAKE','MALE','MANY','MARK','MASS','MATE','MATH','MEAL',
-  'MEAN','MEAT','MEET','MENU','MERE','MILE','MILK','MILL','MIND','MINE',
-  'MISS','MODE','MOOD','MOON','MORE','MOST','MOVE','MUCH','MUST','NAME',
-  'NAVY','NEAR','NEAT','NECK','NEED','NEWS','NEXT','NICE','NINE','NODE',
-  'NONE','NORM','NOSE','NOTE','NOUN','ODDS','ONCE','ONLY','ONTO','OPEN',
-  'ORAL','OURS','OVER','PACE','PACK','PAGE','PAID','PAIN','PAIR','PALE',
-  'PALM','PARK','PART','PASS','PAST','PATH','PEAK','PEER','PICK','PILE',
-  'PINE','PINK','PIPE','PLAN','PLAY','PLOT','PLUG','PLUS','POEM','POET',
   'POLL','POND','POOL','POOR','PORT','POST','POUR','PRAY','PULL','PUMP',
   'PURE','PUSH','QUIT','RACE','RAGE','RAID','RAIL','RAIN','RANK','RARE',
   'RATE','READ','REAL','REAR','RELY','RENT','REST','RICE','RICH','RIDE',
   'RING','RISE','RISK','ROAD','ROCK','RODE','ROLE','ROLL','ROOF','ROOM',
   'ROOT','ROPE','ROSE','RULE','RUSH','SAFE','SAID','SAKE','SALE','SALT',
-  'SAME','SAND','SANG','SAVE','SEAL','SEAT','SEED','SEEK','SEEM','SEEN',
+  'SAME','SAND','SANG','SAVE','SEAL','SEAT','SEED','SEEM','SEEN',
   'SELF','SELL','SEND','SENT','SEPT','SHED','SHIP','SHOP','SHOT','SHOW',
   'SHUT','SICK','SIDE','SIGN','SILK','SITE','SIZE','SKIN','SLIP','SLOT',
   'SLOW','SNAP','SNOW','SOFT','SOIL','SOLD','SOLE','SOME','SONG','SOON',
-  'SORT','SOUL','SPIN','SPOT','STAR','STAY','STEM','STEP','STIR','STOP',
-  'SUCH','SUIT','SURE','SWIM','TAIL','TAKE','TALE','TALK','TALL','TANK',
-  'TAPE','TASK','TAXI','TEAM','TECH','TELL','TEND','TERM','TEST','TEXT',
-  'THAN','THAT','THEM','THEN','THEY','THIN','THIS','THUS','TIDE','TILL',
-  'TIME','TINY','TIRE','TOLD','TOLL','TONE','TOOK','TOOL','TOPS','TORE',
-  'TORN','TOUR','TOWN','TRAP','TREE','TRIM','TRIO','TRIP','TRUE','TUBE',
-  'TUCK','TUNE','TURN','TWIN','TYPE','UGLY','UNDO','UNIT','UPON','URGE',
-  'USED','USER','VALE','VARY','VAST','VERB','VERY','VICE','VIEW','VINE',
-  'VOID','VOTE','WADE','WAGE','WAIT','WAKE','WALK','WALL','WANT','WARD',
-  'WARM','WARN','WASH','VAST','WAVE','WAYS','WEAK','WEAR','WEEK','WELL',
-  'WENT','WERE','WEST','WHAT','WHEN','WHOM','WIDE','WIFE','WILD','WILL',
-  'WIND','WINE','WING','WIRE','WISE','WISH','WITH','WOOD','WORD','WORE',
-  'WORK','WORM','WORN','WRAP','YARD','YEAH','YEAR','YOUR','ZERO','ZONE',
-  'ABOUT','ABOVE','ABUSE','ACTOR','ACUTE','ADMIT','ADOPT','ADULT','AFTER',
-  'AGAIN','AGENT','AGREE','AHEAD','ALARM','ALBUM','ALERT','ALIEN','ALIGN',
-  'ALIVE','ALLOW','ALONE','ALONG','ALTER','AMONG','ANGEL','ANGER','ANGLE',
-  'ANGRY','APART','APPLE','APPLY','ARENA','ARGUE','ARISE','ASIDE','ASSET',
-  'AUDIO','AVOID','AWARD','AWARE','BASIC','BEACH','BEGIN','BEING','BELOW',
   'BENCH','BLACK','BLADE','BLAME','BLANK','BLAST','BLAZE','BLEED','BLEND',
   'BLESS','BLIND','BLOCK','BLOOD','BLOOM','BLOWN','BLUES','BOARD','BONUS',
   'BOOST','BOUND','BRAIN','BRAND','BRAVE','BREAD','BREAK','BREED','BRICK',
@@ -285,16 +231,50 @@ function getWordsFormed(board: (PlacedTile | null)[][]): { word: string; cells: 
 }
 
 export default function ScrabblePage() {
+  const [gameMode, setGameMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
+  const [opponentType, setOpponentType] = useState<'solo' | 'ai' | 'local' | 'matchmaker'>('solo');
+  const [matchedOpponent, setMatchedOpponent] = useState('Computer (AI)');
+  
+  const [turn, setTurn] = useState(0); // 0 = Player 1, 1 = Player 2
+  const [scores, setScores] = useState([0, 0]); // [player1, player2]
+  const [racks, setRacks] = useState<string[][]>(() => [drawTiles(7), drawTiles(7)]);
+
   const [board, setBoard] = useState<(PlacedTile | null)[][]>(() =>
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null))
   );
-  const [rack, setRack] = useState<string[]>(() => drawTiles(7));
   const [selectedRackIdx, setSelectedRackIdx] = useState<number | null>(null);
-  const [score, setScore] = useState(0);
   const [turnScore, setTurnScore] = useState(0);
   const [message, setMessage] = useState('Place tiles on the board and submit your word!');
   const [placedThisTurn, setPlacedThisTurn] = useState<[number, number][]>([]);
   const [wordsPlayed, setWordsPlayed] = useState<string[]>([]);
+
+  // Dynamically derive current player rack and score
+  const rack = racks[turn] || [];
+  const score = scores[turn] || 0;
+
+  const setRack = useCallback((updater: string[] | ((prev: string[]) => string[])) => {
+    setRacks(prev => {
+      const next = prev.map(r => [...r]);
+      if (typeof updater === 'function') {
+        next[turn] = updater(next[turn]);
+      } else {
+        next[turn] = updater;
+      }
+      return next;
+    });
+  }, [turn]);
+
+  const setScore = useCallback((updater: number | ((prev: number) => number)) => {
+    setScores(prev => {
+      const next = [...prev];
+      if (typeof updater === 'function') {
+        next[turn] = updater(next[turn]);
+      } else {
+        next[turn] = updater;
+      }
+      return next;
+    });
+  }, [turn]);
 
   const handleCellClick = useCallback((r: number, c: number) => {
     if (board[r][c] && !board[r][c]!.isNew) return;
@@ -414,7 +394,17 @@ export default function ScrabblePage() {
     if (needed > 0) {
       setRack(prev => [...prev, ...drawTiles(needed)]);
     }
-  }, [board, placedThisTurn, rack, calculateTurnScore]);
+
+    if (opponentType !== 'solo') {
+      const nextTurn = turn === 0 ? 1 : 0;
+      setTurn(nextTurn);
+      if (opponentType === 'local') {
+        setMessage(`+${turnPts} points! Turn changed to Player 2.`);
+      } else {
+        setMessage(`+${turnPts} points! ${matchedOpponent} is thinking...`);
+      }
+    }
+  }, [board, placedThisTurn, rack, calculateTurnScore, opponentType, turn, matchedOpponent]);
 
   const handleRecall = useCallback(() => {
     const newBoard = board.map(row => [...row]);
@@ -427,38 +417,225 @@ export default function ScrabblePage() {
       }
     }
 
+    // Since we need to update the active rack, we can use functional updates
+    setRacks(prev => {
+      const next = prev.map(rk => [...rk]);
+      next[turn] = [...next[turn], ...returnedLetters];
+      return next;
+    });
     setBoard(newBoard);
-    setRack(prev => [...prev, ...returnedLetters]);
     setPlacedThisTurn([]);
     setMessage('Tiles recalled to rack.');
-  }, [board, placedThisTurn]);
+  }, [board, placedThisTurn, turn]);
 
   const handleShuffle = useCallback(() => {
-    setRack(prev => {
-      const shuffled = [...prev];
+    setRacks(prev => {
+      const next = prev.map(rk => [...rk]);
+      const shuffled = [...next[turn]];
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
       }
-      return shuffled;
+      next[turn] = shuffled;
+      return next;
     });
-  }, []);
+  }, [turn]);
 
   const handleNewGame = useCallback(() => {
     setBoard(Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null)));
-    setRack(drawTiles(7));
+    setRacks([drawTiles(7), drawTiles(7)]);
+    setScores([0, 0]);
+    setTurn(0);
     setSelectedRackIdx(null);
-    setScore(0);
     setTurnScore(0);
     setMessage('Place tiles on the board and submit your word!');
     setPlacedThisTurn([]);
     setWordsPlayed([]);
   }, []);
 
+  const startMode = (type: 'solo' | 'ai' | 'local' | 'matchmaker') => {
+    setOpponentType(type);
+    setBoard(Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null)));
+    setRacks([drawTiles(7), drawTiles(7)]);
+    setScores([0, 0]);
+    setTurn(0);
+    setSelectedRackIdx(null);
+    setTurnScore(0);
+    setMessage('Place tiles on the board and submit your word!');
+    setPlacedThisTurn([]);
+    setWordsPlayed([]);
+    
+    if (type === 'matchmaker') {
+      setGameMode('matching');
+    } else {
+      setMatchedOpponent(type === 'ai' ? 'Computer (AI)' : 'Player 2 (Local)');
+      setGameMode('playing');
+    }
+  };
+
+  // Matchmaking simulator
+  useEffect(() => {
+    if (gameMode === 'matching') {
+      const timer = setTimeout(() => {
+        const name = OPPONENT_NAMES[Math.floor(Math.random() * OPPONENT_NAMES.length)];
+        setMatchedOpponent(name);
+        setGameMode('playing');
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [gameMode]);
+
+  // AI simulated Turn loop
+  useEffect(() => {
+    const isBotTurn = turn === 1 && (opponentType === 'ai' || opponentType === 'matchmaker');
+    if (isBotTurn && gameMode === 'playing') {
+      const timer = setTimeout(() => {
+        const wordsArray = Array.from(VALID_WORDS);
+        const word = wordsArray[Math.floor(Math.random() * wordsArray.length)];
+        
+        let pts = 0;
+        for (const letter of word) {
+          pts += LETTER_VALUES[letter] || 1;
+        }
+
+        setScores(prev => {
+          const next = [...prev];
+          next[1] += pts;
+          return next;
+        });
+        setWordsPlayed(prev => [...prev, word]);
+        setTurn(0);
+        setMessage(`${matchedOpponent} played "${word}" for +${pts} points! Your turn.`);
+      }, 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [turn, opponentType, gameMode, matchedOpponent]);
+
   const cellSize = 38;
+
+  if (gameMode === 'lobby') {
+    return (
+      <GameLayout title="Scrabble Lobby" icon={<ALargeSmall size={24} />} score={0} accentColor="#ec4899">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+        }}>
+          <div>
+            <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#000000', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+              📚 Scrabble Play Zone
+            </h2>
+            <p style={{ color: '#475569', fontSize: '15px', maxWidth: '500px', fontWeight: 600, margin: '0 auto' }}>
+              Place letter tiles on the grid to form words. Practice solo, play against the computer, or challenge classmate cohorts!
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {[
+              { type: 'solo', title: 'Solo Practice', desc: 'High-score training mode', icon: Sparkles, color: '#ec4899' },
+              { type: 'ai', title: 'Play vs Computer', desc: 'Scrabble AI system', icon: Monitor, color: '#3b82f6' },
+              { type: 'local', title: 'Pass & Play', desc: 'Local 2-player mode', icon: Users, color: '#22c55e' },
+              { type: 'matchmaker', title: 'Grade Matchmaking', desc: 'Find other grades', icon: User, color: '#f59e0b' }
+            ].map(m => (
+              <button
+                key={m.type}
+                onClick={() => startMode(m.type as any)}
+                style={{
+                  padding: '24px', borderRadius: '20px', border: '3px solid #000000',
+                  cursor: 'pointer', fontSize: '16px', fontWeight: 900, background: '#ffffff',
+                  color: '#000000', boxShadow: '4px 4px 0px #000000', transition: 'all 0.15s ease',
+                  width: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-4px, -4px)'; e.currentTarget.style.boxShadow = '8px 8px 0px #000000'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #000000'; }}
+              >
+                <m.icon size={36} style={{ color: m.color }} />
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 900 }}>{m.title}</div>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{m.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </GameLayout>
+    );
+  }
+
+  if (gameMode === 'matching') {
+    return (
+      <GameLayout title="Matchmaking" icon={<ALargeSmall size={24} />} score={0} accentColor="#ec4899">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+        }}>
+          <div className="radar-container" style={{
+            position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div className="pulse" style={{
+              position: 'absolute', width: '100%', height: '100%', borderRadius: '50%',
+              border: '3px solid #ec4899', animation: 'ping 1.5s infinite ease-out'
+            }} />
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%', border: '3px solid #000000',
+              background: '#fafaf9', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '3px 3px 0px #000000', zIndex: 2
+            }}>
+              <Users size={32} color="#ec4899" />
+            </div>
+          </div>
+          <div>
+            <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 6px 0' }}>Searching for matches...</h3>
+            <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 700 }}>Finding students in Grade 4, 5, or 6 to pair on the board...</p>
+          </div>
+          <button
+            onClick={() => setGameMode('lobby')}
+            style={{
+              padding: '12px 24px', borderRadius: '12px', border: '2px solid #000000',
+              cursor: 'pointer', fontSize: '13px', fontWeight: 900, background: '#fee2e2',
+              color: '#ef4444', boxShadow: '2px 2px 0px #000000'
+            }}
+          >
+            Cancel Search
+          </button>
+
+          <style jsx>{`
+            @keyframes ping {
+              0% { transform: scale(0.6); opacity: 1; }
+              100% { transform: scale(1.6); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      </GameLayout>
+    );
+  }
 
   return (
     <GameLayout title="Scrabble" icon={<ALargeSmall size={24} />} score={score} accentColor="#ec4899">
+      {/* Top Header Controls */}
+      <div style={{
+        width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: '#1e293b', padding: '12px 24px', borderRadius: '16px', border: '3px solid #000000',
+        boxShadow: '4px 4px 0px #000000', marginBottom: '24px', boxSizing: 'border-box', color: '#ffffff'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800 }}>Mode: {opponentType.toUpperCase()}</span>
+          {opponentType !== 'solo' && (
+            <span style={{ fontSize: '13px', fontWeight: 800, color: turn === 0 ? '#10b981' : '#f59e0b' }}>
+              • {turn === 0 ? 'Your Turn' : `${matchedOpponent}'s Turn`}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => setGameMode('lobby')}
+          style={{
+            padding: '6px 12px', background: '#fee2e2', color: '#ef4444', border: '2px solid #000000',
+            borderRadius: '8px', fontSize: '12px', fontWeight: 800, cursor: 'pointer'
+          }}
+        >
+          Quit Game
+        </button>
+      </div>
+
       <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
         {/* Board */}
         <div>

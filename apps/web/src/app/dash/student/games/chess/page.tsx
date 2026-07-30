@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Crown, RefreshCw, Layers } from 'lucide-react';
+import { Crown, RefreshCw, Layers, User, Monitor, Users, ShieldAlert } from 'lucide-react';
 
 type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 type Color = 'w' | 'b';
@@ -329,12 +329,25 @@ const applyMove = (state: GameState, move: Move): GameState => {
   };
 };
 
+const OPPONENT_NAMES = ['Aisha Bello (Grade 4)', 'Chinedu Okafor (Grade 5)', 'Oluwaseun Adebayo (Grade 4)', 'Amara Egwu (Grade 5)', 'Tunde Cole (Grade 6)'];
+
 export default function ChessGame() {
+  const [gameMode, setGameMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
+  const [opponentType, setOpponentType] = useState<'ai' | 'local' | 'matchmaker'>('ai');
+  const [matchedOpponent, setMatchedOpponent] = useState('Computer (AI)');
+  
   const [state, setState] = useState<GameState>(INITIAL_STATE);
   const [selected, setSelected] = useState<Position | null>(null);
   const [validMoves, setValidMoves] = useState<Position[]>([]);
   const [aiThinking, setAiThinking] = useState(false);
   const [view3D, setView3D] = useState(true);
+
+  const resetGame = () => {
+    setState(INITIAL_STATE);
+    setSelected(null);
+    setValidMoves([]);
+    setAiThinking(false);
+  };
 
   const inCheck = isInCheck(state.board, state.turn);
   const currentLegalMoves = getAllLegalMoves(state);
@@ -352,8 +365,22 @@ export default function ChessGame() {
     }
   }
 
+  // Simulated matchmaking loop
   useEffect(() => {
-    if (state.turn === 'b' && gameStatus === 'playing' && !aiThinking) {
+    if (gameMode === 'matching') {
+      const timer = setTimeout(() => {
+        const name = OPPONENT_NAMES[Math.floor(Math.random() * OPPONENT_NAMES.length)];
+        setMatchedOpponent(name);
+        setGameMode('playing');
+      }, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [gameMode]);
+
+  // AI Turn triggering (No aiThinking in dependency to avoid immediate cancel cleanup!)
+  useEffect(() => {
+    const isBotTurn = state.turn === 'b' && (opponentType === 'ai' || opponentType === 'matchmaker');
+    if (isBotTurn && gameStatus === 'playing' && !aiThinking && gameMode === 'playing') {
       setAiThinking(true);
       const timer = setTimeout(() => {
         const result = minimax(state, 2, -Infinity, Infinity, true);
@@ -367,13 +394,17 @@ export default function ChessGame() {
           }
         }
         setAiThinking(false);
-      }, 600);
+      }, 700);
       return () => clearTimeout(timer);
     }
-  }, [state.turn, gameStatus, aiThinking, state]);
+  }, [state.turn, gameStatus, gameMode]);
 
   const handleSquareClick = (r: number, c: number) => {
-    if (state.turn === 'b' || gameStatus !== 'playing') return;
+    if (gameStatus !== 'playing') return;
+    
+    // Disable clicks during Bot thinking phase
+    const isBotTurn = state.turn === 'b' && (opponentType === 'ai' || opponentType === 'matchmaker');
+    if (isBotTurn) return;
 
     if (selected) {
       const isMove = validMoves.find(m => m.r === r && m.c === c);
@@ -386,7 +417,10 @@ export default function ChessGame() {
     }
 
     const piece = state.board[r][c];
-    if (piece && piece.color === 'w') {
+    // In local mode, click pieces matching the current turn's color. In bot modes, click only white ('w')
+    const correctColor = opponentType === 'local' ? state.turn : 'w';
+    
+    if (piece && piece.color === correctColor) {
       setSelected({ r, c });
       setValidMoves(getLegalMoves(state.board, r, c, state.castling, state.enPassant));
     } else {
@@ -395,21 +429,129 @@ export default function ChessGame() {
     }
   };
 
-  const resetGame = () => {
+  const startMode = (type: 'ai' | 'local' | 'matchmaker') => {
+    setOpponentType(type);
     setState(INITIAL_STATE);
     setSelected(null);
     setValidMoves([]);
     setAiThinking(false);
+    
+    if (type === 'matchmaker') {
+      setGameMode('matching');
+    } else {
+      setMatchedOpponent(type === 'ai' ? 'Computer (AI)' : 'Player 2 (Local)');
+      setGameMode('playing');
+    }
   };
 
-  // Dimensions constrained to height of viewport min(85vw, 60vh, 460px) to ensure no vertical overflow
-  const boardSize = 'min(85vw, 60vh, 460px)';
+  const quitToLobby = () => {
+    setGameMode('lobby');
+  };
+
+  // Increased Chess Board size min(94vw, 75vh, 580px) for maximum visibility
+  const boardSize = 'min(94vw, 75vh, 580px)';
+
+  if (gameMode === 'lobby') {
+    return (
+      <GameLayout title="Chess Lobby" icon={<Crown />} accentColor="#22c55e">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+        }}>
+          <div>
+            <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#000000', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+              ♟️ Chess Play Zone
+            </h2>
+            <p style={{ color: '#475569', fontSize: '15px', maxWidth: '500px', fontWeight: 600, margin: '0 auto' }}>
+              Select your game mode. Challenge the computer, play pass-and-play with a classmate, or search for other grades!
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {[
+              { type: 'ai', title: 'Play vs Computer', desc: 'minimax AI system', icon: Monitor },
+              { type: 'local', title: 'Pass & Play', desc: 'Local 2-player mode', icon: Users },
+              { type: 'matchmaker', title: 'Grade Matchmaking', desc: 'Find other grades', icon: User }
+            ].map(m => (
+              <button
+                key={m.type}
+                onClick={() => startMode(m.type as any)}
+                style={{
+                  padding: '24px', borderRadius: '20px', border: '3px solid #000000',
+                  cursor: 'pointer', fontSize: '16px', fontWeight: 900, background: '#ffffff',
+                  color: '#000000', boxShadow: '4px 4px 0px #000000', transition: 'all 0.15s ease',
+                  width: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-4px, -4px)'; e.currentTarget.style.boxShadow = '8px 8px 0px #000000'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #000000'; }}
+              >
+                <m.icon size={36} style={{ color: '#22c55e' }} />
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 900 }}>{m.title}</div>
+                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{m.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </GameLayout>
+    );
+  }
+
+  if (gameMode === 'matching') {
+    return (
+      <GameLayout title="Matchmaking" icon={<Crown />} accentColor="#22c55e">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+        }}>
+          {/* Radar scan animation */}
+          <div className="radar-container" style={{
+            position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div className="pulse" style={{
+              position: 'absolute', width: '100%', height: '100%', borderRadius: '50%',
+              border: '3px solid #22c55e', animation: 'ping 1.5s infinite ease-out'
+            }} />
+            <div style={{
+              width: '80px', height: '80px', borderRadius: '50%', border: '3px solid #000000',
+              background: '#fafaf9', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '3px 3px 0px #000000', zIndex: 2
+            }}>
+              <Users size={32} color="#22c55e" />
+            </div>
+          </div>
+          <div>
+            <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 6px 0' }}>Searching for Matches...</h3>
+            <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 700 }}>Finding students in Grade 4, 5, or 6 to match on the board...</p>
+          </div>
+          <button
+            onClick={quitToLobby}
+            style={{
+              padding: '12px 24px', borderRadius: '12px', border: '2px solid #000000',
+              cursor: 'pointer', fontSize: '13px', fontWeight: 900, background: '#fee2e2',
+              color: '#ef4444', boxShadow: '2px 2px 0px #000000'
+            }}
+          >
+            Cancel Search
+          </button>
+
+          <style jsx>{`
+            @keyframes ping {
+              0% { transform: scale(0.6); opacity: 1; }
+              100% { transform: scale(1.6); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      </GameLayout>
+    );
+  }
 
   return (
     <GameLayout title="Chess 3D" icon={<Crown />} accentColor="#22c55e">
       <div style={{
         display: 'flex',
-        gap: '24px',
+        gap: '32px',
         flexWrap: 'wrap',
         justifyContent: 'center',
         alignItems: 'center',
@@ -417,7 +559,7 @@ export default function ChessGame() {
         paddingBottom: '40px'
       }}>
         
-        {/* Board Container */}
+        {/* Chess Board Panel */}
         <div style={{
           background: '#ffffff',
           border: '4px solid #000000',
@@ -433,7 +575,7 @@ export default function ChessGame() {
           overflow: 'visible',
           position: 'relative'
         }}>
-          {/* View Mode Toggle Overlay (top right of board card) */}
+          {/* View Toggle */}
           <button
             onClick={() => setView3D(!view3D)}
             style={{
@@ -481,27 +623,27 @@ export default function ChessGame() {
                   key={`${r}-${c}`}
                   onClick={() => handleSquareClick(r, c)}
                   style={{
+                    aspectRatio: '1',
                     background: isSelected ? '#a7f3d0'
                               : isCheck ? '#fecaca'
                               : isDark ? '#15803d' : '#fef08a',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    cursor: state.turn === 'w' && gameStatus === 'playing' ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     position: 'relative',
                     transition: 'background-color 0.15s ease'
                   }}
                 >
                   {piece && (
                     <span style={{ 
-                      fontSize: 'clamp(1.5rem, 5vh, 2.8rem)',
+                      fontSize: 'clamp(2rem, 6vh, 3.8rem)',
                       color: piece.color === 'w' ? '#ffffff' : '#000000',
                       textShadow: piece.color === 'w' 
-                        ? '2px 2px 0px #000000, -2px -2px 0px #000000, 2px -2px 0px #000000, -2px 2px 0px #000000' 
+                        ? '2.5px 2.5px 0px #000000, -2.5px -2.5px 0px #000000, 2.5px -2.5px 0px #000000, -2.5px 2.5px 0px #000000' 
                         : 'none',
                       userSelect: 'none',
                       zIndex: 2,
-                      // Tilt pieces upright when in 3D view
                       transform: view3D ? 'rotateX(-25deg) translateZ(4px)' : 'none',
                       transition: 'transform 0.4s ease-out'
                     }}>
@@ -527,22 +669,36 @@ export default function ChessGame() {
 
         {/* Sidebar Dashboard */}
         <div style={{
-          width: '300px',
+          width: '320px',
           background: '#ffffff',
           border: '3px solid #000000',
           borderRadius: '24px',
-          padding: '20px',
+          padding: '24px',
           boxShadow: '6px 6px 0px #000000',
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px'
+          gap: '20px'
         }}>
+          {/* Opponent Info Box */}
+          <div style={{
+            padding: '12px 16px', borderRadius: '16px', border: '2px solid #000000', background: '#fafaf9',
+            display: 'flex', alignItems: 'center', gap: '10px'
+          }}>
+            <div style={{ padding: '8px', background: '#dbeafe', borderRadius: '8px', border: '1.5px solid #000000' }}>
+              <User size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800 }}>OPPONENT</div>
+              <div style={{ fontSize: '13px', fontWeight: 900, color: '#000000' }}>{matchedOpponent}</div>
+            </div>
+          </div>
+
           {/* Status Display */}
           <div style={{
             background: gameStatus !== 'playing' ? '#fecaca' : (state.turn === 'w' ? '#dbeafe' : '#fef9c3'),
             border: '2px solid #000000',
             borderRadius: '16px',
-            padding: '12px 16px',
+            padding: '14px 16px',
             boxShadow: '3px 3px 0px #000000',
             textAlign: 'center'
           }}>
@@ -551,12 +707,12 @@ export default function ChessGame() {
             </h3>
             <div style={{ fontSize: '16px', fontWeight: 900, color: '#000000' }}>
               {gameStatus === 'playing' ? (
-                state.turn === 'w' ? "⬜ Your Turn (White)" : "⬛ AI Thinking... (Black)"
+                state.turn === 'w' ? "⬜ Your Turn (White)" : `⬛ ${opponentType === 'local' ? "Player 2's Turn" : "Thinking..."}`
               ) : (
                 gameStatus === 'checkmate' ? "🏆 CHECKMATE!" : "🤝 DRAW (STALEMATE)"
               )}
             </div>
-            {aiThinking && <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', fontWeight: 700 }}>AI is planning...</div>}
+            {aiThinking && <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', fontWeight: 700 }}>Evaluating moves...</div>}
           </div>
 
           {/* Captured Pieces Display */}
@@ -611,30 +767,29 @@ export default function ChessGame() {
             </div>
           </div>
 
-          {/* New Game Button */}
-          <button 
-            onClick={resetGame}
-            style={{
-              padding: '12px',
-              background: '#fbbf24',
-              color: '#000000',
-              border: '2px solid #000000',
-              borderRadius: '16px',
-              fontSize: '14px',
-              fontWeight: 900,
-              cursor: 'pointer',
-              boxShadow: '3px 3px 0px #000000',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              transition: 'transform 0.1s ease'
-            }}
-            onMouseDown={e => { e.currentTarget.style.transform = 'translate(2px, 2px)'; e.currentTarget.style.boxShadow = '1px 1px 0px #000000'; }}
-            onMouseUp={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '3px 3px 0px #000000'; }}
-          >
-            <RefreshCw size={14} /> New Game
-          </button>
+          {/* Control Actions */}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              onClick={resetGame}
+              style={{
+                flex: 1, padding: '12px', background: '#ffffff', color: '#000000', border: '2px solid #000000',
+                borderRadius: '16px', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0px #000000',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+              }}
+            >
+              <RefreshCw size={14} /> Restart
+            </button>
+            <button 
+              onClick={quitToLobby}
+              style={{
+                flex: 1, padding: '12px', background: '#fee2e2', color: '#ef4444', border: '2px solid #000000',
+                borderRadius: '16px', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '2px 2px 0px #000000',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+              }}
+            >
+              <ShieldAlert size={14} /> Quit
+            </button>
+          </div>
         </div>
 
       </div>
