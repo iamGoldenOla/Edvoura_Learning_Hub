@@ -623,7 +623,7 @@ export default function AyoOpon() {
             padding: '24px', width: '460px', maxHeight: '82vh', overflowY: 'auto',
             boxShadow: '8px 8px 0 #000', color: '#000'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '20px', fontWeight: 950, color: '#f97316' }}>
                 <BookOpen size={24} /> Ayò Ọ̀pọ́n Guide & Rules
               </div>
