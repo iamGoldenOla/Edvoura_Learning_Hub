@@ -249,7 +249,7 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
 function WordSearch({ addScore }: { addScore: (points: number) => void }) {
   const searchList = ['MATH', 'READ', 'BOOK', 'TEST', 'QUIZ', 'STUDY'];
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
-  const [selectedWord, setSelectedWord] = useState('');
+  const [selectedCells, setSelectedCells] = useState<{ r: number; c: number; char: string }[]>([]);
 
   const grid = [
     ['M','A','T','H','X','B','O','O','K'],
@@ -260,54 +260,129 @@ function WordSearch({ addScore }: { addScore: (points: number) => void }) {
     ['A','B','C','D','E','F','G','H','I'],
   ];
 
-  const handleWordClick = (w: string) => {
+  // Specific grid coordinates for hidden words
+  const wordCoordinates: Record<string, { r: number; c: number }[]> = {
+    MATH: [{r:0,c:0}, {r:0,c:1}, {r:0,c:2}, {r:0,c:3}],
+    BOOK: [{r:0,c:5}, {r:0,c:6}, {r:0,c:7}, {r:0,c:8}],
+    READ: [{r:2,c:0}, {r:2,c:1}, {r:2,c:2}, {r:2,c:3}],
+    TEST: [{r:3,c:0}, {r:3,c:1}, {r:3,c:2}, {r:3,c:3}],
+    QUIZ: [{r:4,c:0}, {r:4,c:1}, {r:4,c:2}, {r:4,c:3}],
+    STUDY: [{r:4,c:4}, {r:4,c:5}, {r:4,c:6}, {r:4,c:7}, {r:4,c:8}]
+  };
+
+  const handleCellClick = (r: number, c: number, char: string) => {
+    playWordSFX('click');
+    
+    // Check if cell is already selected in current selection
+    const existsIdx = selectedCells.findIndex(sc => sc.r === r && sc.c === c);
+    let newSelected = [...selectedCells];
+    if (existsIdx !== -1) {
+      newSelected.splice(existsIdx, 1);
+    } else {
+      newSelected.push({ r, c, char });
+    }
+    setSelectedCells(newSelected);
+
+    const formedWord = newSelected.map(sc => sc.char).join('');
+    
+    if (searchList.includes(formedWord) && !foundWords.has(formedWord)) {
+      playWordSFX('correct');
+      const nextFound = new Set(foundWords);
+      nextFound.add(formedWord);
+      setFoundWords(nextFound);
+      setSelectedCells([]);
+      addScore(15);
+      speakVoice(`Found word ${formedWord}! Plus 15 points.`);
+
+      if (nextFound.size === searchList.length) {
+        playWordSFX('win');
+        speakVoice('Congratulations! All hidden words found!');
+      }
+    }
+  };
+
+  const markFoundWord = (w: string) => {
     if (foundWords.has(w)) return;
     playWordSFX('correct');
-    const next = new Set(foundWords);
-    next.add(w);
-    setFoundWords(next);
+    const nextFound = new Set(foundWords);
+    nextFound.add(w);
+    setFoundWords(nextFound);
     addScore(15);
     speakVoice(`Found word ${w}! Plus 15 points.`);
 
-    if (next.size === searchList.length) {
+    if (nextFound.size === searchList.length) {
       playWordSFX('win');
       speakVoice('Congratulations! All hidden words found!');
     }
   };
 
+  const currentSelectionWord = selectedCells.map(sc => sc.char).join('');
+
   return (
-    <div style={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '12px' }}>
-      {/* 9x6 Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '4px', background: '#111827', padding: '12px', borderRadius: '14px', border: '2px solid #1e293b' }}>
-        {grid.map((row, r) => row.map((char, c) => (
-          <div
-            key={`${r}-${c}`}
-            style={{
-              width: '32px', height: '32px', borderRadius: '6px', background: '#1e293b', border: '1px solid #334155',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, color: '#fff'
-            }}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '12px', padding: '8px' }}>
+      {/* Selected Word Indicator */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>Selected:</span>
+        <div style={{ fontSize: '16px', fontWeight: 950, color: '#fbbf24', background: '#111827', padding: '4px 12px', borderRadius: '8px', border: '1px solid #1e293b', minWidth: '80px', textAlign: 'center' }}>
+          {currentSelectionWord || '—'}
+        </div>
+        {selectedCells.length > 0 && (
+          <button
+            onClick={() => setSelectedCells([])}
+            style={{ padding: '3px 8px', background: '#fee2e2', color: '#ef4444', border: '1px solid #000', borderRadius: '6px', fontSize: '10px', fontWeight: 900, cursor: 'pointer' }}
           >
-            {char}
-          </div>
-        )))}
+            Clear
+          </button>
+        )}
       </div>
 
-      {/* Target Word List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: '#111827', padding: '14px', borderRadius: '14px', border: '2px solid #1e293b' }}>
-        <div style={{ fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', marginBottom: '4px' }}>Hidden Words</div>
-        {searchList.map(w => (
-          <button
-            key={w}
-            onClick={() => handleWordClick(w)}
-            style={{
-              padding: '6px 12px', borderRadius: '6px', border: '1px solid #000', fontSize: '11px', fontWeight: 900,
-              background: foundWords.has(w) ? '#22c55e' : '#ffffff', color: foundWords.has(w) ? '#fff' : '#000',
-              cursor: foundWords.has(w) ? 'default' : 'pointer', textDecoration: foundWords.has(w) ? 'line-through' : 'none'
-            }}
-          >
-            {w} {foundWords.has(w) && '✓'}
-          </button>
-        ))}
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center' }}>
+        {/* Interactive 9x6 Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '4px', background: '#111827', padding: '12px', borderRadius: '14px', border: '2px solid #1e293b' }}>
+          {grid.map((row, r) => row.map((char, c) => {
+            const isSelected = selectedCells.some(sc => sc.r === r && sc.c === c);
+            const isFound = Array.from(foundWords).some(w => 
+              wordCoordinates[w]?.some(coord => coord.r === r && coord.c === c)
+            );
+
+            return (
+              <div
+                key={`${r}-${c}`}
+                onClick={() => handleCellClick(r, c, char)}
+                style={{
+                  width: '36px', height: '36px', borderRadius: '6px',
+                  background: isFound ? '#22c55e' : isSelected ? '#fbbf24' : '#1e293b',
+                  color: isSelected ? '#000000' : '#ffffff',
+                  border: isFound ? '2px solid #16a34a' : isSelected ? '2px solid #000000' : '1px solid #334155',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '15px', fontWeight: 900, cursor: 'pointer',
+                  userSelect: 'none', transition: 'all 0.15s ease'
+                }}
+              >
+                {char}
+              </div>
+            );
+          }))}
+        </div>
+
+        {/* Target Word List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: '#111827', padding: '14px', borderRadius: '14px', border: '2px solid #1e293b', minWidth: '140px' }}>
+          <div style={{ fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', marginBottom: '4px' }}>Hidden Words</div>
+          {searchList.map(w => (
+            <button
+              key={w}
+              onClick={() => markFoundWord(w)}
+              style={{
+                padding: '6px 12px', borderRadius: '6px', border: '1px solid #000', fontSize: '11px', fontWeight: 900,
+                background: foundWords.has(w) ? '#22c55e' : '#ffffff', color: foundWords.has(w) ? '#fff' : '#000',
+                cursor: foundWords.has(w) ? 'default' : 'pointer', textDecoration: foundWords.has(w) ? 'line-through' : 'none',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}
+            >
+              <span>{w}</span> {foundWords.has(w) && <span>✓</span>}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
