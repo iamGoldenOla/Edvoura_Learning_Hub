@@ -19,14 +19,45 @@ function speakVoice(text: string) {
   } catch (e) {}
 }
 
-function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinger' | 'walkaway' | 'tick') {
+function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinger' | 'walkaway' | 'tick' | 'lights_down' | 'heartbeat' | 'suspense_pad') {
   if (typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
 
-    if (type === 'lock' || type === 'stinger') {
+    if (type === 'lights_down') {
+      // Deep dramatic studio blackout bass drop
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.6);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+    } else if (type === 'suspense_pad') {
+      // Mysterious studio ambient pad
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(110, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(116, ctx.currentTime + 1.5);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 1.5);
+    } else if (type === 'heartbeat') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(60, ctx.currentTime);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.15);
+    } else if (type === 'lock' || type === 'stinger') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sawtooth';
@@ -92,6 +123,23 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinge
       osc.start(); osc.stop(ctx.currentTime + 0.04);
     }
   } catch (e) {}
+}
+
+/* ═══════════════════════ DYNAMIC MILLIONAIRE QUESTION ENGINE ═══════════════════════ */
+function generateDynamicMillionaireQuestion(lvl: number): MillionaireQuestion {
+  const num1 = Math.floor(Math.random() * (lvl * 5)) + lvl + 2;
+  const num2 = Math.floor(Math.random() * (lvl * 3)) + lvl + 1;
+  const ans = num1 * num2;
+  const q = `What is the exact product of ${num1} × ${num2}?`;
+
+  const opts = new Set<string>();
+  opts.add(String(ans));
+  while (opts.size < 4) {
+    const offset = (Math.floor(Math.random() * 8) + 1) * (Math.random() > 0.5 ? 1 : -1) * (lvl <= 5 ? 2 : 5);
+    opts.add(String(Math.max(2, ans + offset)));
+  }
+  const optionsArray = Array.from(opts) as [string, string, string, string];
+  return { q, options: optionsArray, a: 0, category: 'Dynamic Scholar Math', level: lvl };
 }
 
 /* ═══════════════════════ GLOBAL CURRENCY & MONEY LADDERS ═══════════════════════ */
@@ -223,6 +271,12 @@ export default function MillionaireGame() {
   const [isMillionaire, setIsMillionaire] = useState(false);
   const [isWalkedAway, setIsWalkedAway] = useState(false);
 
+  // Authentic Studio Lights Blackout State
+  const [isLightsDimmed, setIsLightsDimmed] = useState(false);
+
+  // Question Deduplication Tracking
+  const [usedQuestions, setUsedQuestions] = useState<string[]>([]);
+
   // 30-Second High-Stakes Timer
   const [timeLeft, setTimeLeft] = useState(30);
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -244,21 +298,31 @@ export default function MillionaireGame() {
 
   const activeLadder = CURRENCY_MAP[selectedCurrency].ladder;
 
-  // Load question for current level
+  // Load question for current level (NON-REPEATING)
   const loadQuestionForLevel = useCallback((lvl: number) => {
-    const questionsForLvl = QUESTION_BANK.filter(q => q.level === lvl);
-    const q = questionsForLvl[Math.floor(Math.random() * questionsForLvl.length)];
+    const availableQuestions = QUESTION_BANK.filter(q => q.level === lvl && !usedQuestions.includes(q.q));
+    let q: MillionaireQuestion;
+
+    if (availableQuestions.length > 0) {
+      q = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
+    } else {
+      // Dynamic fallback question generator guarantees ZERO REPETITION
+      q = generateDynamicMillionaireQuestion(lvl);
+    }
+
+    setUsedQuestions(prev => [...prev, q.q]);
     setActiveQ(q);
     setSelectedOption(null);
     setIsLocked(false);
     setShowAnswerResult(false);
+    setIsLightsDimmed(false);
     setDisabledOptions([]);
     setTimeLeft(30);
     setIsTimerActive(true);
 
     const prizeStr = activeLadder[lvl - 1];
     speakVoice(`Question for ${prizeStr}. ${q.q}`);
-  }, [activeLadder]);
+  }, [activeLadder, usedQuestions]);
 
   // Initialize Game
   const initGame = useCallback(() => {
@@ -267,6 +331,8 @@ export default function MillionaireGame() {
     setIsGameOver(false);
     setIsMillionaire(false);
     setIsWalkedAway(false);
+    setIsLightsDimmed(false);
+    setUsedQuestions([]);
     setLifelines({
       fiftyFifty: true,
       phoneAFriend: true,
@@ -308,14 +374,18 @@ export default function MillionaireGame() {
     playMillionaireSFX('lock');
   };
 
-  // Lock Answer & Submit
+  // Lock Answer & Submit (WITH AUTHENTIC TV STUDIO LIGHTS-OFF SUSPENSE EFFECT)
   const handleLockAnswer = () => {
     if (selectedOption === null || !activeQ || isLocked) return;
     setIsLocked(true);
     setIsTimerActive(false);
+    setIsLightsDimmed(true); // Studio Lights Blackout / Suspense Mode!
+    playMillionaireSFX('lights_down');
+    playMillionaireSFX('suspense_pad');
     speakVoice("Final Answer locked in. Let's see if you are correct...");
 
     setTimeout(() => {
+      setIsLightsDimmed(false);
       setShowAnswerResult(true);
       const isCorrect = selectedOption === activeQ.a;
 
@@ -347,7 +417,7 @@ export default function MillionaireGame() {
         setIsGameOver(true);
         speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`);
       }
-    }, 2000);
+    }, 2200);
   };
 
   // Walk Away / Cash Out Feature
@@ -649,10 +719,14 @@ export default function MillionaireGame() {
 
           {/* 3D Studio Stage Viewport */}
           <div style={{
-            width: '100%', height: 'calc(100% - 40px)', background: '#090d16', border: '3px solid #000',
+            width: '100%', height: 'calc(100% - 40px)',
+            background: isLightsDimmed ? '#02040a' : '#090d16',
+            border: isLightsDimmed ? '3.5px solid #8b5cf6' : '3px solid #000',
+            boxShadow: isLightsDimmed ? 'inset 0 0 80px rgba(139, 92, 246, 0.4)' : 'none',
             borderRadius: '16px', overflow: 'hidden', position: 'relative',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
-            padding: '16px', boxSizing: 'border-box', perspective: '1200px'
+            padding: '16px', boxSizing: 'border-box', perspective: '1200px',
+            transition: 'all 0.5s ease'
           }}>
             
             {/* 3D Hot Seats Studio Environment */}
@@ -663,11 +737,15 @@ export default function MillionaireGame() {
               transform: `rotateX(28deg) rotateY(${rotationAngle}deg)`,
               transition: 'transform 0.4s ease'
             }}>
-              {/* Studio Spotlight Beam */}
+              {/* Studio Spotlight Beam (Focuses dramatically during blackout) */}
               <div style={{
-                position: 'absolute', top: 0, width: '220px', height: '220px',
-                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)',
-                borderRadius: '50%', pointerEvents: 'none'
+                position: 'absolute', top: 0,
+                width: isLightsDimmed ? '300px' : '220px',
+                height: isLightsDimmed ? '300px' : '220px',
+                background: isLightsDimmed
+                  ? 'radial-gradient(circle, rgba(251, 191, 36, 0.45) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%)'
+                  : 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)',
+                borderRadius: '50%', pointerEvents: 'none', transition: 'all 0.5s ease'
               }} />
 
               {/* Hot Seat Podium */}
