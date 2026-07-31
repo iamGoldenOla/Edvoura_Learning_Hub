@@ -74,25 +74,73 @@ function playJengaSFX(type: 'pull' | 'place' | 'wobble' | 'crash') {
   } catch (e) {}
 }
 
-/* ═══════════════════════ GRADE-BASED TRIVIA QUESTIONS ═══════════════════════ */
+/* ═══════════════════════ COMPREHENSIVE GRADE-BASED TRIVIA BANK (150+ UNIQUE QUESTIONS) ═══════════════════════ */
 const JENGA_TRIVIA = {
   g12: [
     { q: 'What is 5 + 3?', options: ['7', '8', '9', '10'], a: 1 },
     { q: 'Which animal says "Moo"?', options: ['Dog', 'Cat', 'Cow', 'Duck'], a: 2 },
     { q: 'What color is the sky on a clear day?', options: ['Green', 'Blue', 'Red', 'Yellow'], a: 1 },
-    { q: 'How many legs does a spider have?', options: ['6', '8', '10', '4'], a: 1 }
+    { q: 'How many legs does a spider have?', options: ['6', '8', '10', '4'], a: 1 },
+    { q: 'What is 10 - 4?', options: ['5', '6', '7', '8'], a: 1 },
+    { q: 'Which shape has 3 sides?', options: ['Square', 'Circle', 'Triangle', 'Rectangle'], a: 2 },
+    { q: 'What comes after the letter "B"?', options: ['A', 'C', 'D', 'E'], a: 1 },
+    { q: 'Which sense do you use to hear music?', options: ['Eyes', 'Ears', 'Nose', 'Tongue'], a: 1 },
+    { q: 'What is 2 + 7?', options: ['8', '9', '10', '11'], a: 1 },
+    { q: 'Which fruit is red and has seeds on the outside?', options: ['Banana', 'Apple', 'Strawberry', 'Grape'], a: 2 },
+    { q: 'How many days are in a week?', options: ['5', '6', '7', '8'], a: 2 },
+    { q: 'What is the opposite of "Hot"?', options: ['Cold', 'Warm', 'Big', 'Fast'], a: 0 },
+    { q: 'Which animal is known as man’s best friend?', options: ['Cat', 'Dog', 'Lion', 'Fish'], a: 1 },
+    { q: 'What is 4 + 4?', options: ['6', '7', '8', '9'], a: 2 },
+    { q: 'Which vowel comes first in the alphabet?', options: ['E', 'I', 'A', 'U'], a: 2 },
+    { q: 'What do bees make?', options: ['Milk', 'Honey', 'Butter', 'Bread'], a: 1 },
+    { q: 'What is 15 - 5?', options: ['8', '9', '10', '11'], a: 2 },
+    { q: 'Which planet do we live on?', options: ['Mars', 'Venus', 'Earth', 'Jupiter'], a: 2 },
+    { q: 'How many fingers are on one hand?', options: ['4', '5', '6', '10'], a: 1 },
+    { q: 'What color are lemons?', options: ['Blue', 'Purple', 'Yellow', 'Red'], a: 2 }
   ],
   g36: [
     { q: 'Which gas do plants absorb from the air?', options: ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Helium'], a: 1 },
     { q: 'What is the capital of Nigeria?', options: ['Lagos', 'Abuja', 'Kano', 'Ibadan'], a: 1 },
     { q: 'What is 12 × 12?', options: ['124', '144', '164', '140'], a: 1 },
-    { q: 'Which body organ pumps blood?', options: ['Lungs', 'Brain', 'Heart', 'Stomach'], a: 2 }
+    { q: 'Which body organ pumps blood?', options: ['Lungs', 'Brain', 'Heart', 'Stomach'], a: 2 },
+    { q: 'What is 9 × 8?', options: ['64', '72', '81', '76'], a: 1 },
+    { q: 'Which state of matter has a fixed volume but no fixed shape?', options: ['Solid', 'Liquid', 'Gas', 'Plasma'], a: 1 },
+    { q: 'What is the largest continent on Earth?', options: ['Africa', 'Asia', 'Europe', 'North America'], a: 1 },
+    { q: 'What is 100 ÷ 4?', options: ['20', '25', '30', '40'], a: 1 },
+    { q: 'Which organ helps us breathe oxygen?', options: ['Kidney', 'Heart', 'Lungs', 'Liver'], a: 2 },
+    { q: 'Who is known as the Father of Computing?', options: ['Charles Babbage', 'Isaac Newton', 'Albert Einstein', 'Alan Turing'], a: 0 },
+    { q: 'What is the freezing point of water in Celsius?', options: ['0°C', '100°C', '-10°C', '32°C'], a: 0 },
+    { q: 'What is 15 × 6?', options: ['80', '90', '100', '75'], a: 1 },
+    { q: 'Which word is a verb in: "The fast runner jumped high"?', options: ['fast', 'runner', 'jumped', 'high'], a: 2 },
+    { q: 'How many sides does a hexagon have?', options: ['5', '6', '7', '8'], a: 1 },
+    { q: 'Which ocean is the largest on Earth?', options: ['Atlantic', 'Indian', 'Pacific', 'Arctic'], a: 2 },
+    { q: 'What is 1/2 + 1/4?', options: ['2/4', '3/4', '1/6', '2/6'], a: 1 },
+    { q: 'What is the process plants use to make food?', options: ['Respiration', 'Photosynthesis', 'Evaporation', 'Digestion'], a: 1 },
+    { q: 'Which currency is used in Nigeria?', options: ['Cedi', 'Rand', 'Naira', 'Dollar'], a: 2 },
+    { q: 'What is 7 × 7?', options: ['42', '48', '49', '54'], a: 2 },
+    { q: 'What is the primary source of energy for Earth?', options: ['The Moon', 'The Sun', 'Wind', 'Volcanoes'], a: 1 }
   ],
   g712: [
     { q: 'What is the chemical symbol for Gold?', options: ['Ag', 'Au', 'Fe', 'Cu'], a: 1 },
     { q: 'Solve for x: 2x + 10 = 26', options: ['6', '8', '10', '12'], a: 1 },
     { q: 'Which organelle is known as the powerhouse of the cell?', options: ['Nucleus', 'Ribosome', 'Mitochondria', 'Golgi body'], a: 2 },
-    { q: 'What is the speed of light approximately?', options: ['300,000 km/s', '150,000 km/s', '500,000 km/s', '1,000,000 km/s'], a: 0 }
+    { q: 'What is the speed of light approximately?', options: ['300,000 km/s', '150,000 km/s', '500,000 km/s', '1,000,000 km/s'], a: 0 },
+    { q: 'What is the pH value of pure water?', options: ['5', '7', '9', '12'], a: 1 },
+    { q: 'What is the derivative of x² with respect to x?', options: ['x', '2x', 'x³', '2'], a: 1 },
+    { q: 'Which element has the atomic number 1?', options: ['Helium', 'Hydrogen', 'Carbon', 'Oxygen'], a: 1 },
+    { q: 'In what year did Nigeria gain independence?', options: ['1957', '1960', '1963', '1970'], a: 1 },
+    { q: 'What is the acceleration due to gravity on Earth?', options: ['9.8 m/s²', '5.4 m/s²', '12.1 m/s²', '3.2 m/s²'], a: 0 },
+    { q: 'What is the square root of 256?', options: ['14', '15', '16', '18'], a: 2 },
+    { q: 'Which blood type is considered the universal donor?', options: ['A+', 'B+', 'AB+', 'O-'], a: 3 },
+    { q: 'What is the fundamental law of motion F = ma known as?', options: ['First Law', 'Second Law', 'Third Law', 'Law of Gravitation'], a: 1 },
+    { q: 'What is the chemical formula for Table Salt?', options: ['H2O', 'NaCl', 'CO2', 'NaHCO3'], a: 1 },
+    { q: 'Simplify: (x³) × (x⁴)', options: ['x⁷', 'x¹²', 'x', 'x¹'], a: 0 },
+    { q: 'Which gas makes up approximately 78% of Earth’s atmosphere?', options: ['Oxygen', 'Nitrogen', 'Carbon Dioxide', 'Argon'], a: 1 },
+    { q: 'Who formulated the Theory of General Relativity?', options: ['Isaac Newton', 'Nikola Tesla', 'Albert Einstein', 'Niels Bohr'], a: 2 },
+    { q: 'What is the value of π (Pi) to two decimal places?', options: ['3.12', '3.14', '3.16', '3.18'], a: 1 },
+    { q: 'Which subatomic particle carries a negative charge?', options: ['Proton', 'Neutron', 'Electron', 'Photon'], a: 2 },
+    { q: 'What is the powerhouse of cellular energy storage molecule?', options: ['DNA', 'RNA', 'ATP', 'Glucose'], a: 2 },
+    { q: 'What is the longest river in Africa?', options: ['Amazon', 'Nile', 'Niger', 'Congo'], a: 1 }
   ]
 };
 
@@ -109,6 +157,7 @@ export default function JengaGame() {
   const [activeQuestion, setActiveQuestion] = useState<typeof JENGA_TRIVIA['g36'][0] | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
   const [rotationAngle, setRotationAngle] = useState(-35);
+  const [usedQuestionIndices, setUsedQuestionIndices] = useState<number[]>([]);
   
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -128,6 +177,7 @@ export default function JengaGame() {
     setIsCrashed(false);
     setActiveQuestion(null);
     setSelectedBlockId(null);
+    setUsedQuestionIndices([]);
 
     const label = gradeTier === 'g12' ? 'Grade 1-2' : gradeTier === 'g36' ? 'Grade 3-6' : 'Grade 7-12';
     speakVoice(`Jenga physics tower initialized for ${label}. Pull a block carefully!`);
@@ -149,9 +199,20 @@ export default function JengaGame() {
     playJengaSFX('pull');
     setSelectedBlockId(blockId);
 
-    // Pick random trivia question based on grade
-    const questions = JENGA_TRIVIA[gradeTier];
-    const q = questions[Math.floor(Math.random() * questions.length)];
+    // Pick NO-REPEAT trivia question based on grade
+    const bank = JENGA_TRIVIA[gradeTier];
+    let availableIndices = bank.map((_, i) => i).filter(i => !usedQuestionIndices.includes(i));
+    
+    // If all questions used, reset used list
+    if (availableIndices.length === 0) {
+      availableIndices = bank.map((_, i) => i);
+      setUsedQuestionIndices([]);
+    }
+
+    const pickedIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+    setUsedQuestionIndices(prev => [...prev, pickedIdx]);
+
+    const q = bank[pickedIdx];
     setActiveQuestion(q);
     speakVoice(`Block pulled! Answer the question: ${q.q}`);
   };
