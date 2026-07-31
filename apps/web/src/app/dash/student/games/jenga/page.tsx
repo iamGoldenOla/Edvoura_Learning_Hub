@@ -144,6 +144,51 @@ const JENGA_TRIVIA = {
   ]
 };
 
+/* ═══════════════════════ DYNAMIC AI QUESTION GENERATOR ENGINE ═══════════════════════ */
+function generateDynamicMathQuestion(gradeTier: 'g12' | 'g36' | 'g712') {
+  if (gradeTier === 'g12') {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    const isAdd = Math.random() > 0.5;
+    const ans = isAdd ? num1 + num2 : Math.max(num1, num2) - Math.min(num1, num2);
+    const q = isAdd ? `What is ${num1} + ${num2}?` : `What is ${Math.max(num1, num2)} - ${Math.min(num1, num2)}?`;
+    const wrong1 = ans + 1;
+    const wrong2 = Math.max(0, ans - 1);
+    const wrong3 = ans + 2;
+    return { q, options: [String(ans), String(wrong1), String(wrong2), String(wrong3)], a: 0 };
+  } else if (gradeTier === 'g36') {
+    const num1 = Math.floor(Math.random() * 12) + 2;
+    const num2 = Math.floor(Math.random() * 12) + 2;
+    const ans = num1 * num2;
+    const q = `What is ${num1} × ${num2}?`;
+    const wrong1 = ans + num1;
+    const wrong2 = Math.max(1, ans - num2);
+    const wrong3 = ans + 10;
+    return { q, options: [String(ans), String(wrong1), String(wrong2), String(wrong3)], a: 0 };
+  } else {
+    const a = Math.floor(Math.random() * 8) + 2;
+    const b = Math.floor(Math.random() * 20) + 5;
+    const ans = Math.floor((b - 5) / a);
+    const realB = a * ans + 5;
+    const q = `Solve for x: ${a}x + 5 = ${realB}`;
+    const wrong1 = ans + 2;
+    const wrong2 = Math.max(1, ans - 1);
+    const wrong3 = ans + 4;
+    return { q, options: [String(ans), String(wrong1), String(wrong2), String(wrong3)], a: 0 };
+  }
+}
+
+function shuffleQuestionOptions(question: { q: string; options: string[]; a: number }) {
+  const correctOptionText = question.options[question.a];
+  const shuffled = [...question.options];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const newAnswerIdx = shuffled.indexOf(correctOptionText);
+  return { q: question.q, options: shuffled, a: newAnswerIdx };
+}
+
 export default function JengaGame() {
   const [gradeTier, setGradeTier] = useState<'g12' | 'g36' | 'g712'>('g36');
   
@@ -154,11 +199,14 @@ export default function JengaGame() {
   const [wobble, setWobble] = useState(0); // 0 to 100%
   const [score, setScore] = useState(0);
   const [isCrashed, setIsCrashed] = useState(false);
-  const [activeQuestion, setActiveQuestion] = useState<typeof JENGA_TRIVIA['g36'][0] | null>(null);
+  const [activeQuestion, setActiveQuestion] = useState<{ q: string; options: string[]; a: number } | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
   const [rotationAngle, setRotationAngle] = useState(-35);
   const [usedQuestionIndices, setUsedQuestionIndices] = useState<number[]>([]);
   
+  // Incorrect Answer Learning Feedback State
+  const [incorrectFeedback, setIncorrectFeedback] = useState<{ show: boolean; correctAnswer: string; questionText: string } | null>(null);
+
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -178,6 +226,7 @@ export default function JengaGame() {
     setActiveQuestion(null);
     setSelectedBlockId(null);
     setUsedQuestionIndices([]);
+    setIncorrectFeedback(null);
 
     const label = gradeTier === 'g12' ? 'Grade 1-2' : gradeTier === 'g36' ? 'Grade 3-6' : 'Grade 7-12';
     speakVoice(`Jenga physics tower initialized for ${label}. Pull a block carefully!`);
@@ -188,7 +237,7 @@ export default function JengaGame() {
   }, [gradeTier, initTower]);
 
   const handleBlockPull = (blockId: number, layer: number) => {
-    if (isCrashed || activeQuestion) return;
+    if (isCrashed || activeQuestion || incorrectFeedback?.show) return;
 
     // Do not allow pulling from top layer
     if (layer >= totalLayers - 1) {
@@ -199,22 +248,24 @@ export default function JengaGame() {
     playJengaSFX('pull');
     setSelectedBlockId(blockId);
 
-    // Pick NO-REPEAT trivia question based on grade
+    // Pick NO-REPEAT trivia question based on grade or generate dynamic question
     const bank = JENGA_TRIVIA[gradeTier];
     let availableIndices = bank.map((_, i) => i).filter(i => !usedQuestionIndices.includes(i));
     
-    // If all questions used, reset used list
-    if (availableIndices.length === 0) {
-      availableIndices = bank.map((_, i) => i);
-      setUsedQuestionIndices([]);
+    let rawQ;
+    if (availableIndices.length > 0) {
+      const pickedIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+      setUsedQuestionIndices(prev => [...prev, pickedIdx]);
+      rawQ = bank[pickedIdx];
+    } else {
+      // Dynamic fallback AI generator
+      rawQ = generateDynamicMathQuestion(gradeTier);
     }
 
-    const pickedIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-    setUsedQuestionIndices(prev => [...prev, pickedIdx]);
-
-    const q = bank[pickedIdx];
-    setActiveQuestion(q);
-    speakVoice(`Block pulled! Answer the question: ${q.q}`);
+    // Always shuffle question options so answer positions are randomized!
+    const shuffledQ = shuffleQuestionOptions(rawQ);
+    setActiveQuestion(shuffledQ);
+    speakVoice(`Block pulled! Answer the question: ${shuffledQ.q}`);
   };
 
   const handleAnswerSubmit = (optionIdx: number) => {
@@ -238,17 +289,23 @@ export default function JengaGame() {
         triggerCrash();
       }
     } else {
-      // Incorrect Answer: Increase wobble significantly!
+      // Incorrect Answer: Give the correct answer to student & increase wobble!
       playJengaSFX('wobble');
       const penaltyWobble = wobble + (gradeTier === 'g712' ? 30 : gradeTier === 'g36' ? 22 : 15);
       setWobble(penaltyWobble);
-      speakVoice("Wrong answer! The tower is wobbling dangerously!");
+
+      const correctAnswerText = activeQuestion.options[activeQuestion.a];
+      
+      setIncorrectFeedback({
+        show: true,
+        correctAnswer: correctAnswerText,
+        questionText: activeQuestion.q
+      });
+
+      speakVoice(`Incorrect! The correct answer is: ${correctAnswerText}. The tower is wobbling dangerously!`);
 
       if (penaltyWobble >= 100) {
         triggerCrash();
-      } else {
-        setActiveQuestion(null);
-        setSelectedBlockId(null);
       }
     }
   };
@@ -538,6 +595,58 @@ export default function JengaGame() {
                     </button>
                   ))}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Incorrect Answer Learning Feedback Overlay */}
+          {incorrectFeedback?.show && (
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.88)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50
+            }}>
+              <div style={{
+                background: '#ffffff', borderRadius: '16px', border: '3.5px solid #000000',
+                padding: '24px', width: '380px', color: '#000000', boxShadow: '8px 8px 0 #000000',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'
+              }}>
+                <div style={{ background: '#fee2e2', borderRadius: '50%', padding: '12px', border: '2px solid #ef4444', marginBottom: '8px' }}>
+                  <AlertTriangle size={32} color="#ef4444" />
+                </div>
+                <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#ef4444', margin: '0 0 6px 0' }}>
+                  Incorrect Answer!
+                </h3>
+                <p style={{ fontSize: '12px', color: '#475569', margin: '0 0 12px 0', fontWeight: 700 }}>
+                  {incorrectFeedback.questionText}
+                </p>
+
+                {/* Correct Answer Highlight Box */}
+                <div style={{
+                  background: '#dcfce7', border: '2px solid #22c55e', borderRadius: '10px',
+                  padding: '10px 16px', width: '100%', boxSizing: 'border-box', marginBottom: '16px'
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: 900, color: '#166534', textTransform: 'uppercase' }}>
+                    ✅ Correct Answer:
+                  </div>
+                  <div style={{ fontSize: '16px', fontWeight: 950, color: '#15803d' }}>
+                    {incorrectFeedback.correctAnswer}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setIncorrectFeedback(null);
+                    setActiveQuestion(null);
+                    setSelectedBlockId(null);
+                  }}
+                  style={{
+                    width: '100%', padding: '10px', borderRadius: '10px', border: '2px solid #000',
+                    background: '#fbbf24', color: '#000', fontWeight: 950, fontSize: '13px',
+                    cursor: 'pointer', boxShadow: '3px 3px 0 #000'
+                  }}
+                >
+                  Got It! Continue Playing 🚀
+                </button>
               </div>
             </div>
           )}
