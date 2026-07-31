@@ -377,16 +377,40 @@ export default function ChessPage() {
 
   // AI Move Automation
   useEffect(() => {
-    if (mode === 'playing' && oppType === 'ai' && gs.turn === 'b' && !thinking && status === 'Active') {
+    const isGameOver = status.includes('Checkmate') || status.includes('Stalemate') || status.includes('Resigned') || status.includes('Draw');
+    if (mode === 'playing' && oppType === 'ai' && gs.turn === 'b' && !isGameOver) {
       setThinking(true);
       const timer = setTimeout(() => {
         const bm = bestMoveAI(gs);
-        if (bm) makeMove(bm.from, bm.to);
+        if (bm) {
+          const isCap = !!gs.board[bm.to.r][bm.to.c];
+          const next = execMove(gs, bm.from, bm.to);
+          const isChk = inCheck(next.board, next.turn);
+          const moves = allLegal(next.board, next.turn, next.castling, next.ep);
+
+          if (isChk) {
+            if (moves.length === 0) {
+              setStatus('Checkmate! Black wins!');
+              playChessSFX('victory');
+            } else {
+              setStatus('Check! White is in check.');
+              playChessSFX('check');
+            }
+          } else if (moves.length === 0) {
+            setStatus('Stalemate! Game is a draw.');
+          } else {
+            setStatus('Active');
+            if (isCap) playChessSFX('capture'); else playChessSFX('move');
+          }
+          setGS(next);
+          setSel(null);
+          setValid([]);
+        }
         setThinking(false);
-      }, 500);
+      }, 400);
       return () => clearTimeout(timer);
     }
-  }, [gs, oppType, mode, thinking, status, makeMove]);
+  }, [gs, mode, oppType, status]);
 
   const click = (r: number, c: number) => {
     if (thinking || status.includes('Checkmate') || status.includes('Stalemate') || status.includes('Resigned')) return;
