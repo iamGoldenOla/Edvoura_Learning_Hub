@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Type, RefreshCw, ChevronRight, CheckCircle2, XCircle, BookOpen, Volume2 } from 'lucide-react';
+import { Type, RefreshCw, BookOpen, Search, Grid, Award } from 'lucide-react';
 
 const ACCENT_COLOR = '#8b5cf6';
 
@@ -86,11 +86,7 @@ const HANGMAN_CATEGORIES: Record<string, string[]> = {
   Science: ['MOLECULE', 'ATOM', 'GRAVITY', 'ENERGY', 'VELOCITY', 'ACCELERATION', 'ECOSYSTEM', 'PHOTOSYNTHESIS']
 };
 
-const SEARCH_WORDS = [
-  'REACT', 'NEXTJS', 'TYPESCRIPT', 'JAVASCRIPT', 'HTML', 'CSS', 'NODE', 'PYTHON',
-  'JAVA', 'RUBY', 'PHP', 'SWIFT', 'KOTLIN', 'GO', 'RUST', 'CSHARP', 'SQL', 'REDIS',
-  'API', 'JSON', 'XML', 'DOCKER', 'KUBERNETES', 'CLOUD'
-];
+const WORDLE_WORDS = ['BRAIN', 'SMART', 'LEARN', 'STUDY', 'CLASS', 'LOGIC', 'BOOKS', 'PAPER', 'TEACH', 'SOLVE', 'FOCUS', 'GRADE', 'WRITE'];
 
 // --- WORD SCRAMBLE COMPONENT ---
 function WordScramble({ addScore }: { addScore: (points: number) => void }) {
@@ -99,7 +95,6 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
   const [guess, setGuess] = useState('');
   const [streak, setStreak] = useState(0);
   const [feedback, setFeedback] = useState<{type: string; text: string} | null>(null);
-  const [hintLevel, setHintLevel] = useState(0);
 
   const getNewWord = useCallback(() => {
     const newWord = SCRAMBLE_WORDS[Math.floor(Math.random() * SCRAMBLE_WORDS.length)];
@@ -116,7 +111,6 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
     setScrambled(scram.join(''));
     setGuess('');
     setFeedback(null);
-    setHintLevel(0);
     speakVoice(`Unscramble the word: ${scram.join(' ')}`);
   }, []);
 
@@ -251,9 +245,182 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
   );
 }
 
+// --- NEW MINI-GAME 1: WORD SEARCH GRID ---
+function WordSearch({ addScore }: { addScore: (points: number) => void }) {
+  const searchList = ['MATH', 'READ', 'BOOK', 'TEST', 'QUIZ', 'STUDY'];
+  const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
+  const [selectedWord, setSelectedWord] = useState('');
+
+  const grid = [
+    ['M','A','T','H','X','B','O','O','K'],
+    ['P','E','N','C','I','L','Q','W','E'],
+    ['R','E','A','D','K','S','T','U','D'],
+    ['T','E','S','T','Z','Y','U','I','O'],
+    ['Q','U','I','Z','S','T','U','D','Y'],
+    ['A','B','C','D','E','F','G','H','I'],
+  ];
+
+  const handleWordClick = (w: string) => {
+    if (foundWords.has(w)) return;
+    playWordSFX('correct');
+    const next = new Set(foundWords);
+    next.add(w);
+    setFoundWords(next);
+    addScore(15);
+    speakVoice(`Found word ${w}! Plus 15 points.`);
+
+    if (next.size === searchList.length) {
+      playWordSFX('win');
+      speakVoice('Congratulations! All hidden words found!');
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: '20px', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '12px' }}>
+      {/* 9x6 Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '4px', background: '#111827', padding: '12px', borderRadius: '14px', border: '2px solid #1e293b' }}>
+        {grid.map((row, r) => row.map((char, c) => (
+          <div
+            key={`${r}-${c}`}
+            style={{
+              width: '32px', height: '32px', borderRadius: '6px', background: '#1e293b', border: '1px solid #334155',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 900, color: '#fff'
+            }}
+          >
+            {char}
+          </div>
+        )))}
+      </div>
+
+      {/* Target Word List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', background: '#111827', padding: '14px', borderRadius: '14px', border: '2px solid #1e293b' }}>
+        <div style={{ fontSize: '11px', fontWeight: 900, color: '#8b5cf6', textTransform: 'uppercase', marginBottom: '4px' }}>Hidden Words</div>
+        {searchList.map(w => (
+          <button
+            key={w}
+            onClick={() => handleWordClick(w)}
+            style={{
+              padding: '6px 12px', borderRadius: '6px', border: '1px solid #000', fontSize: '11px', fontWeight: 900,
+              background: foundWords.has(w) ? '#22c55e' : '#ffffff', color: foundWords.has(w) ? '#fff' : '#000',
+              cursor: foundWords.has(w) ? 'default' : 'pointer', textDecoration: foundWords.has(w) ? 'line-through' : 'none'
+            }}
+          >
+            {w} {foundWords.has(w) && '✓'}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- NEW MINI-GAME 2: WORDLE / WORD GUESS ---
+function WordleGame({ addScore }: { addScore: (points: number) => void }) {
+  const [targetWord, setTargetWord] = useState('BRAIN');
+  const [guesses, setGuesses] = useState<string[]>([]);
+  const [currentGuess, setCurrentGuess] = useState('');
+  const [isWon, setIsWon] = useState(false);
+
+  const initWordle = useCallback(() => {
+    const w = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+    setTargetWord(w);
+    setGuesses([]);
+    setCurrentGuess('');
+    setIsWon(false);
+    speakVoice('Guess the 5-letter secret word in 6 tries.');
+  }, []);
+
+  useEffect(() => {
+    initWordle();
+  }, [initWordle]);
+
+  const handleKeyPress = (key: string) => {
+    if (isWon || guesses.length >= 6) return;
+    playWordSFX('click');
+
+    if (key === 'ENTER') {
+      if (currentGuess.length === 5) {
+        const next = [...guesses, currentGuess];
+        setGuesses(next);
+
+        if (currentGuess === targetWord) {
+          setIsWon(true);
+          playWordSFX('win');
+          speakVoice(`Fantastic! You guessed ${targetWord}! Plus 20 points.`);
+          addScore(20);
+        } else {
+          playWordSFX('error');
+        }
+        setCurrentGuess('');
+      }
+    } else if (key === 'BACK') {
+      setCurrentGuess(prev => prev.slice(0, -1));
+    } else if (currentGuess.length < 5) {
+      setCurrentGuess(prev => prev + key);
+    }
+  };
+
+  const getCellBg = (rIdx: number, cIdx: number) => {
+    if (rIdx >= guesses.length) return '#1e293b';
+    const char = guesses[rIdx][cIdx];
+    if (targetWord[cIdx] === char) return '#22c55e'; // Green (exact)
+    if (targetWord.includes(char)) return '#f59e0b'; // Yellow (wrong spot)
+    return '#475569'; // Gray
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '10px' }}>
+      {/* 6x5 Grid */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {Array.from({ length: 6 }).map((_, rIdx) => {
+          const guessStr = rIdx < guesses.length ? guesses[rIdx] : rIdx === guesses.length ? currentGuess : '';
+          return (
+            <div key={rIdx} style={{ display: 'flex', gap: '4px' }}>
+              {Array.from({ length: 5 }).map((_, cIdx) => (
+                <div
+                  key={cIdx}
+                  style={{
+                    width: '34px', height: '34px', borderRadius: '6px', border: '1.5px solid #000',
+                    background: getCellBg(rIdx, cIdx), color: '#fff', fontSize: '15px', fontWeight: 900,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                >
+                  {guessStr[cIdx] || ''}
+                </div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* On-Screen Keyboard */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'center', marginTop: '4px' }}>
+        {['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'].map((row, r) => (
+          <div key={r} style={{ display: 'flex', gap: '3px' }}>
+            {r === 2 && (
+              <button onClick={() => handleKeyPress('ENTER')} style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #000', fontSize: '9px', fontWeight: 900, background: '#22c55e', color: '#fff', cursor: 'pointer' }}>ENTER</button>
+            )}
+            {row.split('').map(k => (
+              <button
+                key={k}
+                onClick={() => handleKeyPress(k)}
+                style={{ width: '22px', height: '28px', borderRadius: '4px', border: '1px solid #000', fontSize: '10px', fontWeight: 900, background: '#fff', color: '#000', cursor: 'pointer' }}
+              >
+                {k}
+              </button>
+            ))}
+            {r === 2 && (
+              <button onClick={() => handleKeyPress('BACK')} style={{ padding: '6px 8px', borderRadius: '4px', border: '1px solid #000', fontSize: '9px', fontWeight: 900, background: '#ef4444', color: '#fff', cursor: 'pointer' }}>DEL</button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // --- MAIN WORD PLAY PAGE ---
 export default function WordPlay() {
-  const [activeTab, setActiveTab] = useState<'scramble' | 'hangman'>('scramble');
+  const [activeTab, setActiveTab] = useState<'scramble' | 'hangman' | 'wordsearch' | 'wordle'>('scramble');
   const [score, setScore] = useState(0);
   const [showRulesModal, setShowRulesModal] = useState(false);
 
@@ -268,24 +435,26 @@ export default function WordPlay() {
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: '8px', boxSizing: 'border-box' }}>
         {/* Top Tab Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111827', padding: '6px 12px', borderRadius: '12px', border: '1.5px solid #1e293b' }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button
-              onClick={() => setActiveTab('scramble')}
-              style={{ padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #000', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeTab === 'scramble' ? '#8b5cf6' : '#1e293b', color: '#fff' }}
-            >
-              Word Scramble
-            </button>
-            <button
-              onClick={() => setActiveTab('hangman')}
-              style={{ padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #000', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeTab === 'hangman' ? '#8b5cf6' : '#1e293b', color: '#fff' }}
-            >
-              Hangman
-            </button>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {[
+              { id: 'scramble', title: 'Word Scramble' },
+              { id: 'hangman', title: 'Hangman' },
+              { id: 'wordsearch', title: 'Word Search' },
+              { id: 'wordle', title: 'Wordle (5-Letter)' }
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id as any)}
+                style={{ padding: '5px 12px', borderRadius: '8px', border: '1.5px solid #000', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeTab === t.id ? '#8b5cf6' : '#1e293b', color: '#fff' }}
+              >
+                {t.title}
+              </button>
+            ))}
           </div>
 
           <button
             onClick={() => setShowRulesModal(true)}
-            style={{ padding: '6px 12px', background: '#38bdf8', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            style={{ padding: '5px 12px', background: '#38bdf8', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
             <BookOpen size={12} /> Rules & Guide
           </button>
@@ -295,16 +464,18 @@ export default function WordPlay() {
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {activeTab === 'scramble' && <WordScramble addScore={s => setScore(prev => prev + s)} />}
           {activeTab === 'hangman' && <Hangman addScore={s => setScore(prev => prev + s)} />}
+          {activeTab === 'wordsearch' && <WordSearch addScore={s => setScore(prev => prev + s)} />}
+          {activeTab === 'wordle' && <WordleGame addScore={s => setScore(prev => prev + s)} />}
         </div>
       </div>
 
       {/* Rules Modal */}
       {showRulesModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '18px', border: '3px solid #000', padding: '24px', width: '420px', color: '#000', boxShadow: '6px 6px 0 #000' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#8b5cf6', margin: '0 0 10px 0' }}>📜 Word Play Guide</h3>
+          <div style={{ background: '#ffffff', borderRadius: '18px', border: '3px solid #000', padding: '24px', width: '440px', color: '#000', boxShadow: '6px 6px 0 #000' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#8b5cf6', margin: '0 0 10px 0' }}>📜 Word Play Suite</h3>
             <p style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5, marginBottom: '12px' }}>
-              Test your vocabulary with Word Scramble and Hangman mini-games with full Text-to-Speech audio support!
+              Includes 4 full games: <strong>Word Scramble</strong>, <strong>Hangman</strong>, <strong>Word Search</strong>, and <strong>Wordle (Word Guess)</strong> with Text-to-Speech audio support!
             </p>
             <button onClick={() => setShowRulesModal(false)} style={{ width: '100%', padding: '8px', background: '#8b5cf6', color: '#fff', border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer' }}>
               Got It! Close
