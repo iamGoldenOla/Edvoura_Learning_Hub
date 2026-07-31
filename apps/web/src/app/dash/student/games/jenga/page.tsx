@@ -150,31 +150,49 @@ function generateDynamicMathQuestion(gradeTier: 'g12' | 'g36' | 'g712') {
     const num1 = Math.floor(Math.random() * 10) + 1;
     const num2 = Math.floor(Math.random() * 10) + 1;
     const isAdd = Math.random() > 0.5;
-    const ans = isAdd ? num1 + num2 : Math.max(num1, num2) - Math.min(num1, num2);
-    const q = isAdd ? `What is ${num1} + ${num2}?` : `What is ${Math.max(num1, num2)} - ${Math.min(num1, num2)}?`;
-    const wrong1 = ans + 1;
-    const wrong2 = Math.max(0, ans - 1);
-    const wrong3 = ans + 2;
-    return { q, options: [String(ans), String(wrong1), String(wrong2), String(wrong3)], a: 0 };
+    const trueAns = isAdd ? num1 + num2 : num1 + num2 + 2;
+    const q = isAdd ? `What is ${num1} + ${num2}?` : `What is ${num1 + num2 + 2} - ${num2}?`;
+
+    const opts = new Set<string>();
+    opts.add(String(trueAns));
+    while (opts.size < 4) {
+      const randOffset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
+      const val = Math.max(1, trueAns + randOffset);
+      opts.add(String(val));
+    }
+    const optionsArray = Array.from(opts) as [string, string, string, string];
+    return { q, options: optionsArray, a: 0 };
   } else if (gradeTier === 'g36') {
-    const num1 = Math.floor(Math.random() * 12) + 2;
-    const num2 = Math.floor(Math.random() * 12) + 2;
-    const ans = num1 * num2;
+    const num1 = Math.floor(Math.random() * 10) + 3;
+    const num2 = Math.floor(Math.random() * 10) + 2;
+    const trueAns = num1 * num2;
     const q = `What is ${num1} × ${num2}?`;
-    const wrong1 = ans + num1;
-    const wrong2 = Math.max(1, ans - num2);
-    const wrong3 = ans + 10;
-    return { q, options: [String(ans), String(wrong1), String(wrong2), String(wrong3)], a: 0 };
+
+    const opts = new Set<string>();
+    opts.add(String(trueAns));
+    while (opts.size < 4) {
+      const randOffset = (Math.floor(Math.random() * 8) + 1) * (Math.random() > 0.5 ? 1 : -1) * 2;
+      const val = Math.max(2, trueAns + randOffset);
+      opts.add(String(val));
+    }
+    const optionsArray = Array.from(opts) as [string, string, string, string];
+    return { q, options: optionsArray, a: 0 };
   } else {
-    const a = Math.floor(Math.random() * 8) + 2;
-    const b = Math.floor(Math.random() * 20) + 5;
-    const ans = Math.floor((b - 5) / a);
-    const realB = a * ans + 5;
-    const q = `Solve for x: ${a}x + 5 = ${realB}`;
-    const wrong1 = ans + 2;
-    const wrong2 = Math.max(1, ans - 1);
-    const wrong3 = ans + 4;
-    return { q, options: [String(ans), String(wrong1), String(wrong2), String(wrong3)], a: 0 };
+    const a = Math.floor(Math.random() * 6) + 2;
+    const x = Math.floor(Math.random() * 8) + 2;
+    const c = Math.floor(Math.random() * 10) + 2;
+    const rhs = a * x + c;
+    const q = `Solve for x: ${a}x + ${c} = ${rhs}`;
+
+    const opts = new Set<string>();
+    opts.add(String(x));
+    while (opts.size < 4) {
+      const randOffset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
+      const val = Math.max(1, x + randOffset);
+      opts.add(String(val));
+    }
+    const optionsArray = Array.from(opts) as [string, string, string, string];
+    return { q, options: optionsArray, a: 0 };
   }
 }
 
@@ -204,6 +222,10 @@ export default function JengaGame() {
   const [rotationAngle, setRotationAngle] = useState(-35);
   const [usedQuestionIndices, setUsedQuestionIndices] = useState<number[]>([]);
   
+  // Visual Answer Status Feedback State
+  const [selectedOptionIdx, setSelectedOptionIdx] = useState<number | null>(null);
+  const [answerStatus, setAnswerStatus] = useState<'idle' | 'correct' | 'incorrect'>('idle');
+
   // Incorrect Answer Learning Feedback State
   const [incorrectFeedback, setIncorrectFeedback] = useState<{ show: boolean; correctAnswer: string; questionText: string } | null>(null);
 
@@ -227,6 +249,8 @@ export default function JengaGame() {
     setSelectedBlockId(null);
     setUsedQuestionIndices([]);
     setIncorrectFeedback(null);
+    setSelectedOptionIdx(null);
+    setAnswerStatus('idle');
 
     const label = gradeTier === 'g12' ? 'Grade 1-2' : gradeTier === 'g36' ? 'Grade 3-6' : 'Grade 7-12';
     speakVoice(`Jenga physics tower initialized for ${label}. Pull a block carefully!`);
@@ -237,7 +261,7 @@ export default function JengaGame() {
   }, [gradeTier, initTower]);
 
   const handleBlockPull = (blockId: number, layer: number) => {
-    if (isCrashed || activeQuestion || incorrectFeedback?.show) return;
+    if (isCrashed || activeQuestion || incorrectFeedback?.show || answerStatus !== 'idle') return;
 
     // Do not allow pulling from top layer
     if (layer >= totalLayers - 1) {
@@ -265,48 +289,60 @@ export default function JengaGame() {
     // Always shuffle question options so answer positions are randomized!
     const shuffledQ = shuffleQuestionOptions(rawQ);
     setActiveQuestion(shuffledQ);
+    setSelectedOptionIdx(null);
+    setAnswerStatus('idle');
     speakVoice(`Block pulled! Answer the question: ${shuffledQ.q}`);
   };
 
   const handleAnswerSubmit = (optionIdx: number) => {
-    if (!activeQuestion || selectedBlockId === null) return;
+    if (!activeQuestion || selectedBlockId === null || answerStatus !== 'idle') return;
+    setSelectedOptionIdx(optionIdx);
 
-    if (optionIdx === activeQuestion.a) {
-      // Correct Answer: Place block safely on top
+    const isCorrect = optionIdx === activeQuestion.a;
+
+    if (isCorrect) {
+      setAnswerStatus('correct');
       playJengaSFX('place');
       setScore(s => s + 20);
+      speakVoice("Correct answer! Block placed safely on top. Plus 20 points.");
 
-      // Increase wobble slightly
-      const nextWobble = Math.min(100, wobble + (gradeTier === 'g712' ? 12 : gradeTier === 'g36' ? 8 : 4));
-      setWobble(nextWobble);
+      const nextWobble = Math.min(100, wobble + (gradeTier === 'g712' ? 8 : gradeTier === 'g36' ? 5 : 3));
 
-      setTower(prev => prev.map(b => b.id === selectedBlockId ? { ...b, pulled: true } : b));
-      setActiveQuestion(null);
-      setSelectedBlockId(null);
-      speakVoice("Correct! Block placed safely on top. Plus 20 points.");
+      setTimeout(() => {
+        setWobble(nextWobble);
+        setTower(prev => prev.map(b => b.id === selectedBlockId ? { ...b, pulled: true } : b));
+        setActiveQuestion(null);
+        setSelectedBlockId(null);
+        setSelectedOptionIdx(null);
+        setAnswerStatus('idle');
 
-      if (nextWobble >= 100) {
-        triggerCrash();
-      }
+        if (nextWobble >= 100) {
+          triggerCrash();
+        }
+      }, 1200);
     } else {
-      // Incorrect Answer: Give the correct answer to student & increase wobble!
+      setAnswerStatus('incorrect');
       playJengaSFX('wobble');
-      const penaltyWobble = wobble + (gradeTier === 'g712' ? 30 : gradeTier === 'g36' ? 22 : 15);
+      const penaltyWobble = Math.min(100, wobble + (gradeTier === 'g712' ? 20 : gradeTier === 'g36' ? 15 : 10));
       setWobble(penaltyWobble);
 
       const correctAnswerText = activeQuestion.options[activeQuestion.a];
-      
-      setIncorrectFeedback({
-        show: true,
-        correctAnswer: correctAnswerText,
-        questionText: activeQuestion.q
-      });
+      speakVoice(`Incorrect answer. The correct answer is: ${correctAnswerText}.`);
 
-      speakVoice(`Incorrect! The correct answer is: ${correctAnswerText}. The tower is wobbling dangerously!`);
+      setTimeout(() => {
+        setIncorrectFeedback({
+          show: true,
+          correctAnswer: correctAnswerText,
+          questionText: activeQuestion.q
+        });
+        setActiveQuestion(null);
+        setSelectedOptionIdx(null);
+        setAnswerStatus('idle');
 
-      if (penaltyWobble >= 100) {
-        triggerCrash();
-      }
+        if (penaltyWobble >= 100) {
+          triggerCrash();
+        }
+      }, 1400);
     }
   };
 
@@ -581,19 +617,45 @@ export default function JengaGame() {
                 <h3 style={{ fontSize: '15px', fontWeight: 950, margin: '0 0 12px 0' }}>{activeQuestion.q}</h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {activeQuestion.options.map((opt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleAnswerSubmit(idx)}
-                      style={{
-                        padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #000',
-                        fontSize: '12px', fontWeight: 800, background: '#f1f5f9', color: '#000',
-                        cursor: 'pointer', textAlign: 'left'
-                      }}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+                  {activeQuestion.options.map((opt, idx) => {
+                    const isSelected = selectedOptionIdx === idx;
+                    const isCorrectAnswer = activeQuestion.a === idx;
+
+                    let bg = '#f1f5f9';
+                    let borderColor = '#000000';
+                    let textColor = '#000000';
+
+                    if (answerStatus !== 'idle') {
+                      if (isCorrectAnswer) {
+                        bg = '#22c55e';
+                        textColor = '#ffffff';
+                      } else if (isSelected && !isCorrectAnswer) {
+                        bg = '#ef4444';
+                        textColor = '#ffffff';
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleAnswerSubmit(idx)}
+                        disabled={answerStatus !== 'idle'}
+                        style={{
+                          padding: '10px 14px', borderRadius: '8px',
+                          border: `2px solid ${borderColor}`,
+                          fontSize: '12px', fontWeight: 900,
+                          background: bg, color: textColor,
+                          cursor: answerStatus !== 'idle' ? 'default' : 'pointer',
+                          textAlign: 'left', transition: 'all 0.15s ease',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                        }}
+                      >
+                        <span>{opt}</span>
+                        {answerStatus !== 'idle' && isCorrectAnswer && <span>✓ Correct</span>}
+                        {answerStatus !== 'idle' && isSelected && !isCorrectAnswer && <span>✗ Wrong</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
