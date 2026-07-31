@@ -721,10 +721,7 @@ export default function ChessPage() {
                       <span style={{
                         fontSize: 'calc(min(100vw, 100vh) / 14)',
                         lineHeight: 1,
-                        color: pc.color === 'w' ? '#ffffff' : '#0b0f19',
-                        filter: pc.color === 'w' 
-                          ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' 
-                          : 'drop-shadow(0 0 5px #ffffff) drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
+                        color: pc.color === 'w' ? '#ffffff' : '#000000',
                         fontWeight: 900
                       }}>
                         {SYM[pc.color][pc.type]}

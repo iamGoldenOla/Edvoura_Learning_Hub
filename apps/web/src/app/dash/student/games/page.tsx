@@ -326,20 +326,35 @@ export default function GamesPage() {
 
                     <div style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      marginTop: '20px', paddingTop: '12px',
-                      borderTop: '2px solid #f1f5f9'
+                      marginTop: '20px', paddingTop: '14px',
+                      borderTop: '2px dashed #e2e8f0'
                     }}>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#64748b' }}>
-                        Difficulty: <span style={{ color: game.badgeText }}>{game.difficulty}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>
+                        Difficulty: <span style={{ color: game.badgeText, fontWeight: 950 }}>{game.difficulty}</span>
                       </span>
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        fontSize: '13px', fontWeight: 800, color: '#000000',
-                        transition: 'transform 0.2s',
-                        transform: isHovered ? 'translateX(4px)' : 'none'
-                      }}>
-                        Play Now <ArrowRight size={14} />
-                      </div>
+                      
+                      {/* Bold Neo-Brutalist Play Now Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/dash/student/games/${game.id}`);
+                        }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '6px',
+                          padding: '8px 16px', borderRadius: '10px',
+                          border: '2px solid #000000',
+                          background: isHovered ? '#8b5cf6' : '#fbbf24',
+                          color: isHovered ? '#ffffff' : '#000000',
+                          fontSize: '12px', fontWeight: 950,
+                          cursor: 'pointer',
+                          boxShadow: isHovered ? '4px 4px 0px #000000' : '2px 2px 0px #000000',
+                          transform: isHovered ? 'translate(-2px, -2px)' : 'none',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <span>Play Now</span>
+                        <ArrowRight size={14} style={{ transform: isHovered ? 'translateX(3px)' : 'none', transition: 'transform 0.15s' }} />
+                      </button>
                     </div>
                   </div>
                 );
