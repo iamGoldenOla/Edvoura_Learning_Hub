@@ -54,6 +54,23 @@ export default function AyoOpon() {
   const [gameMode, setGameMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [opponentType, setOpponentType] = useState<'ai' | 'local' | 'matchmaker'>('ai');
   const [matchedOpponent, setMatchedOpponent] = useState('Computer (AI)');
+  const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [roomCode, setRoomCode] = useState('');
+
+  const generateRoomCode = useCallback(() => {
+    const code = 'AYO-' + Math.floor(1000 + Math.random() * 9000);
+    setRoomCode(code);
+    return code;
+  }, []);
+
+  const copyInviteLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?room=${roomCode || generateRoomCode()}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    playAyoSFX('capture');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
   
   // Modals State
   const [showRulesModal, setShowRulesModal] = useState(false);

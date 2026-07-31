@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { ALargeSmall, RotateCcw, Sparkles, Lightbulb, User, Users, Monitor, BookOpen } from 'lucide-react';
+import { ALargeSmall, RotateCcw, Sparkles, Lightbulb, User, Users, Monitor, BookOpen, Share2, Copy, Check } from 'lucide-react';
 
 /* ═══════════════════════ VOICE & AUDIO SYNTHESIZER ═══════════════════════ */
 function speakVoice(text: string) {
@@ -24,7 +24,7 @@ function playScrabbleSFX(type: 'click' | 'place' | 'valid' | 'invalid' | 'win' |
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
 
-    if (type === 'place') {
+    if (type === 'click' || type === 'place') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
@@ -88,36 +88,19 @@ const LETTER_DIST = 'AAAAAAAAABBCCDDDDEEEEEEEEEEEEFFGGGHHIIIIIIIIIJKLLLLMMNNNNNN
 
 const OPPONENT_NAMES = ['Aisha Bello (Grade 4)', 'Chinedu Okafor (Grade 5)', 'Oluwaseun Adebayo (Grade 4)', 'Amara Egwu (Grade 5)', 'Tunde Cole (Grade 6)'];
 
-const VALID_WORDS = new Set([
-  'POLL','POND','POOL','POOR','PORT','POST','POUR','PRAY','PULL','PUMP',
-  'PURE','PUSH','QUIT','RACE','RAGE','RAID','RAIL','RAIN','RANK','RARE',
-  'RATE','READ','REAL','REAR','RELY','RENT','REST','RICE','RICH','RIDE',
-  'RING','RISE','RISK','ROAD','ROCK','RODE','ROLE','ROLL','ROOF','ROOM',
-  'ROOT','ROPE','ROSE','RULE','RUSH','SAFE','SAID','SAKE','SALE','SALT',
-  'SAME','SAND','SANG','SAVE','SEAL','SEAT','SEED','SEEM','SEEN',
-  'SELF','SELL','SEND','SENT','SEPT','SHED','SHIP','SHOP','SHOT','SHOW',
-  'SHUT','SICK','SIDE','SIGN','SILK','SITE','SIZE','SKIN','SLIP','SLOT',
-  'SLOW','SNAP','SNOW','SOFT','SOIL','SOLD','SOLE','SOME','SONG','SOON',
-  'BENCH','BLACK','BLADE','BLAME','BLANK','BLAST','BLAZE','BLEED','BLEND',
-  'BLESS','BLIND','BLOCK','BLOOD','BLOOM','BLOWN','BLUES','BOARD','BONUS',
-  'BOOST','BOUND','BRAIN','BRAND','BRAVE','BREAD','BREAK','BREED','BRICK',
-  'BRIEF','BRING','BROAD','BROKE','BROWN','BUILD','BUNCH','BURST','BUYER',
-  'CABIN','CARRY','CATCH','CAUSE','CHAIN','CHAIR','CHALK','CHAOS','CHARM',
-  'CHART','CHASE','CHEAP','CHECK','CHEEK','CHEER','CHESS','CHEST','CHIEF',
-  'CHILD','CHINA','CHUNK','CIVIC','CIVIL','CLAIM','CLASS','CLEAN','CLEAR',
-  'CLIMB','CLING','CLOCK','CLONE','CLOSE','CLOTH','CLOUD','COACH','COAST',
-  'COLOR','COMET','COMIC','COUNT','COURT','COVER','CRACK','CRAFT','CRANE',
-  'CRASH','CRAZY','CREAM','CRIME','CROSS','CROWD','CROWN','CRUEL','CRUSH',
-  'CURVE','CYCLE','DAILY','DANCE','DEATH','DEBUT','DELAY','DELTA','DENSE',
-  'DEPTH','DEVIL','DIARY','DIRTY','DOUBT','DOZEN','DRAFT','DRAIN','DRAMA',
-  'DRANK','DRAWN','DREAM','DRESS','DRIED','DRIFT','DRINK','DRIVE','DRUMS',
+const VALID_WORDS = [
   'MATH','READ','WRITE','LEARN','BOOK','NOTE','PEN','DESK','EXAM','TEST',
   'QUIZ','STUDY','CLASS','TEACH','GRAIN','GRAND','GRANT','GRAPH','GRASP',
   'GRAVE','GREAT','GREEN','GREET','GRIEF','GRIND','GROSS','GROUP','GROWN',
   'GUARD','GUESS','GUEST','GUIDE','GUILD','GUILT','HAPPY','HEART','HEAVY',
+  'POLL','POND','POOL','POOR','PORT','POST','POUR','PRAY','PULL','PUMP',
+  'PURE','PUSH','QUIT','RACE','RAGE','RAID','RAIL','RAIN','RANK','RARE',
+  'RATE','REAL','REAR','RELY','RENT','REST','RICE','RICH','RIDE','RING',
+  'RISK','ROAD','ROCK','RODE','ROLE','ROLL','ROOF','ROOM','ROOT','ROPE',
+  'SAFE','SAID','SAKE','SALE','SALT','SAME','SAND','SAVE','SEAL','SEAT',
   'AT','BE','BY','DO','GO','HE','IF','IN','IS','IT','ME','MY','NO','OF',
   'ON','OR','SO','TO','UP','US','WE','AM','AN','AS','AX'
-]);
+];
 
 type MultiplierType = 'TW' | 'DW' | 'TL' | 'DL' | null;
 
@@ -156,6 +139,7 @@ export default function ScrabbleGame() {
   const [gameMode, setGameMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [opponentType, setOpponentType] = useState<'ai' | 'local' | 'matchmaker'>('ai');
   const [opponentName, setOpponentName] = useState('Computer (AI)');
+  const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
 
   const [board, setBoard] = useState<BoardCell[][]>(createInitialBoard);
   const [tileBag, setTileBag] = useState<string[]>([]);
@@ -170,13 +154,30 @@ export default function ScrabbleGame() {
   const [isBotThinking, setIsBotThinking] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [activeModalTab, setActiveModalTab] = useState<'rules' | 'how-to-play' | 'values'>('rules');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [roomCode, setRoomCode] = useState('');
+
+  const generateRoomCode = useCallback(() => {
+    const code = 'SCRABBLE-' + Math.floor(1000 + Math.random() * 9000);
+    setRoomCode(code);
+    return code;
+  }, []);
+
+  const copyInviteLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?room=${roomCode || generateRoomCode()}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    speakVoice('Invite link copied to clipboard!');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
 
   const startMode = (type: 'ai' | 'local' | 'matchmaker') => {
     setOpponentType(type);
+    generateRoomCode();
     if (type === 'matchmaker') {
       setGameMode('matching');
     } else {
-      setOpponentName(type === 'ai' ? 'Computer (AI)' : 'Player 2 (Local)');
+      setOpponentName(type === 'ai' ? `Computer (${difficulty} AI)` : 'Player 2 (Local)');
       initGame();
       setGameMode('playing');
     }
@@ -217,6 +218,94 @@ export default function ScrabbleGame() {
     setMessage('Your turn! Select a tile and place it on the board.');
     speakVoice('Scrabble game started. Your turn!');
   }, []);
+
+  /* ═══════════════════════ AI OPPONENT AUTOMATION ═══════════════════════ */
+  useEffect(() => {
+    if (gameMode === 'playing' && opponentType === 'ai' && turn === 'opponent' && !isBotThinking) {
+      setIsBotThinking(true);
+      setMessage('🤖 Computer is searching for a word...');
+
+      const timer = setTimeout(() => {
+        // AI Searches dictionary for a word that can be formed from its rack
+        const rackStr = opponentRack.join('');
+        let candidateWord = '';
+        
+        // Filter dictionary by difficulty
+        const maxLen = difficulty === 'Easy' ? 3 : difficulty === 'Medium' ? 5 : 7;
+        const suitableWords = VALID_WORDS.filter(w => w.length <= maxLen);
+
+        for (const w of suitableWords) {
+          const rackCopy = [...opponentRack];
+          let canForm = true;
+          for (const char of w) {
+            const idx = rackCopy.indexOf(char);
+            if (idx !== -1) {
+              rackCopy.splice(idx, 1);
+            } else {
+              canForm = false;
+              break;
+            }
+          }
+          if (canForm) {
+            candidateWord = w;
+            break;
+          }
+        }
+
+        if (!candidateWord) {
+          candidateWord = 'GO';
+        }
+
+        // Place word on board (horizontally in middle area)
+        let r = 7;
+        let startC = 7 - Math.floor(candidateWord.length / 2);
+        if (startC < 0) startC = 0;
+
+        // Check if row has empty space
+        let canPlace = true;
+        for (let i = 0; i < candidateWord.length; i++) {
+          if (board[r][startC + i]?.letter !== null) {
+            r = (r + 1) % 15;
+            break;
+          }
+        }
+
+        const newBoard = board.map(row => [...row]);
+        let pts = 0;
+        const usedLetters: string[] = [];
+
+        for (let i = 0; i < candidateWord.length; i++) {
+          const char = candidateWord[i];
+          newBoard[r][startC + i] = { ...newBoard[r][startC + i], letter: char, isTemp: false };
+          pts += LETTER_VALUES[char] || 1;
+          usedLetters.push(char);
+        }
+
+        setBoard(newBoard);
+        setOpponentScore(prev => prev + pts);
+        playScrabbleSFX('valid');
+        speakVoice(`Computer played ${candidateWord} for ${pts} points.`);
+        setMessage(`Computer played ${candidateWord} (+${pts} pts).`);
+
+        // Replenish AI Rack
+        const newORack = [...opponentRack];
+        usedLetters.forEach(l => {
+          const idx = newORack.indexOf(l);
+          if (idx !== -1) newORack.splice(idx, 1);
+        });
+
+        const bag = [...tileBag];
+        const drawn = bag.splice(0, 7 - newORack.length);
+        setTileBag(bag);
+        setOpponentRack([...newORack, ...drawn]);
+
+        setIsBotThinking(false);
+        setTurn('player');
+      }, 1400);
+
+      return () => clearTimeout(timer);
+    }
+  }, [turn, opponentType, gameMode, isBotThinking, opponentRack, board, tileBag, difficulty]);
 
   const handleCellClick = (r: number, c: number) => {
     if (turn !== 'player' || isBotThinking) return;
@@ -278,7 +367,7 @@ export default function ScrabbleGame() {
 
     const wordStr = placedTiles.map(pt => pt.letter).join('');
     
-    if (VALID_WORDS.has(wordStr) || wordStr.length >= 2) {
+    if (VALID_WORDS.includes(wordStr) || wordStr.length >= 2) {
       playScrabbleSFX('valid');
       let pts = 0;
       placedTiles.forEach(pt => {
@@ -319,20 +408,40 @@ export default function ScrabbleGame() {
       <GameLayout title="Scrabble Lobby" icon={<ALargeSmall />} accentColor="#ec4899" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          height: '100%', gap: '24px', color: '#0f172a', textAlign: 'center', padding: '16px'
+          height: '100%', gap: '20px', color: '#0f172a', textAlign: 'center', padding: '16px'
         }}>
           <div>
             <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#ffffff', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               🔤 Scrabble Zone
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '500px', fontWeight: 600, margin: '0 auto' }}>
-              Play 15x15 Scrabble in a zero-scroll 16:9 widescreen layout with Text-to-Speech talking voice narration!
+              Play 15x15 Scrabble in a zero-scroll 16:9 widescreen layout with Text-to-Speech talking voice narration & Invite Links!
             </p>
+          </div>
+
+          {/* Difficulty Selector */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <span style={{ fontSize: '13px', fontWeight: 900, color: '#fff' }}>Difficulty:</span>
+            {(['Easy', 'Medium', 'Hard'] as const).map(d => (
+              <button
+                key={d}
+                onClick={() => setDifficulty(d)}
+                style={{
+                  padding: '6px 14px', borderRadius: '8px', border: '2px solid #000',
+                  fontSize: '12px', fontWeight: 900, cursor: 'pointer',
+                  background: difficulty === d ? '#ec4899' : '#ffffff',
+                  color: difficulty === d ? '#ffffff' : '#000000',
+                  boxShadow: '2px 2px 0px #000000'
+                }}
+              >
+                {d}
+              </button>
+            ))}
           </div>
 
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {[
-              { type: 'ai', title: 'Play vs Computer', desc: 'Dictionary AI Bot', icon: Monitor },
+              { type: 'ai', title: 'Play vs Computer', desc: `${difficulty} AI Bot`, icon: Monitor },
               { type: 'local', title: 'Pass & Play', desc: 'Local 2-player', icon: Users },
               { type: 'matchmaker', title: 'Grade Matchmaking', desc: 'Find classmates', icon: User }
             ].map(m => (
@@ -413,7 +522,7 @@ export default function ScrabbleGame() {
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
         
-        {/* ─── LEFT PANEL: SCORE & TILE BAG ─── */}
+        {/* ─── LEFT PANEL: SCORE, DIFFICULTY & INVITE LINK ─── */}
         <div style={{
           flex: '0 0 190px', width: '190px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
@@ -432,6 +541,20 @@ export default function ScrabbleGame() {
           }}>
             {message}
           </div>
+
+          {/* Copy Shareable Room Invite Link Button */}
+          <button
+            onClick={copyInviteLink}
+            style={{
+              padding: '8px', borderRadius: '8px', border: '2px solid #000',
+              background: copiedLink ? '#22c55e' : '#fbbf24', color: '#000', fontWeight: 900, fontSize: '11px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              boxShadow: '2px 2px 0 #000'
+            }}
+          >
+            {copiedLink ? <Check size={14} /> : <Share2 size={14} />}
+            {copiedLink ? 'Link Copied!' : 'Copy Invite Link'}
+          </button>
 
           <button
             onClick={() => setShowRulesModal(true)}

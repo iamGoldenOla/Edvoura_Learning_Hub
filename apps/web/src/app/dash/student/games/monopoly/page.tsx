@@ -267,6 +267,23 @@ export default function MonopolyPage() {
   const [gameMode, setGameMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [lobbyMode, setLobbyMode] = useState<'local' | 'ai' | 'matchmaker'>('ai');
   const [numPlayers, setNumPlayers] = useState(2);
+  const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [roomCode, setRoomCode] = useState('');
+
+  const generateRoomCode = useCallback(() => {
+    const code = 'MONOPOLY-' + Math.floor(1000 + Math.random() * 9000);
+    setRoomCode(code);
+    return code;
+  }, []);
+
+  const copyInviteLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?room=${roomCode || generateRoomCode()}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    playMonopolySFX('cash');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
   
   const [players, setPlayers] = useState<PlayerState[]>([]);
   const [board, setBoard] = useState<BoardSpace[]>(createBoard);

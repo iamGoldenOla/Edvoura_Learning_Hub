@@ -332,6 +332,23 @@ export default function ChessPage() {
   const [mode, setMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [oppType, setOppType] = useState<'ai' | 'local' | 'match'>('ai');
   const [oppName, setOppName] = useState('Computer (AI)');
+  const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [roomCode, setRoomCode] = useState('');
+
+  const generateRoomCode = useCallback(() => {
+    const code = 'CHESS-' + Math.floor(1000 + Math.random() * 9000);
+    setRoomCode(code);
+    return code;
+  }, []);
+
+  const copyInviteLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?room=${roomCode || generateRoomCode()}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    playChessSFX('check');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
 
   const [gs, setGS] = useState<GS>(INIT_STATE);
   const [sel, setSel] = useState<Position | null>(null);
