@@ -332,96 +332,103 @@ export default function JengaGame() {
             width: '100%', height: 'calc(100% - 40px)', background: '#0b0f19', border: '3px solid #000',
             borderRadius: '16px', overflow: 'hidden', position: 'relative',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            perspective: '1200px'
+            perspective: '1400px'
           }}>
             
-            {/* 3D Rotating Tower Wrapper */}
-            <div style={{
-              display: 'flex', flexDirection: 'column-reverse', alignItems: 'center',
-              transformStyle: 'preserve-3d',
-              transform: isCrashed
-                ? 'rotateX(75deg) rotateZ(45deg) translateZ(-60px)'
-                : `rotateX(58deg) rotateZ(${rotationAngle + (Math.sin(wobble) * (wobble / 15))}deg)`,
-              transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-              paddingBottom: '40px'
-            }}>
-              
-              {/* Wooden Base Platform */}
-              <div style={{
-                width: '210px', height: '210px', background: '#451a03',
-                border: '4px solid #000000', borderRadius: '12px',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.5)',
-                marginBottom: '10px', transform: 'translateZ(-15px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fbbf24', fontSize: '12px', fontWeight: 950, letterSpacing: '2px'
-              }}>
-                EDVOURA 3D TOWER
-              </div>
+            {/* 3D Rotating Tower Wrapper with Dynamic Scaling */}
+            {(() => {
+              const layerSpacing = totalLayers === 12 ? 16 : totalLayers === 18 ? 11 : 8.5;
+              const towerScale = totalLayers === 12 ? 0.85 : totalLayers === 18 ? 0.68 : 0.54;
 
-              {/* Stacked 3D Wood Block Layers */}
-              {Array.from({ length: totalLayers }).map((_, layerIdx) => {
-                const layerBlocks = tower.filter(b => b.layer === layerIdx);
-                const isOddLayer = layerIdx % 2 === 1;
-
-                // Wobble vibration calculation for layer
-                const layerJitter = wobble > 30 ? (Math.sin(layerIdx * 1.5) * (wobble / 25)) : 0;
-
-                return (
-                  <div
-                    key={layerIdx}
-                    style={{
-                      display: 'flex', gap: '6px',
-                      transformStyle: 'preserve-3d',
-                      transform: `rotateZ(${isOddLayer ? 90 : 0}deg) translateX(${layerJitter}px) translateZ(${layerIdx * 24}px)`,
-                      margin: '2px 0',
-                      transition: 'transform 0.2s ease'
-                    }}
-                  >
-                    {layerBlocks.map(block => {
-                      if (block.pulled) return <div key={block.id} style={{ width: '56px', height: '26px' }} />;
-
-                      return (
-                        <div
-                          key={block.id}
-                          onClick={() => handleBlockPull(block.id, block.layer)}
-                          style={{
-                            width: '56px', height: '26px', position: 'relative',
-                            transformStyle: 'preserve-3d', cursor: isCrashed ? 'default' : 'pointer',
-                            transition: 'transform 0.15s ease'
-                          }}
-                        >
-                          {/* 3D Top Face */}
-                          <div style={{
-                            position: 'absolute', inset: 0, background: '#d97706',
-                            border: '1.5px solid #000000', borderRadius: '4px',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '10px', fontWeight: 950, color: '#ffffff',
-                            boxShadow: 'inset 0 0 4px rgba(255,255,255,0.4)',
-                            transform: 'translateZ(12px)'
-                          }}>
-                            L{block.layer + 1}
-                          </div>
-
-                          {/* 3D Front Face */}
-                          <div style={{
-                            position: 'absolute', width: '100%', height: '12px', bottom: 0,
-                            background: '#b45309', border: '1.5px solid #000000', borderRadius: '2px',
-                            transformOrigin: 'bottom', transform: 'rotateX(-90deg)'
-                          }} />
-
-                          {/* 3D Right Side Face */}
-                          <div style={{
-                            position: 'absolute', width: '12px', height: '100%', right: 0,
-                            background: '#78350f', border: '1.5px solid #000000', borderRadius: '2px',
-                            transformOrigin: 'right', transform: 'rotateY(90deg)'
-                          }} />
-                        </div>
-                      );
-                    })}
+              return (
+                <div style={{
+                  display: 'flex', flexDirection: 'column-reverse', alignItems: 'center',
+                  transformStyle: 'preserve-3d',
+                  transformOrigin: 'center center',
+                  transform: isCrashed
+                    ? `scale(${towerScale}) rotateX(65deg) rotateZ(45deg) translateZ(-40px)`
+                    : `scale(${towerScale}) rotateX(46deg) rotateZ(${rotationAngle + (Math.sin(wobble) * (wobble / 15))}deg) translateY(60px)`,
+                  transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}>
+                  
+                  {/* Wooden Base Platform */}
+                  <div style={{
+                    width: '210px', height: '210px', background: '#451a03',
+                    border: '4px solid #000000', borderRadius: '12px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.5)',
+                    marginBottom: '10px', transform: 'translateZ(-15px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fbbf24', fontSize: '12px', fontWeight: 950, letterSpacing: '2px'
+                  }}>
+                    EDVOURA 3D TOWER
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Stacked 3D Wood Block Layers */}
+                  {Array.from({ length: totalLayers }).map((_, layerIdx) => {
+                    const layerBlocks = tower.filter(b => b.layer === layerIdx);
+                    const isOddLayer = layerIdx % 2 === 1;
+
+                    // Wobble vibration calculation for layer
+                    const layerJitter = wobble > 30 ? (Math.sin(layerIdx * 1.5) * (wobble / 25)) : 0;
+
+                    return (
+                      <div
+                        key={layerIdx}
+                        style={{
+                          display: 'flex', gap: '6px',
+                          transformStyle: 'preserve-3d',
+                          transform: `rotateZ(${isOddLayer ? 90 : 0}deg) translateX(${layerJitter}px) translateZ(${layerIdx * layerSpacing}px)`,
+                          margin: '2px 0',
+                          transition: 'transform 0.2s ease'
+                        }}
+                      >
+                        {layerBlocks.map(block => {
+                          if (block.pulled) return <div key={block.id} style={{ width: '56px', height: '26px' }} />;
+
+                          return (
+                            <div
+                              key={block.id}
+                              onClick={() => handleBlockPull(block.id, block.layer)}
+                              style={{
+                                width: '56px', height: '26px', position: 'relative',
+                                transformStyle: 'preserve-3d', cursor: isCrashed ? 'default' : 'pointer',
+                                transition: 'transform 0.15s ease'
+                              }}
+                            >
+                              {/* 3D Top Face */}
+                              <div style={{
+                                position: 'absolute', inset: 0, background: '#d97706',
+                                border: '1.5px solid #000000', borderRadius: '4px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: '10px', fontWeight: 950, color: '#ffffff',
+                                boxShadow: 'inset 0 0 4px rgba(255,255,255,0.4)',
+                                transform: 'translateZ(12px)'
+                              }}>
+                                L{block.layer + 1}
+                              </div>
+
+                              {/* 3D Front Face */}
+                              <div style={{
+                                position: 'absolute', width: '100%', height: '12px', bottom: 0,
+                                background: '#b45309', border: '1.5px solid #000000', borderRadius: '2px',
+                                transformOrigin: 'bottom', transform: 'rotateX(-90deg)'
+                              }} />
+
+                              {/* 3D Right Side Face */}
+                              <div style={{
+                                position: 'absolute', width: '12px', height: '100%', right: 0,
+                                background: '#78350f', border: '1.5px solid #000000', borderRadius: '2px',
+                                transformOrigin: 'right', transform: 'rotateY(90deg)'
+                              }} />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Crash Game Over Overlay */}
