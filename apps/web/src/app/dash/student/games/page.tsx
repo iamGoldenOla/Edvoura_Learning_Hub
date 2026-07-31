@@ -4,10 +4,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Trophy, Star, RefreshCw, Crown, Circle, Grid3X3, ALargeSmall, Type, Dice1,
-  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket, Puzzle, Layers
+  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket, Puzzle, Layers, Award
 } from 'lucide-react';
 
 const GAMES = [
+  {
+    id: 'millionaire',
+    title: 'Who Wants to Be a Millionaire (3D)',
+    description: 'Step into the 3D TV Studio! Answer 15 questions across Sports, History, Politics, Music, Tech & Crypto to win ₦1,000,000!',
+    icon: Award,
+    color: '#8b5cf6',
+    badgeBg: '#f3e8ff',
+    badgeText: '#6d28d9',
+    difficulty: 'All Levels',
+    emoji: '💰',
+    category: '3D Game Show'
+  },
   {
     id: 'chess',
     title: 'Chess',

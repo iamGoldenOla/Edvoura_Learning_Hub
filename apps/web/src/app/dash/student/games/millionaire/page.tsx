@@ -1,0 +1,770 @@
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import GameLayout from '@/components/games/GameLayout';
+import { Award, PhoneCall, Users, RefreshCw, Check, BookOpen, Share2 } from 'lucide-react';
+
+const ACCENT_COLOR = '#8b5cf6'; // Electric Purple Studio Accent
+
+/* ═══════════════════════ VOICE & AUDIO SYNTHESIZER ═══════════════════════ */
+function speakVoice(text: string) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.9;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {}
+}
+
+function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline') {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    if (type === 'lock') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.15);
+    } else if (type === 'win') {
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.1 + 0.3);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.1);
+        osc.stop(ctx.currentTime + idx * 0.1 + 0.3);
+      });
+    } else if (type === 'lose') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'lifeline') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.25);
+    }
+  } catch (e) {}
+}
+
+/* ═══════════════════════ MONEY LADDER PRIZE VALUES ═══════════════════════ */
+const MONEY_LADDER = [
+  { level: 15, prize: '₦1,000,000', safe: true },
+  { level: 14, prize: '₦500,000', safe: false },
+  { level: 13, prize: '₦250,000', safe: false },
+  { level: 12, prize: '₦125,000', safe: false },
+  { level: 11, prize: '₦64,000', safe: false },
+  { level: 10, prize: '₦32,000', safe: true }, // Safe Haven 2
+  { level: 9,  prize: '₦16,000', safe: false },
+  { level: 8,  prize: '₦8,000', safe: false },
+  { level: 7,  prize: '₦4,000', safe: false },
+  { level: 6,  prize: '₦2,000', safe: false },
+  { level: 5,  prize: '₦1,000', safe: true }, // Safe Haven 1
+  { level: 4,  prize: '₦500', safe: false },
+  { level: 3,  prize: '₦300', safe: false },
+  { level: 2,  prize: '₦200', safe: false },
+  { level: 1,  prize: '₦100', safe: false },
+];
+
+/* ═══════════════════════ DIVERSE MILLIONAIRE QUESTION BANK (12 CATEGORIES) ═══════════════════════ */
+export interface MillionaireQuestion {
+  q: string;
+  options: [string, string, string, string];
+  a: number; // 0..3
+  category: string;
+  level: number; // 1..15 difficulty tier
+}
+
+const QUESTION_BANK: MillionaireQuestion[] = [
+  // LEVEL 1 - EASY
+  { level: 1, category: 'Sports', q: 'How many players are on a standard football (soccer) team on the pitch?', options: ['9', '10', '11', '12'], a: 2 },
+  { level: 1, category: 'Music', q: 'Which musical instrument has 88 black and white keys?', options: ['Guitar', 'Violin', 'Piano', 'Flute'], a: 2 },
+  { level: 1, category: 'Technology', q: 'What does "WWW" stand for in a website address?', options: ['World Wide Web', 'World Web Wide', 'Wide World Web', 'Web World Wide'], a: 0 },
+  
+  // LEVEL 2 - EASY
+  { level: 2, category: 'History', q: 'In which year did Nigeria gain independence from British rule?', options: ['1957', '1960', '1963', '1970'], a: 1 },
+  { level: 2, category: 'Movies', q: 'Which superhero is also known as the "Caped Crusader"?', options: ['Superman', 'Batman', 'Spider-Man', 'Iron Man'], a: 1 },
+  { level: 2, category: 'Current Affairs', q: 'What is the capital city of Nigeria?', options: ['Lagos', 'Abuja', 'Kano', 'Port Harcourt'], a: 1 },
+
+  // LEVEL 3 - EASY
+  { level: 3, category: 'Crypto & Tech', q: 'Who is the anonymous creator of Bitcoin?', options: ['Satoshi Nakamoto', 'Vitalik Buterin', 'Elon Musk', 'Mark Zuckerberg'], a: 0 },
+  { level: 3, category: 'Art', q: 'Who painted the famous masterpiece "Mona Lisa"?', options: ['Vincent van Gogh', 'Leonardo da Vinci', 'Pablo Picasso', 'Claude Monet'], a: 1 },
+  { level: 3, category: 'Education', q: 'Which gas do green plants absorb during photosynthesis?', options: ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Helium'], a: 1 },
+
+  // LEVEL 4 - EASY/MEDIUM
+  { level: 4, category: 'Politics', q: 'How many states are in the Federal Republic of Nigeria?', options: ['30', '32', '36', '40'], a: 2 },
+  { level: 4, category: 'Sports', q: 'Which country hosted the 2022 FIFA World Cup?', options: ['Brazil', 'Qatar', 'France', 'Russia'], a: 1 },
+  { level: 4, category: 'Music', q: 'Who is widely celebrated as the King of Pop?', options: ['Elvis Presley', 'Michael Jackson', 'Prince', 'Stevie Wonder'], a: 1 },
+
+  // LEVEL 5 - SAFE HAVEN 1 (₦1,000)
+  { level: 5, category: 'Science', q: 'What is the chemical symbol for Gold on the periodic table?', options: ['Ag', 'Au', 'Fe', 'Cu'], a: 1 },
+  { level: 5, category: 'Literature', q: 'Who wrote the famous Nigerian novel "Things Fall Apart"?', options: ['Wole Soyinka', 'Chinua Achebe', 'Chimamanda Adichie', 'Ben Okri'], a: 1 },
+  { level: 5, category: 'Technology', q: 'Which company developed the Android mobile operating system?', options: ['Apple', 'Microsoft', 'Google', 'Nokia'], a: 2 },
+
+  // LEVEL 6 - MEDIUM
+  { level: 6, category: 'Crypto', q: 'What is the underlying decentralized digital ledger system used by cryptocurrencies?', options: ['CloudDB', 'Blockchain', 'Datagrid', 'Mainframe'], a: 1 },
+  { level: 6, category: 'History', q: 'Which ancient African empire was ruled by Mansa Musa, the richest man in history?', options: ['Mali Empire', 'Songhai Empire', 'Ghana Empire', 'Zulu Empire'], a: 0 },
+  { level: 6, category: 'Art', q: 'Where is the famous Louvre Museum located?', options: ['London', 'Paris', 'Rome', 'New York'], a: 1 },
+
+  // LEVEL 7 - MEDIUM
+  { level: 7, category: 'Movies', q: 'Which film won 11 Oscars and features Jack and Rose on a doomed ship?', options: ['Avatar', 'Titanic', 'Gladiator', 'Inception'], a: 1 },
+  { level: 7, category: 'Politics', q: 'What is the headquarters location of the United Nations (UN)?', options: ['Geneva', 'New York City', 'London', 'Brussels'], a: 1 },
+  { level: 7, category: 'Sports', q: 'How many grand slam tennis titles are played annually in professional tennis?', options: ['3', '4', '5', '6'], a: 1 },
+
+  // LEVEL 8 - MEDIUM
+  { level: 8, category: 'Science', q: 'What is the speed of light in a vacuum approximately?', options: ['300,000 km/s', '150,000 km/s', '500,000 km/s', '1,000,000 km/s'], a: 0 },
+  { level: 8, category: 'Music', q: 'Which Nigerian Afrobeat legend created the genre "Afrobeat" and opened the Shrine in Lagos?', options: ['Fela Kuti', 'King Sunny Ade', 'Ebenezer Obey', 'Majek Fashek'], a: 0 },
+  { level: 8, category: 'Technology', q: 'What does CPU stand for in computer hardware?', options: ['Central Processing Unit', 'Central Power Unit', 'Control Processing Unit', 'Computer Core Unit'], a: 0 },
+
+  // LEVEL 9 - MEDIUM/HARD
+  { level: 9, category: 'History', q: 'Which Nigerian currency note features the portrait of Alvan Ikoku?', options: ['₦10', '₦50', '₦100', '₦200'], a: 0 },
+  { level: 9, category: 'Education', q: 'What is the derivative of x² with respect to x in Calculus?', options: ['x', '2x', 'x³', '2'], a: 1 },
+  { level: 9, category: 'Crypto', q: 'What smart contract blockchain platform was created by Vitalik Buterin in 2015?', options: ['Bitcoin', 'Ethereum', 'Solana', 'Cardano'], a: 1 },
+
+  // LEVEL 10 - SAFE HAVEN 2 (₦32,000)
+  { level: 10, category: 'Current Affairs', q: 'Which is the longest river in Africa?', options: ['Amazon River', 'Nile River', 'Niger River', 'Congo River'], a: 1 },
+  { level: 10, category: 'Literature', q: 'Who was the first African to win the Nobel Prize in Literature in 1986?', options: ['Chinua Achebe', 'Wole Soyinka', 'Nadine Gordimer', 'Ngũgĩ wa Thiong’o'], a: 1 },
+  { level: 10, category: 'Art', q: 'The ancient Bronze artifacts depicting royal court art originated from which Nigerian kingdom?', options: ['Oyo Kingdom', 'Benin Kingdom', 'Kano Kingdom', 'Ife Kingdom'], a: 1 },
+
+  // LEVEL 11 - HARD
+  { level: 11, category: 'Science', q: 'Which organelle is known as the "powerhouse of the cell" for producing ATP energy?', options: ['Nucleus', 'Ribosome', 'Mitochondria', 'Golgi Apparatus'], a: 2 },
+  { level: 11, category: 'Politics', q: 'Who was Nigeria’s first and only Prime Minister during the First Republic?', options: ['Nnamdi Azikiwe', 'Obafemi Awolowo', 'Abubakar Tafawa Balewa', 'Ahmadu Bello'], a: 2 },
+  { level: 11, category: 'Technology', q: 'In Artificial Intelligence, what does the "P" stand for in GPT (e.g. ChatGPT)?', options: ['Processing', 'Pre-trained', 'Predictive', 'Programmed'], a: 1 },
+
+  // LEVEL 12 - HARD
+  { level: 12, category: 'Sports', q: 'Who holds the official world record for the 100m sprint at 9.58 seconds?', options: ['Tyson Gay', 'Usain Bolt', 'Yohan Blake', 'Asafa Powell'], a: 1 },
+  { level: 12, category: 'Movies', q: 'Which highest-grossing film of all time was directed by James Cameron and set on Pandora?', options: ['Avengers: Endgame', 'Avatar', 'Titanic', 'Star Wars'], a: 1 },
+  { level: 12, category: 'History', q: 'Which Treaty signed in 1919 officially ended World War I?', options: ['Treaty of Versailles', 'Treaty of Paris', 'Treaty of Rome', 'Treaty of Vienna'], a: 0 },
+
+  // LEVEL 13 - HARD
+  { level: 13, category: 'Crypto', q: 'What total maximum supply cap of Bitcoins will ever exist in protocol rules?', options: ['18 Million', '21 Million', '50 Million', '100 Million'], a: 1 },
+  { level: 13, category: 'Science', q: 'What is the name of the nearest star system to our Solar System at 4.24 light-years away?', options: ['Sirius', 'Alpha Centauri / Proxima', 'Betelgeuse', 'Andromeda'], a: 1 },
+  { level: 13, category: 'Music', q: 'Which Nigerian musical artist won a Grammy Award for Best Global Music Album for "Twice as Tall"?', options: ['Wizkid', 'Burna Boy', 'Davido', 'Tiwa Savage'], a: 1 },
+
+  // LEVEL 14 - EXPERT
+  { level: 14, category: 'Education & Physics', q: 'Which fundamental physical law states that Energy cannot be created or destroyed, only transformed?', options: ['First Law of Thermodynamics', 'Second Law of Motion', 'Boyle’s Law', 'Hooke’s Law'], a: 0 },
+  { level: 14, category: 'Art & History', q: 'The famous terracotta sculptures dating back to 1500 BC were discovered in which Nigerian culture site?', options: ['Nok Culture', 'Igbo-Ukwu Culture', 'Ife Culture', 'Tada Culture'], a: 0 },
+  { level: 14, category: 'Technology', q: 'Who authored the seminal 1948 paper "A Mathematical Theory of Communication" laying information theory foundations?', options: ['Alan Turing', 'Claude Shannon', 'John von Neumann', 'Ada Lovelace'], a: 1 },
+
+  // LEVEL 15 - ₦1,000,000 GRAND PRIZE QUESTION!
+  { level: 15, category: 'Grand Master', q: 'Which element on the periodic table has the highest electrical conductivity of all metals at room temperature?', options: ['Gold (Au)', 'Silver (Ag)', 'Copper (Cu)', 'Platinum (Pt)'], a: 1 },
+  { level: 15, category: 'Grand Master', q: 'In 1914, Lord Frederick Lugard amalgamated which two British protectorates to form modern Nigeria?', options: ['Northern & Southern Protectorates', 'Eastern & Western Protectorates', 'Lagos & Niger Protectorates', 'Benin & Sokoto Protectorates'], a: 0 },
+  { level: 15, category: 'Grand Master', q: 'What is the name of the hypothetical boundary surrounding a black hole beyond which nothing can escape?', options: ['Event Horizon', 'Singularity Point', 'Photon Sphere', 'Accretion Disk'], a: 0 }
+];
+
+export default function MillionaireGame() {
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [scorePrize, setScorePrize] = useState('₦0');
+  const [activeQ, setActiveQ] = useState<MillionaireQuestion | null>(null);
+  
+  const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
+  const [showAnswerResult, setShowAnswerResult] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [isMillionaire, setIsMillionaire] = useState(false);
+
+  // 4 Famous Lifelines State
+  const [lifelines, setLifelines] = useState({
+    fiftyFifty: true,
+    phoneAFriend: true,
+    askAudience: true,
+    switchQuestion: true,
+  });
+
+  const [disabledOptions, setDisabledOptions] = useState<number[]>([]);
+  const [activeModal, setActiveModal] = useState<'friend' | 'audience' | 'rules' | null>(null);
+  const [friendAdvice, setFriendAdvice] = useState('');
+  const [audiencePoll, setAudiencePoll] = useState<number[]>([25, 25, 25, 25]);
+  const [rotationAngle, setRotationAngle] = useState(0);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  // Load question for current level
+  const loadQuestionForLevel = useCallback((lvl: number) => {
+    const questionsForLvl = QUESTION_BANK.filter(q => q.level === lvl);
+    const q = questionsForLvl[Math.floor(Math.random() * questionsForLvl.length)];
+    setActiveQ(q);
+    setSelectedOption(null);
+    setIsLocked(false);
+    setShowAnswerResult(false);
+    setDisabledOptions([]);
+
+    speakVoice(`Question for ${MONEY_LADDER.find(m => m.level === lvl)?.prize || ''}. ${q.q}`);
+  }, []);
+
+  // Initialize Game
+  const initGame = useCallback(() => {
+    setCurrentLevel(1);
+    setScorePrize('₦0');
+    setIsGameOver(false);
+    setIsMillionaire(false);
+    setLifelines({
+      fiftyFifty: true,
+      phoneAFriend: true,
+      askAudience: true,
+      switchQuestion: true,
+    });
+    setActiveModal(null);
+    loadQuestionForLevel(1);
+    playMillionaireSFX('lock');
+  }, [loadQuestionForLevel]);
+
+  useEffect(() => {
+    initGame();
+  }, [initGame]);
+
+  // Handle Option Selection
+  const handleSelectOption = (idx: number) => {
+    if (isLocked || isGameOver || disabledOptions.includes(idx)) return;
+    setSelectedOption(idx);
+    playMillionaireSFX('lock');
+  };
+
+  // Lock Answer & Submit
+  const handleLockAnswer = () => {
+    if (selectedOption === null || !activeQ || isLocked) return;
+    setIsLocked(true);
+    speakVoice("Final Answer locked in. Let's see if you are correct...");
+
+    setTimeout(() => {
+      setShowAnswerResult(true);
+      const isCorrect = selectedOption === activeQ.a;
+
+      if (isCorrect) {
+        playMillionaireSFX('win');
+        const currentPrize = MONEY_LADDER.find(m => m.level === currentLevel)?.prize || '₦0';
+        setScorePrize(currentPrize);
+
+        if (currentLevel === 15) {
+          setIsMillionaire(true);
+          setIsGameOver(true);
+          speakVoice("CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ONE MILLION NAIRA!");
+        } else {
+          speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`);
+          setTimeout(() => {
+            setCurrentLevel(l => l + 1);
+            loadQuestionForLevel(currentLevel + 1);
+          }, 2200);
+        }
+      } else {
+        playMillionaireSFX('lose');
+        
+        // Calculate safe haven payout
+        let safePayout = '₦0';
+        if (currentLevel > 10) safePayout = '₦32,000';
+        else if (currentLevel > 5) safePayout = '₦1,000';
+
+        setScorePrize(safePayout);
+        setIsGameOver(true);
+        speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`);
+      }
+    }, 2000);
+  };
+
+  /* ═══════════════════════ LIFELINE IMPLEMENTATIONS ═══════════════════════ */
+  const useFiftyFifty = () => {
+    if (!lifelines.fiftyFifty || !activeQ || isLocked) return;
+    playMillionaireSFX('lifeline');
+    
+    // Find 2 wrong options to disable
+    const wrongIndices = [0, 1, 2, 3].filter(i => i !== activeQ.a);
+    const shuffled = wrongIndices.sort(() => Math.random() - 0.5);
+    const toDisable = [shuffled[0], shuffled[1]];
+
+    setDisabledOptions(toDisable);
+    setLifelines(prev => ({ ...prev, fiftyFifty: false }));
+    speakVoice("50:50 Lifeline activated! Computer has eliminated two wrong answers.");
+  };
+
+  const usePhoneAFriend = () => {
+    if (!lifelines.phoneAFriend || !activeQ || isLocked) return;
+    playMillionaireSFX('lifeline');
+
+    // Simulate AI Mentor response with 85% accuracy
+    const isMentorSmart = Math.random() < 0.85;
+    const recommendedIdx = isMentorSmart ? activeQ.a : (activeQ.a + 1) % 4;
+    const optionText = activeQ.options[recommendedIdx];
+    const confidence = isMentorSmart ? 90 : 60;
+
+    setFriendAdvice(`"Hello! I am ${confidence}% confident that the correct answer is Option ${String.fromCharCode(65 + recommendedIdx)}: ${optionText}."`);
+    setActiveModal('friend');
+    setLifelines(prev => ({ ...prev, phoneAFriend: false }));
+    speakVoice(`Calling your mentor... Mentor suggests Option ${String.fromCharCode(65 + recommendedIdx)}`);
+  };
+
+  const useAskAudience = () => {
+    if (!lifelines.askAudience || !activeQ || isLocked) return;
+    playMillionaireSFX('lifeline');
+
+    // Generate audience voting percentages heavily weighted to correct answer
+    const poll = [0, 0, 0, 0];
+    const correctShare = Math.floor(Math.random() * 25) + 55; // 55% to 80%
+    poll[activeQ.a] = correctShare;
+
+    let remaining = 100 - correctShare;
+    [0, 1, 2, 3].filter(i => i !== activeQ.a).forEach((idx, i, arr) => {
+      if (i === arr.length - 1) {
+        poll[idx] = remaining;
+      } else {
+        const share = Math.floor(Math.random() * (remaining / 2));
+        poll[idx] = share;
+        remaining -= share;
+      }
+    });
+
+    setAudiencePoll(poll);
+    setActiveModal('audience');
+    setLifelines(prev => ({ ...prev, askAudience: false }));
+    speakVoice("Audience poll complete! Check the studio voting breakdown.");
+  };
+
+  const useSwitchQuestion = () => {
+    if (!lifelines.switchQuestion || !activeQ || isLocked) return;
+    playMillionaireSFX('lifeline');
+
+    setLifelines(prev => ({ ...prev, switchQuestion: false }));
+    loadQuestionForLevel(currentLevel);
+    speakVoice("Switch Question Lifeline used! Fresh question loaded.");
+  };
+
+  const copyInviteLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopiedLink(true);
+    playMillionaireSFX('lifeline');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  return (
+    <GameLayout
+      title="Who Wants to Be a Millionaire (3D)"
+      icon={<Award style={{ width: '24px', height: '24px' }} />}
+      accentColor={ACCENT_COLOR}
+      fullscreen={true}
+    >
+      <div style={{
+        display: 'flex', alignItems: 'stretch', height: '100%',
+        overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
+      }}>
+        
+        {/* ─── LEFT SIDEBAR: 4 FAMOUS LIFELINES & SCOREBOARD ─── */}
+        <div style={{
+          flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
+          overflow: 'hidden'
+        }}>
+          {/* Lifelines Box */}
+          <div style={{ background: '#111827', border: '2.5px solid #000', borderRadius: '12px', padding: '8px 10px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 950, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '8px' }}>
+              💡 4 Famous Lifelines
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+              <button
+                onClick={useFiftyFifty}
+                disabled={!lifelines.fiftyFifty || isLocked}
+                style={{
+                  padding: '8px', borderRadius: '8px', border: '1.5px solid #000',
+                  background: lifelines.fiftyFifty ? '#8b5cf6' : '#334155', color: '#fff',
+                  fontSize: '11px', fontWeight: 950, cursor: lifelines.fiftyFifty ? 'pointer' : 'default',
+                  opacity: lifelines.fiftyFifty ? 1 : 0.4
+                }}
+              >
+                50 : 50
+              </button>
+
+              <button
+                onClick={usePhoneAFriend}
+                disabled={!lifelines.phoneAFriend || isLocked}
+                style={{
+                  padding: '8px', borderRadius: '8px', border: '1.5px solid #000',
+                  background: lifelines.phoneAFriend ? '#22c55e' : '#334155', color: '#fff',
+                  fontSize: '10px', fontWeight: 950, cursor: lifelines.phoneAFriend ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px',
+                  opacity: lifelines.phoneAFriend ? 1 : 0.4
+                }}
+              >
+                <PhoneCall size={12} /> Friend
+              </button>
+
+              <button
+                onClick={useAskAudience}
+                disabled={!lifelines.askAudience || isLocked}
+                style={{
+                  padding: '8px', borderRadius: '8px', border: '1.5px solid #000',
+                  background: lifelines.askAudience ? '#38bdf8' : '#334155', color: '#000',
+                  fontSize: '10px', fontWeight: 950, cursor: lifelines.askAudience ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px',
+                  opacity: lifelines.askAudience ? 1 : 0.4
+                }}
+              >
+                <Users size={12} /> Audience
+              </button>
+
+              <button
+                onClick={useSwitchQuestion}
+                disabled={!lifelines.switchQuestion || isLocked}
+                style={{
+                  padding: '8px', borderRadius: '8px', border: '1.5px solid #000',
+                  background: lifelines.switchQuestion ? '#f59e0b' : '#334155', color: '#000',
+                  fontSize: '10px', fontWeight: 950, cursor: lifelines.switchQuestion ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px',
+                  opacity: lifelines.switchQuestion ? 1 : 0.4
+                }}
+              >
+                <RefreshCw size={12} /> Switch
+              </button>
+            </div>
+          </div>
+
+          {/* Money Ladder Standings */}
+          <div style={{
+            background: '#111827', border: '2.5px solid #000', borderRadius: '12px',
+            padding: '8px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px'
+          }}>
+            <div style={{ fontSize: '10px', fontWeight: 950, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
+              💰 Money Ladder
+            </div>
+            {MONEY_LADDER.map(item => {
+              const isCurrent = item.level === currentLevel;
+              const isPassed = item.level < currentLevel;
+
+              return (
+                <div
+                  key={item.level}
+                  style={{
+                    padding: '3px 8px', borderRadius: '6px',
+                    background: isCurrent ? '#fbbf24' : isPassed ? '#1e293b' : 'transparent',
+                    color: isCurrent ? '#000' : item.safe ? '#22c55e' : isPassed ? '#94a3b8' : '#ffffff',
+                    border: isCurrent ? '1.5px solid #000' : 'none',
+                    fontWeight: isCurrent || item.safe ? 950 : 800,
+                    fontSize: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                  }}
+                >
+                  <span>Level {item.level}</span>
+                  <span>{item.prize} {item.safe && '⭐'}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Bottom Share & Rules Controls */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <button
+              onClick={copyInviteLink}
+              style={{
+                padding: '6px 10px', borderRadius: '8px', border: '1.5px solid #000',
+                background: copiedLink ? '#22c55e' : '#fbbf24', color: '#000',
+                fontWeight: 950, fontSize: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+              }}
+            >
+              {copiedLink ? <Check size={12} /> : <Share2 size={12} />}
+              {copiedLink ? 'Link Copied!' : 'Share Challenge'}
+            </button>
+
+            <button
+              onClick={() => setActiveModal('rules')}
+              style={{
+                padding: '6px 10px', borderRadius: '8px', border: '1.5px solid #000',
+                background: '#38bdf8', color: '#000', fontWeight: 950, fontSize: '10px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+              }}
+            >
+              <BookOpen size={12} /> Rules & Guide
+            </button>
+          </div>
+        </div>
+
+        {/* ─── CENTER AREA: 3D ISOMETRIC TV GAME SHOW STUDIO ─── */}
+        <div style={{
+          flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative'
+        }}>
+          
+          {/* 3D Camera Controls */}
+          <div style={{
+            display: 'flex', gap: '12px', alignItems: 'center', background: '#111827',
+            padding: '4px 16px', borderRadius: '10px', border: '1.5px solid #1e293b',
+            marginBottom: '6px', zIndex: 10
+          }}>
+            <span style={{ fontSize: '11px', fontWeight: 950, color: '#fbbf24' }}>📹 Studio 3D Angle:</span>
+            <input
+              type="range"
+              min="-45"
+              max="45"
+              value={rotationAngle}
+              onChange={e => setRotationAngle(Number(e.target.value))}
+              style={{ width: '120px', cursor: 'pointer', accentColor: ACCENT_COLOR }}
+            />
+            <button
+              onClick={() => setRotationAngle(0)}
+              style={{ padding: '2px 8px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}
+            >
+              Center 3D
+            </button>
+          </div>
+
+          {/* 3D Studio Stage Viewport */}
+          <div style={{
+            width: '100%', height: 'calc(100% - 40px)', background: '#090d16', border: '3px solid #000',
+            borderRadius: '16px', overflow: 'hidden', position: 'relative',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
+            padding: '16px', boxSizing: 'border-box', perspective: '1200px'
+          }}>
+            
+            {/* 3D Hot Seats Studio Environment */}
+            <div style={{
+              width: '100%', height: '55%', position: 'relative',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              transformStyle: 'preserve-3d',
+              transform: `rotateX(28deg) rotateY(${rotationAngle}deg)`,
+              transition: 'transform 0.4s ease'
+            }}>
+              {/* Studio Spotlight Beam */}
+              <div style={{
+                position: 'absolute', top: 0, width: '220px', height: '220px',
+                background: 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)',
+                borderRadius: '50%', pointerEvents: 'none'
+              }} />
+
+              {/* Hot Seat Podium */}
+              <div style={{
+                width: '280px', height: '120px', background: '#111827',
+                border: '3.5px solid #8b5cf6', borderRadius: '24px',
+                boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4), inset 0 0 15px rgba(139, 92, 246, 0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-around',
+                padding: '12px', transform: 'translateZ(20px)'
+              }}>
+                {/* Host Seat */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#8b5cf6', border: '2px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                    🎙️
+                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#c084fc' }}>AI HOST</span>
+                </div>
+
+                {/* Hot Seat Center Screen */}
+                <div style={{ background: '#000', padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #fbbf24', textAlign: 'center' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24' }}>CURRENT PRIZE</div>
+                  <div style={{ fontSize: '14px', fontWeight: 950, color: '#fff' }}>{MONEY_LADDER.find(m => m.level === currentLevel)?.prize}</div>
+                </div>
+
+                {/* Player Seat */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#22c55e', border: '2px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                    🎓
+                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#4ade80' }}>SCHOLAR</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3D Question Card & 4 Option Hexagon Buttons */}
+            {activeQ && (
+              <div style={{ width: '100%', maxWidth: '640px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                
+                {/* Category Badge & Question Header */}
+                <div style={{
+                  background: '#111827', border: '2.5px solid #8b5cf6', borderRadius: '14px',
+                  padding: '12px 16px', boxShadow: '4px 4px 0 #000', textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '10px', fontWeight: 950, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    📌 Category: {activeQ.category} (Level {activeQ.level}/15)
+                  </div>
+                  <h2 style={{ fontSize: '15px', fontWeight: 950, color: '#ffffff', margin: 0, lineHeight: 1.4 }}>
+                    {activeQ.q}
+                  </h2>
+                </div>
+
+                {/* 4 Option Buttons Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {activeQ.options.map((optionText, idx) => {
+                    const letter = String.fromCharCode(65 + idx);
+                    const isSelected = selectedOption === idx;
+                    const isDisabled = disabledOptions.includes(idx);
+                    const isCorrectAnswer = activeQ.a === idx;
+
+                    let bg = '#111827';
+                    let borderColor = '#1e293b';
+                    let textColor = '#ffffff';
+
+                    if (isDisabled) {
+                      bg = '#0f172a';
+                      borderColor = '#1e293b';
+                      textColor = '#475569';
+                    } else if (showAnswerResult) {
+                      if (isCorrectAnswer) {
+                        bg = '#22c55e';
+                        borderColor = '#000000';
+                        textColor = '#ffffff';
+                      } else if (isSelected) {
+                        bg = '#ef4444';
+                        borderColor = '#000000';
+                        textColor = '#ffffff';
+                      }
+                    } else if (isSelected) {
+                      bg = '#f59e0b';
+                      borderColor = '#000000';
+                      textColor = '#000000';
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => handleSelectOption(idx)}
+                        disabled={isLocked || isDisabled}
+                        style={{
+                          padding: '10px 14px', borderRadius: '12px',
+                          border: `2px solid ${borderColor}`,
+                          background: bg, color: textColor,
+                          fontSize: '12px', fontWeight: 950,
+                          cursor: isLocked || isDisabled ? 'default' : 'pointer',
+                          display: 'flex', alignItems: 'center', gap: '8px',
+                          boxShadow: isSelected ? '4px 4px 0 #000' : 'none',
+                          opacity: isDisabled ? 0.25 : 1,
+                          transition: 'all 0.15s ease', textAlign: 'left'
+                        }}
+                      >
+                        <span style={{ color: '#fbbf24', fontWeight: 950 }}>{letter}:</span>
+                        <span>{isDisabled ? '—' : optionText}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Lock Final Answer Button */}
+                {!isGameOver && (
+                  <button
+                    onClick={handleLockAnswer}
+                    disabled={selectedOption === null || isLocked}
+                    style={{
+                      width: '100%', padding: '10px', borderRadius: '10px',
+                      border: '2px solid #000',
+                      background: selectedOption !== null && !isLocked ? '#fbbf24' : '#334155',
+                      color: selectedOption !== null && !isLocked ? '#000' : '#94a3b8',
+                      fontWeight: 950, fontSize: '13px', cursor: selectedOption !== null && !isLocked ? 'pointer' : 'default',
+                      boxShadow: selectedOption !== null && !isLocked ? '4px 4px 0 #000' : 'none'
+                    }}
+                  >
+                    {isLocked ? '🔒 Final Answer Locked! Checking...' : '🔒 Lock Final Answer'}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Game Over / Winner Overlay */}
+          {isGameOver && (
+            <div style={{
+              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              padding: '24px', zIndex: 50, color: '#fff', textAlign: 'center'
+            }}>
+              <Award size={64} color={isMillionaire ? '#fbbf24' : '#ef4444'} />
+              <h2 style={{ fontSize: '28px', fontWeight: 950, color: isMillionaire ? '#fbbf24' : '#ef4444', margin: '12px 0 6px 0' }}>
+                {isMillionaire ? '🎉 CONGRATULATIONS MILLIONAIRE! 🎉' : 'GAME OVER!'}
+              </h2>
+              <p style={{ fontSize: '15px', color: '#e2e8f0', margin: '0 0 20px 0', fontWeight: 800 }}>
+                You walk away with: <span style={{ color: '#22c55e', fontSize: '20px', fontWeight: 950 }}>{scorePrize}</span>
+              </p>
+              <button
+                onClick={initGame}
+                style={{ padding: '12px 28px', background: ACCENT_COLOR, color: '#fff', border: '2.5px solid #000', borderRadius: '12px', fontWeight: 950, fontSize: '14px', cursor: 'pointer', boxShadow: '4px 4px 0 #000' }}
+              >
+                Play Again 🚀
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── MODAL OVERLAYS FOR LIFELINES & RULES ─── */}
+      {activeModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 100
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '16px', border: '3.5px solid #000',
+            padding: '24px', width: '400px', color: '#000', boxShadow: '8px 8px 0 #000'
+          }}>
+            {activeModal === 'friend' && (
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#22c55e', margin: '0 0 12px 0' }}>
+                  📞 Phone-a-Friend Mentor
+                </h3>
+                <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#334155', fontWeight: 700 }}>
+                  {friendAdvice}
+                </p>
+              </div>
+            )}
+
+            {activeModal === 'audience' && (
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#38bdf8', margin: '0 0 12px 0' }}>
+                  👥 Ask the Audience Poll Results
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {['A', 'B', 'C', 'D'].map((letter, idx) => (
+                    <div key={letter} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontWeight: 950, width: '20px' }}>{letter}:</span>
+                      <div style={{ flex: 1, background: '#e2e8f0', borderRadius: '6px', height: '16px', overflow: 'hidden' }}>
+                        <div style={{ width: `${audiencePoll[idx]}%`, background: '#8b5cf6', height: '100%' }} />
+                      </div>
+                      <span style={{ fontWeight: 900, fontSize: '12px', width: '35px' }}>{audiencePoll[idx]}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeModal === 'rules' && (
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#8b5cf6', margin: '0 0 12px 0' }}>
+                  📜 Game Rules & Lifelines Guide
+                </h3>
+                <ul style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', paddingLeft: '18px', margin: 0, fontWeight: 700 }}>
+                  <li>Answer 15 questions correctly to win ₦1,000,000!</li>
+                  <li>Level 5 (₦1,000) and Level 10 (₦32,000) are Safe Havens.</li>
+                  <li>Use 50:50, Phone-a-Friend, Ask the Audience, or Switch Question when stuck!</li>
+                </ul>
+              </div>
+            )}
+
+            <button
+              onClick={() => setActiveModal(null)}
+              style={{
+                marginTop: '16px', width: '100%', padding: '10px', borderRadius: '10px',
+                border: '2px solid #000', background: '#fbbf24', color: '#000',
+                fontWeight: 950, fontSize: '13px', cursor: 'pointer', boxShadow: '3px 3px 0 #000'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </GameLayout>
+  );
+}
