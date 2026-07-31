@@ -331,6 +331,7 @@ export default function ChessPage() {
   const router = useRouter();
   const [mode, setMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [oppType, setOppType] = useState<'ai' | 'local' | 'match'>('ai');
+  const [oppName, setOppName] = useState('Computer (AI)');
   const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
   const [boardTheme, setBoardTheme] = useState<'wood' | 'green' | 'blue'>('wood');
   const [copiedLink, setCopiedLink] = useState(false);
