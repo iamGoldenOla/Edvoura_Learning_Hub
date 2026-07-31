@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Trophy, Star, RefreshCw, Crown, Circle, Grid3X3, ALargeSmall, Type, Dice1,
-  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket
+  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket, Puzzle, Layers
 } from 'lucide-react';
 
 const GAMES = [
@@ -71,14 +71,38 @@ const GAMES = [
   {
     id: 'word-play',
     title: 'Word Play',
-    description: 'Three word games in one! Scramble, Hangman, and Word Search — test your vocabulary.',
+    description: 'Four word games in one! Word Scramble, Hangman, Word Search, and Wordle — test your vocabulary.',
     icon: Type,
     color: '#8b5cf6',
     badgeBg: '#f3e8ff',
     badgeText: '#6d28d9',
-    difficulty: 'Easy',
+    difficulty: 'Easy – Hard',
     emoji: '📝',
     category: 'Word Game'
+  },
+  {
+    id: 'puzzle',
+    title: 'Educational Sliding Puzzle',
+    description: 'Reconstruct subject artwork across Grade-based tiers (Grades 1-2: 3x3, 3-6: 4x4, 7-12: 5x5)!',
+    icon: Puzzle,
+    color: '#8b5cf6',
+    badgeBg: '#f3e8ff',
+    badgeText: '#6d28d9',
+    difficulty: 'Grade-Based',
+    emoji: '🧩',
+    category: 'Sliding Puzzle'
+  },
+  {
+    id: 'jenga',
+    title: 'Jenga Physics Block Tower',
+    description: 'Pull blocks from lower layers, solve trivia challenges, and stack without collapsing the tower!',
+    icon: Layers,
+    color: '#d97706',
+    badgeBg: '#fef3c7',
+    badgeText: '#b45309',
+    difficulty: 'Grade-Based',
+    emoji: '🪵',
+    category: 'Physics & Trivia'
   }
 ];
 
@@ -197,7 +221,7 @@ export default function GamesPage() {
                 Edvoura Play Zone
               </h1>
               <p style={{ color: '#000000', fontSize: '15px', margin: '4px 0 0 0', fontWeight: 600 }}>
-                Learn while you play — 6 premium games + partner sites!
+                Learn while you play — 8 premium custom games + partner sites!
               </p>
             </div>
           </div>
