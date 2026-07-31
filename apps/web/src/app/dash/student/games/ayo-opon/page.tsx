@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Circle, Layers, RefreshCw, ChevronDown, ChevronUp, User, Users, Monitor } from 'lucide-react';
+import { Circle, Layers, RefreshCw, ChevronDown, ChevronUp, User, Users, Monitor, BookOpen } from 'lucide-react';
 
 const OPPONENT_NAMES = ['Aisha Bello (Grade 4)', 'Chinedu Okafor (Grade 5)', 'Oluwaseun Adebayo (Grade 4)', 'Amara Egwu (Grade 5)', 'Tunde Cole (Grade 6)'];
 
@@ -10,7 +10,7 @@ export default function AyoOpon() {
   const [gameMode, setGameMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [opponentType, setOpponentType] = useState<'ai' | 'local' | 'matchmaker'>('ai');
   const [matchedOpponent, setMatchedOpponent] = useState('Computer (AI)');
-  const [showRules, setShowRules] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
 
   const [board, setBoard] = useState(Array(12).fill(4));
   const [scores, setScores] = useState([0, 0]); // [player1, player2]
@@ -99,94 +99,78 @@ export default function AyoOpon() {
     let p2Empty = currentBoard.slice(6, 12).every(s => s === 0);
 
     if (p1Empty || p2Empty) {
-      let p1Remaining = currentBoard.slice(0, 6).reduce((a, b) => a + b, 0);
-      let p2Remaining = currentBoard.slice(6, 12).reduce((a, b) => a + b, 0);
-      currentScores[0] += p1Remaining;
-      currentScores[1] += p2Remaining;
-      setScores(currentScores);
-      setBoard(Array(12).fill(0));
       setGameOver(true);
+      let remainingP1 = currentBoard.slice(0, 6).reduce((a, b) => a + b, 0);
+      let remainingP2 = currentBoard.slice(6, 12).reduce((a, b) => a + b, 0);
+      currentScores[0] += remainingP1;
+      currentScores[1] += remainingP2;
+      setBoard(Array(12).fill(0));
+      setScores([...currentScores]);
+
+      if (currentScores[0] > currentScores[1]) {
+        setMessage('🏆 Game Over - You Win!');
+      } else if (currentScores[1] > currentScores[0]) {
+        setMessage(`🏆 Game Over - ${matchedOpponent} Wins!`);
+      } else {
+        setMessage('🤝 Game Over - It is a Tie!');
+      }
       setIsAnimating(false);
-      
-      const winnerName = currentScores[0] > currentScores[1] 
-        ? 'You win!' 
-        : currentScores[0] < currentScores[1] 
-        ? `${matchedOpponent} wins!` 
-        : 'Draw!';
-      setMessage(winnerName);
       return;
     }
 
     const nextTurn = turn === 0 ? 1 : 0;
     setTurn(nextTurn);
+    setMessage(nextTurn === 0 ? 'Your turn!' : `${matchedOpponent}'s turn...`);
     setIsAnimating(false);
-
-    if (opponentType === 'local') {
-      setMessage(nextTurn === 0 ? 'Your turn!' : "Player 2's turn!");
-    } else {
-      setMessage(nextTurn === 0 ? 'Your turn!' : `${matchedOpponent} is thinking...`);
-    }
   };
 
-  // Bot logic triggers
+  // AI Opponent Automation
   useEffect(() => {
-    const isBotTurn = turn === 1 && (opponentType === 'ai' || opponentType === 'matchmaker');
-    if (isBotTurn && !isAnimating && !gameOver && gameMode === 'playing') {
+    if (gameMode === 'playing' && opponentType === 'ai' && turn === 1 && !isAnimating && !gameOver) {
       const timer = setTimeout(() => {
         let bestMove = -1;
         let maxCapture = -1;
-        let validMoves = [];
-        
+
         for (let i = 6; i <= 11; i++) {
-          if (board[i] > 0) validMoves.push(i);
-        }
-
-        if (validMoves.length === 0) return;
-
-        // Greedy heuristic
-        for (let move of validMoves) {
-          let tempBoard = [...board];
-          let seeds = tempBoard[move];
-          tempBoard[move] = 0;
-          let curr = move;
-          
-          while (seeds > 0) {
-            curr = (curr + 1) % 12;
-            if (curr === move) continue;
-            tempBoard[curr]++;
-            seeds--;
-          }
-          
-          let cap = 0;
-          let cIdx = curr;
-          while (
-            cIdx >= 0 &&
-            cIdx <= 5 &&
-            (tempBoard[cIdx] === 2 || tempBoard[cIdx] === 3)
-          ) {
-            cap += tempBoard[cIdx];
-            tempBoard[cIdx] = 0;
-            cIdx = (cIdx - 1 + 12) % 12;
-          }
-          
-          if (cap > maxCapture) {
-            maxCapture = cap;
-            bestMove = move;
+          if (board[i] > 0) {
+            let tempBoard = [...board];
+            let seeds = tempBoard[i];
+            tempBoard[i] = 0;
+            let curr = i;
+            while (seeds > 0) {
+              curr = (curr + 1) % 12;
+              if (curr === i) continue;
+              tempBoard[curr]++;
+              seeds--;
+            }
+            let cap = 0;
+            let capIdx = curr;
+            while (capIdx >= 0 && capIdx <= 5 && (tempBoard[capIdx] === 2 || tempBoard[capIdx] === 3)) {
+              cap += tempBoard[capIdx];
+              tempBoard[capIdx] = 0;
+              capIdx = (capIdx - 1 + 12) % 12;
+            }
+            if (cap > maxCapture) {
+              maxCapture = cap;
+              bestMove = i;
+            }
           }
         }
 
         if (bestMove === -1) {
-          bestMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+          const validMoves = [6, 7, 8, 9, 10, 11].filter(idx => board[idx] > 0);
+          if (validMoves.length > 0) {
+            bestMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+          }
         }
 
         if (bestMove !== -1) {
           playMove(bestMove);
         }
-      }, 900);
-      
+      }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [turn, isAnimating, gameOver, board, opponentType, gameMode]);
+  }, [turn, isAnimating, gameOver, board, opponentType, gameMode, matchedOpponent]);
 
   const resetGame = () => {
     setBoard(Array(12).fill(4));
@@ -202,67 +186,52 @@ export default function AyoOpon() {
   };
 
   const renderPit = (i: number) => {
-    const isP1 = i >= 0 && i <= 5;
-    
-    // In local mode, let click on active player's pits. In AI mode, allow clicks only on Player 1 pits
-    const activeRowTurn = opponentType === 'local' ? (turn === 0 ? isP1 : !isP1) : isP1;
-    const canPlay = !isAnimating && !gameOver && activeRowTurn && board[i] > 0 && gameMode === 'playing';
-    
+    const isPlayerPit = i >= 0 && i <= 5;
+    const isOpponentPit = i >= 6 && i <= 11;
+    const canClick = !isAnimating && !gameOver && ((turn === 0 && isPlayerPit) || (turn === 1 && opponentType === 'local' && isOpponentPit));
+
     return (
       <div
         key={i}
-        onClick={() => canPlay && playMove(i)}
+        onClick={() => canClick && board[i] > 0 && playMove(i)}
         style={{
-          width: '70px',
-          height: '70px',
+          width: '54px',
+          height: '54px',
           borderRadius: '50%',
-          background: canPlay ? 'rgba(249, 115, 22, 0.15)' : 'rgba(255,255,255,0.05)',
-          border: canPlay ? '2px solid #f97316' : '2px solid rgba(255,255,255,0.1)',
+          background: canClick && board[i] > 0 ? 'rgba(249, 115, 22, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+          border: canClick && board[i] > 0 ? '2px solid #f97316' : '1.5px solid rgba(255,255,255,0.1)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'center',
-          cursor: canPlay ? 'pointer' : 'default',
-          padding: '10px',
-          transition: 'all 0.3s ease',
-          boxShadow: canPlay ? '0 0 15px rgba(249, 115, 22, 0.3)' : 'none',
-        }}
-        onMouseEnter={(e) => {
-          if (canPlay) {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.background = 'rgba(249, 115, 22, 0.25)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (canPlay) {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.background = 'rgba(249, 115, 22, 0.15)';
-          } else {
-            e.currentTarget.style.transform = 'scale(1)';
-          }
+          padding: '6px',
+          cursor: canClick && board[i] > 0 ? 'pointer' : 'default',
+          position: 'relative',
+          transition: 'all 0.2s ease',
+          boxShadow: canClick && board[i] > 0 ? '0 0 10px rgba(249, 115, 22, 0.3)' : 'none'
         }}
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
-          {Array.from({ length: Math.min(board[i], 12) }).map((_, idx) => (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', justifyContent: 'center', alignItems: 'center', maxWidth: '36px' }}>
+          {Array.from({ length: Math.min(board[i], 8) }).map((_, seedIdx) => (
             <div
-              key={idx}
+              key={seedIdx}
               style={{
-                width: '10px',
-                height: '10px',
+                width: '8px',
+                height: '8px',
                 borderRadius: '50%',
                 background: '#f97316',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.5)',
               }}
             />
           ))}
         </div>
-        {board[i] > 12 && (
-          <div style={{ fontSize: '12px', color: '#fff', width: '100%', textAlign: 'center', marginTop: '2px', fontWeight: 'bold' }}>
-            +{board[i] - 12}
+        {board[i] > 8 && (
+          <div style={{ fontSize: '10px', color: '#fff', width: '100%', textAlign: 'center', marginTop: '1px', fontWeight: 'bold' }}>
+            +{board[i] - 8}
           </div>
         )}
         {board[i] === 0 && (
-          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)' }}>0</div>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)' }}>0</div>
         )}
       </div>
     );
@@ -270,42 +239,42 @@ export default function AyoOpon() {
 
   if (gameMode === 'lobby') {
     return (
-      <GameLayout title="Ayo Opon Lobby" icon={<Circle />} accentColor="#f97316">
+      <GameLayout title="Ayo Opon Lobby" icon={<Circle />} accentColor="#f97316" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+          height: '100%', gap: '24px', color: '#0f172a', textAlign: 'center', padding: '16px'
         }}>
           <div>
-            <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#000000', margin: '0 0 10px 0', textTransform: 'uppercase' }}>
+            <h2 style={{ fontSize: '28px', fontWeight: 900, color: '#ffffff', margin: '0 0 8px 0', textTransform: 'uppercase' }}>
               🫘 Ayò Ọ̀pọ́n Zone
             </h2>
-            <p style={{ color: '#475569', fontSize: '15px', maxWidth: '500px', fontWeight: 600, margin: '0 auto' }}>
-              Play the traditional game of counting! Challenge the AI, play with a classmate, or pair with other grades.
+            <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '500px', fontWeight: 600, margin: '0 auto' }}>
+              Play the ancient Yoruba game of counting in a zero-scroll 16:9 widescreen layout!
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
             {[
               { type: 'ai', title: 'Play vs Computer', desc: 'Greedy heuristic AI', icon: Monitor },
               { type: 'local', title: 'Pass & Play', desc: 'Local 2-player mode', icon: Users },
-              { type: 'matchmaker', title: 'Grade Matchmaking', desc: 'Find other grades', icon: User }
+              { type: 'matchmaker', title: 'Grade Matchmaking', desc: 'Find classmates', icon: User }
             ].map(m => (
               <button
                 key={m.type}
                 onClick={() => startMode(m.type as any)}
                 style={{
-                  padding: '24px', borderRadius: '20px', border: '3px solid #000000',
-                  cursor: 'pointer', fontSize: '16px', fontWeight: 900, background: '#ffffff',
-                  color: '#000000', boxShadow: '4px 4px 0px #000000', transition: 'all 0.15s ease',
-                  width: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px'
+                  padding: '20px 16px', borderRadius: '18px', border: '3px solid #000000',
+                  cursor: 'pointer', background: '#ffffff', color: '#000000',
+                  boxShadow: '4px 4px 0px #f97316', transition: 'all 0.15s ease',
+                  width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-4px, -4px)'; e.currentTarget.style.boxShadow = '8px 8px 0px #000000'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #000000'; }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translate(-2px, -2px)'; e.currentTarget.style.boxShadow = '6px 6px 0px #f97316'; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '4px 4px 0px #f97316'; }}
               >
-                <m.icon size={36} style={{ color: '#f97316' }} />
+                <m.icon size={32} style={{ color: '#f97316' }} />
                 <div>
-                  <div style={{ fontSize: '16px', fontWeight: 900 }}>{m.title}</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>{m.desc}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 950 }}>{m.title}</div>
+                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{m.desc}</div>
                 </div>
               </button>
             ))}
@@ -317,41 +286,31 @@ export default function AyoOpon() {
 
   if (gameMode === 'matching') {
     return (
-      <GameLayout title="Matchmaking" icon={<Circle />} accentColor="#f97316">
+      <GameLayout title="Matchmaking" icon={<Circle />} accentColor="#f97316" fullscreen={true}>
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          minHeight: '62vh', gap: '32px', color: '#0f172a', textAlign: 'center'
+          height: '100%', gap: '24px', color: '#0f172a', textAlign: 'center'
         }}>
-          <div className="radar-container" style={{
-            position: 'relative', width: '150px', height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}>
-            <div className="pulse" style={{
-              position: 'absolute', width: '100%', height: '100%', borderRadius: '50%',
-              border: '3px solid #f97316', animation: 'ping 1.5s infinite ease-out'
-            }} />
-            <div style={{
-              width: '80px', height: '80px', borderRadius: '50%', border: '3px solid #000000',
-              background: '#fafaf9', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '3px 3px 0px #000000', zIndex: 2
-            }}>
-              <Users size={32} color="#f97316" />
+          <div style={{ position: 'relative', width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', border: '3px solid #f97316', animation: 'ping 1.5s infinite ease-out' }} />
+            <div style={{ width: '70px', height: '70px', borderRadius: '50%', border: '3px solid #000000', background: '#fafaf9', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '3px 3px 0px #000000', zIndex: 2 }}>
+              <Users size={28} color="#f97316" />
             </div>
           </div>
           <div>
-            <h3 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 6px 0' }}>Searching for matches...</h3>
-            <p style={{ color: '#64748b', fontSize: '14px', fontWeight: 700 }}>Finding students in Grade 4, 5, or 6 to pair on the board...</p>
+            <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#ffffff', margin: '0 0 4px 0' }}>Searching for matches...</h3>
+            <p style={{ color: '#94a3b8', fontSize: '13px', fontWeight: 600 }}>Finding students in Grade 4, 5, or 6 on the board...</p>
           </div>
           <button
             onClick={quitToLobby}
             style={{
-              padding: '12px 24px', borderRadius: '12px', border: '2px solid #000000',
-              cursor: 'pointer', fontSize: '13px', fontWeight: 900, background: '#fee2e2',
+              padding: '10px 20px', borderRadius: '10px', border: '2px solid #000000',
+              cursor: 'pointer', fontSize: '12px', fontWeight: 900, background: '#fee2e2',
               color: '#ef4444', boxShadow: '2px 2px 0px #000000'
             }}
           >
             Cancel Search
           </button>
-
           <style jsx>{`
             @keyframes ping {
               0% { transform: scale(0.6); opacity: 1; }
@@ -369,203 +328,181 @@ export default function AyoOpon() {
       icon={<Circle style={{ width: '24px', height: '24px' }} />}
       accentColor="#f97316"
       score={scores[0]}
+      fullscreen={true}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '800px', margin: '0 auto', gap: '30px' }}>
+      {/* Zero-Scroll 16:9 Main Game Viewport */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
+        height: '100%', overflow: 'hidden', padding: '8px', boxSizing: 'border-box'
+      }}>
         
-        {/* Top Control Bar with permanent Restart and Lobby options */}
+        {/* Top Header Controls Bar */}
         <div style={{
-          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.05)', padding: '12px 20px', borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
+          width: '100%', maxWidth: '800px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          background: '#111827', padding: '6px 14px', borderRadius: '12px',
+          border: '1.5px solid #1e293b'
         }}>
-          <button
-            onClick={resetGame}
-            style={{
-              padding: '8px 16px', background: '#f97316', color: '#ffffff', border: 'none',
-              borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '6px'
-            }}
-          >
-            <RefreshCw size={14} /> Restart Game
-          </button>
-          <button
-            onClick={quitToLobby}
-            style={{
-              padding: '8px 16px', background: '#fee2e2', color: '#ef4444', border: 'none',
-              borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer'
-            }}
-          >
-            Quit to Lobby
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={resetGame}
+              style={{
+                padding: '5px 12px', background: '#f97316', color: '#ffffff', border: '1.5px solid #000',
+                borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000'
+              }}
+            >
+              <RefreshCw size={12} /> Restart
+            </button>
+            <button
+              onClick={() => setShowRulesModal(true)}
+              style={{
+                padding: '5px 12px', background: '#1e293b', color: '#38bdf8', border: '1.5px solid #334155',
+                borderRadius: '8px', fontSize: '11px', fontWeight: 800, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '4px'
+              }}
+            >
+              <BookOpen size={12} /> How to Play
+            </button>
+          </div>
+
+          <div style={{
+            fontSize: '13px',
+            fontWeight: 900,
+            color: turn === 0 ? '#f97316' : '#38bdf8',
+            background: '#1e293b',
+            padding: '4px 12px',
+            borderRadius: '8px',
+            border: '1px solid #334155'
+          }}>
+            {message}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setView3D(!view3D)}
+              style={{
+                padding: '5px 10px', background: '#fbbf24', color: '#000', border: '1.5px solid #000',
+                borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000'
+              }}
+            >
+              <Layers size={12} /> {view3D ? 'Flat View' : '3D View'}
+            </button>
+            <button
+              onClick={quitToLobby}
+              style={{
+                padding: '5px 12px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000',
+                borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer'
+              }}
+            >
+              Quit
+            </button>
+          </div>
         </div>
 
-        <div style={{
-          fontSize: '20px',
-          fontWeight: 'bold',
-          color: turn === 0 ? '#f97316' : '#94a3b8',
-          background: 'rgba(255,255,255,0.05)',
-          padding: '10px 20px',
-          borderRadius: '20px',
-          transition: 'all 0.3s'
-        }}>
-          {message}
-        </div>
-
-        {/* 3D Board Viewport */}
-        <div style={{ position: 'relative', width: '100%', perspective: '1000px', display: 'flex', justifyContent: 'center' }}>
-          
-          <button
-            onClick={() => setView3D(!view3D)}
-            style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '20px',
-              padding: '6px 14px',
-              background: '#f97316',
-              border: '2px solid #000000',
-              borderRadius: '8px',
-              fontWeight: 800,
-              fontSize: '11px',
-              color: '#ffffff',
-              cursor: 'pointer',
-              boxShadow: '2px 2px 0px #000000',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              zIndex: 10
-            }}
-          >
-            <Layers size={12} /> {view3D ? 'Flat View' : '3D View'}
-          </button>
-
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'stretch', 
-            justifyContent: 'center', 
-            gap: '20px',
+        {/* Center 16:9 Ayò Ọ̀pọ́n Board Viewport */}
+        <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+          <div style={{
+            height: '100%',
+            maxWidth: '100%',
+            aspectRatio: '16 / 9',
+            display: 'flex',
+            alignItems: 'stretch',
+            justifyContent: 'center',
+            gap: '16px',
             background: '#0f172a',
-            padding: '30px',
-            borderRadius: '40px',
-            boxShadow: view3D ? '0 30px 50px rgba(0,0,0,0.5)' : '0 20px 40px rgba(0,0,0,0.4)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            padding: '16px 24px',
+            borderRadius: '24px',
+            boxShadow: view3D ? '0 20px 40px rgba(0,0,0,0.5)' : 'none',
+            border: '2px solid rgba(255,255,255,0.1)',
             transformStyle: 'preserve-3d',
-            transform: view3D ? 'rotateX(30deg) rotateY(-5deg) scale(0.95)' : 'none',
-            transition: 'transform 0.4s ease-out'
+            transform: view3D ? 'rotateX(24deg) rotateY(-4deg) scale(0.96)' : 'none',
+            transition: 'transform 0.4s ease-out',
+            boxSizing: 'border-box'
           }}>
             {/* Opponent Store */}
             <div style={{ 
-              width: '100px', 
-              borderRadius: '50px', 
+              width: '80px', 
+              borderRadius: '40px', 
               background: 'rgba(255,255,255,0.03)', 
-              border: '2px solid rgba(255,255,255,0.05)',
+              border: '2px solid rgba(255,255,255,0.08)',
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
               justifyContent: 'center',
-              padding: '20px'
+              padding: '12px'
             }}>
-              <div style={{ color: '#94a3b8', marginBottom: '15px', fontWeight: 'bold', fontSize: '13px', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.2 }}>
+              <div style={{ color: '#94a3b8', marginBottom: '8px', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.1 }}>
                 {opponentType === 'local' ? 'Player 2' : 'Opponent'}
               </div>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#fff' }}>{scores[1]}</div>
+              <div style={{ fontSize: '32px', fontWeight: 900, color: '#fff' }}>{scores[1]}</div>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
-              {/* Top Row: Opponent Pits (Right to Left: 11 down to 6) */}
-              <div style={{ display: 'flex', gap: '15px' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px', justifyContent: 'center', alignItems: 'center' }}>
+              {/* Top Row: Opponent Pits (11 down to 6) */}
+              <div style={{ display: 'flex', gap: '10px' }}>
                 {[11, 10, 9, 8, 7, 6].map(i => renderPit(i))}
               </div>
               
-              {/* Bottom Row: Player Pits (Left to Right: 0 up to 5) */}
-              <div style={{ display: 'flex', gap: '15px' }}>
+              {/* Bottom Row: Player Pits (0 up to 5) */}
+              <div style={{ display: 'flex', gap: '10px' }}>
                 {[0, 1, 2, 3, 4, 5].map(i => renderPit(i))}
               </div>
             </div>
             
             {/* Player 1 Store */}
             <div style={{ 
-              width: '100px', 
-              borderRadius: '50px', 
-              background: 'rgba(249, 115, 22, 0.05)', 
-              border: '2px solid rgba(249, 115, 22, 0.2)',
+              width: '80px', 
+              borderRadius: '40px', 
+              background: 'rgba(249, 115, 22, 0.08)', 
+              border: '2px solid rgba(249, 115, 22, 0.3)',
               display: 'flex', 
               flexDirection: 'column', 
               alignItems: 'center', 
               justifyContent: 'center',
-              padding: '20px'
+              padding: '12px'
             }}>
-              <div style={{ color: '#f97316', marginBottom: '15px', fontWeight: 'bold', fontSize: '13px', textTransform: 'uppercase' }}>You</div>
-              <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f97316' }}>{scores[0]}</div>
+              <div style={{ color: '#f97316', marginBottom: '8px', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase' }}>You</div>
+              <div style={{ fontSize: '32px', fontWeight: 900, color: '#f97316' }}>{scores[0]}</div>
             </div>
           </div>
         </div>
-
-        {/* Expandable How To Play / Game Rules Section */}
-        <div style={{
-          width: '100%',
-          background: 'rgba(255,255,255,0.03)',
-          borderRadius: '20px',
-          border: '1px solid rgba(255,255,255,0.08)',
-          overflow: 'hidden'
-        }}>
-          <button
-            onClick={() => setShowRules(!showRules)}
-            style={{
-              width: '100%', padding: '16px 24px', display: 'flex', justifyContent: 'space-between',
-              alignItems: 'center', background: 'none', border: 'none', color: '#ffffff',
-              fontSize: '16px', fontWeight: 800, cursor: 'pointer', outline: 'none'
-            }}
-          >
-            <span>📜 How to Play & Game Rules</span>
-            {showRules ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-          
-          {showRules && (
-            <div style={{
-              padding: '0 24px 24px 24px', color: '#94a3b8', fontSize: '14px', textAlign: 'left',
-              lineHeight: '1.6', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '16px'
-            }}>
-              <h4 style={{ color: '#ffffff', fontWeight: 800, margin: '0 0 8px 0' }}>The Object of the Game</h4>
-              <p style={{ margin: '0 0 16px 0' }}>
-                Ayò Ọ̀pọ́n is a game of counting and capturing. The objective is to capture more seeds than your opponent. The game board consists of 12 pits, and each pit starts with 4 seeds.
-              </p>
-              
-              <h4 style={{ color: '#ffffff', fontWeight: 800, margin: '0 0 8px 0' }}>Rules of Play</h4>
-              <ul style={{ margin: '0 0 16px 0', paddingLeft: '20px', listStyleType: 'disc' }}>
-                <li style={{ marginBottom: '6px' }}>On your turn, choose any pit on your side (the bottom row) containing seeds.</li>
-                <li style={{ marginBottom: '6px' }}>Empty all seeds from that pit and sow them counter-clockwise, one by one, into the succeeding pits.</li>
-                <li style={{ marginBottom: '6px' }}>If you make a full loop and return to the starting pit, skip it and continue sowing to the next pit.</li>
-              </ul>
-              
-              <h4 style={{ color: '#ffffff', fontWeight: 800, margin: '0 0 8px 0' }}>Capturing Seeds</h4>
-              <p style={{ margin: '0 0 16px 0' }}>
-                If the last seed of your turn lands in an opponent's pit and makes the total seeds in that pit exactly 2 or 3, you capture those seeds. You also capture seeds from the previous pit if it is on the opponent's side and has 2 or 3 seeds, working backward.
-              </p>
-              
-              <h4 style={{ color: '#ffffff', fontWeight: 800, margin: '0 0 8px 0' }}>Ending the Game</h4>
-              <p style={{ margin: 0 }}>
-                The game ends when one player's side is completely empty of seeds and cannot be sown into. Any remaining seeds on the board are claimed by the player on whose side they reside.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Cultural Context */}
-        <div style={{
-          padding: '25px',
-          background: 'rgba(255,255,255,0.03)',
-          borderRadius: '20px',
-          border: '1px solid rgba(255,255,255,0.05)',
-          textAlign: 'center',
-          lineHeight: '1.6'
-        }}>
-          <h3 style={{ color: '#fff', margin: '0 0 10px 0', fontSize: '18px' }}>Cultural Heritage</h3>
-          <p style={{ color: '#94a3b8', margin: 0, fontSize: '15px' }}>
-            Ayò Ọ̀pọ́n is one of the oldest known board games, originating from the Yoruba people of Nigeria. Played for centuries across West Africa, it teaches mathematical thinking, strategy, and patience. The name means 'game of counting' in Yoruba.
-          </p>
-        </div>
-
       </div>
+
+      {/* Rules & Cultural Info Modal */}
+      {showRulesModal && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
+        }}>
+          <div style={{
+            background: '#ffffff', borderRadius: '16px', border: '3px solid #000',
+            padding: '20px', width: '420px', maxHeight: '80vh', overflowY: 'auto',
+            boxShadow: '6px 6px 0 #000', color: '#000'
+          }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 950, margin: '0 0 10px 0', color: '#f97316' }}>📜 Ayò Ọ̀pọ́n Rules & Heritage</h3>
+            <p style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5, marginBottom: '12px' }}>
+              Ayò Ọ̀pọ́n is an ancient Yoruba game of counting and strategy originating from Nigeria.
+            </p>
+            <h4 style={{ fontSize: '13px', fontWeight: 900, margin: '0 0 4px 0' }}>How to Play:</h4>
+            <ul style={{ fontSize: '12px', color: '#1e293b', paddingLeft: '18px', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+              <li>Choose a pit on your side (bottom row) with seeds.</li>
+              <li>Sow seeds counter-clockwise into subsequent pits.</li>
+              <li>If the last seed lands in an opponent pit with 2 or 3 seeds, capture those seeds!</li>
+              <li>Game ends when one player's side is empty and cannot be sown into.</li>
+            </ul>
+            <button
+              onClick={() => setShowRulesModal(false)}
+              style={{
+                width: '100%', padding: '8px', background: '#f97316', color: '#fff',
+                border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer'
+              }}
+            >
+              Got It! Close
+            </button>
+          </div>
+        </div>
+      )}
     </GameLayout>
   );
 }
