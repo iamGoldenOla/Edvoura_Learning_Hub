@@ -6,7 +6,25 @@ import { Award, PhoneCall, Users, RefreshCw, Check, BookOpen, Share2, DollarSign
 
 const ACCENT_COLOR = '#8b5cf6'; // Electric Purple Studio Accent
 
-/* ═══════════════════════ AUTHENTIC TV STUDIO AUDIO SYNTHESIZER ═══════════════════════ */
+/* ═══════════════════════ SINGLETON TV STUDIO AUDIO SYNTHESIZER ═══════════════════════ */
+let audioCtxInstance: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (!audioCtxInstance) {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) audioCtxInstance = new AudioCtx();
+    }
+    if (audioCtxInstance && audioCtxInstance.state === 'suspended') {
+      audioCtxInstance.resume();
+    }
+    return audioCtxInstance;
+  } catch (e) {
+    return null;
+  }
+}
+
 function speakVoice(text: string) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
@@ -330,7 +348,7 @@ export default function MillionaireGame() {
     setIsMillionaire(false);
     setIsWalkedAway(false);
     setIsLightsDimmed(false);
-    setUsedQuestions([]);
+    usedQuestionsRef.current = [];
     setLifelines({
       fiftyFifty: true,
       phoneAFriend: true,
@@ -338,9 +356,9 @@ export default function MillionaireGame() {
       switchQuestion: true,
     });
     setActiveModal(null);
-    loadQuestionForLevel(1);
+    loadQuestionForLevel(1, selectedCurrency);
     playMillionaireSFX('lock');
-  }, [loadQuestionForLevel]);
+  }, [loadQuestionForLevel, selectedCurrency]);
 
   useEffect(() => {
     initGame();
