@@ -442,6 +442,22 @@ function WordleGame({ addScore }: { addScore: (points: number) => void }) {
     return '#475569'; // Gray
   };
 
+  // Physical Keyboard Listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isWon || guesses.length >= 6) return;
+      if (e.key === 'Enter') {
+        handleKeyPress('ENTER');
+      } else if (e.key === 'Backspace') {
+        handleKeyPress('BACK');
+      } else if (/^[a-zA-Z]$/.test(e.key)) {
+        handleKeyPress(e.key.toUpperCase());
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [guesses, currentGuess, isWon]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '10px' }}>
       {/* 6x5 Grid */}
@@ -498,6 +514,14 @@ export default function WordPlay() {
   const [activeTab, setActiveTab] = useState<'scramble' | 'hangman' | 'wordsearch' | 'wordle'>('scramble');
   const [score, setScore] = useState(0);
   const [showRulesModal, setShowRulesModal] = useState(false);
+  const [modalSection, setModalSection] = useState<'rules' | 'how-to-play' | 'tips'>('rules');
+
+  const getGameTitle = () => {
+    if (activeTab === 'scramble') return 'Word Scramble';
+    if (activeTab === 'hangman') return 'Hangman';
+    if (activeTab === 'wordsearch') return 'Word Search';
+    return 'Wordle (5-Letter Word Guess)';
+  };
 
   return (
     <GameLayout
@@ -531,7 +555,7 @@ export default function WordPlay() {
             onClick={() => setShowRulesModal(true)}
             style={{ padding: '5px 12px', background: '#38bdf8', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
-            <BookOpen size={12} /> Rules & Guide
+            <BookOpen size={12} /> Rules & Guide ({getGameTitle()})
           </button>
         </div>
 
@@ -544,16 +568,146 @@ export default function WordPlay() {
         </div>
       </div>
 
-      {/* Rules Modal */}
+      {/* Dynamic Game-Specific Rules Modal */}
       {showRulesModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: '#ffffff', borderRadius: '18px', border: '3px solid #000', padding: '24px', width: '440px', color: '#000', boxShadow: '6px 6px 0 #000' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#8b5cf6', margin: '0 0 10px 0' }}>📜 Word Play Suite</h3>
-            <p style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5, marginBottom: '12px' }}>
-              Includes 4 full games: <strong>Word Scramble</strong>, <strong>Hangman</strong>, <strong>Word Search</strong>, and <strong>Wordle (Word Guess)</strong> with Text-to-Speech audio support!
-            </p>
-            <button onClick={() => setShowRulesModal(false)} style={{ width: '100%', padding: '8px', background: '#8b5cf6', color: '#fff', border: '2px solid #000', borderRadius: '8px', fontWeight: 900, cursor: 'pointer' }}>
-              Got It! Close
+          <div style={{ background: '#ffffff', borderRadius: '18px', border: '3px solid #000', padding: '24px', width: '460px', maxHeight: '82vh', overflowY: 'auto', color: '#000', boxShadow: '8px 8px 0 #000' }}>
+            <div style={{ fontSize: '18px', fontWeight: 950, color: '#8b5cf6', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookOpen size={22} /> {getGameTitle()} Guide
+            </div>
+
+            {/* Inner Modal Tabs */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', background: '#f1f5f9', padding: '4px', borderRadius: '10px', border: '1.5px solid #000' }}>
+              <button onClick={() => setModalSection('rules')} style={{ flex: 1, padding: '6px', borderRadius: '8px', border: 'none', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: modalSection === 'rules' ? '#8b5cf6' : 'transparent', color: modalSection === 'rules' ? '#fff' : '#475569' }}>
+                📜 Rules
+              </button>
+              <button onClick={() => setModalSection('how-to-play')} style={{ flex: 1, padding: '6px', borderRadius: '8px', border: 'none', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: modalSection === 'how-to-play' ? '#8b5cf6' : 'transparent', color: modalSection === 'how-to-play' ? '#fff' : '#475569' }}>
+                🎮 How to Play
+              </button>
+              <button onClick={() => setModalSection('tips')} style={{ flex: 1, padding: '6px', borderRadius: '8px', border: 'none', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: modalSection === 'tips' ? '#8b5cf6' : 'transparent', color: modalSection === 'tips' ? '#fff' : '#475569' }}>
+                💡 Pro Tips
+              </button>
+            </div>
+
+            {/* Game 1: Word Scramble */}
+            {activeTab === 'scramble' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                {modalSection === 'rules' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Rules:</h4>
+                    <p style={{ margin: 0 }}>Unscramble the jumbled letters to reveal the target educational word. Each correct answer awards 10 points and increases your streak!</p>
+                  </div>
+                )}
+                {modalSection === 'how-to-play' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>How to Play:</h4>
+                    <ol style={{ paddingLeft: '18px', margin: 0 }}>
+                      <li>Read the scrambled letters on screen.</li>
+                      <li>Type your guess into the input box.</li>
+                      <li>Press <strong>Submit</strong> or hit Enter on your keyboard.</li>
+                    </ol>
+                  </div>
+                )}
+                {modalSection === 'tips' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Pro Tip:</h4>
+                    <p style={{ margin: 0 }}>Look for common letter patterns like <strong>ING</strong>, <strong>TION</strong>, or <strong>ED</strong> at the end of the word!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Game 2: Hangman */}
+            {activeTab === 'hangman' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                {modalSection === 'rules' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Rules:</h4>
+                    <p style={{ margin: 0 }}>Guess hidden letters to reveal the secret word. You have a maximum of 6 wrong guesses before the game ends!</p>
+                  </div>
+                )}
+                {modalSection === 'how-to-play' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>How to Play:</h4>
+                    <ol style={{ paddingLeft: '18px', margin: 0 }}>
+                      <li>Select a category (Animals, Countries, Subjects, Science).</li>
+                      <li>Click letters on the letter pad to guess.</li>
+                      <li>Correct letters fill the blanks; wrong letters use up a turn.</li>
+                    </ol>
+                  </div>
+                )}
+                {modalSection === 'tips' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Pro Tip:</h4>
+                    <p style={{ margin: 0 }}>Always guess high-frequency vowels (A, E, I, O, U) first to reveal the structure of the word!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Game 3: Word Search */}
+            {activeTab === 'wordsearch' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                {modalSection === 'rules' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Rules:</h4>
+                    <p style={{ margin: 0 }}>Locate all hidden vocabulary words inside the grid. Every found word earns 15 points!</p>
+                  </div>
+                )}
+                {modalSection === 'how-to-play' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>How to Play:</h4>
+                    <ol style={{ paddingLeft: '18px', margin: 0 }}>
+                      <li>Click/tap letters on the grid to spell out target words (e.g. <strong>R - E - A - D</strong>).</li>
+                      <li>Selected letters light up in gold. Correct words turn green!</li>
+                      <li>You can also click word chips in the target list on the side.</li>
+                    </ol>
+                  </div>
+                )}
+                {modalSection === 'tips' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Pro Tip:</h4>
+                    <p style={{ margin: 0 }}>Look for first letters of target words on the grid to locate words quickly!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Game 4: Wordle */}
+            {activeTab === 'wordle' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                {modalSection === 'rules' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Rules:</h4>
+                    <p style={{ margin: 0 }}>Guess the 5-letter secret word in 6 attempts. Colored tiles show your progress:</p>
+                    <ul style={{ paddingLeft: '18px', margin: '4px 0' }}>
+                      <li>🟩 <strong>Green</strong>: Right letter in exact spot.</li>
+                      <li>🟨 <strong>Yellow</strong>: Right letter in wrong spot.</li>
+                      <li>⬜ <strong>Gray</strong>: Letter not in word.</li>
+                    </ul>
+                  </div>
+                )}
+                {modalSection === 'how-to-play' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>How to Play:</h4>
+                    <ol style={{ paddingLeft: '18px', margin: 0 }}>
+                      <li>Type a 5-letter word using on-screen buttons or your physical keyboard.</li>
+                      <li>Press <strong>ENTER</strong> to evaluate your guess.</li>
+                      <li>Use tile color feedback to narrow down the secret word!</li>
+                    </ol>
+                  </div>
+                )}
+                {modalSection === 'tips' && (
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: 900 }}>Pro Tip:</h4>
+                    <p style={{ margin: 0 }}>Start with vowel-heavy words like <strong>BRAIN</strong> or <strong>TEACH</strong> to eliminate letters early!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button onClick={() => setShowRulesModal(false)} style={{ width: '100%', padding: '10px', background: '#8b5cf6', color: '#fff', border: '2px solid #000', borderRadius: '10px', fontWeight: 900, cursor: 'pointer', marginTop: '14px' }}>
+              Close Guide
             </button>
           </div>
         </div>
