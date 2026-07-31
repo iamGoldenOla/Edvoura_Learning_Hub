@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import GameLayout from '@/components/games/GameLayout';
 import { ALargeSmall, RotateCcw, Sparkles, Lightbulb, User, Users, Monitor, BookOpen, Share2, Copy, Check } from 'lucide-react';
 
@@ -195,6 +195,8 @@ export default function ScrabbleGame() {
     }
   }, [gameMode]);
 
+  const aiThinkingRef = useRef(false);
+
   const initGame = useCallback(() => {
     const bag = LETTER_DIST.split('');
 
@@ -216,21 +218,20 @@ export default function ScrabbleGame() {
     setSelectedRackIndex(null);
     setPlacedTiles([]);
     setMessage('Your turn! Select a tile and place it on the board.');
+    aiThinkingRef.current = false;
     speakVoice('Scrabble game started. Your turn!');
   }, []);
 
   /* ═══════════════════════ AI OPPONENT AUTOMATION ═══════════════════════ */
   useEffect(() => {
-    if (gameMode === 'playing' && opponentType === 'ai' && turn === 'opponent' && !isBotThinking) {
+    if (gameMode === 'playing' && opponentType === 'ai' && turn === 'opponent' && !aiThinkingRef.current) {
+      aiThinkingRef.current = true;
       setIsBotThinking(true);
       setMessage('🤖 Computer is searching for a word...');
 
       const timer = setTimeout(() => {
         // AI Searches dictionary for a word that can be formed from its rack
-        const rackStr = opponentRack.join('');
         let candidateWord = '';
-        
-        // Filter dictionary by difficulty
         const maxLen = difficulty === 'Easy' ? 3 : difficulty === 'Medium' ? 5 : 7;
         const suitableWords = VALID_WORDS.filter(w => w.length <= maxLen);
 
@@ -253,21 +254,31 @@ export default function ScrabbleGame() {
         }
 
         if (!candidateWord) {
-          candidateWord = 'GO';
+          candidateWord = suitableWords[Math.floor(Math.random() * suitableWords.length)] || 'READ';
         }
 
-        // Place word on board (horizontally in middle area)
-        let r = 7;
-        let startC = 7 - Math.floor(candidateWord.length / 2);
-        if (startC < 0) startC = 0;
+        // Find an open contiguous horizontal spot on the board
+        let targetRow = 7;
+        let targetCol = 4;
+        let foundSpot = false;
 
-        // Check if row has empty space
-        let canPlace = true;
-        for (let i = 0; i < candidateWord.length; i++) {
-          if (board[r][startC + i]?.letter !== null) {
-            r = (r + 1) % 15;
-            break;
+        for (let r = 0; r < 15; r++) {
+          for (let c = 0; c <= 15 - candidateWord.length; c++) {
+            let empty = true;
+            for (let i = 0; i < candidateWord.length; i++) {
+              if (board[r][c + i]?.letter !== null) {
+                empty = false;
+                break;
+              }
+            }
+            if (empty) {
+              targetRow = r;
+              targetCol = c;
+              foundSpot = true;
+              break;
+            }
           }
+          if (foundSpot) break;
         }
 
         const newBoard = board.map(row => [...row]);
@@ -276,7 +287,7 @@ export default function ScrabbleGame() {
 
         for (let i = 0; i < candidateWord.length; i++) {
           const char = candidateWord[i];
-          newBoard[r][startC + i] = { ...newBoard[r][startC + i], letter: char, isTemp: false };
+          newBoard[targetRow][targetCol + i] = { ...newBoard[targetRow][targetCol + i], letter: char, isTemp: false };
           pts += LETTER_VALUES[char] || 1;
           usedLetters.push(char);
         }
@@ -295,17 +306,21 @@ export default function ScrabbleGame() {
         });
 
         const bag = [...tileBag];
-        const drawn = bag.splice(0, 7 - newORack.length);
+        while (newORack.length < 7 && bag.length > 0) {
+          newORack.push(bag.pop()!);
+        }
         setTileBag(bag);
-        setOpponentRack([...newORack, ...drawn]);
+        setOpponentRack(newORack);
 
+        // Reset thinking flag & hand turn back to player
+        aiThinkingRef.current = false;
         setIsBotThinking(false);
         setTurn('player');
-      }, 1400);
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [turn, opponentType, gameMode, isBotThinking, opponentRack, board, tileBag, difficulty]);
+  }, [turn, opponentType, gameMode, opponentRack, board, tileBag, difficulty]);
 
   const handleCellClick = (r: number, c: number) => {
     if (turn !== 'player' || isBotThinking) return;
