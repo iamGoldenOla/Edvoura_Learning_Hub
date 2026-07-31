@@ -17,7 +17,7 @@ function speakVoice(text: string) {
   } catch (e) {}
 }
 
-function playScrabbleSFX(type: 'place' | 'valid' | 'invalid' | 'win' | 'shuffle') {
+function playScrabbleSFX(type: 'click' | 'place' | 'valid' | 'invalid' | 'win' | 'shuffle') {
   if (typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
