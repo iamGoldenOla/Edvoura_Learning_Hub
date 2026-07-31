@@ -331,10 +331,16 @@ export default function ChessPage() {
   const router = useRouter();
   const [mode, setMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [oppType, setOppType] = useState<'ai' | 'local' | 'match'>('ai');
-  const [oppName, setOppName] = useState('Computer (AI)');
   const [difficulty, setDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
+  const [boardTheme, setBoardTheme] = useState<'wood' | 'green' | 'blue'>('wood');
   const [copiedLink, setCopiedLink] = useState(false);
   const [roomCode, setRoomCode] = useState('');
+
+  const THEME_COLORS = {
+    wood: { light: '#f0d9b5', dark: '#b58863' },   // Grandmaster Classic Wood (Cream & Walnut)
+    green: { light: '#eeeed2', dark: '#769656' },  // Tournament Green (Ivory & Forest)
+    blue: { light: '#e2e8f0', dark: '#3b82f6' }    // Vivid Royal Blue
+  };
 
   const generateRoomCode = useCallback(() => {
     const code = 'CHESS-' + Math.floor(1000 + Math.random() * 9000);
@@ -544,6 +550,29 @@ export default function ChessPage() {
           <span style={{ fontSize: '13px', fontWeight: 800 }}>♟ You <span style={{ color: '#475569', margin: '0 6px' }}>vs</span> 🤖 {oppName}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Board Mat Theme Toggle */}
+          <div style={{ display: 'flex', gap: '3px', background: '#1e293b', padding: '2px 4px', borderRadius: '8px', border: '1px solid #334155' }}>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', alignSelf: 'center', padding: '0 4px' }}>Board Mat:</span>
+            {[
+              { id: 'wood', label: '🪵 Wood' },
+              { id: 'green', label: '🟢 Green' },
+              { id: 'blue', label: '🔵 Blue' }
+            ].map(t => (
+              <button
+                key={t.id}
+                onClick={() => setBoardTheme(t.id as any)}
+                style={{
+                  padding: '2px 8px', borderRadius: '6px', border: 'none',
+                  fontSize: '10px', fontWeight: 900, cursor: 'pointer',
+                  background: boardTheme === t.id ? '#fbbf24' : 'transparent',
+                  color: boardTheme === t.id ? '#000' : '#cbd5e1'
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
           <div style={{ background: '#1e293b', padding: '3px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 800, fontFamily: 'monospace', border: '1px solid #334155' }}>
             <Clock size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />{fmt(elapsed)}
           </div>
@@ -673,6 +702,7 @@ export default function ChessPage() {
                 const isSel = sel?.r === r && sel?.c === c;
                 const isValid = valid.some(m => m.r === r && m.c === c);
                 const isCheck = checkPos?.r === r && checkPos?.c === c;
+                const palette = THEME_COLORS[boardTheme];
 
                 return (
                   <div
@@ -680,7 +710,7 @@ export default function ChessPage() {
                     onClick={() => click(r, c)}
                     style={{
                       position: 'relative',
-                      background: isCheck ? '#ef4444' : isSel ? '#f59e0b' : dark ? '#2d3748' : '#f1f5f9',
+                      background: isCheck ? '#ef4444' : isSel ? '#f59e0b' : dark ? palette.dark : palette.light,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       cursor: 'pointer', userSelect: 'none',
                       transition: 'background .15s'
@@ -690,8 +720,10 @@ export default function ChessPage() {
                       <span style={{
                         fontSize: 'calc(min(100vw, 100vh) / 14)',
                         lineHeight: 1,
-                        color: pc.color === 'w' ? '#ffffff' : '#0f172a',
-                        filter: pc.color === 'w' ? 'drop-shadow(0 2px 3px rgba(0,0,0,0.8))' : 'drop-shadow(0 1px 2px rgba(255,255,255,0.4))',
+                        color: pc.color === 'w' ? '#ffffff' : '#0b0f19',
+                        filter: pc.color === 'w' 
+                          ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))' 
+                          : 'drop-shadow(0 0 5px #ffffff) drop-shadow(0 2px 4px rgba(0,0,0,0.8))',
                         fontWeight: 900
                       }}>
                         {SYM[pc.color][pc.type]}
