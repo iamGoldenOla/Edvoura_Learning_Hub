@@ -43,8 +43,8 @@ export default function GameLayout({ title, icon, children, score, showTimer = f
     <div style={rootStyle}>
       {/* Header */}
       <div style={{
-        background: `linear-gradient(135deg, #1e293b 0%, ${accentColor}22 100%)`,
-        borderBottom: `1px solid ${accentColor}33`,
+        background: '#111827',
+        borderBottom: `3px solid #000000`,
         padding: fullscreen ? '6px 16px' : '16px 24px',
         display: 'flex',
         alignItems: 'center',

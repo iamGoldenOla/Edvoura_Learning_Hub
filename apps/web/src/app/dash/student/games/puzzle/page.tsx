@@ -59,35 +59,30 @@ function playPuzzleSFX(type: 'slide' | 'win' | 'peek') {
   } catch (e) {}
 }
 
-/* ═══════════════════════ PUZZLE THEMES WITH GRADIENTS ═══════════════════════ */
+/* ═══════════════════════ PUZZLE THEMES (SOLID FLAT COLORS) ═══════════════════════ */
 const PUZZLE_THEMES = [
   {
     id: 'solar', name: '🪐 Solar System', color: '#8b5cf6',
-    gradient: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c084fc 100%)',
     bgIcon: '🪐',
     fact: 'Jupiter is the largest planet in our Solar System and has 95 known moons!'
   },
   {
     id: 'africa', name: '🦁 African Wildlife', color: '#f59e0b',
-    gradient: 'linear-gradient(135deg, #78350f 0%, #d97706 50%, #fbbf24 100%)',
     bgIcon: '🦁',
     fact: 'The African Elephant is the world’s largest land animal, weighing up to 6 tons!'
   },
   {
     id: 'biology', name: '🧬 Human Anatomy', color: '#ef4444',
-    gradient: 'linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #fca5a5 100%)',
     bgIcon: '🧬',
     fact: 'The human heart beats about 100,000 times a day to pump blood throughout the body!'
   },
   {
     id: 'geo', name: '🌍 World Geography', color: '#22c55e',
-    gradient: 'linear-gradient(135deg, #14532d 0%, #16a34a 50%, #86efac 100%)',
     bgIcon: '🌍',
     fact: 'Mount Everest is the highest mountain peak in the world at 8,848 meters!'
   },
   {
     id: 'history', name: '🏛️ Ancient History', color: '#38bdf8',
-    gradient: 'linear-gradient(135deg, #075985 0%, #0284c7 50%, #7dd3fc 100%)',
     bgIcon: '🏛️',
     fact: 'The Great Pyramid of Giza was built over 4,500 years ago in Egypt!'
   },
@@ -239,7 +234,7 @@ export default function PuzzleGame() {
           {/* Subject Theme Selector */}
           <div style={{ background: '#111827', border: '2px solid #1e293b', borderRadius: '12px', padding: '8px 10px', flex: 1, overflowY: 'auto' }}>
             <div style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
-              📚 Colorful Themes
+              📚 Solid Themes
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {PUZZLE_THEMES.map(theme => (
@@ -249,7 +244,7 @@ export default function PuzzleGame() {
                   style={{
                     padding: '6px 8px', borderRadius: '8px', border: '1.5px solid #000',
                     fontSize: '10px', fontWeight: 900, cursor: 'pointer', textAlign: 'left',
-                    background: selectedTheme.id === theme.id ? theme.gradient : '#1e293b',
+                    background: selectedTheme.id === theme.id ? theme.color : '#1e293b',
                     color: '#ffffff',
                     boxShadow: selectedTheme.id === theme.id ? '2px 2px 0 #000' : 'none'
                   }}
@@ -340,7 +335,7 @@ export default function PuzzleGame() {
                     key={idx}
                     onClick={() => handleTileClick(idx)}
                     style={{
-                      background: isEmpty ? '#0f172a' : selectedTheme.gradient,
+                      background: isEmpty ? '#0f172a' : selectedTheme.color,
                       border: isEmpty ? 'none' : '2.5px solid #000000',
                       borderRadius: '10px',
                       display: 'flex', flexDirection: 'column',
@@ -355,13 +350,13 @@ export default function PuzzleGame() {
                   >
                     {!isEmpty && (
                       <>
-                        <div style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>
+                        <div style={{ fontSize: '32px' }}>
                           {selectedTheme.bgIcon}
                         </div>
-                        <span style={{ fontSize: `calc(min(100vw, 100vh) / ${gridSize * 3.5})`, lineHeight: 1, textShadow: '2px 2px 0 #000' }}>
+                        <span style={{ fontSize: `calc(min(100vw, 100vh) / ${gridSize * 3.5})`, lineHeight: 1 }}>
                           {tileVal + 1}
                         </span>
-                        <div style={{ position: 'absolute', bottom: '3px', right: '5px', fontSize: '9px', fontWeight: 900, opacity: 0.85, background: 'rgba(0,0,0,0.4)', padding: '1px 4px', borderRadius: '4px' }}>
+                        <div style={{ position: 'absolute', bottom: '3px', right: '5px', fontSize: '9px', fontWeight: 900, opacity: 0.85, background: '#000000', padding: '1px 4px', borderRadius: '4px' }}>
                           r{targetRow + 1}c{targetCol + 1}
                         </div>
                       </>
