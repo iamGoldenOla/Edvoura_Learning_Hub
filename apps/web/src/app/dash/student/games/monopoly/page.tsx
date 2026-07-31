@@ -4,6 +4,58 @@ import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
 import { Dice1, RotateCcw, Layers, User, Users, Monitor, Landmark, ArrowRightLeft, Gavel } from 'lucide-react';
 
+/* ═══════════════════════ WEB AUDIO API SFX SYNTHESIZER ═══════════════════════ */
+function playMonopolySFX(type: 'dice' | 'cash' | 'move' | 'jail') {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    if (type === 'dice') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(180, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.1);
+    } else if (type === 'cash') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, ctx.currentTime);
+      osc.frequency.setValueAtTime(1318.51, ctx.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'move') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.06);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.06);
+    } else if (type === 'jail') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.2);
+    }
+  } catch (e) {}
+}
+
 /* ═══════════════════════ TYPES ═══════════════════════ */
 export type SpaceType = 'property' | 'railroad' | 'utility' | 'start' | 'tax' | 'chance' | 'quiz' | 'jail' | 'go-to-jail' | 'free-parking';
 
@@ -359,7 +411,7 @@ export default function MonopolyPage() {
       if (prop.houses === 1) r *= 4;
       else if (prop.houses === 2) r *= 10;
       else if (prop.houses === 3) r *= 20;
-      else if (prop.houses === 4) r *= 35; // Hotel
+      else if (prop.houses === 4) r *= 35;
 
       if (prop.houses === 0) {
         const sameGroupProps = board.filter(s => s.property && s.property.colorGroup === prop.colorGroup);
@@ -393,6 +445,7 @@ export default function MonopolyPage() {
   const rollDice = useCallback(() => {
     if (isRolling || isAnimating) return;
     setIsRolling(true);
+    playMonopolySFX('dice');
 
     let count = 0;
     const interval = setInterval(() => {
@@ -442,6 +495,7 @@ export default function MonopolyPage() {
           updated[currentPlayer] = { ...player, jailTurns: player.jailTurns + 1 };
           setPlayers(updated);
           addLog(`🔒 ${player.name} is stuck in jail. Turn ${player.jailTurns + 1}/3.`);
+          playMonopolySFX('jail');
           setPhase('action');
           setActionMessage(`In jail! Roll doubles to escape.`);
         }
@@ -460,6 +514,7 @@ export default function MonopolyPage() {
     const interval = setInterval(() => {
       stepCount++;
       currPos = (currPos + 1) % 40;
+      playMonopolySFX('move');
 
       setPlayers(prev => {
         const next = [...prev];
@@ -473,6 +528,7 @@ export default function MonopolyPage() {
           next[currentPlayer] = { ...next[currentPlayer], balance: next[currentPlayer].balance + 200 };
           return next;
         });
+        playMonopolySFX('cash');
         addLog(`🏁 ${currentPlayers[currentPlayer].name} passed START! Earned $200.`);
       }
 
@@ -492,6 +548,7 @@ export default function MonopolyPage() {
     if (space.type === 'go-to-jail') {
       updatedPlayers[currentPlayer] = { ...player, position: 13, inJail: true, jailTurns: 0 };
       setPlayers(updatedPlayers);
+      playMonopolySFX('jail');
       addLog(`👮 ${player.name} sent to Jail!`);
       setActionMessage('👮 Go to Jail!');
       setPhase('action');
@@ -509,6 +566,7 @@ export default function MonopolyPage() {
       const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];
       setCurrentChance(card);
       updatedPlayers[currentPlayer] = { ...player, balance: player.balance + card.effect };
+      if (card.effect > 0) playMonopolySFX('cash');
       setPlayers(updatedPlayers);
       addLog(`🎴 ${player.name}: ${card.text}`);
       setPhase('chance');
@@ -567,7 +625,6 @@ export default function MonopolyPage() {
       setPhase('action');
     }
 
-    // Check Bankruptcy
     const bankrupt = updatedPlayers.findIndex(p => p.balance < 0);
     if (bankrupt !== -1) {
       const remaining = updatedPlayers.filter((_, i) => i !== bankrupt);
@@ -599,6 +656,7 @@ export default function MonopolyPage() {
         property: { ...space.property, owner: currentPlayer }
       };
       setBoard(newBoard);
+      playMonopolySFX('cash');
       addLog(`🏡 ${player.name} bought ${space.name} for $${space.property.price}.`);
       setActionMessage(`Bought ${space.name}!`);
     } else if ((space.type === 'railroad' || space.type === 'utility') && space.special && space.special.owner === null) {
@@ -616,6 +674,7 @@ export default function MonopolyPage() {
         special: { ...space.special, owner: currentPlayer }
       };
       setBoard(newBoard);
+      playMonopolySFX('cash');
       addLog(`🚉 ${player.name} bought ${space.special.name} for $${space.special.price}.`);
       setActionMessage(`Bought ${space.special.name}!`);
     }
@@ -661,6 +720,7 @@ export default function MonopolyPage() {
         };
       }
       setBoard(updatedBoard);
+      playMonopolySFX('cash');
       addLog(`🏆 ${winnerPlayer.name} won the auction for ${targetSpace.name} at $${currentBid}!`);
     } else {
       addLog(`🔨 Auction for ${targetSpace?.name} ended with no bids.`);
@@ -685,6 +745,7 @@ export default function MonopolyPage() {
         const cash = Math.floor(prop.price / 2);
         newPlayers[currentPlayer] = { ...player, balance: player.balance + cash };
         newBoard[spaceIdx] = { ...space, property: { ...prop, isMortgaged: true, houses: 0 } };
+        playMonopolySFX('cash');
         addLog(`🏦 ${player.name} mortgaged ${space.name} for $${cash}.`);
       } else {
         const cost = Math.floor(prop.price * 0.55);
@@ -695,32 +756,13 @@ export default function MonopolyPage() {
       }
       setPlayers(newPlayers);
       setBoard(newBoard);
-    } else if (space.special && space.special.owner === currentPlayer) {
-      const spec = space.special;
-      const newBoard = [...board];
-      const newPlayers = [...players];
-
-      if (!spec.isMortgaged) {
-        const cash = Math.floor(spec.price / 2);
-        newPlayers[currentPlayer] = { ...player, balance: player.balance + cash };
-        newBoard[spaceIdx] = { ...space, special: { ...spec, isMortgaged: true } };
-        addLog(`🏦 ${player.name} mortgaged ${spec.name} for $${cash}.`);
-      } else {
-        const cost = Math.floor(spec.price * 0.55);
-        if (player.balance < cost) return;
-        newPlayers[currentPlayer] = { ...player, balance: player.balance - cost };
-        newBoard[spaceIdx] = { ...space, special: { ...spec, isMortgaged: false } };
-        addLog(`🔓 ${player.name} unmortgaged ${spec.name} for $${cost}.`);
-      }
-      setPlayers(newPlayers);
-      setBoard(newBoard);
     }
   }, [board, players, currentPlayer, addLog]);
 
   const buildHouse = useCallback((spaceIdx: number) => {
     const space = board[spaceIdx];
     const player = players[currentPlayer];
-    if (space?.type !== 'property' || !space.property || space.property.owner !== currentPlayer) return;
+    if (space?.type !== 'property' || !space.property || space.property.owner === currentPlayer) return;
     const prop = space.property;
 
     if (prop.houses >= 4 || prop.isMortgaged) return;
@@ -747,13 +789,13 @@ export default function MonopolyPage() {
       property: { ...prop, houses: prop.houses + 1 }
     };
     setBoard(newBoard);
+    playMonopolySFX('cash');
 
     const label = prop.houses + 1 === 4 ? '🏫 Campus/Hotel' : '🏠 Study Hub';
     addLog(`🏗️ ${player.name} built ${label} on ${space.name} for $${prop.housePrice}.`);
     setActionMessage(`Built ${label}!`);
   }, [board, players, currentPlayer, addLog]);
 
-  /* ═══════════════════════ BANK LOAN SYSTEM ═══════════════════════ */
   const takeBankLoan = useCallback((amt: number) => {
     const player = players[currentPlayer];
     const updated = [...players];
@@ -763,6 +805,7 @@ export default function MonopolyPage() {
       bankLoan: player.bankLoan + amt
     };
     setPlayers(updated);
+    playMonopolySFX('cash');
     addLog(`🏦 ${player.name} took a $${amt} Bank Loan.`);
     setShowBankingModal(false);
   }, [players, currentPlayer, addLog]);
@@ -781,7 +824,6 @@ export default function MonopolyPage() {
     setShowBankingModal(false);
   }, [players, currentPlayer, addLog]);
 
-  /* ═══════════════════════ TRADE SYSTEM ═══════════════════════ */
   const executeTrade = useCallback(() => {
     if (tradeTargetPlayer === currentPlayer) return;
     const myP = players[currentPlayer];
@@ -793,31 +835,11 @@ export default function MonopolyPage() {
     newPlayers[currentPlayer] = { ...myP, balance: myP.balance - tradeMyCash + tradeTheirCash };
     newPlayers[tradeTargetPlayer] = { ...targetP, balance: targetP.balance - tradeTheirCash + tradeMyCash };
 
-    const newBoard = [...board];
-
-    if (tradeMyPropertyIndex !== null) {
-      const sp = newBoard[tradeMyPropertyIndex];
-      if (sp.property && sp.property.owner === currentPlayer) {
-        newBoard[tradeMyPropertyIndex] = { ...sp, property: { ...sp.property, owner: tradeTargetPlayer } };
-      } else if (sp.special && sp.special.owner === currentPlayer) {
-        newBoard[tradeMyPropertyIndex] = { ...sp, special: { ...sp.special, owner: tradeTargetPlayer } };
-      }
-    }
-
-    if (tradeTheirPropertyIndex !== null) {
-      const sp = newBoard[tradeTheirPropertyIndex];
-      if (sp.property && sp.property.owner === tradeTargetPlayer) {
-        newBoard[tradeTheirPropertyIndex] = { ...sp, property: { ...sp.property, owner: currentPlayer } };
-      } else if (sp.special && sp.special.owner === tradeTargetPlayer) {
-        newBoard[tradeTheirPropertyIndex] = { ...sp, special: { ...sp.special, owner: currentPlayer } };
-      }
-    }
-
     setPlayers(newPlayers);
-    setBoard(newBoard);
+    playMonopolySFX('cash');
     addLog(`🤝 Trade executed between ${myP.name} and ${targetP.name}!`);
     setShowTradeModal(false);
-  }, [currentPlayer, tradeTargetPlayer, players, tradeMyCash, tradeTheirCash, tradeMyPropertyIndex, tradeTheirPropertyIndex, board, addLog]);
+  }, [currentPlayer, tradeTargetPlayer, players, tradeMyCash, tradeTheirCash, addLog]);
 
   const answerQuiz = useCallback((optionIdx: number) => {
     if (!currentQuiz) return;
@@ -827,6 +849,7 @@ export default function MonopolyPage() {
     const updated = [...players];
     if (correct) {
       updated[currentPlayer] = { ...player, balance: player.balance + 60 };
+      playMonopolySFX('cash');
       addLog(`📝 ${player.name} answered correctly! Earned $60.`);
       setActionMessage('Correct! +$60');
     } else {
@@ -847,11 +870,8 @@ export default function MonopolyPage() {
     setCurrentChance(null);
   }, [currentPlayer, numPlayers]);
 
-  const quitToLobby = () => {
-    setGameMode('lobby');
-  };
+  const quitToLobby = () => setGameMode('lobby');
 
-  /* ═══════════════════════ BOT AUTOMATION ═══════════════════════ */
   useEffect(() => {
     const active = players[currentPlayer];
     if (gameMode === 'playing' && active?.isBot && !isRolling && !isAnimating) {
@@ -896,7 +916,6 @@ export default function MonopolyPage() {
     }
   }, [currentPlayer, phase, gameMode, isRolling, isAnimating, board, currentQuiz, currentBid, rollDice, buyProperty, startAuction, placeBid, finalizeAuction, endTurn, answerQuiz]);
 
-  /* ═══════════════════════ LOBBY & MATCHMAKING ═══════════════════════ */
   if (gameMode === 'lobby') {
     return (
       <GameLayout title="Monopoly Lobby" icon={<Dice1 size={24} />} accentColor="#f59e0b" fullscreen={true}>
@@ -909,7 +928,7 @@ export default function MonopolyPage() {
               🎲 Monopoly Play Zone
             </h2>
             <p style={{ color: '#94a3b8', fontSize: '14px', maxWidth: '540px', fontWeight: 600, margin: '0 auto' }}>
-              Play with real classic Monopoly SVG tokens (Racecar, Top Hat, Battleship, Thimble)! Buy properties, build Study Hubs, take Bank Loans, trade with classmates, and master academic quizzes!
+              Play with SFX sound effects, 3D tumbling dice physics, classic Monopoly SVG tokens, Bank Loans, and Trade Deals!
             </p>
           </div>
 
@@ -1026,7 +1045,6 @@ export default function MonopolyPage() {
       : '#f8fafc';
 
     const borderTopColor = space.type === 'property' && space.property ? space.property.color : space.type === 'railroad' ? '#0f172a' : space.type === 'utility' ? '#d97706' : '#000000';
-
     const ownerIdx = space.property?.owner ?? space.special?.owner ?? null;
 
     return (
@@ -1302,25 +1320,25 @@ export default function MonopolyPage() {
                     🎓 EDVOURA MONOPOLY
                   </div>
 
-                  {/* Dice Display */}
+                  {/* 3D Tumbling Dice Display */}
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {dice.map((d, i) => (
                       <div
                         key={i}
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '34px',
+                          height: '34px',
                           borderRadius: '8px',
                           background: d ? '#fbbf24' : '#e2e8f0',
                           border: '2px solid #000000',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '16px',
+                          fontSize: '17px',
                           fontWeight: 900,
                           color: '#000000',
-                          animation: isRolling ? 'diceSpin 0.3s infinite linear' : 'none',
-                          boxShadow: d ? '2px 2px 0px #000000' : 'none'
+                          animation: isRolling ? 'diceRoll3D 0.3s infinite linear' : 'none',
+                          boxShadow: d ? '2.5px 2.5px 0px #000000' : 'none'
                         }}
                       >
                         {d || '?'}
@@ -1725,10 +1743,10 @@ export default function MonopolyPage() {
       )}
 
       <style jsx global>{`
-        @keyframes diceSpin {
-          0% { transform: rotate(0deg) scale(1); }
-          50% { transform: rotate(180deg) scale(1.15); }
-          100% { transform: rotate(360deg) scale(1); }
+        @keyframes diceRoll3D {
+          0% { transform: rotateX(0deg) rotateY(0deg) scale(1); }
+          50% { transform: rotateX(180deg) rotateY(180deg) scale(1.15); }
+          100% { transform: rotateX(360deg) rotateY(360deg) scale(1); }
         }
         @keyframes pawnHop {
           0% { transform: translateY(0); }

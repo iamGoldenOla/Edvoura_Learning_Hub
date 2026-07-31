@@ -4,8 +4,62 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Crown, RotateCcw, Layers, User, Users,
-  Monitor, ArrowLeft, Undo2, Clock, Swords
+  Monitor, ArrowLeft, Undo2, Clock, Swords, Flag, Handshake
 } from 'lucide-react';
+
+/* ═══════════════════════ WEB AUDIO API SFX SYNTHESIZER ═══════════════════════ */
+function playChessSFX(type: 'move' | 'capture' | 'check' | 'victory') {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    if (type === 'move') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(420, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.05);
+    } else if (type === 'capture') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(240, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(70, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.5, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.08);
+    } else if (type === 'check') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.25);
+    } else if (type === 'victory') {
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.1 + 0.3);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.1);
+        osc.stop(ctx.currentTime + idx * 0.1 + 0.3);
+      });
+    }
+  } catch (e) {}
+}
 
 /* ═══════════════════════ TYPES ═══════════════════════ */
 type PieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
@@ -42,7 +96,7 @@ interface GS {
   turn: Color;
   castling: { wK: boolean; wQ: boolean; bK: boolean; bQ: boolean };
   ep: Position | null;
-  history: { mv: string; board: Board }[];
+  history: { mv: string; san: string; board: Board }[];
   cap: { w: string[]; b: string[] };
 }
 
@@ -100,7 +154,8 @@ const pseudoMoves = (b: Board, r: number, c: number, cas: GS['castling'], ep: Po
       let cr = r + dr, cc = c + dc;
       while (inB(cr, cc)) {
         const tg = b[cr][cc];
-        if (!tg) { ms.push({ r: cr, c: cc }); } else { if (tg.color !== cl) ms.push({ r: cr, c: cc }); break; }
+        if (!tg) ms.push({ r: cr, c: cc });
+        else { if (tg.color !== cl) ms.push({ r: cr, c: cc }); break; }
         cr += dr; cc += dc;
       }
     }
@@ -108,195 +163,235 @@ const pseudoMoves = (b: Board, r: number, c: number, cas: GS['castling'], ep: Po
   return ms;
 };
 
-const attacked = (b: Board, r: number, c: number, by: Color): boolean => {
-  for (let ir = 0; ir < 8; ir++) for (let ic = 0; ic < 8; ic++)
-    if (b[ir][ic]?.color === by && pseudoMoves(b, ir, ic, { wK: false, wQ: false, bK: false, bQ: false }, null).some(m => m.r === r && m.c === c))
-      return true;
+const findKing = (b: Board, c: Color): Position | null => {
+  for (let r = 0; r < 8; r++)
+    for (let col = 0; col < 8; col++)
+      if (b[r][col]?.type === 'k' && b[r][col]?.color === c) return { r, c: col };
+  return null;
+};
+
+const isAttacked = (b: Board, pos: Position, byColor: Color): boolean => {
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++)
+      if (b[r][c]?.color === byColor) {
+        const ms = pseudoMoves(b, r, c, { wK: false, wQ: false, bK: false, bQ: false }, null);
+        if (ms.some(m => m.r === pos.r && m.c === pos.c)) return true;
+      }
   return false;
 };
 
-const inCheck = (b: Board, cl: Color): boolean => {
-  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++)
-    if (b[r][c]?.type === 'k' && b[r][c]?.color === cl) return attacked(b, r, c, opp(cl));
-  return false;
+const inCheck = (b: Board, c: Color): boolean => {
+  const kp = findKing(b, c);
+  return kp ? isAttacked(b, kp, opp(c)) : false;
 };
 
-const simMove = (b: Board, fr: Position, to: Position, ep: Position | null): Board => {
-  const nb = b.map(r => [...r]);
-  const pc = nb[fr.r][fr.c]!;
-  nb[to.r][to.c] = pc; nb[fr.r][fr.c] = null;
-  if (pc.type === 'p') {
-    if (ep && to.r === ep.r && to.c === ep.c) nb[fr.r][to.c] = null;
-    if (to.r === 0 || to.r === 7) nb[to.r][to.c] = { type: 'q', color: pc.color };
+const execMove = (gs: GS, from: Position, to: Position): GS => {
+  const b = gs.board.map(r => [...r]);
+  const p = b[from.r][from.c]!;
+  const capPiece = b[to.r][to.c];
+  b[from.r][from.c] = null;
+
+  let isEP = false;
+  if (p.type === 'p' && gs.ep && to.r === gs.ep.r && to.c === gs.ep.c) {
+    b[from.r][to.c] = null; isEP = true;
   }
-  if (pc.type === 'k' && Math.abs(to.c - fr.c) === 2) {
-    if (to.c === 6) { nb[fr.r][5] = nb[fr.r][7]; nb[fr.r][7] = null; }
-    else if (to.c === 2) { nb[fr.r][3] = nb[fr.r][0]; nb[fr.r][0] = null; }
+
+  // Promotion
+  let finalP: Piece = p;
+  if (p.type === 'p' && (to.r === 0 || to.r === 7)) finalP = { type: 'q', color: p.color };
+  b[to.r][to.c] = finalP;
+
+  // Castling
+  if (p.type === 'k' && Math.abs(to.c - from.c) === 2) {
+    if (to.c === 6) { b[to.r][5] = b[to.r][7]; b[to.r][7] = null; }
+    if (to.c === 2) { b[to.r][3] = b[to.r][0]; b[to.r][0] = null; }
   }
-  return nb;
+
+  const cas = { ...gs.castling };
+  if (p.type === 'k') { if (p.color === 'w') { cas.wK = false; cas.wQ = false; } else { cas.bK = false; cas.bQ = false; } }
+  if (p.type === 'r') {
+    if (from.r === 7 && from.c === 7) cas.wK = false;
+    if (from.r === 7 && from.c === 0) cas.wQ = false;
+    if (from.r === 0 && from.c === 7) cas.bK = false;
+    if (from.r === 0 && from.c === 0) cas.bQ = false;
+  }
+
+  const ep = (p.type === 'p' && Math.abs(to.r - from.r) === 2)
+    ? { r: (from.r + to.r) / 2, c: from.c } : null;
+
+  const newCap = { w: [...gs.cap.w], b: [...gs.cap.b] };
+  if (capPiece) {
+    const s = SYM[capPiece.color][capPiece.type];
+    if (p.color === 'w') newCap.w.push(s); else newCap.b.push(s);
+  } else if (isEP) {
+    const s = SYM[opp(p.color)].p;
+    if (p.color === 'w') newCap.w.push(s); else newCap.b.push(s);
+  }
+
+  // Generate SAN Notation
+  let san = '';
+  if (p.type === 'k' && Math.abs(to.c - from.c) === 2) {
+    san = to.c === 6 ? 'O-O' : 'O-O-O';
+  } else {
+    const pieceSym = p.type === 'p' ? '' : p.type.toUpperCase();
+    const isCap = capPiece || isEP;
+    const fromStr = p.type === 'p' && isCap ? FILES[from.c] : '';
+    const capStr = isCap ? 'x' : '';
+    const destStr = `${FILES[to.c]}${RANKS[to.r]}`;
+    san = `${pieceSym}${fromStr}${capStr}${destStr}`;
+  }
+
+  const coordStr = `${FILES[from.c]}${RANKS[from.r]}-${FILES[to.c]}${RANKS[to.r]}`;
+
+  return {
+    board: b, turn: opp(p.color), castling: cas, ep,
+    history: [...gs.history, { mv: coordStr, san, board: b }], cap: newCap
+  };
 };
 
 const legalMoves = (b: Board, r: number, c: number, cas: GS['castling'], ep: Position | null): Position[] => {
-  const cl = b[r][c]!.color;
-  return pseudoMoves(b, r, c, cas, ep).filter(m => {
-    if (b[r][c]?.type === 'k' && Math.abs(m.c - c) === 2) {
-      if (inCheck(b, cl)) return false;
-      if (attacked(b, r, c + (m.c > c ? 1 : -1), opp(cl))) return false;
+  const p = b[r][c]; if (!p) return [];
+  const pm = pseudoMoves(b, r, c, cas, ep);
+  return pm.filter(to => {
+    if (p.type === 'k' && Math.abs(to.c - c) === 2) {
+      if (inCheck(b, p.color)) return false;
+      const step = (to.c - c) / 2;
+      if (isAttacked(b, { r, c: c + step }, opp(p.color))) return false;
     }
-    return !inCheck(simMove(b, { r, c }, m, ep), cl);
+    const dummy: GS = { board: b, turn: p.color, castling: cas, ep, history: [], cap: { w: [], b: [] } };
+    const next = execMove(dummy, { r, c }, to);
+    return !inCheck(next.board, p.color);
   });
 };
 
-const allLegal = (s: GS): Move[] => {
-  const ms: Move[] = [];
-  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++)
-    if (s.board[r][c]?.color === s.turn)
-      legalMoves(s.board, r, c, s.castling, s.ep).forEach(m => ms.push({ from: { r, c }, to: m }));
-  return ms;
+const allLegal = (b: Board, turn: Color, cas: GS['castling'], ep: Position | null): Move[] => {
+  const res: Move[] = [];
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++)
+      if (b[r][c]?.color === turn)
+        for (const to of legalMoves(b, r, c, cas, ep))
+          res.push({ from: { r, c }, to });
+  return res;
 };
 
+/* ═══════════════════════ ENGINE EVALUATION ═══════════════════════ */
 const evalBoard = (b: Board): number => {
   let s = 0;
-  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
-    const p = b[r][c]; if (p) s += p.color === 'b' ? VAL[p.type] : -VAL[p.type];
-  }
-  return s;
+  for (let r = 0; r < 8; r++)
+    for (let c = 0; c < 8; c++) {
+      const p = b[r][c];
+      if (p) {
+        let v = VAL[p.type];
+        if (p.type === 'p') v += (p.color === 'w' ? 7 - r : r);
+        s += p.color === 'w' ? v : -v;
+      }
+    }
+  return s / 10;
 };
 
-const applyMoveRaw = (s: GS, m: Move): GS => {
-  const pc = s.board[m.from.r][m.from.c]!;
-  const nb = simMove(s.board, m.from, m.to, s.ep);
-  let ne = null as Position | null;
-  if (pc.type === 'p' && Math.abs(m.from.r - m.to.r) === 2) ne = { r: (m.from.r + m.to.r) / 2, c: m.from.c };
-  const nc = { ...s.castling };
-  if (pc.type === 'k') { if (pc.color === 'w') { nc.wK = false; nc.wQ = false; } else { nc.bK = false; nc.bQ = false; } }
-  if (pc.type === 'r') {
-    if (m.from.r === 7 && m.from.c === 0) nc.wQ = false; if (m.from.r === 7 && m.from.c === 7) nc.wK = false;
-    if (m.from.r === 0 && m.from.c === 0) nc.bQ = false; if (m.from.r === 0 && m.from.c === 7) nc.bK = false;
-  }
-  return { board: nb, turn: opp(s.turn), castling: nc, ep: ne, history: s.history, cap: s.cap };
-};
+const minimax = (b: Board, depth: number, alpha: number, beta: number, isMax: boolean, cas: GS['castling'], ep: Position | null): number => {
+  if (depth === 0) return evalBoard(b);
+  const moves = allLegal(b, isMax ? 'w' : 'b', cas, ep);
+  if (moves.length === 0) return inCheck(b, isMax ? 'w' : 'b') ? (isMax ? -999 : 999) : 0;
 
-const minimax = (s: GS, d: number, a: number, b: number, max: boolean): { score: number; move: Move | null } => {
-  const ms = allLegal(s);
-  if (d === 0 || ms.length === 0) {
-    if (ms.length === 0) { if (inCheck(s.board, s.turn)) return { score: max ? -9999 : 9999, move: null }; return { score: 0, move: null }; }
-    return { score: evalBoard(s.board), move: null };
-  }
-  let best = ms[0];
-  if (max) {
-    let mx = -Infinity;
-    for (const m of ms) { const e = minimax(applyMoveRaw(s, m), d - 1, a, b, false).score; if (e > mx) { mx = e; best = m; } a = Math.max(a, e); if (b <= a) break; }
-    return { score: mx, move: best };
+  if (isMax) {
+    let maxE = -Infinity;
+    for (const m of moves) {
+      const next = execMove({ board: b, turn: 'w', castling: cas, ep, history: [], cap: { w: [], b: [] } }, m.from, m.to);
+      maxE = Math.max(maxE, minimax(next.board, depth - 1, alpha, beta, false, next.castling, next.ep));
+      alpha = Math.max(alpha, maxE); if (beta <= alpha) break;
+    }
+    return maxE;
   } else {
-    let mn = Infinity;
-    for (const m of ms) { const e = minimax(applyMoveRaw(s, m), d - 1, a, b, true).score; if (e < mn) { mn = e; best = m; } b = Math.min(b, e); if (b <= a) break; }
-    return { score: mn, move: best };
+    let minE = Infinity;
+    for (const m of moves) {
+      const next = execMove({ board: b, turn: 'b', castling: cas, ep, history: [], cap: { w: [], b: [] } }, m.from, m.to);
+      minE = Math.min(minE, minimax(next.board, depth - 1, alpha, beta, true, next.castling, next.ep));
+      beta = Math.min(beta, minE); if (beta <= alpha) break;
+    }
+    return minE;
   }
 };
 
-const posStr = (r: number, c: number) => `${FILES[c]}${RANKS[r]}`;
-
-const doMove = (s: GS, m: Move): GS => {
-  const pc = s.board[m.from.r][m.from.c]!;
-  const tg = s.board[m.to.r][m.to.c];
-  const nb = simMove(s.board, m.from, m.to, s.ep);
-  let ne = null as Position | null;
-  if (pc.type === 'p' && Math.abs(m.from.r - m.to.r) === 2) ne = { r: (m.from.r + m.to.r) / 2, c: m.from.c };
-  const nc = { ...s.castling };
-  if (pc.type === 'k') { if (pc.color === 'w') { nc.wK = false; nc.wQ = false; } else { nc.bK = false; nc.bQ = false; } }
-  if (pc.type === 'r') {
-    if (m.from.r === 7 && m.from.c === 0) nc.wQ = false; if (m.from.r === 7 && m.from.c === 7) nc.wK = false;
-    if (m.from.r === 0 && m.from.c === 0) nc.bQ = false; if (m.from.r === 0 && m.from.c === 7) nc.bK = false;
+const bestMoveAI = (gs: GS): Move | null => {
+  const moves = allLegal(gs.board, 'b', gs.castling, gs.ep);
+  if (moves.length === 0) return null;
+  let best: Move = moves[0];
+  let minE = Infinity;
+  for (const m of moves) {
+    const next = execMove(gs, m.from, m.to);
+    const score = minimax(next.board, 2, -Infinity, Infinity, true, next.castling, next.ep);
+    if (score < minE) { minE = score; best = m; }
   }
-  const mv = `${pc.type !== 'p' ? pc.type.toUpperCase() : ''}${posStr(m.from.r, m.from.c)}→${posStr(m.to.r, m.to.c)}`;
-  const cap = { w: [...s.cap.w], b: [...s.cap.b] };
-  if (tg) cap[tg.color].push(SYM[tg.color][tg.type]);
-  else if (pc.type === 'p' && s.ep && m.to.r === s.ep.r && m.to.c === s.ep.c) cap[opp(pc.color)].push(SYM[opp(pc.color)]['p']);
-  return { board: nb, turn: opp(s.turn), castling: nc, ep: ne, history: [...s.history, { mv, board: nb }], cap };
+  return best;
 };
 
-const OPPONENTS = ['Aisha Bello (Grade 4)', 'Chinedu Okafor (Grade 5)', 'Oluwaseun Adebayo (Grade 4)', 'Amara Egwu (Grade 5)', 'Tunde Cole (Grade 6)'];
-
-/* ═══════════════════════ COMPONENT ═══════════════════════ */
-export default function ChessGame() {
+/* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
+export default function ChessPage() {
   const router = useRouter();
   const [mode, setMode] = useState<'lobby' | 'matching' | 'playing'>('lobby');
   const [oppType, setOppType] = useState<'ai' | 'local' | 'match'>('ai');
   const [oppName, setOppName] = useState('Computer (AI)');
-  const [gs, setGs] = useState<GS>(INIT_STATE);
+
+  const [gs, setGS] = useState<GS>(INIT_STATE);
   const [sel, setSel] = useState<Position | null>(null);
   const [valid, setValid] = useState<Position[]>([]);
   const [thinking, setThinking] = useState(false);
+  const [status, setStatus] = useState<string>('Active');
   const [flat, setFlat] = useState(false);
   const [elapsed, setElapsed] = useState(0);
 
-  const check = inCheck(gs.board, gs.turn);
-  const moves = allLegal(gs);
-  const over = moves.length === 0;
-  const status = over ? (check ? 'checkmate' : 'stalemate') : 'playing';
-
-  let checkPos: Position | null = null;
-  if (check) {
-    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++)
-      if (gs.board[r][c]?.type === 'k' && gs.board[r][c]?.color === gs.turn) checkPos = { r, c };
-  }
-
-  const reset = useCallback(() => { setGs(INIT_STATE); setSel(null); setValid([]); setThinking(false); setElapsed(0); }, []);
-
-  const undo = useCallback(() => {
-    if (gs.history.length < 2 && oppType !== 'local') return;
-    if (oppType === 'local' && gs.history.length < 1) return;
-    const steps = oppType === 'local' ? 1 : 2;
-    setGs(s => {
-      const nh = s.history.slice(0, -steps);
-      const lb = nh.length > 0 ? nh[nh.length - 1].board : INIT;
-      const iCounts = countPieces(INIT);
-      const cCounts = countPieces(lb);
-      const cap = { w: [] as string[], b: [] as string[] };
-      for (const cl of ['w', 'b'] as Color[]) for (const t of ['p', 'n', 'b', 'r', 'q', 'k'] as PieceType[]) {
-        for (let i = 0; i < (iCounts[cl][t] - cCounts[cl][t]); i++) cap[cl].push(SYM[cl][t]);
-      }
-      return { ...s, board: lb, turn: oppType === 'local' ? opp(s.turn) : 'w', history: nh, cap };
-    });
-    setSel(null); setValid([]);
-  }, [gs.history.length, oppType]);
-
   useEffect(() => {
-    if (mode === 'matching') {
-      const t = setTimeout(() => { setOppName(OPPONENTS[Math.floor(Math.random() * OPPONENTS.length)]); setMode('playing'); }, 3500);
-      return () => clearTimeout(t);
-    }
+    if (mode !== 'playing') return;
+    const t = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(t);
   }, [mode]);
 
-  useEffect(() => {
-    let t: NodeJS.Timeout;
-    if (status === 'playing' && mode === 'playing') { t = setInterval(() => setElapsed(p => p + 1), 1000); }
-    return () => clearInterval(t);
-  }, [status, mode]);
+  const reset = () => {
+    setGS(INIT_STATE); setSel(null); setValid([]); setThinking(false); setStatus('Active'); setElapsed(0);
+  };
 
-  useEffect(() => {
-    const bot = gs.turn === 'b' && (oppType === 'ai' || oppType === 'match');
-    if (bot && status === 'playing' && !thinking && mode === 'playing') {
-      setThinking(true);
-      const t = setTimeout(() => {
-        const r = minimax(gs, 2, -Infinity, Infinity, true);
-        if (r.move) setGs(s => doMove(s, r.move!));
-        else { const ms = allLegal(gs); if (ms.length > 0) setGs(s => doMove(s, ms[Math.floor(Math.random() * ms.length)])); }
-        setThinking(false);
-      }, 1000);
-      return () => clearTimeout(t);
+  const makeMove = useCallback((from: Position, to: Position) => {
+    const isCap = !!gs.board[to.r][to.c];
+    const next = execMove(gs, from, to);
+    const isChk = inCheck(next.board, next.turn);
+    const moves = allLegal(next.board, next.turn, next.castling, next.ep);
+
+    if (isChk) {
+      if (moves.length === 0) {
+        setStatus(`Checkmate! ${gs.turn === 'w' ? 'White' : 'Black'} wins!`);
+        playChessSFX('victory');
+      } else {
+        setStatus(`Check! ${next.turn === 'w' ? 'White' : 'Black'} is in check.`);
+        playChessSFX('check');
+      }
+    } else if (moves.length === 0) {
+      setStatus('Stalemate! Game is a draw.');
+    } else {
+      setStatus('Active');
+      if (isCap) playChessSFX('capture'); else playChessSFX('move');
     }
-  }, [gs.turn, status, mode]);
+
+    setGS(next); setSel(null); setValid([]);
+  }, [gs]);
+
+  // AI Move Automation
+  useEffect(() => {
+    if (mode === 'playing' && oppType === 'ai' && gs.turn === 'b' && !thinking && status === 'Active') {
+      setThinking(true);
+      const timer = setTimeout(() => {
+        const bm = bestMoveAI(gs);
+        if (bm) makeMove(bm.from, bm.to);
+        setThinking(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [gs, oppType, mode, thinking, status, makeMove]);
 
   const click = (r: number, c: number) => {
-    if (status !== 'playing' || thinking) return;
-    if (gs.turn === 'b' && oppType !== 'local') return;
+    if (thinking || status.includes('Checkmate') || status.includes('Stalemate') || status.includes('Resigned')) return;
     if (sel) {
-      if (valid.some(m => m.r === r && m.c === c)) {
-        setGs(s => doMove(s, { from: sel, to: { r, c } }));
-        setSel(null); setValid([]); return;
-      }
+      if (valid.some(m => m.r === r && m.c === c)) { makeMove(sel, { r, c }); return; }
     }
     const pc = gs.board[r][c];
     const ok = oppType === 'local' ? gs.turn : 'w';
@@ -310,7 +405,36 @@ export default function ChessGame() {
     else { setOppName(t === 'ai' ? 'Computer (AI)' : 'Player 2 (Local)'); setMode('playing'); }
   };
 
+  const resign = () => {
+    setStatus(`${gs.turn === 'w' ? 'White' : 'Black'} Resigned.`);
+    playChessSFX('victory');
+  };
+
+  const offerDraw = () => {
+    setStatus('Game ended in Mutual Draw.');
+  };
+
+  const undo = () => {
+    if (gs.history.length === 0 || thinking) return;
+    const steps = oppType === 'ai' && gs.history.length >= 2 ? 2 : 1;
+    const targetIdx = gs.history.length - steps;
+    if (targetIdx <= 0) { reset(); return; }
+    const prevEntry = gs.history[targetIdx - 1];
+    setGS({
+      board: prevEntry.board,
+      turn: targetIdx % 2 === 0 ? 'w' : 'b',
+      castling: { wK: true, wQ: true, bK: true, bQ: true },
+      ep: null,
+      history: gs.history.slice(0, targetIdx),
+      cap: { w: [], b: [] }
+    });
+    setSel(null); setValid([]); setStatus('Active');
+  };
+
   const fmt = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+
+  const currentEval = evalBoard(gs.board);
+  const checkPos = inCheck(gs.board, gs.turn) ? findKing(gs.board, gs.turn) : null;
 
   /* ═══════════ LOBBY ═══════════ */
   if (mode === 'lobby') return (
@@ -320,7 +444,7 @@ export default function ChessGame() {
           <Crown size={40} />
           <h1 style={{ fontSize: '32px', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '-0.02em', margin: 0 }}>Chess Zone</h1>
         </div>
-        <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 600, margin: 0, lineHeight: 1.6 }}>Choose your game mode below.</p>
+        <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 600, margin: 0, lineHeight: 1.6 }}>Play with SFX audio, engine evaluation bar, and PGN move notation!</p>
         <div style={{ display: 'flex', gap: '16px', flexWrap: 'nowrap', justifyContent: 'center', width: '100%', marginTop: '12px' }}>
           {([
             { t: 'ai' as const, title: 'Play vs Computer', desc: 'Minimax AI engine', Icon: Monitor },
@@ -358,8 +482,6 @@ export default function ChessGame() {
   );
 
   /* ═══════════ PLAYING ═══════════ */
-  const lastMove = gs.history.length > 0 ? gs.history[gs.history.length - 1].mv : '—';
-
   return (
     <div className="chess-root" style={{
       position: 'absolute', inset: 0, width: '100%', height: '100%',
@@ -385,7 +507,7 @@ export default function ChessGame() {
             <Clock size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />{fmt(elapsed)}
           </div>
           <div style={{ background: '#1e293b', padding: '3px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 800, border: '1px solid #334155' }}>
-            <Swords size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />Beginner
+            <Swords size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />Engine: {currentEval > 0 ? `+${currentEval.toFixed(1)}` : currentEval.toFixed(1)}
           </div>
           <button onClick={() => setFlat(!flat)} style={{ background: '#fbbf24', border: '2px solid #000', borderRadius: '8px', padding: '3px 10px', fontWeight: 900, fontSize: '11px', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Layers size={11} />{flat ? '3D' : 'Flat'}
@@ -393,10 +515,10 @@ export default function ChessGame() {
         </div>
       </div>
 
-      {/* ─── MAIN AREA: LEFT PANEL | BOARD | RIGHT PANEL ─── */}
+      {/* ─── MAIN AREA: LEFT PANEL | EVAL BAR | BOARD | RIGHT PANEL ─── */}
       <div style={{
         display: 'flex', alignItems: 'stretch',
-        overflow: 'hidden', padding: '4px 6px', gap: '4px'
+        overflow: 'hidden', padding: '4px 6px', gap: '6px'
       }}>
         {/* LEFT PANEL */}
         <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
@@ -404,55 +526,73 @@ export default function ChessGame() {
           <div style={{
             background: gs.turn === 'b' ? '#1a1a2e' : '#111827',
             border: gs.turn === 'b' ? '2px solid #fbbf24' : '2px solid #1e293b',
-            borderRadius: '14px', padding: '10px 14px',
+            borderRadius: '14px', padding: '8px 10px',
             boxShadow: gs.turn === 'b' ? '0 0 12px rgba(251,191,36,.2)' : 'none',
             transition: 'all .3s'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1e293b', border: '2px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>🤖</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#1e293b', border: '1.5px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>🤖</div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#e2e8f0' }}>Computer</div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#64748b' }}>Black Pieces</div>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#e2e8f0' }}>Computer</div>
+                  <div style={{ fontSize: '9px', fontWeight: 600, color: '#64748b' }}>Black Pieces</div>
                 </div>
               </div>
-              <div style={{ fontSize: '10px', fontWeight: 900, color: gs.turn === 'b' ? '#fbbf24' : '#475569', padding: '2px 8px', background: gs.turn === 'b' ? 'rgba(251,191,36,.1)' : 'transparent', borderRadius: '6px' }}>
-                {gs.turn === 'b' ? (thinking ? '⚡ THINKING' : '⚡ ACTIVE') : 'WAITING'}
+              <div style={{ fontSize: '9px', fontWeight: 900, color: gs.turn === 'b' ? '#fbbf24' : '#475569' }}>
+                {gs.turn === 'b' ? (thinking ? 'THINK' : 'ACTIVE') : 'WAIT'}
               </div>
             </div>
           </div>
+
           {/* Captured Black */}
           <div style={{
             flex: 1, background: '#111827', border: '2px solid #1e293b',
-            borderRadius: '14px', padding: '10px 12px', display: 'flex', flexDirection: 'column',
+            borderRadius: '14px', padding: '8px 10px', display: 'flex', flexDirection: 'column',
             overflow: 'hidden'
           }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
               ⬛ Captured by White ({gs.cap.w.length})
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', flex: 1, alignContent: 'start' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1, alignContent: 'start' }}>
               {gs.cap.w.length === 0
-                ? <span style={{ color: '#334155', fontSize: '10px', fontStyle: 'italic' }}>None yet</span>
-                : gs.cap.w.map((s, i) => <span key={i} style={{ fontSize: '20px', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.5))' }}>{s}</span>)}
+                ? <span style={{ color: '#334155', fontSize: '9px', fontStyle: 'italic' }}>None yet</span>
+                : gs.cap.w.map((s, i) => <span key={i} style={{ fontSize: '18px' }}>{s}</span>)}
             </div>
           </div>
-          {/* Move History */}
+
+          {/* Move History / SAN PGN */}
           <div style={{
             background: '#111827', border: '2px solid #1e293b',
-            borderRadius: '14px', padding: '10px 12px', maxHeight: '100px', overflow: 'hidden'
+            borderRadius: '14px', padding: '8px 10px', maxHeight: '110px', overflowY: 'auto'
           }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Recent Moves</div>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>PGN Move Log</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
               {gs.history.length === 0
-                ? <span style={{ color: '#334155', fontSize: '10px', fontStyle: 'italic' }}>No moves yet</span>
-                : gs.history.slice(-4).map((h, i) => (
-                  <div key={i} style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', fontFamily: 'monospace' }}>{gs.history.length - 3 + i > 0 ? gs.history.length - 3 + i : i + 1}. {h.mv}</div>
+                ? <span style={{ color: '#334155', fontSize: '9px', fontStyle: 'italic' }}>No moves yet</span>
+                : gs.history.map((h, i) => (
+                  <div key={i} style={{ fontSize: '10px', fontWeight: 700, color: i === gs.history.length - 1 ? '#fbbf24' : '#94a3b8', fontFamily: 'monospace' }}>
+                    {Math.floor(i / 2) + 1}. {h.san}
+                  </div>
                 ))}
             </div>
           </div>
         </div>
 
-        {/* ─── CHESSBOARD (fills all remaining space, square board centered inside) ─── */}
+        {/* ─── REAL-TIME ENGINE EVALUATION BAR ─── */}
+        <div style={{
+          width: '12px', height: '100%', background: '#000', borderRadius: '6px',
+          border: '1.5px solid #334155', overflow: 'hidden', display: 'flex', flexDirection: 'column'
+        }} title={`Engine Eval: ${currentEval > 0 ? `+${currentEval.toFixed(1)}` : currentEval.toFixed(1)}`}>
+          <div style={{
+            height: `${Math.min(Math.max(50 - currentEval * 5, 5), 95)}%`,
+            background: '#000000', transition: 'height 0.4s ease'
+          }} />
+          <div style={{
+            flex: 1, background: '#ffffff', transition: 'height 0.4s ease'
+          }} />
+        </div>
+
+        {/* ─── CHESSBOARD (fills all remaining space) ─── */}
         <div style={{
           flex: 1,
           height: '100%',
@@ -473,153 +613,143 @@ export default function ChessGame() {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-          <div style={{
-            width: '100%', height: '100%',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(8, 1fr)',
-            gridTemplateRows: 'repeat(8, 1fr)',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            border: '2px solid #000',
-            boxShadow: '3px 3px 0px #000',
-            transformStyle: 'preserve-3d',
-            transform: flat ? 'none' : 'rotateX(12deg) scale(0.97)',
-            transition: 'transform .4s cubic-bezier(.16,1,.3,1)',
-            perspective: '1200px'
-          }}>
-            {gs.board.map((row, r) => row.map((pc, c) => {
-              const dark = (r + c) % 2 === 1;
-              const isSel = sel?.r === r && sel?.c === c;
-              const isValid = valid.some(m => m.r === r && m.c === c);
-              const isCheck = checkPos?.r === r && checkPos?.c === c;
+            <div style={{
+              width: '100%', height: '100%',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(8, 1fr)',
+              gridTemplateRows: 'repeat(8, 1fr)',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              border: '2px solid #000',
+              boxShadow: '3px 3px 0px #000',
+              transformStyle: 'preserve-3d',
+              transform: flat ? 'none' : 'rotateX(12deg) scale(0.97)',
+              transition: 'transform .4s cubic-bezier(.16,1,.3,1)',
+              perspective: '1200px'
+            }}>
+              {gs.board.map((row, r) => row.map((pc, c) => {
+                const dark = (r + c) % 2 === 1;
+                const isSel = sel?.r === r && sel?.c === c;
+                const isValid = valid.some(m => m.r === r && m.c === c);
+                const isCheck = checkPos?.r === r && checkPos?.c === c;
 
-              return (
-                <div
-                  key={`${r}-${c}`}
-                  onClick={() => click(r, c)}
-                  style={{
-                    background: isSel ? '#86efac' : isCheck ? '#fca5a5' : dark ? '#1b4332' : '#f0ead6',
-                    display: 'flex', justifyContent: 'center', alignItems: 'center',
-                    cursor: (thinking || over) ? 'default' : 'pointer',
-                    position: 'relative',
-                    transition: 'background .15s'
-                  }}
-                >
-                  {pc && (
-                    <span style={{
-                      fontSize: 'clamp(1.2rem, 5.5cqh, 4rem)',
-                      lineHeight: 1,
-                      color: pc.color === 'w' ? '#fff' : '#1a1a1a',
-                      textShadow: pc.color === 'w'
-                        ? '1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 0 2px 4px rgba(0,0,0,.3)'
-                        : '0 2px 4px rgba(0,0,0,.3)',
-                      userSelect: 'none',
-                      transform: flat ? 'none' : 'rotateX(-12deg) translateZ(4px)',
-                      transition: 'transform .4s',
-                      zIndex: 2
-                    }}>
-                      {SYM[pc.color][pc.type]}
-                    </span>
-                  )}
-                  {isValid && (
-                    <div style={{
-                      position: 'absolute', width: pc ? '85%' : '26%', height: pc ? '85%' : '26%',
-                      borderRadius: pc ? '4px' : '50%',
-                      background: pc ? 'rgba(239,68,68,.25)' : 'rgba(34,197,94,.45)',
-                      border: pc ? '2px solid rgba(239,68,68,.5)' : '2px solid rgba(0,0,0,.15)',
-                      zIndex: 3
-                    }} />
-                  )}
-                </div>
-              );
-            }))}
-          </div>
+                return (
+                  <div
+                    key={`${r}-${c}`}
+                    onClick={() => click(r, c)}
+                    style={{
+                      position: 'relative',
+                      background: isCheck ? '#ef4444' : isSel ? '#f59e0b' : dark ? '#2d3748' : '#f1f5f9',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', userSelect: 'none',
+                      transition: 'background .15s'
+                    }}
+                  >
+                    {pc && (
+                      <span style={{
+                        fontSize: 'calc(min(100vw, 100vh) / 14)',
+                        lineHeight: 1,
+                        color: pc.color === 'w' ? '#ffffff' : '#0f172a',
+                        filter: pc.color === 'w' ? 'drop-shadow(0 2px 3px rgba(0,0,0,0.8))' : 'drop-shadow(0 1px 2px rgba(255,255,255,0.4))',
+                        fontWeight: 900
+                      }}>
+                        {SYM[pc.color][pc.type]}
+                      </span>
+                    )}
+
+                    {isValid && (
+                      <div style={{
+                        position: 'absolute',
+                        width: pc ? '85%' : '30%',
+                        height: pc ? '85%' : '30%',
+                        borderRadius: '50%',
+                        background: pc ? 'rgba(239,68,68,0.4)' : 'rgba(34,197,94,0.6)',
+                        border: pc ? '2px solid #ef4444' : 'none',
+                        pointerEvents: 'none'
+                      }} />
+                    )}
+                  </div>
+                );
+              }))}
+            </div>
           </div>
         </div>
 
-        {/* RIGHT PANEL */}
+        {/* RIGHT PANEL (Player 1 Info & Captured White) */}
         <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
-          {/* You Card */}
+          {/* Player Card */}
           <div style={{
-            background: gs.turn === 'w' ? '#0f2a1a' : '#111827',
+            background: gs.turn === 'w' ? '#1a1a2e' : '#111827',
             border: gs.turn === 'w' ? '2px solid #22c55e' : '2px solid #1e293b',
-            borderRadius: '14px', padding: '10px 14px',
+            borderRadius: '14px', padding: '8px 10px',
             boxShadow: gs.turn === 'w' ? '0 0 12px rgba(34,197,94,.2)' : 'none',
             transition: 'all .3s'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1e293b', border: '2px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>🙂</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#22c55e', color: '#fff', border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}>👤</div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#e2e8f0' }}>You</div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: '#64748b' }}>White Pieces</div>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#e2e8f0' }}>You</div>
+                  <div style={{ fontSize: '9px', fontWeight: 600, color: '#64748b' }}>White Pieces</div>
                 </div>
               </div>
-              <div style={{ fontSize: '10px', fontWeight: 900, color: gs.turn === 'w' ? '#22c55e' : '#475569', padding: '2px 8px', background: gs.turn === 'w' ? 'rgba(34,197,94,.1)' : 'transparent', borderRadius: '6px' }}>
-                {gs.turn === 'w' ? '✓ YOUR TURN' : 'WAITING'}
+              <div style={{ fontSize: '9px', fontWeight: 900, color: gs.turn === 'w' ? '#22c55e' : '#475569' }}>
+                {gs.turn === 'w' ? 'YOUR TURN' : 'WAIT'}
               </div>
             </div>
           </div>
+
           {/* Captured White */}
           <div style={{
             flex: 1, background: '#111827', border: '2px solid #1e293b',
-            borderRadius: '14px', padding: '10px 12px', display: 'flex', flexDirection: 'column',
+            borderRadius: '14px', padding: '8px 10px', display: 'flex', flexDirection: 'column',
             overflow: 'hidden'
           }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
               ⬜ Captured by Black ({gs.cap.b.length})
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', flex: 1, alignContent: 'start' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', flex: 1, alignContent: 'start' }}>
               {gs.cap.b.length === 0
-                ? <span style={{ color: '#334155', fontSize: '10px', fontStyle: 'italic' }}>None yet</span>
-                : gs.cap.b.map((s, i) => <span key={i} style={{ fontSize: '20px', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.5))' }}>{s}</span>)}
+                ? <span style={{ color: '#334155', fontSize: '9px', fontStyle: 'italic' }}>None yet</span>
+                : gs.cap.b.map((s, i) => <span key={i} style={{ fontSize: '18px' }}>{s}</span>)}
             </div>
           </div>
-          {/* Game Info */}
+
+          {/* Status Message */}
           <div style={{
             background: '#111827', border: '2px solid #1e293b',
-            borderRadius: '14px', padding: '10px 12px'
+            borderRadius: '14px', padding: '8px 10px', textAlign: 'center'
           }}>
-            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>Game Info</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-              <div><div style={{ fontSize: '9px', color: '#475569', fontWeight: 700 }}>Status</div><div style={{ fontSize: '11px', fontWeight: 900, color: check ? '#ef4444' : '#22c55e' }}>{status === 'playing' ? (check ? 'CHECK!' : 'Active') : status === 'checkmate' ? 'Checkmate!' : 'Draw'}</div></div>
-              <div><div style={{ fontSize: '9px', color: '#475569', fontWeight: 700 }}>Moves</div><div style={{ fontSize: '11px', fontWeight: 900, color: '#e2e8f0' }}>{gs.history.length}</div></div>
-              <div><div style={{ fontSize: '9px', color: '#475569', fontWeight: 700 }}>Last</div><div style={{ fontSize: '11px', fontWeight: 800, color: '#fbbf24', fontFamily: 'monospace' }}>{lastMove}</div></div>
-              <div><div style={{ fontSize: '9px', color: '#475569', fontWeight: 700 }}>Turn</div><div style={{ fontSize: '11px', fontWeight: 900, color: gs.turn === 'w' ? '#60a5fa' : '#fbbf24' }}>{gs.turn === 'w' ? 'White' : 'Black'}</div></div>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Status</div>
+            <div style={{ fontSize: '11px', fontWeight: 900, color: status.includes('Checkmate') ? '#ef4444' : '#22c55e', marginTop: '2px' }}>
+              {status}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ─── BOTTOM BAR ─── */}
+      {/* ─── BOTTOM BAR CONTROLS ─── */}
       <div style={{
         display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
         padding: '4px 12px', background: '#111827', borderTop: '1px solid #1e293b'
       }}>
-        <button onClick={undo} disabled={gs.history.length === 0 || thinking} className="ch-btn" style={{ padding: '5px 14px', background: '#3b82f6', color: '#fff', border: '2px solid #000', borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: (gs.history.length === 0 || thinking) ? 'not-allowed' : 'pointer', opacity: (gs.history.length === 0 || thinking) ? .5 : 1, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '2px 2px 0 #000' }}>
-          <Undo2 size={12} /> Undo
+        <button onClick={undo} disabled={gs.history.length === 0 || thinking} style={{ padding: '4px 12px', background: '#3b82f6', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: (gs.history.length === 0 || thinking) ? 'not-allowed' : 'pointer', opacity: (gs.history.length === 0 || thinking) ? .5 : 1, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <Undo2 size={11} /> Undo
         </button>
-        <button onClick={reset} disabled={thinking} className="ch-btn" style={{ padding: '5px 14px', background: '#ef4444', color: '#fff', border: '2px solid #000', borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: thinking ? 'not-allowed' : 'pointer', opacity: thinking ? .5 : 1, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '2px 2px 0 #000' }}>
-          <RotateCcw size={12} /> Reset
+        <button onClick={resign} disabled={thinking} style={{ padding: '4px 12px', background: '#ef4444', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <Flag size={11} /> Resign
         </button>
-        <button onClick={() => setMode('lobby')} className="ch-btn" style={{ padding: '5px 14px', background: '#334155', color: '#fff', border: '2px solid #000', borderRadius: '10px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '2px 2px 0 #000' }}>
-          <ArrowLeft size={12} /> Quit
+        <button onClick={offerDraw} disabled={thinking} style={{ padding: '4px 12px', background: '#8b5cf6', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <Handshake size={11} /> Offer Draw
+        </button>
+        <button onClick={reset} disabled={thinking} style={{ padding: '4px 12px', background: '#334155', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <RotateCcw size={11} /> Reset
         </button>
       </div>
 
       <style jsx global>{`
-        html, body, #__next { overflow: hidden !important; height: 100vh !important; }
-        .ch-btn:hover:not(:disabled) { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 #000 !important; }
-        .ch-btn:active:not(:disabled) { transform: translate(1px,1px); box-shadow: 1px 1px 0 #000 !important; }
-        @keyframes chPiecePop { 0%{transform:scale(.6);opacity:.2} 70%{transform:scale(1.25)} 100%{transform:scale(1);opacity:1} }
+        .chess-root * { box-sizing: border-box; }
       `}</style>
     </div>
   );
-}
-
-/* Helper */
-function countPieces(b: Board) {
-  const c: Record<Color, Record<PieceType, number>> = { w: { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 }, b: { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 } };
-  for (let r = 0; r < 8; r++) for (let cc = 0; cc < 8; cc++) { const p = b[r][cc]; if (p) c[p.color][p.type]++; }
-  return c;
 }
