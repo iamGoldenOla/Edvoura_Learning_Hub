@@ -88,13 +88,14 @@ const HANGMAN_CATEGORIES: Record<string, string[]> = {
 
 const WORDLE_WORDS = ['BRAIN', 'SMART', 'LEARN', 'STUDY', 'CLASS', 'LOGIC', 'BOOKS', 'PAPER', 'TEACH', 'SOLVE', 'FOCUS', 'GRADE', 'WRITE'];
 
-// --- WORD SCRAMBLE COMPONENT ---
+// --- WORD SCRAMBLE COMPONENT WITH HINTS ---
 function WordScramble({ addScore }: { addScore: (points: number) => void }) {
   const [word, setWord] = useState('');
   const [scrambled, setScrambled] = useState('');
   const [guess, setGuess] = useState('');
   const [streak, setStreak] = useState(0);
   const [feedback, setFeedback] = useState<{type: string; text: string} | null>(null);
+  const [scrambleHint, setScrambleHint] = useState('');
 
   const getNewWord = useCallback(() => {
     const newWord = SCRAMBLE_WORDS[Math.floor(Math.random() * SCRAMBLE_WORDS.length)];
@@ -111,12 +112,20 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
     setScrambled(scram.join(''));
     setGuess('');
     setFeedback(null);
+    setScrambleHint('');
     speakVoice(`Unscramble the word: ${scram.join(' ')}`);
   }, []);
 
   useEffect(() => {
     getNewWord();
   }, [getNewWord]);
+
+  const handleGetHint = () => {
+    playWordSFX('click');
+    const hint = `💡 Hint: The word starts with "${word.slice(0, 2)}" and has ${word.length} letters!`;
+    setScrambleHint(hint);
+    speakVoice(`Hint: The word starts with ${word.slice(0, 2)}`);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,8 +147,27 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '16px', color: '#fff', textAlign: 'center' }}>
-      <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>Streak: 🔥 {streak}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '14px', color: '#fff', textAlign: 'center' }}>
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>Streak: 🔥 {streak}</div>
+        <button
+          onClick={handleGetHint}
+          style={{
+            padding: '4px 12px', borderRadius: '6px', border: '1.5px solid #000',
+            fontSize: '10px', fontWeight: 950, background: '#fbbf24', color: '#000',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '2px 2px 0 #000'
+          }}
+        >
+          💡 Get Hint
+        </button>
+      </div>
+
+      {scrambleHint && (
+        <div style={{ fontSize: '12px', fontWeight: 900, color: '#fbbf24', background: '#111827', padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #fbbf24' }}>
+          {scrambleHint}
+        </div>
+      )}
+
       <div style={{ fontSize: '36px', fontWeight: 950, letterSpacing: '8px', color: '#8b5cf6', background: '#111827', padding: '16px 32px', borderRadius: '16px', border: '2px solid #1e293b' }}>
         {scrambled}
       </div>
@@ -166,12 +194,56 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
   );
 }
 
-// --- HANGMAN COMPONENT ---
+const HANGMAN_CLUES: Record<string, string> = {
+  // Animals
+  ELEPHANT: '🐘 Largest land mammal with a long trunk.',
+  GIRAFFE: '🦒 Tallest animal on Earth with a very long neck.',
+  HIPPOPOTAMUS: '🦛 Large semi-aquatic African mammal that lives near rivers.',
+  RHINOCEROS: '🦏 Large herbivore known for thick skin and horns.',
+  CROCODILE: '🐊 Large predatory reptile living in tropical rivers.',
+  KANGAROO: '🦘 Australian marsupial that hops and carries joey in pouch.',
+  PENGUIN: '🐧 Flightless seabird living in cold icy polar regions.',
+  DOLPHIN: '🐬 Highly intelligent marine mammal known for leaps and clicks.',
+
+  // Countries
+  AUSTRALIA: '🦘 Land Down Under known for kangaroos and the Outback.',
+  BRAZIL: '🇧🇷 Largest South American country famous for Amazon rainforest.',
+  CANADA: '🇨🇦 North American nation famous for maple syrup & snowy winters.',
+  DENMARK: '🇩🇰 Nordic European country famous for Lego and fairy tales.',
+  EGYPT: '🇪🇬 North African country famous for Pyramids and the River Nile.',
+  FRANCE: '🇫🇷 European country famous for Paris and the Eiffel Tower.',
+  GERMANY: '🇩🇪 European nation famous for engineering and Berlin.',
+  JAPAN: '🇯🇵 East Asian island nation famous for Tokyo and Mount Fuji.',
+
+  // Subjects
+  MATHEMATICS: '📐 Study of numbers, calculations, geometry, and algebra.',
+  GEOGRAPHY: '🌍 Study of Earth landscapes, maps, countries, and climates.',
+  HISTORY: '🏛️ Study of past events, ancient leaders, and human story.',
+  SCIENCE: '🔬 Systematic study of nature through observation & experiments.',
+  LITERATURE: '📚 Written artistic works including stories, poems, and novels.',
+  PHYSICS: '⚡ Branch of science dealing with motion, energy, and force.',
+  CHEMISTRY: '🧪 Branch of science dealing with atoms, molecules, and reactions.',
+  BIOLOGY: '🧬 Study of living organisms, plants, animals, and cells.',
+
+  // Science
+  MOLECULE: '🧪 Group of atoms bonded together forming chemical compounds.',
+  ATOM: '⚛️ Basic microscopic unit of matter containing protons & electrons.',
+  GRAVITY: '🍏 Universal force pulling objects toward the center of Earth.',
+  ENERGY: '⚡ Capacity or power to do work or produce heat.',
+  VELOCITY: '🏎️ Speed of an object moving in a specified direction.',
+  ACCELERATION: '📈 Rate of change of velocity over time.',
+  ECOSYSTEM: '🌿 Biological community of living organisms & environment.',
+  PHOTOSYNTHESIS: '🌱 Process plants use sunlight to convert CO2 into food.'
+};
+
+// --- HANGMAN COMPONENT WITH HINTS ---
 function Hangman({ addScore }: { addScore: (points: number) => void }) {
   const [category, setCategory] = useState('Animals');
   const [word, setWord] = useState('');
   const [guessed, setGuessed] = useState<Set<string>>(new Set());
   const [wrongCount, setWrongCount] = useState(0);
+  const [hintText, setHintText] = useState('');
+  const [hintsUsed, setHintsUsed] = useState(0);
 
   const initHangman = useCallback((cat: string) => {
     const list = HANGMAN_CATEGORIES[cat];
@@ -179,6 +251,8 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
     setWord(w);
     setGuessed(new Set());
     setWrongCount(0);
+    setHintText('');
+    setHintsUsed(0);
     speakVoice(`Category: ${cat}. Guess the hidden word.`);
   }, []);
 
@@ -211,21 +285,67 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
     }
   };
 
+  const handleGetHint = () => {
+    playWordSFX('click');
+    
+    // Hint Level 1: Show Definition Clue
+    const clue = HANGMAN_CLUES[word] || `Clue: A word in ${category} with ${word.length} letters.`;
+    setHintText(clue);
+
+    // Hint Level 2: Reveal one unrevealed letter for free
+    if (hintsUsed >= 1) {
+      const unrevealed = word.split('').filter(l => !guessed.has(l));
+      if (unrevealed.length > 0) {
+        const freeLetter = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+        handleGuess(freeLetter);
+        speakVoice(`Hint revealed letter ${freeLetter}!`);
+      }
+    } else {
+      speakVoice(`Hint: ${clue}`);
+    }
+
+    setHintsUsed(h => h + 1);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '12px', color: '#fff' }}>
-      <div style={{ display: 'flex', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
         {Object.keys(HANGMAN_CATEGORIES).map(cat => (
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            style={{ padding: '4px 10px', borderRadius: '6px', border: '1px solid #000', fontSize: '10px', fontWeight: 900, background: category === cat ? '#8b5cf6' : '#1e293b', color: '#fff', cursor: 'pointer' }}
+            style={{ padding: '4px 10px', borderRadius: '6px', border: '1.5px solid #000', fontSize: '10px', fontWeight: 900, background: category === cat ? '#8b5cf6' : '#1e293b', color: '#fff', cursor: 'pointer' }}
           >
             {cat}
           </button>
         ))}
+
+        {/* 💡 Get Hint Button */}
+        <button
+          onClick={handleGetHint}
+          style={{
+            padding: '4px 12px', borderRadius: '6px', border: '1.5px solid #000',
+            fontSize: '10px', fontWeight: 950, background: '#fbbf24', color: '#000',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+            boxShadow: '2px 2px 0 #000'
+          }}
+        >
+          💡 {hintsUsed === 0 ? 'Get Hint' : 'Reveal Letter'}
+        </button>
       </div>
 
-      <div style={{ fontSize: '28px', fontWeight: 950, letterSpacing: '6px', margin: '8px 0', fontFamily: 'monospace' }}>
+      {/* Clue / Hint Box */}
+      {hintText && (
+        <div style={{
+          fontSize: '12px', fontWeight: 900, color: '#fbbf24', background: '#111827',
+          padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #fbbf24', textAlign: 'center',
+          maxWidth: '360px'
+        }}>
+          {hintText}
+        </div>
+      )}
+
+      <div style={{ fontSize: '28px', fontWeight: 950, letterSpacing: '6px', margin: '4px 0', fontFamily: 'monospace' }}>
         {word.split('').map(l => guessed.has(l) ? l : '_').join(' ')}
       </div>
 
@@ -235,7 +355,7 @@ function Hangman({ addScore }: { addScore: (points: number) => void }) {
             key={l}
             onClick={() => handleGuess(l)}
             disabled={guessed.has(l) || wrongCount >= 6}
-            style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1px solid #000', fontWeight: 900, background: guessed.has(l) ? '#334155' : '#ffffff', color: guessed.has(l) ? '#64748b' : '#000', cursor: 'pointer' }}
+            style={{ width: '28px', height: '28px', borderRadius: '6px', border: '1.5px solid #000', fontWeight: 900, background: guessed.has(l) ? '#334155' : '#ffffff', color: guessed.has(l) ? '#64748b' : '#000', cursor: 'pointer' }}
           >
             {l}
           </button>
