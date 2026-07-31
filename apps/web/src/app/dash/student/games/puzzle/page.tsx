@@ -59,16 +59,42 @@ function playPuzzleSFX(type: 'slide' | 'win' | 'peek') {
   } catch (e) {}
 }
 
-/* ═══════════════════════ PUZZLE THEMES ═══════════════════════ */
+/* ═══════════════════════ PUZZLE THEMES WITH GRADIENTS ═══════════════════════ */
 const PUZZLE_THEMES = [
-  { id: 'solar', name: '🪐 Solar System', color: '#8b5cf6', fact: 'Jupiter is the largest planet in our Solar System and has 95 known moons!' },
-  { id: 'africa', name: '🦁 African Wildlife', color: '#f59e0b', fact: 'The African Elephant is the world’s largest land animal, weighing up to 6 tons!' },
-  { id: 'biology', name: '🧬 Human Anatomy', color: '#ef4444', fact: 'The human heart beats about 100,000 times a day to pump blood throughout the body!' },
-  { id: 'geo', name: '🌍 World Geography', color: '#22c55e', fact: 'Mount Everest is the highest mountain peak in the world at 8,848 meters!' },
-  { id: 'history', name: '🏛️ Ancient History', color: '#38bdf8', fact: 'The Great Pyramid of Giza was built over 4,500 years ago in Egypt!' },
+  {
+    id: 'solar', name: '🪐 Solar System', color: '#8b5cf6',
+    gradient: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c084fc 100%)',
+    bgIcon: '🪐',
+    fact: 'Jupiter is the largest planet in our Solar System and has 95 known moons!'
+  },
+  {
+    id: 'africa', name: '🦁 African Wildlife', color: '#f59e0b',
+    gradient: 'linear-gradient(135deg, #78350f 0%, #d97706 50%, #fbbf24 100%)',
+    bgIcon: '🦁',
+    fact: 'The African Elephant is the world’s largest land animal, weighing up to 6 tons!'
+  },
+  {
+    id: 'biology', name: '🧬 Human Anatomy', color: '#ef4444',
+    gradient: 'linear-gradient(135deg, #991b1b 0%, #dc2626 50%, #fca5a5 100%)',
+    bgIcon: '🧬',
+    fact: 'The human heart beats about 100,000 times a day to pump blood throughout the body!'
+  },
+  {
+    id: 'geo', name: '🌍 World Geography', color: '#22c55e',
+    gradient: 'linear-gradient(135deg, #14532d 0%, #16a34a 50%, #86efac 100%)',
+    bgIcon: '🌍',
+    fact: 'Mount Everest is the highest mountain peak in the world at 8,848 meters!'
+  },
+  {
+    id: 'history', name: '🏛️ Ancient History', color: '#38bdf8',
+    gradient: 'linear-gradient(135deg, #075985 0%, #0284c7 50%, #7dd3fc 100%)',
+    bgIcon: '🏛️',
+    fact: 'The Great Pyramid of Giza was built over 4,500 years ago in Egypt!'
+  },
 ];
 
 export default function PuzzleGame() {
+  const [studentGrade, setStudentGrade] = useState<'g12' | 'g36' | 'g712'>('g36');
   const [gradeTier, setGradeTier] = useState<'g12' | 'g36' | 'g712'>('g36');
   const [selectedTheme, setSelectedTheme] = useState(PUZZLE_THEMES[0]);
   
@@ -177,23 +203,26 @@ export default function PuzzleGame() {
         
         {/* ─── LEFT SIDEBAR: GRADE TIER & THEME SELECTOR ─── */}
         <div style={{
-          flex: '0 0 210px', width: '210px', display: 'flex', flexDirection: 'column', gap: '8px',
+          flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>
           {/* Grade Level Selection */}
           <div style={{ background: '#111827', border: '2px solid #1e293b', borderRadius: '12px', padding: '8px 10px' }}>
             <div style={{ fontSize: '10px', fontWeight: 900, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px' }}>
-              🎓 Grade Difficulty
+              🎓 Grade Tier (Locked to Student Level)
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {[
-                { id: 'g12', label: 'Grade 1 - 2 (3×3 Easy)', grid: '3×3' },
+                { id: 'g12', label: 'Grade 1 - 2 (3×3 Big Tiles)', grid: '3×3' },
                 { id: 'g36', label: 'Grade 3 - 6 (4×4 Medium)', grid: '4×4' },
-                { id: 'g712', label: 'Grade 7 - 12 (5×5 Hard)', grid: '5×5' }
+                { id: 'g712', label: 'Grade 7 - 12 (5×5 Challenge)', grid: '5×5' }
               ].map(g => (
                 <button
                   key={g.id}
-                  onClick={() => setGradeTier(g.id as any)}
+                  onClick={() => {
+                    setGradeTier(g.id as any);
+                    setStudentGrade(g.id as any);
+                  }}
                   style={{
                     padding: '6px 8px', borderRadius: '8px', border: '1.5px solid #000',
                     fontSize: '10px', fontWeight: 900, cursor: 'pointer', textAlign: 'left',
@@ -210,7 +239,7 @@ export default function PuzzleGame() {
           {/* Subject Theme Selector */}
           <div style={{ background: '#111827', border: '2px solid #1e293b', borderRadius: '12px', padding: '8px 10px', flex: 1, overflowY: 'auto' }}>
             <div style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
-              📚 Subject Themes
+              📚 Colorful Themes
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {PUZZLE_THEMES.map(theme => (
@@ -220,8 +249,8 @@ export default function PuzzleGame() {
                   style={{
                     padding: '6px 8px', borderRadius: '8px', border: '1.5px solid #000',
                     fontSize: '10px', fontWeight: 900, cursor: 'pointer', textAlign: 'left',
-                    background: selectedTheme.id === theme.id ? '#ffffff' : '#1e293b',
-                    color: selectedTheme.id === theme.id ? '#000000' : '#e2e8f0',
+                    background: selectedTheme.id === theme.id ? theme.gradient : '#1e293b',
+                    color: '#ffffff',
                     boxShadow: selectedTheme.id === theme.id ? '2px 2px 0 #000' : 'none'
                   }}
                 >
@@ -258,7 +287,7 @@ export default function PuzzleGame() {
           </div>
         </div>
 
-        {/* ─── CENTER AREA: DYNAMIC 1:1 SLIDING PUZZLE CANVAS ─── */}
+        {/* ─── CENTER AREA: BIGGER & COLOURFUL 1:1 SLIDING PUZZLE CANVAS ─── */}
         <div style={{
           flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
@@ -286,9 +315,9 @@ export default function PuzzleGame() {
             </button>
           </div>
 
-          {/* Puzzle Canvas Grid */}
+          {/* Puzzle Canvas Grid — Expanded Size */}
           <div style={{
-            height: 'calc(100% - 40px)', maxWidth: '100%', aspectRatio: '1 / 1',
+            height: 'calc(100% - 34px)', maxWidth: '100%', aspectRatio: '1 / 1',
             borderRadius: '16px', padding: '2px', boxSizing: 'border-box',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}>
@@ -297,37 +326,44 @@ export default function PuzzleGame() {
               display: 'grid',
               gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
               gridTemplateRows: `repeat(${gridSize}, 1fr)`,
-              gap: '3px', border: '3px solid #000000', borderRadius: '12px',
-              overflow: 'hidden', background: '#0b0f19', boxShadow: '4px 4px 0px #000000',
+              gap: '4px', border: '3px solid #000000', borderRadius: '14px',
+              overflow: 'hidden', background: '#0b0f19', boxShadow: '6px 6px 0px #000000',
               position: 'relative'
             }}>
               {tiles.map((tileVal, idx) => {
                 const isEmpty = tileVal === totalTiles - 1 && !isSolved;
+                const targetRow = Math.floor(tileVal / gridSize);
+                const targetCol = tileVal % gridSize;
 
                 return (
                   <div
                     key={idx}
                     onClick={() => handleTileClick(idx)}
                     style={{
-                      background: isEmpty ? '#111827' : selectedTheme.color,
-                      border: isEmpty ? 'none' : '2px solid #000000',
-                      borderRadius: '8px',
+                      background: isEmpty ? '#0f172a' : selectedTheme.gradient,
+                      border: isEmpty ? 'none' : '2.5px solid #000000',
+                      borderRadius: '10px',
                       display: 'flex', flexDirection: 'column',
                       alignItems: 'center', justifyContent: 'center',
                       cursor: isEmpty || isSolved ? 'default' : 'pointer',
                       userSelect: 'none',
                       transition: 'all 0.15s ease',
-                      boxShadow: isEmpty ? 'none' : '2px 2px 0px #000000',
+                      boxShadow: isEmpty ? 'none' : '3px 3px 0px #000000',
                       color: '#ffffff', fontWeight: 950,
-                      fontSize: `calc(min(100vw, 100vh) / ${gridSize * 4})`
+                      position: 'relative', overflow: 'hidden'
                     }}
                   >
                     {!isEmpty && (
                       <>
-                        <span>{tileVal + 1}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 700, opacity: 0.8 }}>
-                          {selectedTheme.name.split(' ')[0]}
+                        <div style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>
+                          {selectedTheme.bgIcon}
+                        </div>
+                        <span style={{ fontSize: `calc(min(100vw, 100vh) / ${gridSize * 3.5})`, lineHeight: 1, textShadow: '2px 2px 0 #000' }}>
+                          {tileVal + 1}
                         </span>
+                        <div style={{ position: 'absolute', bottom: '3px', right: '5px', fontSize: '9px', fontWeight: 900, opacity: 0.85, background: 'rgba(0,0,0,0.4)', padding: '1px 4px', borderRadius: '4px' }}>
+                          r{targetRow + 1}c{targetCol + 1}
+                        </div>
                       </>
                     )}
                   </div>
