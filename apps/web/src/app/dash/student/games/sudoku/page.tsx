@@ -2,9 +2,84 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Grid3X3, Edit2, HelpCircle, RefreshCw, Trophy, Settings } from 'lucide-react';
+import { Grid3X3, Edit2, HelpCircle, RefreshCw, Trophy, BookOpen, Volume2, CheckCircle, AlertCircle } from 'lucide-react';
 
-// --- Sudoku Logic ---
+/* ═══════════════════════ VOICE & AUDIO SYNTHESIZER ═══════════════════════ */
+function speakVoice(text: string) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.9;
+    window.speechSynthesis.speak(utterance);
+  } catch (e) {}
+}
+
+function playSudokuSFX(type: 'click' | 'correct' | 'error' | 'win' | 'hint') {
+  if (typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    if (type === 'click') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(450, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.05);
+    } else if (type === 'correct') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.2);
+    } else if (type === 'error') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(180, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(110, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.15);
+    } else if (type === 'win') {
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.1 + 0.3);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.1);
+        osc.stop(ctx.currentTime + idx * 0.1 + 0.3);
+      });
+    } else if (type === 'hint') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.2);
+    }
+  } catch (e) {}
+}
+
+/* ═══════════════════════ SUDOKU GENERATOR ═══════════════════════ */
 const shuffle = (array: number[]) => {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -64,7 +139,7 @@ const generateSudoku = (difficulty: 'Easy' | 'Medium' | 'Hard') => {
   solve(board);
   const solution = board.map(row => [...row]);
   
-  const clues = difficulty === 'Easy' ? 35 : difficulty === 'Medium' ? 28 : 22;
+  const clues = difficulty === 'Easy' ? 38 : difficulty === 'Medium' ? 30 : 24;
   let attempts = 81 - clues;
   const puzzle = board.map(row => [...row]);
   
@@ -82,7 +157,6 @@ const generateSudoku = (difficulty: 'Easy' | 'Medium' | 'Hard') => {
   return { solution, puzzle };
 };
 
-// --- Component ---
 export default function SudokuGame() {
   const [solution, setSolution] = useState<number[][]>([]);
   const [initialBoard, setInitialBoard] = useState<number[][]>([]);
@@ -95,20 +169,23 @@ export default function SudokuGame() {
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [showRulesModal, setShowRulesModal] = useState(false);
+  const [activeModalTab, setActiveModalTab] = useState<'rules' | 'how-to-play' | 'strategy'>('rules');
 
   const initGame = useCallback((diff: 'Easy' | 'Medium' | 'Hard') => {
     const { solution, puzzle } = generateSudoku(diff);
     setSolution(solution);
-    setInitialBoard(puzzle);
+    setInitialBoard(puzzle.map(row => [...row]));
     setBoard(puzzle.map(row => [...row]));
     
-    const marks = Array(9).fill(null).map(() => Array(9).fill(null).map(() => new Set<number>()));
+    const marks: Set<number>[][] = Array(9).fill(null).map(() => 
+      Array(9).fill(null).map(() => new Set<number>())
+    );
     setPencilMarks(marks);
-    
     setSelectedCell(null);
     setGameOver(false);
     setTimeElapsed(0);
-    setScore(0);
+    speakVoice(`${diff} Sudoku puzzle generated.`);
   }, []);
 
   useEffect(() => {
@@ -116,404 +193,376 @@ export default function SudokuGame() {
   }, [difficulty, initGame]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (!gameOver && board.length > 0) {
-      timer = setInterval(() => {
-        setTimeElapsed(prev => prev + 1);
-      }, 1000);
-    }
+    if (gameOver) return;
+    const timer = setInterval(() => {
+      setTimeElapsed(prev => prev + 1);
+    }, 1000);
     return () => clearInterval(timer);
-  }, [gameOver, board]);
+  }, [gameOver]);
 
-  const checkWin = (currentBoard: number[][]) => {
+  const checkVictory = (currentBoard: number[][]) => {
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
-        if (currentBoard[r][c] === 0 || currentBoard[r][c] !== solution[r][c]) {
-          return false;
-        }
+        if (currentBoard[r][c] !== solution[r][c]) return false;
       }
     }
     return true;
   };
 
-  const handleCellClick = (r: number, c: number) => {
-    if (gameOver) return;
-    setSelectedCell({ r, c });
-  };
-
   const handleNumberInput = (num: number) => {
-    if (gameOver || !selectedCell) return;
+    if (!selectedCell || gameOver) return;
     const { r, c } = selectedCell;
     
-    if (initialBoard[r][c] !== 0) return; // Cannot edit given cells
+    if (initialBoard[r][c] !== 0) return;
 
     if (pencilMode) {
-      const newMarks = [...pencilMarks];
-      const cellMarks = new Set(newMarks[r][c]);
-      if (cellMarks.has(num)) {
-        cellMarks.delete(num);
-      } else {
-        cellMarks.add(num);
-      }
-      newMarks[r][c] = cellMarks;
+      playSudokuSFX('click');
+      const newMarks = pencilMarks.map((row, ri) => 
+        row.map((cell, ci) => {
+          if (ri === r && ci === c) {
+            const next = new Set(cell);
+            if (next.has(num)) next.delete(num);
+            else next.add(num);
+            return next;
+          }
+          return cell;
+        })
+      );
       setPencilMarks(newMarks);
-      
-      // Clear main number if pencil marking
-      if (board[r][c] !== 0) {
-        const newBoard = board.map(row => [...row]);
-        newBoard[r][c] = 0;
-        setBoard(newBoard);
+      return;
+    }
+
+    const newBoard = board.map((row, ri) =>
+      row.map((cell, ci) => (ri === r && ci === c ? num : cell))
+    );
+    setBoard(newBoard);
+
+    if (num === solution[r][c]) {
+      playSudokuSFX('correct');
+      setScore(s => s + 10);
+      if (checkVictory(newBoard)) {
+        setGameOver(true);
+        playSudokuSFX('win');
+        speakVoice('Congratulations! Sudoku puzzle successfully solved!');
       }
     } else {
-      const newBoard = board.map(row => [...row]);
-      newBoard[r][c] = board[r][c] === num ? 0 : num; // Toggle off if same number
-      setBoard(newBoard);
-      
-      if (newBoard[r][c] !== 0 && newBoard[r][c] === solution[r][c]) {
-        setScore(prev => prev + 10);
-      }
-      
-      if (checkWin(newBoard)) {
-        setGameOver(true);
-      }
+      playSudokuSFX('error');
+      speakVoice('Incorrect number!');
     }
   };
 
-  const handleHint = () => {
+  const handleClearCell = () => {
+    if (!selectedCell || gameOver) return;
+    const { r, c } = selectedCell;
+    if (initialBoard[r][c] !== 0) return;
+
+    playSudokuSFX('click');
+    const newBoard = board.map((row, ri) =>
+      row.map((cell, ci) => (ri === r && ci === c ? 0 : cell))
+    );
+    setBoard(newBoard);
+  };
+
+  const getHint = () => {
     if (gameOver) return;
+    playSudokuSFX('hint');
     const emptyCells: {r: number, c: number}[] = [];
     for (let r = 0; r < 9; r++) {
       for (let c = 0; c < 9; c++) {
-        if (board[r][c] === 0 || board[r][c] !== solution[r][c]) {
-          if (initialBoard[r][c] === 0) {
-            emptyCells.push({ r, c });
-          }
+        if (board[r][c] !== solution[r][c]) {
+          emptyCells.push({r, c});
         }
       }
     }
-    
+
     if (emptyCells.length > 0) {
-      const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      const { r, c } = randomCell;
-      const newBoard = board.map(row => [...row]);
-      newBoard[r][c] = solution[r][c];
-      setBoard(newBoard);
-      setScore(prev => Math.max(0, prev - 5)); // Penalty for hint
+      const target = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      const correctVal = solution[target.r][target.c];
       
-      if (checkWin(newBoard)) {
+      const newBoard = board.map((row, ri) =>
+        row.map((cell, ci) => (ri === target.r && ci === target.c ? correctVal : cell))
+      );
+      setBoard(newBoard);
+      setSelectedCell(target);
+      speakVoice(`Hint revealed number ${correctVal}.`);
+
+      if (checkVictory(newBoard)) {
         setGameOver(true);
+        playSudokuSFX('win');
+        speakVoice('Congratulations! Sudoku solved!');
       }
     }
   };
 
-  const isRelatedCell = (r: number, c: number) => {
-    if (!selectedCell) return false;
-    const sameRow = selectedCell.r === r;
-    const sameCol = selectedCell.c === c;
-    const sameBox = Math.floor(selectedCell.r / 3) === Math.floor(r / 3) && 
-                    Math.floor(selectedCell.c / 3) === Math.floor(c / 3);
-    return sameRow || sameCol || sameBox;
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  if (board.length === 0) return null;
 
   return (
     <GameLayout
-      title="Sudoku Master"
-      icon={<Grid3X3 className="w-6 h-6" />}
-      score={score}
-      showTimer={true}
+      title="Sudoku 9x9"
+      icon={<Grid3X3 style={{ width: '24px', height: '24px' }} />}
       accentColor="#3b82f6"
+      score={score}
+      fullscreen={true}
     >
+      {/* Widescreen 16:9 Zero-Scroll Layout */}
       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '24px',
-        padding: '20px',
-        color: '#f8fafc',
-        width: '100%',
-        maxWidth: '600px',
-        margin: '0 auto'
+        display: 'flex', alignItems: 'stretch', height: '100%',
+        overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
-
-        {/* Controls Header */}
+        
+        {/* ─── LEFT PANEL: CONTROLS & STATUS ─── */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          gap: '12px',
-          flexWrap: 'wrap'
+          flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '8px',
+          overflow: 'hidden'
         }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {(['Easy', 'Medium', 'Hard'] as const).map(d => (
+          {/* Difficulty Selection */}
+          <div style={{
+            background: '#111827', border: '2px solid #1e293b', borderRadius: '12px',
+            padding: '8px 10px'
+          }}>
+            <div style={{ fontSize: '10px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>Difficulty</div>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {(['Easy', 'Medium', 'Hard'] as const).map(d => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  style={{
+                    flex: 1, padding: '5px 2px', borderRadius: '6px', border: '1.5px solid #000',
+                    fontSize: '10px', fontWeight: 900, cursor: 'pointer',
+                    background: difficulty === d ? '#3b82f6' : '#1e293b',
+                    color: '#fff'
+                  }}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Game Stats Card */}
+          <div style={{
+            padding: '10px 12px', borderRadius: '12px', background: '#111827', border: '2px solid #1e293b'
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8' }}>⏱ Time: <span style={{ color: '#fff', fontFamily: 'monospace' }}>{formatTime(timeElapsed)}</span></div>
+            <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', marginTop: '4px' }}>🏆 Score: <span style={{ color: '#3b82f6' }}>{score} pts</span></div>
+          </div>
+
+          {/* Quick Action Controls */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <button
+              onClick={() => setPencilMode(!pencilMode)}
+              style={{
+                padding: '8px', borderRadius: '8px', border: '2px solid #000',
+                background: pencilMode ? '#fbbf24' : '#1e293b',
+                color: pencilMode ? '#000' : '#fff', fontWeight: 900, fontSize: '11px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+              }}
+            >
+              <Edit2 size={14} /> {pencilMode ? 'Pencil Mode ON' : 'Pencil Mode OFF'}
+            </button>
+
+            <button
+              onClick={getHint}
+              style={{
+                padding: '8px', borderRadius: '8px', border: '2px solid #000',
+                background: '#8b5cf6', color: '#fff', fontWeight: 900, fontSize: '11px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                boxShadow: '2px 2px 0 #000'
+              }}
+            >
+              <HelpCircle size={14} /> Get Hint
+            </button>
+
+            <button
+              onClick={() => setShowRulesModal(true)}
+              style={{
+                padding: '8px', borderRadius: '8px', border: '2px solid #000',
+                background: '#38bdf8', color: '#000', fontWeight: 900, fontSize: '11px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                boxShadow: '2px 2px 0 #000'
+              }}
+            >
+              <BookOpen size={14} /> Rules & Guide
+            </button>
+          </div>
+        </div>
+
+        {/* ─── CENTER AREA: DYNAMIC 1:1 SUDOKU GRID BOARD ─── */}
+        <div style={{
+          flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+        }}>
+          <div style={{
+            height: '100%', maxWidth: '100%', aspectRatio: '1 / 1',
+            borderRadius: '16px', padding: '2px', boxSizing: 'border-box',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <div style={{
+              width: '100%', height: '100%',
+              display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gridTemplateRows: 'repeat(9, 1fr)',
+              border: '3px solid #000000', borderRadius: '10px', overflow: 'hidden', background: '#000000',
+              boxShadow: '4px 4px 0px #000000'
+            }}>
+              {board.map((row, r) =>
+                row.map((val, c) => {
+                  const isInitial = initialBoard[r][c] !== 0;
+                  const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                  const isSameRowCol = selectedCell && (selectedCell.r === r || selectedCell.c === c);
+                  const isSameBox = selectedCell && Math.floor(selectedCell.r / 3) === Math.floor(r / 3) && Math.floor(selectedCell.c / 3) === Math.floor(c / 3);
+                  const isWrong = val !== 0 && !isInitial && val !== solution[r][c];
+
+                  const borderRight = (c + 1) % 3 === 0 && c < 8 ? '2px solid #000' : '1px solid #334155';
+                  const borderBottom = (r + 1) % 3 === 0 && r < 8 ? '2px solid #000' : '1px solid #334155';
+
+                  return (
+                    <div
+                      key={`${r}-${c}`}
+                      onClick={() => { playSudokuSFX('click'); setSelectedCell({ r, c }); }}
+                      style={{
+                        background: isWrong
+                          ? '#ef4444'
+                          : isSelected
+                          ? '#f59e0b'
+                          : isSameRowCol || isSameBox
+                          ? '#1e293b'
+                          : '#0b0f19',
+                        color: isWrong ? '#ffffff' : isInitial ? '#38bdf8' : '#ffffff',
+                        fontWeight: isInitial ? 900 : 700,
+                        fontSize: 'calc(min(100vw, 100vh) / 22)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', borderRight, borderBottom, userSelect: 'none'
+                      }}
+                    >
+                      {val !== 0 ? val : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1px', width: '80%', height: '80%' }}>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(pm => (
+                            <span key={pm} style={{ fontSize: '9px', color: '#94a3b8', textAlign: 'center' }}>
+                              {pencilMarks[r]?.[c]?.has(pm) ? pm : ''}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ─── RIGHT PANEL: NUMBER PAD CONTROLS ─── */}
+        <div style={{
+          flex: '0 0 160px', width: '160px', display: 'flex', flexDirection: 'column', gap: '8px',
+          overflow: 'hidden'
+        }}>
+          <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase' }}>Number Pad</div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
               <button
-                key={d}
-                onClick={() => setDifficulty(d)}
+                key={num}
+                onClick={() => handleNumberInput(num)}
                 style={{
-                  padding: '6px 16px',
-                  borderRadius: '20px',
-                  border: `1px solid ${difficulty === d ? '#3b82f6' : '#334155'}`,
-                  background: difficulty === d ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  color: difficulty === d ? '#60a5fa' : '#94a3b8',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  transition: 'all 0.2s'
+                  height: '46px', borderRadius: '8px', border: '2px solid #000',
+                  fontSize: '18px', fontWeight: 900, cursor: 'pointer',
+                  background: '#ffffff', color: '#000000', boxShadow: '2px 2px 0 #000'
                 }}
               >
-                {d}
+                {num}
               </button>
             ))}
           </div>
-          <div style={{
-            fontSize: '18px',
-            fontWeight: 'bold',
-            color: '#cbd5e1',
-            background: 'rgba(255, 255, 255, 0.05)',
-            padding: '6px 16px',
-            borderRadius: '12px'
-          }}>
-            {formatTime(timeElapsed)}
-          </div>
-        </div>
 
-        {/* Game Board */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(9, 1fr)',
-          width: '100%',
-          aspectRatio: '1',
-          background: '#0f172a',
-          border: '3px solid #475569',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)'
-        }}>
-          {board.map((row, r) => (
-            row.map((cellVal, c) => {
-              const isSelected = selectedCell?.r === r && selectedCell?.c === c;
-              const isRelated = isRelatedCell(r, c);
-              const isGiven = initialBoard[r][c] !== 0;
-              const isError = cellVal !== 0 && cellVal !== solution[r][c];
-              const isSameNumber = selectedCell && board[selectedCell.r][selectedCell.c] === cellVal && cellVal !== 0;
-              
-              let bgColor = 'transparent';
-              if (isSelected) bgColor = 'rgba(59, 130, 246, 0.4)';
-              else if (isError) bgColor = 'rgba(239, 68, 68, 0.25)';
-              else if (isSameNumber) bgColor = 'rgba(59, 130, 246, 0.25)';
-              else if (isRelated) bgColor = 'rgba(255, 255, 255, 0.04)';
-              
-              return (
-                <div
-                  key={`${r}-${c}`}
-                  onClick={() => handleCellClick(r, c)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRight: c % 3 === 2 && c !== 8 ? '2px solid #475569' : '1px solid #1e293b',
-                    borderBottom: r % 3 === 2 && r !== 8 ? '2px solid #475569' : '1px solid #1e293b',
-                    background: bgColor,
-                    cursor: isGiven ? 'default' : 'pointer',
-                    position: 'relative',
-                    transition: 'background 0.1s'
-                  }}
-                >
-                  {cellVal !== 0 ? (
-                    <span style={{
-                      fontSize: 'clamp(1rem, 5vmin, 2rem)',
-                      fontWeight: isGiven ? 700 : 500,
-                      color: isError ? '#ef4444' : isGiven ? '#f1f5f9' : '#60a5fa',
-                      fontFamily: 'monospace'
-                    }}>
-                      {cellVal}
-                    </span>
-                  ) : (
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(3, 1fr)',
-                      gridTemplateRows: 'repeat(3, 1fr)',
-                      width: '100%',
-                      height: '100%',
-                      padding: '2px'
-                    }}>
-                      {[1,2,3,4,5,6,7,8,9].map(num => (
-                        <span key={num} style={{
-                          fontSize: 'clamp(0.5rem, 1.5vmin, 0.75rem)',
-                          color: '#94a3b8',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          opacity: pencilMarks[r][c]?.has(num) ? 1 : 0
-                        }}>
-                          {num}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          ))}
-        </div>
-
-        {/* Action Buttons */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          width: '100%',
-          justifyContent: 'center'
-        }}>
           <button
-            onClick={() => setPencilMode(!pencilMode)}
+            onClick={handleClearCell}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              flex: 1,
-              padding: '12px',
-              background: pencilMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-              border: `1px solid ${pencilMode ? '#3b82f6' : 'transparent'}`,
-              borderRadius: '12px',
-              color: pencilMode ? '#60a5fa' : '#94a3b8',
-              cursor: 'pointer'
+              padding: '10px', borderRadius: '8px', border: '2px solid #000',
+              background: '#fee2e2', color: '#ef4444', fontWeight: 900, fontSize: '11px',
+              cursor: 'pointer', boxShadow: '2px 2px 0 #000', marginTop: 'auto'
             }}
           >
-            <Edit2 size={20} />
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>Pencil</span>
-          </button>
-          
-          <button
-            onClick={handleHint}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              flex: 1,
-              padding: '12px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: 'none',
-              borderRadius: '12px',
-              color: '#94a3b8',
-              cursor: 'pointer'
-            }}
-          >
-            <HelpCircle size={20} />
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>Hint</span>
+            Clear Cell
           </button>
           
           <button
             onClick={() => initGame(difficulty)}
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              flex: 1,
-              padding: '12px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: 'none',
-              borderRadius: '12px',
-              color: '#94a3b8',
-              cursor: 'pointer'
+              padding: '10px', borderRadius: '8px', border: '2px solid #000',
+              background: '#f97316', color: '#fff', fontWeight: 900, fontSize: '11px',
+              cursor: 'pointer', boxShadow: '2px 2px 0 #000'
             }}
           >
-            <RefreshCw size={20} />
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>New</span>
+            <RefreshCw size={12} style={{ marginRight: '4px', verticalAlign: '-1px' }} /> New Game
           </button>
         </div>
+      </div>
 
-        {/* Number Pad */}
+      {/* Rules & Guide Modal */}
+      {showRulesModal && (
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(9, 1fr)',
-          gap: '8px',
-          width: '100%'
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px'
         }}>
-          {[1,2,3,4,5,6,7,8,9].map(num => (
-            <button
-              key={num}
-              onClick={() => handleNumberInput(num)}
-              style={{
-                aspectRatio: '1',
-                borderRadius: '8px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                color: '#f8fafc',
-                fontSize: '24px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background 0.2s, transform 0.1s'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-              onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              {num}
-            </button>
-          ))}
-        </div>
-
-        {/* Victory Overlay */}
-        {gameOver && (
           <div style={{
-            position: 'absolute',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(15, 23, 42, 0.85)',
-            backdropFilter: 'blur(4px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 'inherit',
-            zIndex: 10,
-            animation: 'fadeIn 0.5s ease-out'
+            background: '#ffffff', borderRadius: '18px', border: '3px solid #000',
+            padding: '24px', width: '460px', maxHeight: '82vh', overflowY: 'auto',
+            boxShadow: '8px 8px 0 #000', color: '#000'
           }}>
-            <Trophy size={64} color="#f59e0b" style={{ marginBottom: '16px' }} />
-            <h2 style={{ fontSize: '32px', color: '#f8fafc', margin: '0 0 8px 0' }}>Puzzle Solved!</h2>
-            <p style={{ color: '#94a3b8', fontSize: '18px', marginBottom: '24px' }}>
-              Time: {formatTime(timeElapsed)}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '20px', fontWeight: 950, color: '#3b82f6' }}>
+                <BookOpen size={24} /> Sudoku Rules & Guide
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', background: '#f1f5f9', padding: '4px', borderRadius: '10px', border: '1.5px solid #000' }}>
+              <button onClick={() => setActiveModalTab('rules')} style={{ flex: 1, padding: '6px', borderRadius: '8px', border: 'none', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeModalTab === 'rules' ? '#3b82f6' : 'transparent', color: activeModalTab === 'rules' ? '#fff' : '#475569' }}>
+                📜 Rules
+              </button>
+              <button onClick={() => setActiveModalTab('how-to-play')} style={{ flex: 1, padding: '6px', borderRadius: '8px', border: 'none', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeModalTab === 'how-to-play' ? '#3b82f6' : 'transparent', color: activeModalTab === 'how-to-play' ? '#fff' : '#475569' }}>
+                🎮 How to Play
+              </button>
+              <button onClick={() => setActiveModalTab('strategy')} style={{ flex: 1, padding: '6px', borderRadius: '8px', border: 'none', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeModalTab === 'strategy' ? '#3b82f6' : 'transparent', color: activeModalTab === 'strategy' ? '#fff' : '#475569' }}>
+                💡 Strategy
+              </button>
+            </div>
+
+            {activeModalTab === 'rules' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0' }}>Sudoku Goal:</h4>
+                <p style={{ margin: '0 0 8px 0' }}>Fill the 9x9 grid so every row, column, and 3x3 box contains digits 1-9 without repeating.</p>
+              </div>
+            )}
+
+            {activeModalTab === 'how-to-play' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0' }}>Controls:</h4>
+                <ol style={{ paddingLeft: '18px', margin: '0' }}>
+                  <li>Click any cell on the grid.</li>
+                  <li>Click a number 1-9 from the number pad.</li>
+                  <li>Use Pencil Mode to take notes.</li>
+                </ol>
+              </div>
+            )}
+
+            {activeModalTab === 'strategy' && (
+              <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#1e293b' }}>
+                <h4 style={{ fontSize: '13px', fontWeight: 900, margin: '0 0 6px 0' }}>Pro Tip:</h4>
+                <p style={{ margin: '0' }}>Look for rows, columns, or 3x3 boxes that already have 7 or 8 numbers filled in first!</p>
+              </div>
+            )}
+
             <button
-              onClick={() => initGame(difficulty)}
-              style={{
-                padding: '12px 24px',
-                background: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '18px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
+              onClick={() => setShowRulesModal(false)}
+              style={{ width: '100%', padding: '10px', background: '#3b82f6', color: '#fff', border: '2px solid #000', borderRadius: '10px', fontWeight: 900, cursor: 'pointer', marginTop: '12px' }}
             >
-              <RefreshCw size={20} />
-              Play Again
+              Close Guide
             </button>
           </div>
-        )}
-
-      </div>
+        </div>
+      )}
     </GameLayout>
   );
 }
