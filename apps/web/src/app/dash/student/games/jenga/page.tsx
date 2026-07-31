@@ -108,6 +108,7 @@ export default function JengaGame() {
   const [isCrashed, setIsCrashed] = useState(false);
   const [activeQuestion, setActiveQuestion] = useState<typeof JENGA_TRIVIA['g36'][0] | null>(null);
   const [selectedBlockId, setSelectedBlockId] = useState<number | null>(null);
+  const [rotationAngle, setRotationAngle] = useState(-35);
   
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -298,53 +299,129 @@ export default function JengaGame() {
           </div>
         </div>
 
-        {/* ─── CENTER AREA: 3D JENGA TOWER CANVAS ─── */}
+        {/* ─── CENTER AREA: TRUE 3D ISOMETRIC JENGA TOWER CANVAS ─── */}
         <div style={{
           flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative'
         }}>
+          {/* 3D View Control Bar */}
           <div style={{
-            width: '100%', height: '100%', background: '#0b0f19', border: '3px solid #000',
-            borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column-reverse',
-            alignItems: 'center', gap: '3px', overflowY: 'auto', position: 'relative',
-            transform: isCrashed ? 'rotate(4deg) translateY(10px)' : `rotate(${Math.sin(wobble) * (wobble / 20)}deg)`,
-            transition: 'transform 0.3s ease'
+            display: 'flex', gap: '12px', alignItems: 'center', background: '#111827',
+            padding: '4px 16px', borderRadius: '10px', border: '1.5px solid #1e293b',
+            marginBottom: '6px', zIndex: 10
           }}>
-            {Array.from({ length: totalLayers }).map((_, layerIdx) => {
-              const layerBlocks = tower.filter(b => b.layer === layerIdx);
-              const isEvenLayer = layerIdx % 2 === 0;
+            <span style={{ fontSize: '11px', fontWeight: 900, color: '#fbbf24' }}>🎲 3D View Angle:</span>
+            <input
+              type="range"
+              min="-90"
+              max="90"
+              value={rotationAngle}
+              onChange={e => setRotationAngle(Number(e.target.value))}
+              style={{ width: '120px', cursor: 'pointer', accentColor: ACCENT_COLOR }}
+            />
+            <button
+              onClick={() => setRotationAngle(-35)}
+              style={{ padding: '2px 8px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}
+            >
+              Reset 3D
+            </button>
+          </div>
 
-              return (
-                <div
-                  key={layerIdx}
-                  style={{
-                    display: 'flex', gap: '4px',
-                    width: isEvenLayer ? '200px' : '180px',
-                    justifyContent: 'center'
-                  }}
-                >
-                  {layerBlocks.map(block => (
-                    <div
-                      key={block.id}
-                      onClick={() => !block.pulled && handleBlockPull(block.id, block.layer)}
-                      style={{
-                        flex: 1, height: '24px', borderRadius: '4px',
-                        border: '1.5px solid #000000',
-                        background: block.pulled ? 'transparent' : ACCENT_COLOR,
-                        opacity: block.pulled ? 0 : 1,
-                        cursor: block.pulled || isCrashed ? 'default' : 'pointer',
-                        boxShadow: block.pulled ? 'none' : '2px 2px 0 #000',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '9px', fontWeight: 900, color: '#fff',
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      {!block.pulled && `L${block.layer + 1}`}
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
+          {/* 3D Perspective Stage Container */}
+          <div style={{
+            width: '100%', height: 'calc(100% - 40px)', background: '#0b0f19', border: '3px solid #000',
+            borderRadius: '16px', overflow: 'hidden', position: 'relative',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            perspective: '1200px'
+          }}>
+            
+            {/* 3D Rotating Tower Wrapper */}
+            <div style={{
+              display: 'flex', flexDirection: 'column-reverse', alignItems: 'center',
+              transformStyle: 'preserve-3d',
+              transform: isCrashed
+                ? 'rotateX(75deg) rotateZ(45deg) translateZ(-60px)'
+                : `rotateX(58deg) rotateZ(${rotationAngle + (Math.sin(wobble) * (wobble / 15))}deg)`,
+              transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+              paddingBottom: '40px'
+            }}>
+              
+              {/* Wooden Base Platform */}
+              <div style={{
+                width: '210px', height: '210px', background: '#451a03',
+                border: '4px solid #000000', borderRadius: '12px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.8), inset 0 0 15px rgba(0,0,0,0.5)',
+                marginBottom: '10px', transform: 'translateZ(-15px)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fbbf24', fontSize: '12px', fontWeight: 950, letterSpacing: '2px'
+              }}>
+                EDVOURA 3D TOWER
+              </div>
+
+              {/* Stacked 3D Wood Block Layers */}
+              {Array.from({ length: totalLayers }).map((_, layerIdx) => {
+                const layerBlocks = tower.filter(b => b.layer === layerIdx);
+                const isOddLayer = layerIdx % 2 === 1;
+
+                // Wobble vibration calculation for layer
+                const layerJitter = wobble > 30 ? (Math.sin(layerIdx * 1.5) * (wobble / 25)) : 0;
+
+                return (
+                  <div
+                    key={layerIdx}
+                    style={{
+                      display: 'flex', gap: '6px',
+                      transformStyle: 'preserve-3d',
+                      transform: `rotateZ(${isOddLayer ? 90 : 0}deg) translateX(${layerJitter}px) translateZ(${layerIdx * 24}px)`,
+                      margin: '2px 0',
+                      transition: 'transform 0.2s ease'
+                    }}
+                  >
+                    {layerBlocks.map(block => {
+                      if (block.pulled) return <div key={block.id} style={{ width: '56px', height: '26px' }} />;
+
+                      return (
+                        <div
+                          key={block.id}
+                          onClick={() => handleBlockPull(block.id, block.layer)}
+                          style={{
+                            width: '56px', height: '26px', position: 'relative',
+                            transformStyle: 'preserve-3d', cursor: isCrashed ? 'default' : 'pointer',
+                            transition: 'transform 0.15s ease'
+                          }}
+                        >
+                          {/* 3D Top Face */}
+                          <div style={{
+                            position: 'absolute', inset: 0, background: '#d97706',
+                            border: '1.5px solid #000000', borderRadius: '4px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '10px', fontWeight: 950, color: '#ffffff',
+                            boxShadow: 'inset 0 0 4px rgba(255,255,255,0.4)',
+                            transform: 'translateZ(12px)'
+                          }}>
+                            L{block.layer + 1}
+                          </div>
+
+                          {/* 3D Front Face */}
+                          <div style={{
+                            position: 'absolute', width: '100%', height: '12px', bottom: 0,
+                            background: '#b45309', border: '1.5px solid #000000', borderRadius: '2px',
+                            transformOrigin: 'bottom', transform: 'rotateX(-90deg)'
+                          }} />
+
+                          {/* 3D Right Side Face */}
+                          <div style={{
+                            position: 'absolute', width: '12px', height: '100%', right: 0,
+                            background: '#78350f', border: '1.5px solid #000000', borderRadius: '2px',
+                            transformOrigin: 'right', transform: 'rotateY(90deg)'
+                          }} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* Crash Game Over Overlay */}
