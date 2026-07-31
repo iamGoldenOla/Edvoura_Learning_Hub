@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameLayout from '@/components/games/GameLayout';
-import { Award, PhoneCall, Users, RefreshCw, Check, BookOpen, Share2 } from 'lucide-react';
+import { Award, PhoneCall, Users, RefreshCw, Check, BookOpen, Share2, DollarSign, LogOut, Clock, Volume2, VolumeX, ShieldCheck } from 'lucide-react';
 
 const ACCENT_COLOR = '#8b5cf6'; // Electric Purple Studio Accent
 
-/* ═══════════════════════ VOICE & AUDIO SYNTHESIZER ═══════════════════════ */
+/* ═══════════════════════ AUTHENTIC TV STUDIO AUDIO SYNTHESIZER ═══════════════════════ */
 function speakVoice(text: string) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
@@ -19,25 +19,58 @@ function speakVoice(text: string) {
   } catch (e) {}
 }
 
-function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline') {
+function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinger' | 'walkaway' | 'tick') {
   if (typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
 
-    if (type === 'lock') {
+    if (type === 'lock' || type === 'stinger') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(280, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.25);
+    } else if (type === 'win') {
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
+        gain.gain.setValueAtTime(0.35, ctx.currentTime + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.08 + 0.35);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(ctx.currentTime + idx * 0.08);
+        osc.stop(ctx.currentTime + idx * 0.08 + 0.35);
+      });
+    } else if (type === 'lose') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(160, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(65, ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.45, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.4);
+    } else if (type === 'lifeline') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(300, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+      osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.12);
       gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.15);
-    } else if (type === 'win') {
-      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+      osc.start(); osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'walkaway') {
+      const notes = [440, 554.37, 659.25, 880];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -48,56 +81,56 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline') {
         osc.start(ctx.currentTime + idx * 0.1);
         osc.stop(ctx.currentTime + idx * 0.1 + 0.3);
       });
-    } else if (type === 'lose') {
+    } else if (type === 'tick') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(180, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.3);
-    } else if (type === 'lifeline') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.25);
+      osc.start(); osc.stop(ctx.currentTime + 0.04);
     }
   } catch (e) {}
 }
 
-/* ═══════════════════════ MONEY LADDER PRIZE VALUES ═══════════════════════ */
-const MONEY_LADDER = [
-  { level: 15, prize: '₦1,000,000', safe: true },
-  { level: 14, prize: '₦500,000', safe: false },
-  { level: 13, prize: '₦250,000', safe: false },
-  { level: 12, prize: '₦125,000', safe: false },
-  { level: 11, prize: '₦64,000', safe: false },
-  { level: 10, prize: '₦32,000', safe: true }, // Safe Haven 2
-  { level: 9,  prize: '₦16,000', safe: false },
-  { level: 8,  prize: '₦8,000', safe: false },
-  { level: 7,  prize: '₦4,000', safe: false },
-  { level: 6,  prize: '₦2,000', safe: false },
-  { level: 5,  prize: '₦1,000', safe: true }, // Safe Haven 1
-  { level: 4,  prize: '₦500', safe: false },
-  { level: 3,  prize: '₦300', safe: false },
-  { level: 2,  prize: '₦200', safe: false },
-  { level: 1,  prize: '₦100', safe: false },
-];
+/* ═══════════════════════ GLOBAL CURRENCY & MONEY LADDERS ═══════════════════════ */
+export type CurrencyCode = 'NGN' | 'USD' | 'GBP' | 'EUR' | 'ZAR' | 'GHS';
 
-/* ═══════════════════════ DIVERSE MILLIONAIRE QUESTION BANK (12 CATEGORIES) ═══════════════════════ */
+export const CURRENCY_MAP: Record<CurrencyCode, { symbol: string; label: string; flag: string; ladder: string[] }> = {
+  NGN: {
+    symbol: '₦', label: 'Naira (NGN)', flag: '🇳🇬',
+    ladder: ['₦100', '₦200', '₦300', '₦500', '₦1,000', '₦2,000', '₦4,000', '₦8,000', '₦16,000', '₦32,000', '₦64,000', '₦125,000', '₦250,000', '₦500,000', '₦1,000,000']
+  },
+  USD: {
+    symbol: '$', label: 'US Dollar ($)', flag: '🇺🇸',
+    ladder: ['$100', '$200', '$300', '$500', '$1,000', '$2,000', '$4,000', '$8,000', '$16,000', '$32,000', '$64,000', '$125,000', '$250,000', '$500,000', '$1,000,000']
+  },
+  GBP: {
+    symbol: '£', label: 'Pound (£)', flag: '🇬🇧',
+    ladder: ['£100', '£200', '£300', '£500', '£1,000', '£2,000', '£4,000', '£8,000', '£16,000', '£32,000', '£64,000', '£125,000', '£250,000', '£500,000', '£1,000,000']
+  },
+  EUR: {
+    symbol: '€', label: 'Euro (€)', flag: '🇪🇺',
+    ladder: ['€100', '€200', '€300', '€500', '€1,000', '€2,000', '€4,000', '€8,000', '€16,000', '€32,000', '€64,000', '€125,000', '€250,000', '€500,000', '€1,000,000']
+  },
+  ZAR: {
+    symbol: 'R', label: 'Rand (ZAR)', flag: '🇿🇦',
+    ladder: ['R1,000', 'R2,000', 'R3,000', 'R5,000', 'R10,000', 'R20,000', 'R40,000', 'R80,000', 'R160,000', 'R320,000', 'R640,000', 'R1,250,000', 'R2,500,000', 'R5,000,000', 'R10,000,000']
+  },
+  GHS: {
+    symbol: 'GH₵', label: 'Cedi (GHS)', flag: '🇬🇭',
+    ladder: ['GH₵100', 'GH₵200', 'GH₵300', 'GH₵500', 'GH₵1,000', 'GH₵2,000', 'GH₵4,000', 'GH₵8,000', 'GH₵16,000', 'GH₵32,000', 'GH₵64,000', 'GH₵125,000', 'GH₵250,000', 'GH₵500,000', 'GH₵1,000,000']
+  }
+};
+
+/* ═══════════════════════ DIVERSE MILLIONAIRE QUESTION BANK ═══════════════════════ */
 export interface MillionaireQuestion {
   q: string;
   options: [string, string, string, string];
   a: number; // 0..3
   category: string;
-  level: number; // 1..15 difficulty tier
+  level: number; // 1..15
 }
 
 const QUESTION_BANK: MillionaireQuestion[] = [
@@ -121,7 +154,7 @@ const QUESTION_BANK: MillionaireQuestion[] = [
   { level: 4, category: 'Sports', q: 'Which country hosted the 2022 FIFA World Cup?', options: ['Brazil', 'Qatar', 'France', 'Russia'], a: 1 },
   { level: 4, category: 'Music', q: 'Who is widely celebrated as the King of Pop?', options: ['Elvis Presley', 'Michael Jackson', 'Prince', 'Stevie Wonder'], a: 1 },
 
-  // LEVEL 5 - SAFE HAVEN 1 (₦1,000)
+  // LEVEL 5 - SAFE HAVEN 1
   { level: 5, category: 'Science', q: 'What is the chemical symbol for Gold on the periodic table?', options: ['Ag', 'Au', 'Fe', 'Cu'], a: 1 },
   { level: 5, category: 'Literature', q: 'Who wrote the famous Nigerian novel "Things Fall Apart"?', options: ['Wole Soyinka', 'Chinua Achebe', 'Chimamanda Adichie', 'Ben Okri'], a: 1 },
   { level: 5, category: 'Technology', q: 'Which company developed the Android mobile operating system?', options: ['Apple', 'Microsoft', 'Google', 'Nokia'], a: 2 },
@@ -146,7 +179,7 @@ const QUESTION_BANK: MillionaireQuestion[] = [
   { level: 9, category: 'Education', q: 'What is the derivative of x² with respect to x in Calculus?', options: ['x', '2x', 'x³', '2'], a: 1 },
   { level: 9, category: 'Crypto', q: 'What smart contract blockchain platform was created by Vitalik Buterin in 2015?', options: ['Bitcoin', 'Ethereum', 'Solana', 'Cardano'], a: 1 },
 
-  // LEVEL 10 - SAFE HAVEN 2 (₦32,000)
+  // LEVEL 10 - SAFE HAVEN 2
   { level: 10, category: 'Current Affairs', q: 'Which is the longest river in Africa?', options: ['Amazon River', 'Nile River', 'Niger River', 'Congo River'], a: 1 },
   { level: 10, category: 'Literature', q: 'Who was the first African to win the Nobel Prize in Literature in 1986?', options: ['Chinua Achebe', 'Wole Soyinka', 'Nadine Gordimer', 'Ngũgĩ wa Thiong’o'], a: 1 },
   { level: 10, category: 'Art', q: 'The ancient Bronze artifacts depicting royal court art originated from which Nigerian kingdom?', options: ['Oyo Kingdom', 'Benin Kingdom', 'Kano Kingdom', 'Ife Kingdom'], a: 1 },
@@ -171,15 +204,16 @@ const QUESTION_BANK: MillionaireQuestion[] = [
   { level: 14, category: 'Art & History', q: 'The famous terracotta sculptures dating back to 1500 BC were discovered in which Nigerian culture site?', options: ['Nok Culture', 'Igbo-Ukwu Culture', 'Ife Culture', 'Tada Culture'], a: 0 },
   { level: 14, category: 'Technology', q: 'Who authored the seminal 1948 paper "A Mathematical Theory of Communication" laying information theory foundations?', options: ['Alan Turing', 'Claude Shannon', 'John von Neumann', 'Ada Lovelace'], a: 1 },
 
-  // LEVEL 15 - ₦1,000,000 GRAND PRIZE QUESTION!
+  // LEVEL 15 - 1,000,000 GRAND PRIZE QUESTION!
   { level: 15, category: 'Grand Master', q: 'Which element on the periodic table has the highest electrical conductivity of all metals at room temperature?', options: ['Gold (Au)', 'Silver (Ag)', 'Copper (Cu)', 'Platinum (Pt)'], a: 1 },
   { level: 15, category: 'Grand Master', q: 'In 1914, Lord Frederick Lugard amalgamated which two British protectorates to form modern Nigeria?', options: ['Northern & Southern Protectorates', 'Eastern & Western Protectorates', 'Lagos & Niger Protectorates', 'Benin & Sokoto Protectorates'], a: 0 },
   { level: 15, category: 'Grand Master', q: 'What is the name of the hypothetical boundary surrounding a black hole beyond which nothing can escape?', options: ['Event Horizon', 'Singularity Point', 'Photon Sphere', 'Accretion Disk'], a: 0 }
 ];
 
 export default function MillionaireGame() {
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('NGN');
   const [currentLevel, setCurrentLevel] = useState(1);
-  const [scorePrize, setScorePrize] = useState('₦0');
+  const [scorePrize, setScorePrize] = useState('0');
   const [activeQ, setActiveQ] = useState<MillionaireQuestion | null>(null);
   
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -187,6 +221,11 @@ export default function MillionaireGame() {
   const [showAnswerResult, setShowAnswerResult] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isMillionaire, setIsMillionaire] = useState(false);
+  const [isWalkedAway, setIsWalkedAway] = useState(false);
+
+  // 30-Second High-Stakes Timer
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   // 4 Famous Lifelines State
   const [lifelines, setLifelines] = useState({
@@ -203,6 +242,8 @@ export default function MillionaireGame() {
   const [rotationAngle, setRotationAngle] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const activeLadder = CURRENCY_MAP[selectedCurrency].ladder;
+
   // Load question for current level
   const loadQuestionForLevel = useCallback((lvl: number) => {
     const questionsForLvl = QUESTION_BANK.filter(q => q.level === lvl);
@@ -212,16 +253,20 @@ export default function MillionaireGame() {
     setIsLocked(false);
     setShowAnswerResult(false);
     setDisabledOptions([]);
+    setTimeLeft(30);
+    setIsTimerActive(true);
 
-    speakVoice(`Question for ${MONEY_LADDER.find(m => m.level === lvl)?.prize || ''}. ${q.q}`);
-  }, []);
+    const prizeStr = activeLadder[lvl - 1];
+    speakVoice(`Question for ${prizeStr}. ${q.q}`);
+  }, [activeLadder]);
 
   // Initialize Game
   const initGame = useCallback(() => {
     setCurrentLevel(1);
-    setScorePrize('₦0');
+    setScorePrize('0');
     setIsGameOver(false);
     setIsMillionaire(false);
+    setIsWalkedAway(false);
     setLifelines({
       fiftyFifty: true,
       phoneAFriend: true,
@@ -237,6 +282,25 @@ export default function MillionaireGame() {
     initGame();
   }, [initGame]);
 
+  // 30s High-Stakes Countdown Timer Effect
+  useEffect(() => {
+    if (!isTimerActive || isLocked || isGameOver) return;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          playMillionaireSFX('lose');
+          setIsGameOver(true);
+          speakVoice("Time's up! You ran out of time.");
+          return 0;
+        }
+        if (prev <= 6) playMillionaireSFX('tick');
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [isTimerActive, isLocked, isGameOver]);
+
   // Handle Option Selection
   const handleSelectOption = (idx: number) => {
     if (isLocked || isGameOver || disabledOptions.includes(idx)) return;
@@ -248,6 +312,7 @@ export default function MillionaireGame() {
   const handleLockAnswer = () => {
     if (selectedOption === null || !activeQ || isLocked) return;
     setIsLocked(true);
+    setIsTimerActive(false);
     speakVoice("Final Answer locked in. Let's see if you are correct...");
 
     setTimeout(() => {
@@ -256,13 +321,13 @@ export default function MillionaireGame() {
 
       if (isCorrect) {
         playMillionaireSFX('win');
-        const currentPrize = MONEY_LADDER.find(m => m.level === currentLevel)?.prize || '₦0';
+        const currentPrize = activeLadder[currentLevel - 1];
         setScorePrize(currentPrize);
 
         if (currentLevel === 15) {
           setIsMillionaire(true);
           setIsGameOver(true);
-          speakVoice("CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ONE MILLION NAIRA!");
+          speakVoice(`CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ${currentPrize}!`);
         } else {
           speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`);
           setTimeout(() => {
@@ -274,15 +339,27 @@ export default function MillionaireGame() {
         playMillionaireSFX('lose');
         
         // Calculate safe haven payout
-        let safePayout = '₦0';
-        if (currentLevel > 10) safePayout = '₦32,000';
-        else if (currentLevel > 5) safePayout = '₦1,000';
+        let safePayout = '0';
+        if (currentLevel > 10) safePayout = activeLadder[9]; // Level 10 Safe Haven
+        else if (currentLevel > 5) safePayout = activeLadder[4]; // Level 5 Safe Haven
 
         setScorePrize(safePayout);
         setIsGameOver(true);
         speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`);
       }
     }, 2000);
+  };
+
+  // Walk Away / Cash Out Feature
+  const handleWalkAway = () => {
+    if (isLocked || isGameOver || currentLevel <= 1) return;
+    playMillionaireSFX('walkaway');
+    setIsTimerActive(false);
+    const cashOutPrize = activeLadder[currentLevel - 2];
+    setScorePrize(cashOutPrize);
+    setIsWalkedAway(true);
+    setIsGameOver(true);
+    speakVoice(`Smart choice! You decided to cash out and walk away with ${cashOutPrize}!`);
   };
 
   /* ═══════════════════════ LIFELINE IMPLEMENTATIONS ═══════════════════════ */
@@ -310,7 +387,7 @@ export default function MillionaireGame() {
     const optionText = activeQ.options[recommendedIdx];
     const confidence = isMentorSmart ? 90 : 60;
 
-    setFriendAdvice(`"Hello! I am ${confidence}% confident that the correct answer is Option ${String.fromCharCode(65 + recommendedIdx)}: ${optionText}."`);
+    setFriendAdvice(`"Hello Scholar! I am ${confidence}% confident that the correct answer is Option ${String.fromCharCode(65 + recommendedIdx)}: ${optionText}."`);
     setActiveModal('friend');
     setLifelines(prev => ({ ...prev, phoneAFriend: false }));
     speakVoice(`Calling your mentor... Mentor suggests Option ${String.fromCharCode(65 + recommendedIdx)}`);
@@ -360,7 +437,7 @@ export default function MillionaireGame() {
 
   return (
     <GameLayout
-      title="Who Wants to Be a Millionaire (3D)"
+      title="Who Wants to Be a Millionaire (3D Global)"
       icon={<Award style={{ width: '24px', height: '24px' }} />}
       accentColor={ACCENT_COLOR}
       fullscreen={true}
@@ -370,11 +447,32 @@ export default function MillionaireGame() {
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
         
-        {/* ─── LEFT SIDEBAR: 4 FAMOUS LIFELINES & SCOREBOARD ─── */}
+        {/* ─── LEFT SIDEBAR: CURRENCY SELECTOR, 4 LIFELINES & SCOREBOARD ─── */}
         <div style={{
           flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>
+          {/* Currency Switcher */}
+          <div style={{ background: '#111827', border: '2.5px solid #000', borderRadius: '12px', padding: '8px 10px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 950, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <DollarSign size={12} /> Global Currency
+            </div>
+            <select
+              value={selectedCurrency}
+              onChange={e => setSelectedCurrency(e.target.value as CurrencyCode)}
+              style={{
+                width: '100%', padding: '6px 8px', borderRadius: '8px', border: '1.5px solid #000',
+                background: '#1e293b', color: '#ffffff', fontSize: '11px', fontWeight: 900, cursor: 'pointer', outline: 'none'
+              }}
+            >
+              {Object.entries(CURRENCY_MAP).map(([code, config]) => (
+                <option key={code} value={code}>
+                  {config.flag} {config.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Lifelines Box */}
           <div style={{ background: '#111827', border: '2.5px solid #000', borderRadius: '12px', padding: '8px 10px' }}>
             <div style={{ fontSize: '10px', fontWeight: 950, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '8px' }}>
@@ -441,36 +539,48 @@ export default function MillionaireGame() {
           {/* Money Ladder Standings */}
           <div style={{
             background: '#111827', border: '2.5px solid #000', borderRadius: '12px',
-            padding: '8px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px'
+            padding: '8px', flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column-reverse', gap: '3px'
           }}>
-            <div style={{ fontSize: '10px', fontWeight: 950, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>
-              💰 Money Ladder
-            </div>
-            {MONEY_LADDER.map(item => {
-              const isCurrent = item.level === currentLevel;
-              const isPassed = item.level < currentLevel;
+            {activeLadder.map((prizeStr, idx) => {
+              const levelNum = idx + 1;
+              const isCurrent = levelNum === currentLevel;
+              const isPassed = levelNum < currentLevel;
+              const isSafe = levelNum === 5 || levelNum === 10 || levelNum === 15;
 
               return (
                 <div
-                  key={item.level}
+                  key={levelNum}
                   style={{
                     padding: '3px 8px', borderRadius: '6px',
                     background: isCurrent ? '#fbbf24' : isPassed ? '#1e293b' : 'transparent',
-                    color: isCurrent ? '#000' : item.safe ? '#22c55e' : isPassed ? '#94a3b8' : '#ffffff',
+                    color: isCurrent ? '#000' : isSafe ? '#22c55e' : isPassed ? '#94a3b8' : '#ffffff',
                     border: isCurrent ? '1.5px solid #000' : 'none',
-                    fontWeight: isCurrent || item.safe ? 950 : 800,
+                    fontWeight: isCurrent || isSafe ? 950 : 800,
                     fontSize: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                   }}
                 >
-                  <span>Level {item.level}</span>
-                  <span>{item.prize} {item.safe && '⭐'}</span>
+                  <span>Level {levelNum}</span>
+                  <span>{prizeStr} {isSafe && '⭐'}</span>
                 </div>
               );
             })}
           </div>
 
-          {/* Bottom Share & Rules Controls */}
+          {/* Bottom Controls (Walk Away, Share, Rules) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {currentLevel > 1 && !isGameOver && (
+              <button
+                onClick={handleWalkAway}
+                style={{
+                  padding: '6px 10px', borderRadius: '8px', border: '1.5px solid #000',
+                  background: '#ef4444', color: '#fff', fontWeight: 950, fontSize: '10px',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                }}
+              >
+                <LogOut size={12} /> Walk Away ({activeLadder[currentLevel - 2]})
+              </button>
+            )}
+
             <button
               onClick={copyInviteLink}
               style={{
@@ -502,27 +612,39 @@ export default function MillionaireGame() {
           alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative'
         }}>
           
-          {/* 3D Camera Controls */}
+          {/* Top Bar: 3D Camera & Timer */}
           <div style={{
-            display: 'flex', gap: '12px', alignItems: 'center', background: '#111827',
+            display: 'flex', gap: '16px', alignItems: 'center', background: '#111827',
             padding: '4px 16px', borderRadius: '10px', border: '1.5px solid #1e293b',
             marginBottom: '6px', zIndex: 10
           }}>
-            <span style={{ fontSize: '11px', fontWeight: 950, color: '#fbbf24' }}>📹 Studio 3D Angle:</span>
-            <input
-              type="range"
-              min="-45"
-              max="45"
-              value={rotationAngle}
-              onChange={e => setRotationAngle(Number(e.target.value))}
-              style={{ width: '120px', cursor: 'pointer', accentColor: ACCENT_COLOR }}
-            />
-            <button
-              onClick={() => setRotationAngle(0)}
-              style={{ padding: '2px 8px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: 'pointer' }}
-            >
-              Center 3D
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 950, color: '#fbbf24' }}>📹 Studio 3D Angle:</span>
+              <input
+                type="range"
+                min="-45"
+                max="45"
+                value={rotationAngle}
+                onChange={e => setRotationAngle(Number(e.target.value))}
+                style={{ width: '100px', cursor: 'pointer', accentColor: ACCENT_COLOR }}
+              />
+              <button
+                onClick={() => setRotationAngle(0)}
+                style={{ padding: '2px 6px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', color: '#fff', fontSize: '9px', fontWeight: 800, cursor: 'pointer' }}
+              >
+                Center
+              </button>
+            </div>
+
+            {/* 30s High-Stakes Timer Badge */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              background: timeLeft <= 10 ? '#ef4444' : '#1e293b',
+              color: '#fff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #000',
+              fontWeight: 950, fontSize: '11px', fontFamily: 'monospace'
+            }}>
+              <Clock size={12} /> {timeLeft}s
+            </div>
           </div>
 
           {/* 3D Studio Stage Viewport */}
@@ -550,7 +672,7 @@ export default function MillionaireGame() {
 
               {/* Hot Seat Podium */}
               <div style={{
-                width: '280px', height: '120px', background: '#111827',
+                width: '290px', height: '120px', background: '#111827',
                 border: '3.5px solid #8b5cf6', borderRadius: '24px',
                 boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4), inset 0 0 15px rgba(139, 92, 246, 0.3)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-around',
@@ -567,7 +689,7 @@ export default function MillionaireGame() {
                 {/* Hot Seat Center Screen */}
                 <div style={{ background: '#000', padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #fbbf24', textAlign: 'center' }}>
                   <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24' }}>CURRENT PRIZE</div>
-                  <div style={{ fontSize: '14px', fontWeight: 950, color: '#fff' }}>{MONEY_LADDER.find(m => m.level === currentLevel)?.prize}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 950, color: '#fff' }}>{activeLadder[currentLevel - 1]}</div>
                 </div>
 
                 {/* Player Seat */}
@@ -674,16 +796,16 @@ export default function MillionaireGame() {
             )}
           </div>
 
-          {/* Game Over / Winner Overlay */}
+          {/* Game Over / Winner / Walked Away Overlay */}
           {isGameOver && (
             <div style={{
               position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
               padding: '24px', zIndex: 50, color: '#fff', textAlign: 'center'
             }}>
-              <Award size={64} color={isMillionaire ? '#fbbf24' : '#ef4444'} />
-              <h2 style={{ fontSize: '28px', fontWeight: 950, color: isMillionaire ? '#fbbf24' : '#ef4444', margin: '12px 0 6px 0' }}>
-                {isMillionaire ? '🎉 CONGRATULATIONS MILLIONAIRE! 🎉' : 'GAME OVER!'}
+              <Award size={64} color={isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444'} />
+              <h2 style={{ fontSize: '28px', fontWeight: 950, color: isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444', margin: '12px 0 6px 0' }}>
+                {isMillionaire ? '🎉 CONGRATULATIONS MILLIONAIRE! 🎉' : isWalkedAway ? '🛡️ CASHED OUT & WALKED AWAY!' : 'GAME OVER!'}
               </h2>
               <p style={{ fontSize: '15px', color: '#e2e8f0', margin: '0 0 20px 0', fontWeight: 800 }}>
                 You walk away with: <span style={{ color: '#22c55e', fontSize: '20px', fontWeight: 950 }}>{scorePrize}</span>
@@ -745,9 +867,10 @@ export default function MillionaireGame() {
                   📜 Game Rules & Lifelines Guide
                 </h3>
                 <ul style={{ fontSize: '12px', lineHeight: 1.6, color: '#334155', paddingLeft: '18px', margin: 0, fontWeight: 700 }}>
-                  <li>Answer 15 questions correctly to win ₦1,000,000!</li>
-                  <li>Level 5 (₦1,000) and Level 10 (₦32,000) are Safe Havens.</li>
+                  <li>Answer 15 questions correctly to win 1,000,000 in your chosen currency!</li>
+                  <li>Level 5 and Level 10 are Safe Havens.</li>
                   <li>Use 50:50, Phone-a-Friend, Ask the Audience, or Switch Question when stuck!</li>
+                  <li>Use the 🛡️ Walk Away button to cash out your earnings at any time!</li>
                 </ul>
               </div>
             )}
