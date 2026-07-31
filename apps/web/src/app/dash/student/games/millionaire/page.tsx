@@ -20,34 +20,32 @@ function speakVoice(text: string) {
 }
 
 function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinger' | 'walkaway' | 'tick' | 'lights_down' | 'heartbeat' | 'suspense_pad') {
-  if (typeof window === 'undefined') return;
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+  const ctx = getAudioContext();
+  if (!ctx) return;
 
+  try {
     if (type === 'lights_down') {
       // Deep dramatic studio blackout bass drop
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.6);
+      osc.frequency.setValueAtTime(140, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.7);
       gain.gain.setValueAtTime(0.5, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.6);
+      osc.start(); osc.stop(ctx.currentTime + 0.7);
     } else if (type === 'suspense_pad') {
       // Mysterious studio ambient pad
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(110, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(116, ctx.currentTime + 1.5);
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+      osc.frequency.linearRampToValueAtTime(116, ctx.currentTime + 1.8);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.8);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 1.5);
+      osc.start(); osc.stop(ctx.currentTime + 1.8);
     } else if (type === 'heartbeat') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -274,8 +272,8 @@ export default function MillionaireGame() {
   // Authentic Studio Lights Blackout State
   const [isLightsDimmed, setIsLightsDimmed] = useState(false);
 
-  // Question Deduplication Tracking
-  const [usedQuestions, setUsedQuestions] = useState<string[]>([]);
+  // Question Deduplication Tracking using useRef to prevent re-render flickering
+  const usedQuestionsRef = useRef<string[]>([]);
 
   // 30-Second High-Stakes Timer
   const [timeLeft, setTimeLeft] = useState(30);
@@ -298,19 +296,19 @@ export default function MillionaireGame() {
 
   const activeLadder = CURRENCY_MAP[selectedCurrency].ladder;
 
-  // Load question for current level (NON-REPEATING)
-  const loadQuestionForLevel = useCallback((lvl: number) => {
-    const availableQuestions = QUESTION_BANK.filter(q => q.level === lvl && !usedQuestions.includes(q.q));
+  // Load question for current level (STABLE & NON-REPEATING)
+  const loadQuestionForLevel = useCallback((lvl: number, currency: CurrencyCode) => {
+    const ladder = CURRENCY_MAP[currency].ladder;
+    const availableQuestions = QUESTION_BANK.filter(q => q.level === lvl && !usedQuestionsRef.current.includes(q.q));
     let q: MillionaireQuestion;
 
     if (availableQuestions.length > 0) {
       q = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
     } else {
-      // Dynamic fallback question generator guarantees ZERO REPETITION
       q = generateDynamicMillionaireQuestion(lvl);
     }
 
-    setUsedQuestions(prev => [...prev, q.q]);
+    usedQuestionsRef.current.push(q.q);
     setActiveQ(q);
     setSelectedOption(null);
     setIsLocked(false);
@@ -320,9 +318,9 @@ export default function MillionaireGame() {
     setTimeLeft(30);
     setIsTimerActive(true);
 
-    const prizeStr = activeLadder[lvl - 1];
+    const prizeStr = ladder[lvl - 1];
     speakVoice(`Question for ${prizeStr}. ${q.q}`);
-  }, [activeLadder, usedQuestions]);
+  }, []);
 
   // Initialize Game
   const initGame = useCallback(() => {
@@ -402,7 +400,7 @@ export default function MillionaireGame() {
           speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`);
           setTimeout(() => {
             setCurrentLevel(l => l + 1);
-            loadQuestionForLevel(currentLevel + 1);
+            loadQuestionForLevel(currentLevel + 1, selectedCurrency);
           }, 2200);
         }
       } else {
@@ -494,7 +492,7 @@ export default function MillionaireGame() {
     playMillionaireSFX('lifeline');
 
     setLifelines(prev => ({ ...prev, switchQuestion: false }));
-    loadQuestionForLevel(currentLevel);
+    loadQuestionForLevel(currentLevel, selectedCurrency);
     speakVoice("Switch Question Lifeline used! Fresh question loaded.");
   };
 
