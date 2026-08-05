@@ -115,7 +115,13 @@ export default function CurrentAffairsGame() {
 
   const usedIdsRef = useRef<string[]>([]);
 
+  const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const loadNewQuestion = useCallback(() => {
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
     const q = generateGlobalCurrentAffairsQuestion(
       gradeBand,
       selectedContinent === 'All' ? undefined : selectedContinent,
@@ -134,6 +140,9 @@ export default function CurrentAffairsGame() {
 
   useEffect(() => {
     loadNewQuestion();
+    return () => {
+      if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
+    };
   }, [loadNewQuestion]);
 
   // Countdown timer
@@ -147,6 +156,11 @@ export default function CurrentAffairsGame() {
           setIsAnswered(true);
           setStreak(0);
           speakVoice("Time's up!");
+          // Auto advance on time's up after 2s
+          autoAdvanceTimerRef.current = setTimeout(() => {
+            setQuestionCount(c => c + 1);
+            loadNewQuestion();
+          }, 2000);
           return 0;
         }
         if (prev <= 5) playStudioSFX('tick');
@@ -154,7 +168,7 @@ export default function CurrentAffairsGame() {
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timerActive, isAnswered]);
+  }, [timerActive, isAnswered, loadNewQuestion]);
 
   const handleSelectOption = (idx: number) => {
     if (isAnswered || disabledOptions.includes(idx) || !currentQuestion) return;
@@ -175,6 +189,12 @@ export default function CurrentAffairsGame() {
       setStreak(0);
       speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`);
     }
+
+    // Auto advance to next question after 1.8 seconds
+    autoAdvanceTimerRef.current = setTimeout(() => {
+      setQuestionCount(c => c + 1);
+      loadNewQuestion();
+    }, 1800);
   };
 
   const handleFiftyFifty = () => {
@@ -195,6 +215,10 @@ export default function CurrentAffairsGame() {
   };
 
   const handleNext = () => {
+    if (autoAdvanceTimerRef.current) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
     playStudioSFX('click');
     setQuestionCount(c => c + 1);
     loadNewQuestion();
@@ -345,14 +369,14 @@ export default function CurrentAffairsGame() {
         {/* ─── MAIN STAGE: 3D GLOBAL STUDIO VIEWPORT ─── */}
         <div style={{
           flex: 1, background: '#0284c715', border: '3px solid #000000',
-          borderRadius: '16px', padding: '24px', display: 'flex', flexDirection: 'column',
+          borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'space-between', boxShadow: '4px 4px 0px #000000',
-          position: 'relative', overflow: 'hidden'
+          position: 'relative', overflowY: 'auto'
         }}>
-          {/* Top Bar: Progress & Timer */}
+          {/* Top Bar: Progress, Timer, and Direct Next Button */}
           <div style={{
             width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            background: '#0f172a', border: '2px solid #000', borderRadius: '12px', padding: '8px 16px',
+            background: '#0f172a', border: '2px solid #000', borderRadius: '12px', padding: '10px 16px',
             color: '#fff'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -360,14 +384,29 @@ export default function CurrentAffairsGame() {
               <span style={{ fontSize: '12px', fontWeight: 950 }}>Question {questionCount}</span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: timeLeft <= 5 ? '#ef4444' : '#1e293b', padding: '4px 10px', borderRadius: '8px', border: '1px solid #000', fontSize: '12px', fontWeight: 950, fontFamily: 'monospace' }}>
-              <Clock size={14} /> {timeLeft}s
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: timeLeft <= 5 ? '#ef4444' : '#1e293b', padding: '4px 10px', borderRadius: '8px', border: '1px solid #000', fontSize: '12px', fontWeight: 950, fontFamily: 'monospace' }}>
+                <Clock size={14} /> {timeLeft}s
+              </div>
+
+              {/* Direct Next Button in Top Bar */}
+              <button
+                onClick={handleNext}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 14px', borderRadius: '8px', border: '1.5px solid #000',
+                  background: '#fbbf24', color: '#0f172a', fontSize: '11px', fontWeight: 950,
+                  cursor: 'pointer', boxShadow: '2px 2px 0px #000', textTransform: 'uppercase'
+                }}
+              >
+                <span>{isAnswered ? 'Next ➔' : 'Skip ➔'}</span>
+              </button>
             </div>
           </div>
 
           {/* Question Card */}
           {currentQuestion && (
-            <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', margin: '20px 0' }}>
+            <div style={{ width: '100%', maxWidth: '720px', textAlign: 'center', margin: '16px 0' }}>
               <div style={{
                 display: 'inline-block', padding: '4px 12px', borderRadius: '12px',
                 background: '#0f172a', color: '#fbbf24', border: '1.5px solid #000',
@@ -377,15 +416,26 @@ export default function CurrentAffairsGame() {
               </div>
 
               <h2 style={{
-                fontSize: '24px', fontWeight: 950, color: '#0f172a', lineHeight: 1.3,
+                fontSize: '22px', fontWeight: 950, color: '#0f172a', lineHeight: 1.3,
                 background: '#ffffff', border: '3.5px solid #000', borderRadius: '20px',
-                padding: '28px 24px', boxShadow: '6px 6px 0px #000'
+                padding: '24px 20px', boxShadow: '6px 6px 0px #000'
               }}>
                 {currentQuestion.q}
               </h2>
 
-              {/* 4 Option Hexagon Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '20px' }}>
+              {/* Hint Box */}
+              {showHintModal && (
+                <div style={{
+                  marginTop: '12px', background: '#dcfce7', border: '2px solid #15803d',
+                  borderRadius: '12px', padding: '10px 16px', fontSize: '12px', fontWeight: 800,
+                  color: '#15803d', textAlign: 'center'
+                }}>
+                  💡 Hint: The correct answer starts with &quot;{currentQuestion.options[currentQuestion.a].slice(0, 3)}...&quot;
+                </div>
+              )}
+
+              {/* 4 Option Buttons */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
                 {currentQuestion.options.map((opt, idx) => {
                   const isSelected = selectedOption === idx;
                   const isCorrect = idx === currentQuestion.a;
@@ -408,10 +458,10 @@ export default function CurrentAffairsGame() {
                       onClick={() => handleSelectOption(idx)}
                       disabled={isAnswered || isDisabled}
                       style={{
-                        padding: '16px 20px', borderRadius: '14px', border,
+                        padding: '14px 18px', borderRadius: '14px', border,
                         background: isDisabled ? '#f1f5f9' : bg,
                         color: isDisabled ? '#94a3b8' : textColor,
-                        fontSize: '14px', fontWeight: 950, cursor: isAnswered || isDisabled ? 'default' : 'pointer',
+                        fontSize: '13px', fontWeight: 950, cursor: isAnswered || isDisabled ? 'default' : 'pointer',
                         boxShadow: isDisabled ? 'none' : '3px 3px 0px #000',
                         opacity: isDisabled ? 0.4 : 1, textAlign: 'left',
                         display: 'flex', alignItems: 'center', gap: '10px',
@@ -433,21 +483,20 @@ export default function CurrentAffairsGame() {
             </div>
           )}
 
-          {/* Bottom Next Button */}
-          {isAnswered && (
+          {/* Prominent Bottom Action Bar */}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
             <button
               onClick={handleNext}
               style={{
-                padding: '12px 32px', borderRadius: '14px', border: '3px solid #000',
-                background: '#0284c7', color: '#ffffff', fontSize: '14px', fontWeight: 950,
+                padding: '12px 36px', borderRadius: '14px', border: '3px solid #000',
+                background: isAnswered ? '#22c55e' : '#0284c7', color: '#ffffff', fontSize: '14px', fontWeight: 950,
                 boxShadow: '4px 4px 0px #000', cursor: 'pointer', textTransform: 'uppercase',
                 display: 'flex', alignItems: 'center', gap: '8px'
               }}
             >
-              <span>Next Question</span>
-              <ChevronRight size={18} />
+              <span>{isAnswered ? 'Next Question (Auto in 2s) ➔' : 'Skip to Next Question ➔'}</span>
             </button>
-          )}
+          </div>
         </div>
       </div>
     </GameLayout>
