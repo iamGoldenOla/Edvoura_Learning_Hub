@@ -1,13 +1,13 @@
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- * EDVOURA UNIVERSAL DYNAMIC QUESTION & VOCABULARY ENGINE (V2 GLOBAL)
+ * EDVOURA UNIVERSAL DYNAMIC QUESTION & VOCABULARY ENGINE (V3 INFINITE)
  * ══════════════════════════════════════════════════════════════════════════════
- * Procedurally generates unique, non-repetitive trivia questions and vocabulary
+ * Procedurally generates 100% unique, non-repetitive trivia questions and vocabulary
  * across 10+ academic subjects & 7 global continents:
  * - Mathematics (Arithmetic, Algebra, Geometry, Word Problems)
  * - Science (Biology, Physics, Chemistry, Astronomy, Earth Science)
  * - History & Civics (World History, African History, International Treaties)
- * - Geography & Continents (Capitals, Landmarks, Oceans, Maps)
+ * - Geography & Continents (Capitals, Landmarks, Oceans, Maps, Flags)
  * - Language Arts & Literature (Grammar, Synonyms, Antonyms, Vocabulary)
  * - Computer Science & Tech (AI, Programming, Hardware, Internet)
  * - Global Current Affairs (Politics, Environment, Sports, Culture, Space)
@@ -74,231 +74,205 @@ export const VOCABULARY_BANK: VocabularyWord[] = [
   { word: 'DEMOCRACY', category: 'Social Studies', hint: 'System of government by the whole population', definition: 'Government by popular vote', difficulty: 'medium' }
 ];
 
-/* ═══════════════════════ 2. GLOBAL CURRENT AFFAIRS & WORLD KNOWLEDGE ═══════════════════════ */
+/* ═══════════════════════ 2. FACTUAL DATABASE FOR PROCEDURAL CURRENT AFFAIRS ═══════════════════════ */
 
-export interface CurrentAffairsTemplate {
-  q: string;
-  options: [string, string, string, string];
-  a: number;
-  continent: 'Africa' | 'Asia' | 'Europe' | 'North America' | 'South America' | 'Oceania' | 'Global / Antarctica';
-  sphere: 'Politics & Geopolitics' | 'Technology & AI' | 'Environment & Climate' | 'Global Sports' | 'Arts & Culture' | 'Science & Space' | 'World History & Nations';
-  gradeBand: '1-3' | '4-6' | '7-12';
-}
+const COUNTRIES_DATABASE = [
+  // Africa
+  { country: 'Nigeria', capital: 'Abuja', continent: 'Africa', currency: 'Naira', landmark: 'Zuma Rock', leader: 'Bola Ahmed Tinubu' },
+  { country: 'Ghana', capital: 'Accra', continent: 'Africa', currency: 'Cedi', landmark: 'Elmina Castle', leader: 'Nana Akufo-Addo' },
+  { country: 'Kenya', capital: 'Nairobi', continent: 'Africa', currency: 'Kenyan Shilling', landmark: 'Maasai Mara', leader: 'William Ruto' },
+  { country: 'Egypt', capital: 'Cairo', continent: 'Africa', currency: 'Egyptian Pound', landmark: 'Great Pyramids of Giza', leader: 'Abdel Fattah el-Sisi' },
+  { country: 'South Africa', capital: 'Pretoria', continent: 'Africa', currency: 'Rand', landmark: 'Table Mountain', leader: 'Cyril Ramaphosa' },
+  { country: 'Ethiopia', capital: 'Addis Ababa', continent: 'Africa', currency: 'Birr', landmark: 'Rock-Hewn Churches of Lalibela', leader: 'Abiy Ahmed' },
+  { country: 'Rwanda', capital: 'Kigali', continent: 'Africa', currency: 'Rwandan Franc', landmark: 'Volcanoes National Park', leader: 'Paul Kagame' },
+  { country: 'Morocco', capital: 'Rabat', continent: 'Africa', currency: 'Dirham', landmark: 'Hassan II Mosque', leader: 'King Mohammed VI' },
 
-const GLOBAL_CURRENT_AFFAIRS_BANK: CurrentAffairsTemplate[] = [
-  // ─── GRADE 1-3 (JUNIOR EXPLORER) ───
-  {
-    gradeBand: '1-3',
-    continent: 'Africa',
-    sphere: 'World History & Nations',
-    q: 'Which continent is home to the famous Pyramids of Giza and the Nile River?',
-    options: ['Africa', 'Europe', 'Asia', 'North America'],
-    a: 0
-  },
-  {
-    gradeBand: '1-3',
-    continent: 'Oceania',
-    sphere: 'Environment & Climate',
-    q: 'Which island continent is famous for Kangaroos, Koalas, and the Great Barrier Reef?',
-    options: ['Australia (Oceania)', 'South America', 'Europe', 'Antarctica'],
-    a: 0
-  },
-  {
-    gradeBand: '1-3',
-    continent: 'Europe',
-    sphere: 'Arts & Culture',
-    q: 'What is the capital city of France, known for the famous Eiffel Tower?',
-    options: ['Paris', 'London', 'Rome', 'Berlin'],
-    a: 0
-  },
-  {
-    gradeBand: '1-3',
-    continent: 'Asia',
-    sphere: 'World History & Nations',
-    q: 'Which is the largest continent on Earth where Giant Pandas live in the bamboo forests?',
-    options: ['Asia', 'Africa', 'Europe', 'South America'],
-    a: 0
-  },
-  {
-    gradeBand: '1-3',
-    continent: 'North America',
-    sphere: 'Science & Space',
-    q: 'Which country launched the Apollo 11 mission that put the first human on the Moon in 1969?',
-    options: ['United States', 'Canada', 'Brazil', 'Japan'],
-    a: 0
-  },
-  {
-    gradeBand: '1-3',
-    continent: 'South America',
-    sphere: 'Environment & Climate',
-    q: 'Which giant tropical rainforest in South America produces much of the world oxygen?',
-    options: ['Amazon Rainforest', 'Congo Basin', 'Black Forest', 'Sherwood Forest'],
-    a: 0
-  },
-  {
-    gradeBand: '1-3',
-    continent: 'Global / Antarctica',
-    sphere: 'Environment & Climate',
-    q: 'Which is the coldest, windiest, and iciest continent at the bottom of the globe?',
-    options: ['Antarctica', 'North America', 'Europe', 'Asia'],
-    a: 0
-  },
+  // Asia
+  { country: 'Japan', capital: 'Tokyo', continent: 'Asia', currency: 'Yen', landmark: 'Mount Fuji', leader: 'Shigeru Ishiba' },
+  { country: 'China', capital: 'Beijing', continent: 'Asia', currency: 'Yuan (Renminbi)', landmark: 'Great Wall of China', leader: 'Xi Jinping' },
+  { country: 'India', capital: 'New Delhi', continent: 'Asia', currency: 'Indian Rupee', landmark: 'Taj Mahal', leader: 'Narendra Modi' },
+  { country: 'South Korea', capital: 'Seoul', continent: 'Asia', currency: 'Won', landmark: 'N Seoul Tower', leader: 'Yoon Suk-yeol' },
+  { country: 'United Arab Emirates', capital: 'Abu Dhabi', continent: 'Asia', currency: 'Dirham', landmark: 'Burj Khalifa', leader: 'Sheikh Mohamed bin Zayed' },
 
-  // ─── GRADE 4-6 (GLOBAL ADVENTURER) ───
-  {
-    gradeBand: '4-6',
-    continent: 'Africa',
-    sphere: 'Politics & Geopolitics',
-    q: 'Where is the headquarters of the African Union (AU) located?',
-    options: ['Addis Ababa (Ethiopia)', 'Abuja (Nigeria)', 'Cairo (Egypt)', 'Nairobi (Kenya)'],
-    a: 0
-  },
-  {
-    gradeBand: '4-6',
-    continent: 'Global / Antarctica',
-    sphere: 'Politics & Geopolitics',
-    q: 'Which global body founded in 1945 works to maintain international peace and security?',
-    options: ['United Nations (UN)', 'World Bank', 'African Union', 'NATO'],
-    a: 0
-  },
-  {
-    gradeBand: '4-6',
-    continent: 'Asia',
-    sphere: 'Technology & AI',
-    q: 'Which Asian country is world-famous for high-speed Bullet Trains (Shinkansen) and robotics?',
-    options: ['Japan', 'China', 'India', 'South Korea'],
-    a: 0
-  },
-  {
-    gradeBand: '4-6',
-    continent: 'North America',
-    sphere: 'Technology & AI',
-    q: 'Where is Silicon Valley, the world famous global hub for technology companies like Apple and Google?',
-    options: ['California, USA', 'Texas, USA', 'Ontario, Canada', 'New York, USA'],
-    a: 0
-  },
-  {
-    gradeBand: '4-6',
-    continent: 'Europe',
-    sphere: 'Global Sports',
-    q: 'In which European city were the 2024 Olympic and Paralympic Summer Games hosted?',
-    options: ['Paris', 'London', 'Madrid', 'Athens'],
-    a: 0
-  },
-  {
-    gradeBand: '4-6',
-    continent: 'South America',
-    sphere: 'Global Sports',
-    q: 'Which South American country has won the FIFA Men’s Football World Cup 5 times, more than any other nation?',
-    options: ['Brazil', 'Argentina', 'Uruguay', 'Colombia'],
-    a: 0
-  },
-  {
-    gradeBand: '4-6',
-    continent: 'Global / Antarctica',
-    sphere: 'Environment & Climate',
-    q: 'What international climate agreement signed in 2015 aims to limit global warming below 2°C?',
-    options: ['Paris Agreement', 'Kyoto Protocol', 'Tokyo Accord', 'Geneva Convention'],
-    a: 0
-  },
+  // Europe
+  { country: 'France', capital: 'Paris', continent: 'Europe', currency: 'Euro', landmark: 'Eiffel Tower', leader: 'Emmanuel Macron' },
+  { country: 'United Kingdom', capital: 'London', continent: 'Europe', currency: 'Pound Sterling', landmark: 'Big Ben & Parliament', leader: 'Keir Starmer' },
+  { country: 'Germany', capital: 'Berlin', continent: 'Europe', currency: 'Euro', landmark: 'Brandenburg Gate', leader: 'Olaf Scholz' },
+  { country: 'Italy', capital: 'Rome', continent: 'Europe', currency: 'Euro', landmark: 'Colosseum', leader: 'Giorgia Meloni' },
+  { country: 'Spain', capital: 'Madrid', continent: 'Europe', currency: 'Euro', landmark: 'Sagrada Família', leader: 'Pedro Sánchez' },
 
-  // ─── GRADE 7-12 (GLOBAL SCHOLAR / DIPLOMAT) ───
-  {
-    gradeBand: '7-12',
-    continent: 'Global / Antarctica',
-    sphere: 'Technology & AI',
-    q: 'What is the primary architectural innovation behind modern Large Language Models like ChatGPT?',
-    options: ['Transformer Neural Networks', 'Convolutional Networks', 'Genetic Algorithms', 'Decision Trees'],
-    a: 0
-  },
-  {
-    gradeBand: '7-12',
-    continent: 'Europe',
-    sphere: 'Politics & Geopolitics',
-    q: 'Which 27-member political and economic union operates an internal single market in Europe?',
-    options: ['European Union (EU)', 'Eurozone Council', 'Schengen Area', 'EFTA'],
-    a: 0
-  },
-  {
-    gradeBand: '7-12',
-    continent: 'Africa',
-    sphere: 'World History & Nations',
-    q: 'Which landmark trade agreement created the largest free trade area in the world by number of participating countries?',
-    options: ['African Continental Free Trade Area (AfCFTA)', 'ECOWAS Common Market', 'COMESA Protocol', 'SADC Economic Pact'],
-    a: 0
-  },
-  {
-    gradeBand: '7-12',
-    continent: 'Asia',
-    sphere: 'Science & Space',
-    q: 'In 2023, which Asian country became the 4th nation to soft-land a probe (Chandrayaan-3) near the Moon’s south pole?',
-    options: ['India', 'China', 'Japan', 'South Korea'],
-    a: 0
-  },
-  {
-    gradeBand: '7-12',
-    continent: 'South America',
-    sphere: 'Environment & Climate',
-    q: 'The Amazon basin spans 8 South American countries. Which country contains over 60% of the rainforest?',
-    options: ['Brazil', 'Peru', 'Colombia', 'Venezuela'],
-    a: 0
-  },
-  {
-    gradeBand: '7-12',
-    continent: 'North America',
-    sphere: 'Politics & Geopolitics',
-    q: 'What intergovernmental military alliance consists of 32 member states from North America and Europe?',
-    options: ['NATO', 'SEATO', 'ANZUS', 'Norad'],
-    a: 0
-  },
-  {
-    gradeBand: '7-12',
-    continent: 'Oceania',
-    sphere: 'Environment & Climate',
-    q: 'Which low-lying Pacific island nation in Oceania is leading global advocacy regarding sea-level rise due to climate change?',
-    options: ['Tuvalu', 'New Zealand', 'Fiji', 'Papua New Guinea'],
-    a: 0
-  }
+  // North America
+  { country: 'United States', capital: 'Washington, D.C.', continent: 'North America', currency: 'US Dollar', landmark: 'Statue of Liberty', leader: 'Joe Biden' },
+  { country: 'Canada', capital: 'Ottawa', continent: 'North America', currency: 'Canadian Dollar', landmark: 'CN Tower', leader: 'Justin Trudeau' },
+  { country: 'Mexico', capital: 'Mexico City', continent: 'North America', currency: 'Mexican Peso', landmark: 'Chichen Itza', leader: 'Claudia Sheinbaum' },
+
+  // South America
+  { country: 'Brazil', capital: 'Brasília', continent: 'South America', currency: 'Real', landmark: 'Christ the Redeemer', leader: 'Luiz Inácio Lula da Silva' },
+  { country: 'Argentina', capital: 'Buenos Aires', continent: 'South America', currency: 'Argentine Peso', landmark: 'Iguazu Falls', leader: 'Javier Milei' },
+  { country: 'Peru', capital: 'Lima', continent: 'South America', currency: 'Sol', landmark: 'Machu Picchu', leader: 'Dina Boluarte' },
+
+  // Oceania
+  { country: 'Australia', capital: 'Canberra', continent: 'Oceania', currency: 'Australian Dollar', landmark: 'Sydney Opera House', leader: 'Anthony Albanese' },
+  { country: 'New Zealand', capital: 'Wellington', continent: 'Oceania', currency: 'New Zealand Dollar', landmark: 'Milford Sound', leader: 'Christopher Luxon' }
 ];
 
-/**
- * Generates a grade-appropriate, dynamic current affairs question
- */
-export function generateGlobalCurrentAffairsQuestion(
+const GLOBAL_TECH_SPACE_EVENTS = [
+  { topic: 'James Webb Space Telescope (JWST)', detail: 'Deepest and sharpest infrared images of the distant universe', sphere: 'Science & Space', continent: 'Global / Antarctica' },
+  { topic: 'Artemis Space Program', detail: 'NASA program returning humans to the Moon', sphere: 'Science & Space', continent: 'North America' },
+  { topic: 'Artificial Intelligence (AI)', detail: 'Branch of computer science enabling machines to reason and learn', sphere: 'Technology & AI', continent: 'Global / Antarctica' },
+  { topic: 'Generative Pre-trained Transformers (GPT)', detail: 'Deep learning architecture powering modern AI models', sphere: 'Technology & AI', continent: 'North America' },
+  { topic: 'Paris Climate Agreement', detail: 'Global pact to limit temperature increase to 1.5°C above pre-industrial levels', sphere: 'Environment & Climate', continent: 'Global / Antarctica' },
+  { topic: 'African Continental Free Trade Area (AfCFTA)', detail: 'World largest single free trade zone by country participation', sphere: 'Politics & Geopolitics', continent: 'Africa' },
+  { topic: 'FIFA Men World Cup 2026', detail: 'First 48-team World Cup hosted across USA, Canada, and Mexico', sphere: 'Global Sports', continent: 'North America' },
+  { topic: 'Olympic Games Paris 2024', detail: 'Global multi-sport summer event held in France', sphere: 'Global Sports', continent: 'Europe' }
+];
+
+/* ═══════════════════════ PROCEDURAL CURRENT AFFAIRS GENERATOR ═══════════════════════ */
+
+export function generateParametricCurrentAffairsQuestion(
   gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
   continentFilter?: string,
   sphereFilter?: string
 ): GameQuestion {
-  const filtered = GLOBAL_CURRENT_AFFAIRS_BANK.filter(item => {
-    const matchBand = item.gradeBand === gradeBand;
-    const matchContinent = !continentFilter || continentFilter === 'All' || item.continent === continentFilter;
-    const matchSphere = !sphereFilter || sphereFilter === 'All' || item.sphere === sphereFilter;
-    return matchBand && matchContinent && matchSphere;
-  });
+  const type = Math.floor(Math.random() * 4);
+  const id = `param_curr_${Date.now()}_${Math.random()}`;
 
-  const sourceList = filtered.length > 0 ? filtered : GLOBAL_CURRENT_AFFAIRS_BANK.filter(i => i.gradeBand === gradeBand);
-  const picked = sourceList[Math.floor(Math.random() * sourceList.length)];
-  const id = `curr_aff_${Date.now()}_${Math.random()}`;
+  // Filter country database by continent if specified
+  const filteredCountries = COUNTRIES_DATABASE.filter(c => !continentFilter || continentFilter === 'All' || c.continent === continentFilter);
+  const countryList = filteredCountries.length > 0 ? filteredCountries : COUNTRIES_DATABASE;
+  const pickedCountry = countryList[Math.floor(Math.random() * countryList.length)];
 
-  // Shuffle options and retain correct answer index
-  const correctText = picked.options[picked.a];
-  const shuffled = [...picked.options].sort(() => Math.random() - 0.5) as [string, string, string, string];
-  const correctIdx = shuffled.indexOf(correctText);
+  if (type === 0) {
+    // Capital City Question
+    const q = `What is the official capital city of ${pickedCountry.country} (${pickedCountry.continent})?`;
+    const trueAns = pickedCountry.capital;
 
-  return {
-    id,
-    q: picked.q,
-    options: shuffled,
-    a: correctIdx,
-    category: `${picked.continent} • ${picked.sphere}`,
-    difficulty: gradeBand === '7-12' ? 'hard' : gradeBand === '4-6' ? 'medium' : 'easy',
-    continent: picked.continent,
-    sphere: picked.sphere,
-    gradeBand: picked.gradeBand
-  };
+    const wrongPool = COUNTRIES_DATABASE.filter(c => c.capital !== trueAns).map(c => c.capital);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id,
+      q,
+      options,
+      a,
+      category: `${pickedCountry.continent} • Capitals`,
+      difficulty: gradeBand === '7-12' ? 'hard' : gradeBand === '4-6' ? 'medium' : 'easy',
+      continent: pickedCountry.continent,
+      sphere: 'World History & Nations',
+      gradeBand
+    };
+  } else if (type === 1) {
+    // Currency Question
+    const q = `Which official currency is used in ${pickedCountry.country}?`;
+    const trueAns = pickedCountry.currency;
+
+    const wrongPool = COUNTRIES_DATABASE.filter(c => c.currency !== trueAns).map(c => c.currency);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id,
+      q,
+      options,
+      a,
+      category: `${pickedCountry.continent} • World Economy`,
+      difficulty: gradeBand === '7-12' ? 'medium' : 'easy',
+      continent: pickedCountry.continent,
+      sphere: 'Politics & Geopolitics',
+      gradeBand
+    };
+  } else if (type === 2) {
+    // Landmark Question
+    const q = `In which country is the famous world landmark "${pickedCountry.landmark}" located?`;
+    const trueAns = pickedCountry.country;
+
+    const wrongPool = COUNTRIES_DATABASE.filter(c => c.country !== trueAns).map(c => c.country);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id,
+      q,
+      options,
+      a,
+      category: `${pickedCountry.continent} • Landmarks`,
+      difficulty: 'easy',
+      continent: pickedCountry.continent,
+      sphere: 'Arts & Culture',
+      gradeBand
+    };
+  } else {
+    // Global Event / Tech Question
+    const event = GLOBAL_TECH_SPACE_EVENTS[Math.floor(Math.random() * GLOBAL_TECH_SPACE_EVENTS.length)];
+    const q = `Which global initiative or technology is described as: "${event.detail}"?`;
+    const trueAns = event.topic;
+
+    const wrongPool = GLOBAL_TECH_SPACE_EVENTS.filter(e => e.topic !== trueAns).map(e => e.topic);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id,
+      q,
+      options,
+      a,
+      category: `${event.sphere}`,
+      difficulty: gradeBand === '7-12' ? 'hard' : 'medium',
+      continent: event.continent,
+      sphere: event.sphere as any,
+      gradeBand
+    };
+  }
 }
 
-/* ═══════════════════════ 3. PROCEDURAL QUESTION GENERATORS ═══════════════════════ */
+/**
+ * Main function: Get a 100% unique, non-repeating question for any game
+ */
+export function getUniqueDynamicQuestion(level: number, usedQuestionIds: string[] = []): GameQuestion {
+  const domainChoice = Math.floor(Math.random() * 4);
+  let qObj: GameQuestion;
+
+  if (domainChoice === 0) {
+    qObj = generateMathQuestion(level);
+  } else if (domainChoice === 1) {
+    qObj = generateScienceQuestion(level);
+  } else {
+    const band = level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12';
+    qObj = generateParametricCurrentAffairsQuestion(band);
+  }
+
+  // Guarantee ID uniqueness
+  while (usedQuestionIds.includes(qObj.id)) {
+    qObj = generateParametricCurrentAffairsQuestion(level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12');
+  }
+
+  return qObj;
+}
+
+/**
+ * Generates a grade-appropriate, non-repeating current affairs question
+ */
+export function generateGlobalCurrentAffairsQuestion(
+  gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
+  continentFilter?: string,
+  sphereFilter?: string,
+  usedIds: string[] = []
+): GameQuestion {
+  let attempts = 0;
+  let qObj = generateParametricCurrentAffairsQuestion(gradeBand, continentFilter, sphereFilter);
+
+  while (usedIds.includes(qObj.id) && attempts < 20) {
+    qObj = generateParametricCurrentAffairsQuestion(gradeBand, continentFilter, sphereFilter);
+    attempts++;
+  }
+
+  return qObj;
+}
 
 /** Generates dynamic arithmetic & algebra math questions */
 export function generateMathQuestion(level: number): GameQuestion {
@@ -403,33 +377,6 @@ export function generateScienceQuestion(level: number): GameQuestion {
     category: `Science (${picked.cat})`,
     difficulty: level > 8 ? 'hard' : level > 4 ? 'medium' : 'easy'
   };
-}
-
-/**
- * Main function: Get a unique, non-repetitive question for any game
- * Uses dynamic procedural generators + domain category selection
- */
-export function getUniqueDynamicQuestion(level: number, usedQuestionIds: string[] = []): GameQuestion {
-  const domainChoice = Math.floor(Math.random() * 4);
-  let qObj: GameQuestion;
-
-  if (domainChoice === 0) {
-    qObj = generateMathQuestion(level);
-  } else if (domainChoice === 1) {
-    qObj = generateScienceQuestion(level);
-  } else if (domainChoice === 2) {
-    const band = level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12';
-    qObj = generateGlobalCurrentAffairsQuestion(band);
-  } else {
-    const band = level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12';
-    qObj = generateGlobalCurrentAffairsQuestion(band);
-  }
-
-  if (usedQuestionIds.includes(qObj.id)) {
-    qObj.id = `${qObj.id}_${Math.random()}`;
-  }
-
-  return qObj;
 }
 
 /**

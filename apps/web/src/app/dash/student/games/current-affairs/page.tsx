@@ -10,77 +10,106 @@ import { generateGlobalCurrentAffairsQuestion, GameQuestion } from '@/lib/games/
 
 const ACCENT_COLOR = '#0284c7'; // Deep Sky Blue Studio Accent
 
-/* ═══════════════════════ AUDIO & SPEECH SYNTHESIZER ═══════════════════════ */
-function speakVoice(text: string) {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+/* ═══════════════════════ LAZY SINGLETON AUDIO SYNTHESIZER ═══════════════════════ */
+let globalAudioCtx: AudioContext | null = null;
+
+function getAudioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (!globalAudioCtx) {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) globalAudioCtx = new AudioCtx();
+    }
+    if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+      globalAudioCtx.resume().catch(() => {});
+    }
+  } catch (e) {}
+  return globalAudioCtx;
+}
+
+function speakVoice(text: string, isMuted: boolean) {
+  if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
-    utterance.volume = 0.9;
+    utterance.volume = 1.0;
     window.speechSynthesis.speak(utterance);
   } catch (e) {}
 }
 
-function playStudioSFX(type: 'correct' | 'error' | 'click' | 'win' | 'lifeline' | 'tick') {
-  if (typeof window === 'undefined') return;
-  try {
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
+function playStudioSFX(type: 'correct' | 'error' | 'click' | 'win' | 'lifeline' | 'tick' | 'start', isMuted: boolean) {
+  if (isMuted) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
 
-    if (type === 'correct') {
+  try {
+    const now = ctx.currentTime;
+    if (type === 'start') {
+      const notes = [523.25, 659.25, 783.99, 1046.50];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+        gain.gain.setValueAtTime(0.25, now + idx * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.2);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now + idx * 0.06);
+        osc.stop(now + idx * 0.06 + 0.2);
+      });
+    } else if (type === 'correct') {
       const notes = [523.25, 659.25, 783.99, 1046.50];
       notes.forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.08);
-        gain.gain.setValueAtTime(0.3, ctx.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + idx * 0.08 + 0.3);
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+        gain.gain.setValueAtTime(0.35, now + idx * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
         osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.08);
-        osc.stop(ctx.currentTime + idx * 0.08 + 0.3);
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.35);
       });
     } else if (type === 'error') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(200, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(90, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.linearRampToValueAtTime(90, now + 0.3);
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
     } else if (type === 'click') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, ctx.currentTime);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+      osc.frequency.setValueAtTime(600, now);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.05);
+      osc.start(now); osc.stop(now + 0.05);
     } else if (type === 'lifeline') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.linearRampToValueAtTime(880, now + 0.15);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
     } else if (type === 'tick') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.04);
+      osc.frequency.setValueAtTime(800, now);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.04);
+      osc.start(now); osc.stop(now + 0.04);
     }
   } catch (e) {}
 }
@@ -98,6 +127,7 @@ export default function CurrentAffairsGame() {
   const [selectedContinent, setSelectedContinent] = useState('All');
   const [selectedSphere, setSelectedSphere] = useState('All');
 
+  const [isMuted, setIsMuted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<GameQuestion | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -114,7 +144,6 @@ export default function CurrentAffairsGame() {
   const [hintUsed, setHintUsed] = useState(false);
 
   const usedIdsRef = useRef<string[]>([]);
-
   const autoAdvanceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadNewQuestion = useCallback(() => {
@@ -125,7 +154,8 @@ export default function CurrentAffairsGame() {
     const q = generateGlobalCurrentAffairsQuestion(
       gradeBand,
       selectedContinent === 'All' ? undefined : selectedContinent,
-      selectedSphere === 'All' ? undefined : selectedSphere
+      selectedSphere === 'All' ? undefined : selectedSphere,
+      usedIdsRef.current
     );
     usedIdsRef.current.push(q.id);
     setCurrentQuestion(q);
@@ -135,8 +165,8 @@ export default function CurrentAffairsGame() {
     setShowHintModal(false);
     setTimeLeft(25);
     setTimerActive(true);
-    speakVoice(`Current Affairs Question: ${q.q}`);
-  }, [gradeBand, selectedContinent, selectedSphere]);
+    speakVoice(`Current Affairs Question: ${q.q}`, isMuted);
+  }, [gradeBand, selectedContinent, selectedSphere, isMuted]);
 
   useEffect(() => {
     loadNewQuestion();
@@ -152,25 +182,25 @@ export default function CurrentAffairsGame() {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          playStudioSFX('error');
+          playStudioSFX('error', isMuted);
           setIsAnswered(true);
           setStreak(0);
-          speakVoice("Time's up!");
-          // Auto advance on time's up after 2s
+          speakVoice("Time's up!", isMuted);
           autoAdvanceTimerRef.current = setTimeout(() => {
             setQuestionCount(c => c + 1);
             loadNewQuestion();
           }, 2000);
           return 0;
         }
-        if (prev <= 5) playStudioSFX('tick');
+        if (prev <= 5) playStudioSFX('tick', isMuted);
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timerActive, isAnswered, loadNewQuestion]);
+  }, [timerActive, isAnswered, loadNewQuestion, isMuted]);
 
   const handleSelectOption = (idx: number) => {
+    getAudioContext(); // Unblock audio on click
     if (isAnswered || disabledOptions.includes(idx) || !currentQuestion) return;
     setSelectedOption(idx);
     setIsAnswered(true);
@@ -178,19 +208,18 @@ export default function CurrentAffairsGame() {
 
     const isCorrect = idx === currentQuestion.a;
     if (isCorrect) {
-      playStudioSFX('correct');
+      playStudioSFX('correct', isMuted);
       const bonus = Math.floor(timeLeft / 2);
       const addedPoints = 20 + bonus;
       setScore(s => s + addedPoints);
       setStreak(s => s + 1);
-      speakVoice(`Correct! Plus ${addedPoints} points.`);
+      speakVoice(`Correct! Plus ${addedPoints} points.`, isMuted);
     } else {
-      playStudioSFX('error');
+      playStudioSFX('error', isMuted);
       setStreak(0);
-      speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`);
+      speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`, isMuted);
     }
 
-    // Auto advance to next question after 1.8 seconds
     autoAdvanceTimerRef.current = setTimeout(() => {
       setQuestionCount(c => c + 1);
       loadNewQuestion();
@@ -198,8 +227,9 @@ export default function CurrentAffairsGame() {
   };
 
   const handleFiftyFifty = () => {
+    getAudioContext();
     if (fiftyFiftyUsed || !currentQuestion || isAnswered) return;
-    playStudioSFX('lifeline');
+    playStudioSFX('lifeline', isMuted);
     setFiftyFiftyUsed(true);
 
     const wrongIdxs = [0, 1, 2, 3].filter(i => i !== currentQuestion.a);
@@ -208,26 +238,38 @@ export default function CurrentAffairsGame() {
   };
 
   const handleUseHint = () => {
+    getAudioContext();
     if (hintUsed || !currentQuestion || isAnswered) return;
-    playStudioSFX('lifeline');
+    playStudioSFX('lifeline', isMuted);
     setHintUsed(true);
     setShowHintModal(true);
   };
 
   const handleNext = () => {
+    getAudioContext();
     if (autoAdvanceTimerRef.current) {
       clearTimeout(autoAdvanceTimerRef.current);
       autoAdvanceTimerRef.current = null;
     }
-    playStudioSFX('click');
+    playStudioSFX('click', isMuted);
     setQuestionCount(c => c + 1);
     loadNewQuestion();
   };
 
+  const toggleSound = () => {
+    getAudioContext();
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (!nextMuted) {
+      playStudioSFX('start', false);
+    }
+  };
+
   const copyInviteLink = () => {
+    getAudioContext();
     navigator.clipboard.writeText(window.location.href);
     setCopiedLink(true);
-    playStudioSFX('lifeline');
+    playStudioSFX('lifeline', isMuted);
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
@@ -307,6 +349,20 @@ export default function CurrentAffairsGame() {
               {SPHERES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
+
+          {/* Sound Toggle Button */}
+          <button
+            onClick={toggleSound}
+            style={{
+              padding: '8px', borderRadius: '8px', border: '1.5px solid #000',
+              background: isMuted ? '#ef4444' : '#22c55e', color: '#ffffff',
+              fontSize: '11px', fontWeight: 950, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'
+            }}
+          >
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            {isMuted ? 'Sound Muted' : 'Audio SFX Active'}
+          </button>
 
           {/* Lifelines Box */}
           <div style={{ background: '#1e293b', border: '2px solid #000', borderRadius: '10px', padding: '10px' }}>
