@@ -91,7 +91,7 @@ export default function TutorGradingPage() {
       return;
     }
 
-    const normalizedSubmissions = ((submissionRows ?? []) as unknown as SubmissionRow[]) ?? [];
+    const normalizedSubmissions = (submissionRows ?? []) as unknown as SubmissionRow[];
     const studentIds = [...new Set(normalizedSubmissions.map((item) => item.student_user_id))];
     const submissionIds = normalizedSubmissions.map((item) => item.id);
 

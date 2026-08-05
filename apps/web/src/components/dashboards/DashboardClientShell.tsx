@@ -292,6 +292,34 @@ export default function DashboardClientShell({
                   <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>
                 </div>
                 <p className="truncate text-xs sm:text-sm font-black text-dark/60 min-w-0">{roleLabel}</p>
+                {subscriptionStatus && (
+                  <span
+                    className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border-[2.5px] border-dark px-2.5 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] shrink-0"
+                    style={{
+                      background: subscriptionStatus === 'active' ? '#dcfce7'
+                        : subscriptionStatus === 'trialing' ? '#fef3c7'
+                        : subscriptionStatus === 'past_due' ? '#ffedd5'
+                        : '#fecaca',
+                      color: subscriptionStatus === 'active' ? '#15803d'
+                        : subscriptionStatus === 'trialing' ? '#a16207'
+                        : subscriptionStatus === 'past_due' ? '#c2410c'
+                        : '#b91c1c',
+                    }}
+                  >
+                    <span style={{
+                      width: '6px', height: '6px', borderRadius: '50%',
+                      background: subscriptionStatus === 'active' ? '#22c55e'
+                        : subscriptionStatus === 'trialing' ? '#f59e0b'
+                        : subscriptionStatus === 'past_due' ? '#f97316'
+                        : '#ef4444',
+                    }} />
+                    {subscriptionStatus === 'active' ? 'Active'
+                      : subscriptionStatus === 'trialing' ? 'Trial'
+                      : subscriptionStatus === 'past_due' ? 'Past Due'
+                      : subscriptionStatus === 'canceled' ? 'Canceled'
+                      : 'Inactive'}
+                  </span>
+                )}
                 {effectiveRole === 'student' && role !== 'student' ? <StudentBandSwitcher /> : null}
               </div>
 

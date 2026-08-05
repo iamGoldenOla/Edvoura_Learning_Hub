@@ -4,10 +4,22 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Trophy, Star, RefreshCw, Crown, Circle, Grid3X3, ALargeSmall, Type, Dice1,
-  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket, Puzzle, Layers, Award
+  Gamepad2, Zap, ArrowRight, Sparkles, Brain, Rocket, Puzzle, Layers, Award, Globe
 } from 'lucide-react';
 
 const GAMES = [
+  {
+    id: 'current-affairs',
+    title: 'Global Current Affairs (3D)',
+    description: 'Explore the world across 7 continents and 7 global spheres! Auto-generated questions tailored by Grade Tier.',
+    icon: Globe,
+    color: '#0284c7',
+    badgeBg: '#e0f2fe',
+    badgeText: '#0369a1',
+    difficulty: 'Grade-Based',
+    emoji: '🌍',
+    category: 'World Knowledge'
+  },
   {
     id: 'millionaire',
     title: 'Who Wants to Be a Millionaire (3D)',

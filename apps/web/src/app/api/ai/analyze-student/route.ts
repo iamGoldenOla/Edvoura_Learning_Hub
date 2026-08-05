@@ -127,9 +127,9 @@ export async function POST(request: NextRequest) {
   ]);
 
   const snapshots = snapshotsResult.data ?? [];
-  const enrollments = ((enrollmentsResult.data ?? []) as unknown as EnrollmentRow[]) ?? [];
-  const submissions = ((submissionsResult.data ?? []) as unknown as SubmissionRow[]) ?? [];
-  const practiceScores = ((practiceScoresResult.data ?? []) as PracticeScoreRow[]) ?? [];
+  const enrollments = (enrollmentsResult.data ?? []) as unknown as EnrollmentRow[];
+  const submissions = (submissionsResult.data ?? []) as unknown as SubmissionRow[];
+  const practiceScores = (practiceScoresResult.data ?? []) as PracticeScoreRow[];
 
   const subjectMap = new Map<string, { scores: number[]; attendance: number[]; assignmentsCompleted: number }>();
   const classSubjectMap = new Map<string, string>();

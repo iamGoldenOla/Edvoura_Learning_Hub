@@ -72,12 +72,9 @@ function playWordSFX(type: 'click' | 'correct' | 'error' | 'win') {
   } catch (e) {}
 }
 
-const SCRAMBLE_WORDS = [
-  'SCIENCE', 'HISTORY', 'MATHEMATICS', 'GEOGRAPHY', 'BIOLOGY', 'CHEMISTRY', 'PHYSICS',
-  'ASTRONOMY', 'LITERATURE', 'GRAMMAR', 'VOCABULARY', 'ALGEBRA', 'GEOMETRY', 'CALCULUS',
-  'ECONOMICS', 'PSYCHOLOGY', 'SOCIOLOGY', 'PHILOSOPHY', 'ART', 'MUSIC', 'COMPUTER',
-  'PROGRAMMING', 'ALGORITHM', 'DATABASE', 'NETWORK', 'INTERNET', 'SOFTWARE', 'HARDWARE'
-];
+import { getUniqueVocabularyWord, VOCABULARY_BANK } from '@/lib/games/dynamicQuestionEngine';
+
+const SCRAMBLE_WORDS = VOCABULARY_BANK.map(v => v.word);
 
 const HANGMAN_CATEGORIES: Record<string, string[]> = {
   Animals: ['ELEPHANT', 'GIRAFFE', 'HIPPOPOTAMUS', 'RHINOCEROS', 'CROCODILE', 'KANGAROO', 'PENGUIN', 'DOLPHIN'],
@@ -90,23 +87,26 @@ const WORDLE_WORDS = ['BRAIN', 'SMART', 'LEARN', 'STUDY', 'CLASS', 'LOGIC', 'BOO
 
 // --- WORD SCRAMBLE COMPONENT WITH HINTS ---
 function WordScramble({ addScore }: { addScore: (points: number) => void }) {
-  const [word, setWord] = useState('');
+  const [wordObj, setWordObj] = useState(() => getUniqueVocabularyWord());
   const [scrambled, setScrambled] = useState('');
   const [guess, setGuess] = useState('');
   const [streak, setStreak] = useState(0);
   const [feedback, setFeedback] = useState<{type: string; text: string} | null>(null);
   const [scrambleHint, setScrambleHint] = useState('');
 
+  const word = wordObj.word;
+
   const getNewWord = useCallback(() => {
-    const newWord = SCRAMBLE_WORDS[Math.floor(Math.random() * SCRAMBLE_WORDS.length)];
-    setWord(newWord);
+    const nextObj = getUniqueVocabularyWord();
+    setWordObj(nextObj);
+    const newWord = nextObj.word;
     
     let scram = newWord.split('');
     for (let i = scram.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [scram[i], scram[j]] = [scram[j], scram[i]];
     }
-    if (scram.join('') === newWord) {
+    if (scram.join('') === newWord && scram.length > 1) {
       [scram[0], scram[1]] = [scram[1], scram[0]];
     }
     setScrambled(scram.join(''));
@@ -122,9 +122,9 @@ function WordScramble({ addScore }: { addScore: (points: number) => void }) {
 
   const handleGetHint = () => {
     playWordSFX('click');
-    const hint = `💡 Hint: The word starts with "${word.slice(0, 2)}" and has ${word.length} letters!`;
+    const hint = `💡 Hint [${wordObj.category}]: ${wordObj.hint} (Starts with "${word.slice(0, 2)}")`;
     setScrambleHint(hint);
-    speakVoice(`Hint: The word starts with ${word.slice(0, 2)}`);
+    speakVoice(`Hint: ${wordObj.hint}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {

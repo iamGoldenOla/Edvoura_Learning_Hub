@@ -141,21 +141,18 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinge
   } catch (e) {}
 }
 
+import { getUniqueDynamicQuestion } from '@/lib/games/dynamicQuestionEngine';
+
 /* ═══════════════════════ DYNAMIC MILLIONAIRE QUESTION ENGINE ═══════════════════════ */
 function generateDynamicMillionaireQuestion(lvl: number): MillionaireQuestion {
-  const num1 = Math.floor(Math.random() * (lvl * 5)) + lvl + 2;
-  const num2 = Math.floor(Math.random() * (lvl * 3)) + lvl + 1;
-  const ans = num1 * num2;
-  const q = `What is the exact product of ${num1} × ${num2}?`;
-
-  const opts = new Set<string>();
-  opts.add(String(ans));
-  while (opts.size < 4) {
-    const offset = (Math.floor(Math.random() * 8) + 1) * (Math.random() > 0.5 ? 1 : -1) * (lvl <= 5 ? 2 : 5);
-    opts.add(String(Math.max(2, ans + offset)));
-  }
-  const optionsArray = Array.from(opts) as [string, string, string, string];
-  return { q, options: optionsArray, a: 0, category: 'Dynamic Scholar Math', level: lvl };
+  const generated = getUniqueDynamicQuestion(lvl);
+  return {
+    q: generated.q,
+    options: generated.options,
+    a: generated.a,
+    category: generated.category,
+    level: lvl
+  };
 }
 
 /* ═══════════════════════ GLOBAL CURRENCY & MONEY LADDERS ═══════════════════════ */

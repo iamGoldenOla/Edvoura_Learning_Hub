@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
 import { Dice1, RotateCcw, Layers, User, Users, Monitor, Landmark, ArrowRightLeft, Gavel } from 'lucide-react';
+import { getUniqueDynamicQuestion } from '@/lib/games/dynamicQuestionEngine';
 
 /* ═══════════════════════ WEB AUDIO API SFX SYNTHESIZER ═══════════════════════ */
 function playMonopolySFX(type: 'dice' | 'cash' | 'move' | 'jail') {
@@ -576,8 +577,8 @@ export default function MonopolyPage() {
       setActionMessage('💰 Paid $150 tax.');
       setPhase('action');
     } else if (space.type === 'quiz') {
-      const q = QUIZ_QUESTIONS[Math.floor(Math.random() * QUIZ_QUESTIONS.length)];
-      setCurrentQuiz(q);
+      const q = getUniqueDynamicQuestion(Math.floor(Math.random() * 8) + 1);
+      setCurrentQuiz({ q: q.q, options: q.options, answer: q.a });
       setPhase('quiz');
     } else if (space.type === 'chance') {
       const card = CHANCE_CARDS[Math.floor(Math.random() * CHANCE_CARDS.length)];

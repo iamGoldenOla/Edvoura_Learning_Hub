@@ -144,56 +144,13 @@ const JENGA_TRIVIA = {
   ]
 };
 
+import { getUniqueDynamicQuestion } from '@/lib/games/dynamicQuestionEngine';
+
 /* ═══════════════════════ DYNAMIC AI QUESTION GENERATOR ENGINE ═══════════════════════ */
 function generateDynamicMathQuestion(gradeTier: 'g12' | 'g36' | 'g712') {
-  if (gradeTier === 'g12') {
-    const num1 = Math.floor(Math.random() * 10) + 1;
-    const num2 = Math.floor(Math.random() * 10) + 1;
-    const isAdd = Math.random() > 0.5;
-    const trueAns = isAdd ? num1 + num2 : num1 + num2 + 2;
-    const q = isAdd ? `What is ${num1} + ${num2}?` : `What is ${num1 + num2 + 2} - ${num2}?`;
-
-    const opts = new Set<string>();
-    opts.add(String(trueAns));
-    while (opts.size < 4) {
-      const randOffset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
-      const val = Math.max(1, trueAns + randOffset);
-      opts.add(String(val));
-    }
-    const optionsArray = Array.from(opts) as [string, string, string, string];
-    return { q, options: optionsArray, a: 0 };
-  } else if (gradeTier === 'g36') {
-    const num1 = Math.floor(Math.random() * 10) + 3;
-    const num2 = Math.floor(Math.random() * 10) + 2;
-    const trueAns = num1 * num2;
-    const q = `What is ${num1} × ${num2}?`;
-
-    const opts = new Set<string>();
-    opts.add(String(trueAns));
-    while (opts.size < 4) {
-      const randOffset = (Math.floor(Math.random() * 8) + 1) * (Math.random() > 0.5 ? 1 : -1) * 2;
-      const val = Math.max(2, trueAns + randOffset);
-      opts.add(String(val));
-    }
-    const optionsArray = Array.from(opts) as [string, string, string, string];
-    return { q, options: optionsArray, a: 0 };
-  } else {
-    const a = Math.floor(Math.random() * 6) + 2;
-    const x = Math.floor(Math.random() * 8) + 2;
-    const c = Math.floor(Math.random() * 10) + 2;
-    const rhs = a * x + c;
-    const q = `Solve for x: ${a}x + ${c} = ${rhs}`;
-
-    const opts = new Set<string>();
-    opts.add(String(x));
-    while (opts.size < 4) {
-      const randOffset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
-      const val = Math.max(1, x + randOffset);
-      opts.add(String(val));
-    }
-    const optionsArray = Array.from(opts) as [string, string, string, string];
-    return { q, options: optionsArray, a: 0 };
-  }
+  const lvl = gradeTier === 'g12' ? 2 : gradeTier === 'g36' ? 6 : 10;
+  const generated = getUniqueDynamicQuestion(lvl);
+  return { q: generated.q, options: generated.options, a: generated.a };
 }
 
 function shuffleQuestionOptions(question: { q: string; options: string[]; a: number }) {
