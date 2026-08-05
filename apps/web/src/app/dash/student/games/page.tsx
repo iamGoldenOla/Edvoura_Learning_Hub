@@ -184,6 +184,13 @@ export default function GamesPage() {
   const [gameOver, setGameOver] = useState(false);
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
   const [hoveredExternal, setHoveredExternal] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const categoriesList = ['All', 'World Knowledge', '3D Game Show', 'Strategy', 'Board Game', 'Word Game', 'Sliding Puzzle', 'Physics & Trivia', 'Traditional'];
+
+  const filteredGames = selectedCategory === 'All'
+    ? GAMES
+    : GAMES.filter(g => g.category === selectedCategory);
 
   const handleAnswer = () => {
     const currentQ = MATH_QUESTIONS[currentQuestionIdx];
@@ -213,7 +220,7 @@ export default function GamesPage() {
         background: '#fbbf24',
         border: '3px solid #000000',
         padding: '36px',
-        marginBottom: '40px',
+        marginBottom: '32px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -245,7 +252,7 @@ export default function GamesPage() {
                 Edvoura Play Zone
               </h1>
               <p style={{ color: '#000000', fontSize: '15px', margin: '4px 0 0 0', fontWeight: 600 }}>
-                Learn while you play — 8 premium custom games + partner sites!
+                Learn while you play — 10 premium 3D games + partner sites!
               </p>
             </div>
           </div>
@@ -273,6 +280,31 @@ export default function GamesPage() {
         </div>
       </section>
 
+      {/* Category Filter Pills */}
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px' }}>
+        {categoriesList.map(cat => {
+          const isActive = selectedCategory === cat;
+          return (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              style={{
+                padding: '8px 16px', borderRadius: '12px',
+                border: '2px solid #000000',
+                background: isActive ? '#0f172a' : '#ffffff',
+                color: isActive ? '#fbbf24' : '#0f172a',
+                fontSize: '12px', fontWeight: 900,
+                cursor: 'pointer', whiteSpace: 'nowrap',
+                boxShadow: isActive ? '3px 3px 0px #000000' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px', alignItems: 'start' }}>
         {/* Left Column - Games */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
@@ -282,7 +314,7 @@ export default function GamesPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '24px' }}>
               <Sparkles size={20} style={{ color: '#8b5cf6' }} />
               <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#000000', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.01em' }}>
-                Edvoura Custom Games
+                Edvoura Custom Games ({filteredGames.length})
               </h2>
             </div>
 
@@ -291,7 +323,7 @@ export default function GamesPage() {
               gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
               gap: '20px'
             }}>
-              {GAMES.map(game => {
+              {filteredGames.map(game => {
                 const isHovered = hoveredGame === game.id;
                 return (
                   <div
