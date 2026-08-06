@@ -13,6 +13,8 @@
  * - Global Current Affairs (Politics, Environment, Sports, Culture, Space)
  */
 
+import { OFFICIAL_CURRICULUM_QUESTIONS } from '../curriculum/curriculumQuestionBank';
+
 export interface GameQuestion {
   id: string;
   q: string;
@@ -243,13 +245,15 @@ export function getUniqueDynamicQuestion(
   let qObj: GameQuestion;
 
   do {
-    const domainChoice = Math.floor(Math.random() * 3);
+    const domainChoice = Math.floor(Math.random() * 4);
     if (domainChoice === 0) {
       qObj = generateMathQuestion(level);
     } else if (domainChoice === 1) {
       qObj = generateScienceQuestion(level);
-    } else {
+    } else if (domainChoice === 2) {
       qObj = generateParametricCurrentAffairsQuestion(targetBand);
+    } else {
+      qObj = generateOfficialCurriculumGameQuestion(targetBand);
     }
     attempts++;
   } while ((usedTextsOrIds.includes(qObj.id) || usedTextsOrIds.includes(qObj.q)) && attempts < 50);
@@ -379,6 +383,30 @@ export function generateScienceQuestion(level: number): GameQuestion {
     a: aIdx,
     category: `Science (${picked.cat})`,
     difficulty: level > 8 ? 'hard' : level > 4 ? 'medium' : 'easy'
+  };
+}
+
+export function generateOfficialCurriculumGameQuestion(gradeBand: '1-3' | '4-6' | '7-12' = '4-6'): GameQuestion {
+  const allowedGrades =
+    gradeBand === '1-3'
+      ? ['grade_1', 'grade_2', 'grade_3']
+      : gradeBand === '4-6'
+      ? ['grade_4', 'grade_5', 'grade_6']
+      : ['grade_7', 'grade_8', 'grade_9', 'grade_10', 'grade_11', 'grade_12'];
+
+  const filtered = OFFICIAL_CURRICULUM_QUESTIONS.filter((q) => allowedGrades.includes(q.gradeCode));
+  const pool = filtered.length > 0 ? filtered : OFFICIAL_CURRICULUM_QUESTIONS;
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+
+  return {
+    id: `curr_${picked.id}_${Date.now()}_${Math.random()}`,
+    q: picked.questionText,
+    options: picked.options,
+    a: picked.correctIndex,
+    category: `Curriculum (${picked.subjectName})`,
+    difficulty: picked.difficulty,
+    gradeBand: gradeBand,
+    hint: picked.hint,
   };
 }
 

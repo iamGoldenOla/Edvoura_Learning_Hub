@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Sparkles, Brain, ArrowRight, CheckCircle2, XCircle, Play } from 'lucide-react';
+import { BookOpen, Sparkles, Brain, ArrowRight, CheckCircle2, XCircle, Play, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { OFFICIAL_CURRICULUM_QUESTIONS, type CurriculumQuestion } from '@/lib/curriculum/curriculumQuestionBank';
 
 export type QuizQuestion = {
   questionText: string;
@@ -31,6 +32,8 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
+
+  const [selectedGradeCode, setSelectedGradeCode] = useState<string>('grade_12');
 
   function startQuiz(data: QuizPayload) {
     // Filter out any non-MCQ questions just in case to maintain the layout
@@ -100,35 +103,104 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
     );
   }
 
+  function startCurriculumQuiz(gradeCode: string) {
+    const questionsForGrade = OFFICIAL_CURRICULUM_QUESTIONS.filter(
+      (q) => q.gradeCode === gradeCode
+    );
+    const pool = questionsForGrade.length > 0 ? questionsForGrade : OFFICIAL_CURRICULUM_QUESTIONS;
+    const selected = [...pool].sort(() => Math.random() - 0.5).slice(0, 5);
+
+    const converted: QuizQuestion[] = selected.map((q) => ({
+      questionText: `[${q.subjectName}] ${q.questionText}`,
+      options: q.options,
+      correctAnswer: q.options[q.correctIndex],
+      explanation: q.explanation,
+    }));
+
+    const gradeLabel = selected[0]?.gradeName || gradeCode.replace('grade_', 'Grade ');
+
+    startQuiz({
+      title: `Official Lesson Notes Retention Test (${gradeLabel})`,
+      description: `Targeted revision quiz derived directly from your official curriculum lesson notes.`,
+      questions: converted,
+    });
+  }
+
   if (!quizData || !quizData.questions || quizData.questions.length === 0) {
     return (
-      <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {aiQuizzes.length > 0 ? (
-          aiQuizzes.map((q) => (
-            <div key={q.id} className="flex flex-col rounded-[24px] border-[4px] border-dark bg-indigo-50 p-4 shadow-[6px_6px_0px_#060E1C] transition-all hover:-translate-y-1 sm:rounded-[28px] sm:p-6 sm:shadow-[8px_8px_0px_#060E1C]">
-              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
-                <Sparkles className="h-3 w-3" /> Practice Challenge
-              </div>
-              <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-dark break-words sm:text-xl">
-                {q.title}
-              </h3>
-              <p className="mb-6 flex-1 text-sm font-bold text-dark/60">
-                {q.instructions}
-              </p>
-              <Button
-                onClick={() => startQuiz(q.data)}
-                className="w-full border-[3px] border-dark bg-white py-3 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
-              >
-                Start Practice <Play className="ml-2 h-4 w-4" />
-              </Button>
+      <div className="space-y-8">
+        {/* Official Curriculum Notes Retention Card */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 rounded-[28px] border-[4px] border-dark bg-yellow/20 p-6 sm:p-8 shadow-[10px_10px_0px_#060E1C]">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+              <BookOpen className="h-3.5 w-3.5" /> Official Curriculum Retention Quiz
             </div>
-          ))
-        ) : (
-          <div className="col-span-full flex flex-col items-center rounded-[24px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-8 text-center sm:rounded-[28px] sm:p-12">
-            <Brain className="mb-4 h-10 w-10 text-dark/30" />
-            <p className="text-sm font-bold italic text-dark/60">No Study Hub challenges published yet by your tutors.</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
+              Official Lesson Notes Test & Revision
+            </h2>
+            <p className="text-sm font-bold text-dark/70">
+              Generate 5-question retention tests extracted directly from your 204 official purchased lesson notes (Primary 1 to SS 3 / Grade 1 to 12).
+            </p>
           </div>
-        )}
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+            <select
+              value={selectedGradeCode}
+              onChange={(e) => setSelectedGradeCode(e.target.value)}
+              className="px-4 py-3 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none cursor-pointer"
+            >
+              <option value="grade_1">Primary 1 (Grade 1)</option>
+              <option value="grade_2">Primary 2 (Grade 2)</option>
+              <option value="grade_3">Primary 3 (Grade 3)</option>
+              <option value="grade_4">Primary 4 (Grade 4)</option>
+              <option value="grade_5">Primary 5 (Grade 5)</option>
+              <option value="grade_6">Primary 6 (Grade 6)</option>
+              <option value="grade_7">JSS 1 (Grade 7)</option>
+              <option value="grade_8">JSS 2 (Grade 8)</option>
+              <option value="grade_9">JSS 3 (Grade 9)</option>
+              <option value="grade_10">SS 1 (Grade 10)</option>
+              <option value="grade_11">SS 2 (Grade 11)</option>
+              <option value="grade_12">SS 3 (Grade 12)</option>
+            </select>
+
+            <Button
+              onClick={() => startCurriculumQuiz(selectedGradeCode)}
+              className="border-[3px] border-dark bg-yellow hover:bg-yellow-light text-dark font-black px-6 py-3 text-sm rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none h-auto"
+            >
+              Take Retention Test <Play className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Existing AI & Tutor Quizzes */}
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {aiQuizzes.length > 0 ? (
+            aiQuizzes.map((q) => (
+              <div key={q.id} className="flex flex-col rounded-[24px] border-[4px] border-dark bg-indigo-50 p-4 shadow-[6px_6px_0px_#060E1C] transition-all hover:-translate-y-1 sm:rounded-[28px] sm:p-6 sm:shadow-[8px_8px_0px_#060E1C]">
+                <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+                  <Sparkles className="h-3 w-3" /> Practice Challenge
+                </div>
+                <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-dark break-words sm:text-xl">
+                  {q.title}
+                </h3>
+                <p className="mb-6 flex-1 text-sm font-bold text-dark/60">
+                  {q.instructions}
+                </p>
+                <Button
+                  onClick={() => startQuiz(q.data)}
+                  className="w-full border-[3px] border-dark bg-white py-3 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                >
+                  Start Practice <Play className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full flex flex-col items-center rounded-[24px] border-[4px] border-dashed border-dark/20 bg-slate-50 p-8 text-center sm:rounded-[28px] sm:p-12">
+              <Brain className="mb-4 h-10 w-10 text-dark/30" />
+              <p className="text-sm font-bold italic text-dark/60">No additional study hub challenges published yet by your tutors.</p>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
