@@ -6,7 +6,47 @@ import { Award, PhoneCall, Users, RefreshCw, Check, BookOpen, Share2, DollarSign
 
 const ACCENT_COLOR = '#8b5cf6'; // Electric Purple Studio Accent
 
-/* ═══════════════════════ SINGLETON TV STUDIO AUDIO SYNTHESIZER ═══════════════════════ */
+/* ═══════════════════════ AUTHENTIC TV STUDIO MP3 AUDIO ENGINE ═══════════════════════ */
+const MILLIONAIRE_AUDIO_PATHS = {
+  opening: '/sounds/millionaire/who_wants_to_be_a_millionaire_opening_sound.mp3',
+  lets_play: '/sounds/millionaire/who_wants_to_be_millionaire_lets_play.mp3',
+  light_to_center: '/sounds/millionaire/who_wants_to_be_a_millionaire_light_to_center.mp3',
+  fastest_finger: '/sounds/millionaire/who_wants_to_be_a_millionaire_fastest_finger.mp3',
+  win: '/sounds/millionaire/who_wants_to_be_a_millionaire_win_sound.mp3',
+  lose: '/sounds/millionaire/who_wants_to_be_a_millionaire_lose_sound.mp3',
+};
+
+const mp3AudioCache: Record<string, HTMLAudioElement> = {};
+
+function playMillionaireMP3(soundType: keyof typeof MILLIONAIRE_AUDIO_PATHS, isMuted: boolean = false) {
+  if (isMuted || typeof window === 'undefined') return;
+  try {
+    const src = MILLIONAIRE_AUDIO_PATHS[soundType];
+    if (!src) return;
+
+    // Stop all currently playing audio tracks so sounds don't overlap awkwardly
+    Object.values(mp3AudioCache).forEach(audio => {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch (e) {}
+    });
+
+    if (!mp3AudioCache[soundType]) {
+      mp3AudioCache[soundType] = new Audio(src);
+    }
+
+    const audio = mp3AudioCache[soundType];
+    audio.currentTime = 0;
+    audio.play().catch(() => {
+      // Fallback to web AudioContext synthesizer if browser blocks autoplay
+      playMillionaireSFX(soundType === 'win' ? 'win' : soundType === 'lose' ? 'lose' : soundType === 'light_to_center' ? 'lights_down' : 'stinger');
+    });
+  } catch (e) {
+    playMillionaireSFX('stinger');
+  }
+}
+
 let audioCtxInstance: AudioContext | null = null;
 
 function getAudioContext(): AudioContext | null {
@@ -25,8 +65,8 @@ function getAudioContext(): AudioContext | null {
   }
 }
 
-function speakVoice(text: string) {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+function speakVoice(text: string, isMuted: boolean = false) {
+  if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -43,7 +83,6 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinge
 
   try {
     if (type === 'lights_down') {
-      // Deep dramatic studio blackout bass drop
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sawtooth';
@@ -54,7 +93,6 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinge
       osc.connect(gain); gain.connect(ctx.destination);
       osc.start(); osc.stop(ctx.currentTime + 0.7);
     } else if (type === 'suspense_pad') {
-      // Mysterious studio ambient pad
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
@@ -309,6 +347,12 @@ export default function MillionaireGame() {
   const [rotationAngle, setRotationAngle] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(isMuted);
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
   const activeLadder = CURRENCY_MAP[selectedCurrency].ladder;
 
   // Load question for current level (STABLE & NON-REPEATING)
@@ -333,8 +377,9 @@ export default function MillionaireGame() {
     setTimeLeft(30);
     setIsTimerActive(true);
 
+    playMillionaireMP3('lets_play', isMutedRef.current);
     const prizeStr = ladder[lvl - 1];
-    speakVoice(`Question for ${prizeStr}. ${q.q}`);
+    speakVoice(`Question for ${prizeStr}. ${q.q}`, isMutedRef.current);
   }, []);
 
   // Initialize Game
@@ -353,8 +398,8 @@ export default function MillionaireGame() {
       switchQuestion: true,
     });
     setActiveModal(null);
+    playMillionaireMP3('opening', isMutedRef.current);
     loadQuestionForLevel(1, selectedCurrency);
-    playMillionaireSFX('lock');
   }, [loadQuestionForLevel, selectedCurrency]);
 
   useEffect(() => {
@@ -368,9 +413,9 @@ export default function MillionaireGame() {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          playMillionaireSFX('lose');
+          playMillionaireMP3('lose', isMutedRef.current);
           setIsGameOver(true);
-          speakVoice("Time's up! You ran out of time.");
+          speakVoice("Time's up! You ran out of time.", isMutedRef.current);
           return 0;
         }
         if (prev <= 6) playMillionaireSFX('tick');
@@ -393,9 +438,8 @@ export default function MillionaireGame() {
     setIsLocked(true);
     setIsTimerActive(false);
     setIsLightsDimmed(true); // Studio Lights Blackout / Suspense Mode!
-    playMillionaireSFX('lights_down');
-    playMillionaireSFX('suspense_pad');
-    speakVoice("Final Answer locked in. Let's see if you are correct...");
+    playMillionaireMP3('light_to_center', isMutedRef.current);
+    speakVoice("Final Answer locked in. Let's see if you are correct...", isMutedRef.current);
 
     setTimeout(() => {
       setIsLightsDimmed(false);
@@ -403,23 +447,23 @@ export default function MillionaireGame() {
       const isCorrect = selectedOption === activeQ.a;
 
       if (isCorrect) {
-        playMillionaireSFX('win');
+        playMillionaireMP3('win', isMutedRef.current);
         const currentPrize = activeLadder[currentLevel - 1];
         setScorePrize(currentPrize);
 
         if (currentLevel === 15) {
           setIsMillionaire(true);
           setIsGameOver(true);
-          speakVoice(`CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ${currentPrize}!`);
+          speakVoice(`CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ${currentPrize}!`, isMutedRef.current);
         } else {
-          speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`);
+          speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`, isMutedRef.current);
           setTimeout(() => {
             setCurrentLevel(l => l + 1);
             loadQuestionForLevel(currentLevel + 1, selectedCurrency);
-          }, 2200);
+          }, 2600);
         }
       } else {
-        playMillionaireSFX('lose');
+        playMillionaireMP3('lose', isMutedRef.current);
         
         // Calculate safe haven payout
         let safePayout = '0';
@@ -428,9 +472,9 @@ export default function MillionaireGame() {
 
         setScorePrize(safePayout);
         setIsGameOver(true);
-        speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`);
+        speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`, isMutedRef.current);
       }
-    }, 2200);
+    }, 2400);
   };
 
   // Walk Away / Cash Out Feature
@@ -442,13 +486,13 @@ export default function MillionaireGame() {
     setScorePrize(cashOutPrize);
     setIsWalkedAway(true);
     setIsGameOver(true);
-    speakVoice(`Smart choice! You decided to cash out and walk away with ${cashOutPrize}!`);
+    speakVoice(`Smart choice! You decided to cash out and walk away with ${cashOutPrize}!`, isMutedRef.current);
   };
 
   /* ═══════════════════════ LIFELINE IMPLEMENTATIONS ═══════════════════════ */
   const useFiftyFifty = () => {
     if (!lifelines.fiftyFifty || !activeQ || isLocked) return;
-    playMillionaireSFX('lifeline');
+    playMillionaireMP3('fastest_finger', isMutedRef.current);
     
     // Find 2 wrong options to disable
     const wrongIndices = [0, 1, 2, 3].filter(i => i !== activeQ.a);
@@ -457,12 +501,12 @@ export default function MillionaireGame() {
 
     setDisabledOptions(toDisable);
     setLifelines(prev => ({ ...prev, fiftyFifty: false }));
-    speakVoice("50:50 Lifeline activated! Computer has eliminated two wrong answers.");
+    speakVoice("50:50 Lifeline activated! Computer has eliminated two wrong answers.", isMutedRef.current);
   };
 
   const usePhoneAFriend = () => {
     if (!lifelines.phoneAFriend || !activeQ || isLocked) return;
-    playMillionaireSFX('lifeline');
+    playMillionaireMP3('fastest_finger', isMutedRef.current);
 
     // Simulate AI Mentor response with 85% accuracy
     const isMentorSmart = Math.random() < 0.85;
@@ -473,12 +517,12 @@ export default function MillionaireGame() {
     setFriendAdvice(`"Hello Scholar! I am ${confidence}% confident that the correct answer is Option ${String.fromCharCode(65 + recommendedIdx)}: ${optionText}."`);
     setActiveModal('friend');
     setLifelines(prev => ({ ...prev, phoneAFriend: false }));
-    speakVoice(`Calling your mentor... Mentor suggests Option ${String.fromCharCode(65 + recommendedIdx)}`);
+    speakVoice(`Calling your mentor... Mentor suggests Option ${String.fromCharCode(65 + recommendedIdx)}`, isMutedRef.current);
   };
 
   const useAskAudience = () => {
     if (!lifelines.askAudience || !activeQ || isLocked) return;
-    playMillionaireSFX('lifeline');
+    playMillionaireMP3('fastest_finger', isMutedRef.current);
 
     // Generate audience voting percentages heavily weighted to correct answer
     const poll = [0, 0, 0, 0];
@@ -499,23 +543,31 @@ export default function MillionaireGame() {
     setAudiencePoll(poll);
     setActiveModal('audience');
     setLifelines(prev => ({ ...prev, askAudience: false }));
-    speakVoice("Audience poll complete! Check the studio voting breakdown.");
+    speakVoice("Audience poll complete! Check the studio voting breakdown.", isMutedRef.current);
   };
 
   const useSwitchQuestion = () => {
     if (!lifelines.switchQuestion || !activeQ || isLocked) return;
-    playMillionaireSFX('lifeline');
+    playMillionaireMP3('fastest_finger', isMutedRef.current);
 
     setLifelines(prev => ({ ...prev, switchQuestion: false }));
     loadQuestionForLevel(currentLevel, selectedCurrency);
-    speakVoice("Switch Question Lifeline used! Fresh question loaded.");
+    speakVoice("Switch Question Lifeline used! Fresh question loaded.", isMutedRef.current);
   };
 
   const copyInviteLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopiedLink(true);
-    playMillionaireSFX('lifeline');
+    playMillionaireMP3('fastest_finger', isMutedRef.current);
     setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const toggleSound = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (!nextMuted) {
+      playMillionaireMP3('opening', false);
+    }
   };
 
   return (
@@ -535,9 +587,9 @@ export default function MillionaireGame() {
           flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>
-          {/* Currency Switcher */}
-          <div style={{ background: '#111827', border: '2.5px solid #000', borderRadius: '12px', padding: '8px 10px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 950, color: '#fbbf24', textTransform: 'uppercase', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {/* Currency Switcher & Audio Toggle */}
+          <div style={{ background: '#111827', border: '2.5px solid #000', borderRadius: '12px', padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 950, color: '#fbbf24', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <DollarSign size={12} /> Global Currency
             </div>
             <select
@@ -554,6 +606,19 @@ export default function MillionaireGame() {
                 </option>
               ))}
             </select>
+
+            <button
+              onClick={toggleSound}
+              style={{
+                padding: '6px', borderRadius: '6px', border: '1.5px solid #000',
+                background: isMuted ? '#ef4444' : '#22c55e', color: '#ffffff',
+                fontSize: '10px', fontWeight: 950, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+              }}
+            >
+              {isMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+              {isMuted ? 'Studio Sound Muted' : 'TV Studio Audio On'}
+            </button>
           </div>
 
           {/* Lifelines Box */}
