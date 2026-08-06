@@ -27,16 +27,35 @@ function getAudioContext(): AudioContext | null {
   return globalAudioCtx;
 }
 
-function speakVoice(text: string, isMuted: boolean) {
-  if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+function speakVoice(text: string, isMuted: boolean, onComplete?: () => void) {
+  if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    if (onComplete) onComplete();
+    return;
+  }
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
+
+    let hasCalledOnComplete = false;
+    const triggerComplete = () => {
+      if (!hasCalledOnComplete) {
+        hasCalledOnComplete = true;
+        if (onComplete) onComplete();
+      }
+    };
+
+    if (onComplete) {
+      utterance.onend = triggerComplete;
+      utterance.onerror = triggerComplete;
+    }
+
     window.speechSynthesis.speak(utterance);
-  } catch (e) {}
+  } catch (e) {
+    if (onComplete) onComplete();
+  }
 }
 
 function playStudioSFX(type: 'correct' | 'error' | 'click' | 'win' | 'lifeline' | 'tick' | 'start' | 'timeout', isMuted: boolean) {
@@ -225,6 +244,14 @@ export default function CurrentAffairsGame() {
     setIsAnswered(true);
     setTimerActive(false);
 
+    const advanceToNextQuestion = () => {
+      if (autoAdvanceTimerRef.current) clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = setTimeout(() => {
+        setQuestionCount(c => c + 1);
+        loadNewQuestion();
+      }, 800); // 800ms brief pause after voice finishes
+    };
+
     const isCorrect = idx === currentQuestion.a;
     if (isCorrect) {
       playStudioSFX('correct', isMutedRef.current);
@@ -232,17 +259,18 @@ export default function CurrentAffairsGame() {
       const addedPoints = 20 + bonus;
       setScore(s => s + addedPoints);
       setStreak(s => s + 1);
-      speakVoice(`Correct! Plus ${addedPoints} points.`, isMutedRef.current);
+      speakVoice(`Correct! Plus ${addedPoints} points.`, isMutedRef.current, advanceToNextQuestion);
     } else {
       playStudioSFX('error', isMutedRef.current);
       setStreak(0);
-      speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`, isMutedRef.current);
+      speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`, isMutedRef.current, advanceToNextQuestion);
     }
 
+    // Safety fallback auto-advance timer in case speech synthesis is quiet or disabled
     autoAdvanceTimerRef.current = setTimeout(() => {
       setQuestionCount(c => c + 1);
       loadNewQuestion();
-    }, 1800);
+    }, 4500);
   };
 
   const handleFiftyFifty = () => {
