@@ -140,6 +140,113 @@ export const PRIMARY_1_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
   },
 ];
 
+export const PRIMARY_2_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'p2_basic_science',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Basic Science',
+    title: 'Primary 2 Basic Science Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 2 BASIC SCIENCE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 BASIC SCIENCE LESSON NOTES.pdf',
+    description: 'Detailed lesson notes covering energy, soil, water, plants, human body systems, and simple machines.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_mathematics',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Mathematics',
+    title: 'Primary 2 Mathematics Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 2 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 MATHEMATICS LESSON NOTES.pdf',
+    description: 'Lesson guides covering numbers up to 500, place value, fraction concepts, 2D/3D shapes, and word problems.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_english',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'English Language',
+    title: 'Primary 2 English Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 2 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    description: 'Advanced phonics, sentence building, nouns, verbs, adjectives, spelling rules, and guided reading.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_history',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Nigerian History',
+    title: 'Primary 2 Nigerian History Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 2 NIGERIAN HISTORY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 NIGERIAN HISTORY LESSON NOTES.pdf',
+    description: 'Traditional kingdoms, ancient leaders, state capitals, national monuments, and cultural traditions.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_arts',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'Primary 2 Cultural & Creative Arts Lesson Notes',
+    fileName: 'PRIMARY 2 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    description: 'Craft making, traditional drama, rhythm, melody, folk songs, and Nigerian artistic heritage.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_social',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'Primary 2 Social & Citizenship Studies Lesson Notes',
+    fileName: 'PRIMARY 2 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'Civic rights, environmental sanitation, road safety, community leadership, and social values.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_phe',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Physical & Health Education',
+    title: 'Primary 2 Physical & Health Education Lesson Notes',
+    fileName: 'PRIMARY 2 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    description: 'Track and field basics, body posture, balanced diet, water sanitation, and first aid for children.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_crs',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Christian Religious Studies',
+    title: 'Primary 2 Christian Religious Studies Lesson Notes',
+    fileName: 'PRIMARY 2 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'Stories of obedience, prayer habits, faith, helping others, and moral living for Grade 2.',
+    isPublished: true,
+  },
+  {
+    id: 'p2_irs',
+    gradeCode: 'grade_2',
+    gradeName: 'Primary 2 (Grade 2)',
+    subjectName: 'Islamic Studies',
+    title: 'Primary 2 Islamic Studies Lesson Notes',
+    fileName: 'PRIMARY 2 ISLAMIC STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_2/PRIMARY 2 ISLAMIC STUDIES LESSON NOTES.pdf',
+    description: 'Sirah of Prophet Muhammad (PBUH), daily Adhkar, Hadith, and Islamic moral etiquette for Grade 2.',
+    isPublished: true,
+  },
+];
+
+export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote[]> = {
+  grade_1: PRIMARY_1_OFFICIAL_NOTES,
+  grade_2: PRIMARY_2_OFFICIAL_NOTES,
+};
+
 const basePlans: LessonPlan[] = [
   {
     id: 'ln-1',
@@ -324,9 +431,10 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_1');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_2');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
-    'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs'
+    'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
+    'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
   ]);
 
   // Load published official notes from localStorage
@@ -479,26 +587,28 @@ export default function TutorLessonNotesPage() {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow border-[2px] border-dark rounded-lg text-[10px] font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C] mb-2">
                   📚 Official Purchased Curriculum
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">Primary 1 (Grade 1) Master Lesson Notes</h2>
+                <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
+                  {selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
+                </h2>
                 <p className="text-xs sm:text-sm font-bold text-dark/70">
-                  Published notes are automatically available to Grade 1 students on their dashboard & class library.
+                  Published notes are automatically available to students on their dashboard & class library.
                 </p>
               </div>
 
               <select
                 value={selectedGradeFilter}
                 onChange={(e) => setSelectedGradeFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none"
+                className="px-4 py-2.5 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none cursor-pointer"
               >
                 <option value="grade_1">Primary 1 (Grade 1) - 9 Subjects</option>
-                <option value="grade_2" disabled>Primary 2 (Grade 2) - Pending</option>
+                <option value="grade_2">Primary 2 (Grade 2) - 9 Subjects</option>
                 <option value="grade_7" disabled>JSS 1 (Grade 7) - Pending</option>
                 <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
               </select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {PRIMARY_1_OFFICIAL_NOTES.map((note) => {
+              {(OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES).map((note) => {
                 const isPub = publishedOfficialNoteIds.includes(note.id);
                 return (
                   <div
@@ -537,7 +647,7 @@ export default function TutorLessonNotesPage() {
                             : 'bg-white text-dark hover:bg-slate-100'
                         }`}
                       >
-                        {isPub ? '✅ Published to Grade 1' : '🚀 Publish to Grade 1'}
+                        {isPub ? `✅ Published to ${note.gradeName.split(' ')[0]}` : `🚀 Publish to ${note.gradeName.split(' ')[0]}`}
                       </button>
                     </div>
                   </div>
