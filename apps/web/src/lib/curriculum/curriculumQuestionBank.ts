@@ -1082,6 +1082,159 @@ export const OFFICIAL_CURRICULUM_QUESTIONS: CurriculumQuestion[] = [
     questionText: 'Which frontier AI model family is OpenAI best known for creating?', options: ['Gemini', 'ChatGPT (GPT-4)', 'Claude', 'Llama'], correctIndex: 1,
     explanation: 'OpenAI created ChatGPT powered by GPT-4 and GPT-4o.', hint: 'ChatGPT.', difficulty: 'easy'
   },
+  /* ═══════════════════════ NIGERIA HISTORY, CIVICS & GOVERNMENT (GRADES 7 TO 12) ═══════════════════════ */
+  // Grade 7 (JSS 1) - Nigerian History & Civics
+  {
+    id: 'ng_hist_1', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Nigerian History',
+    questionText: 'Who was the first woman to drive a motor car in Nigeria?', options: ['Flora Nwapa', 'Mrs. Funmilayo Ransome-Kuti', 'Margaret Ekpo', 'Rosemary Ukeje'], correctIndex: 1,
+    explanation: 'Mrs. Funmilayo Ransome-Kuti was the first Nigerian woman to drive a car.', hint: 'Mother of Fela Kuti.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_hist_2', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Nigerian History',
+    questionText: 'Who was the first female commercial pilot in Nigeria?', options: ['Captain Chinyere Kalu', 'Dr. Grace Alele-Williams', 'Flora Nwapa', 'Rosemary Ukeje'], correctIndex: 0,
+    explanation: 'Captain Chinyere Kalu (Onyenucheya) was Nigeria’s first female commercial pilot.', hint: 'Chinyere Kalu.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_hist_3', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Nigerian History',
+    questionText: 'Which traditional ruler of the Benin Kingdom was the first Nigerian monarch to speak Portuguese in the 16th century?', options: ['Oba Ewuare I', 'Oba Esigie', 'Oba Ovonramwen', 'Ogiso Ere'], correctIndex: 1,
+    explanation: 'Oba Esigie of Benin learned and spoke Portuguese fluently to communicate with European traders.', hint: 'Oba Esigie.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_hist_4', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Nigerian History',
+    questionText: 'Who formed the first political party in Nigeria (the NNDP) in 1923?', options: ['Nnamdi Azikiwe', 'Herbert Macaulay', 'Obafemi Awolowo', 'Ahmadu Bello'], correctIndex: 1,
+    explanation: 'Herbert Macaulay founded the Nigerian National Democratic Party (NNDP) in 1923.', hint: 'Founder of Nigerian nationalism.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_civ_1', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Citizenship & Heritage',
+    questionText: 'What does the Eagle on the Nigerian Coat of Arms symbolize?', options: ['Dignity', 'Strength', 'Peace', 'Fertile Soil'], correctIndex: 1,
+    explanation: 'The Eagle represents national strength and pride.', hint: 'Strength.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_civ_2', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Citizenship & Heritage',
+    questionText: 'What do the two white horses on the Nigerian Coat of Arms represent?', options: ['Strength', 'Dignity', 'Peace', 'Freedom'], correctIndex: 1,
+    explanation: 'The two white horses represent national dignity.', hint: 'Dignity.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_civ_3', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Citizenship & Heritage',
+    questionText: 'What does the black shield on the Nigerian Coat of Arms represent?', options: ['Nigeria’s fertile soil', 'Strength', 'Dignity', 'Forest wealth'], correctIndex: 0,
+    explanation: 'The black shield symbolizes Nigeria’s fertile agricultural land.', hint: 'Fertile soil.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_civ_4', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Citizenship & Heritage',
+    questionText: 'Who designed the national flag of Nigeria in 1959?', options: ['Herbert Macaulay', 'Michael Taiwo Akinkunmi', 'Flora Shaw', 'Nnamdi Azikiwe'], correctIndex: 1,
+    explanation: 'Michael Taiwo Akinkunmi designed the green-white-green flag while studying in London.', hint: 'Taiwo Akinkunmi.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_civ_5', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Citizenship & Heritage',
+    questionText: 'Who gave Nigeria her name in 1897?', options: ['Queen Victoria', 'Flora Shaw (Lady Lugard)', 'Lord Frederick Lugard', 'Queen Elizabeth II'], correctIndex: 1,
+    explanation: 'Flora Shaw coined the name "Nigeria" in a Times article in 1897.', hint: 'Flora Shaw.', difficulty: 'easy'
+  },
+
+  // Grade 8 (JSS 2) - Nigerian History & Government
+  {
+    id: 'ng_gov_1', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Government',
+    questionText: 'Whose portrait is featured on the ₦500 Nigerian Naira note?', options: ['Sir Tafawa Balewa', 'Dr. Nnamdi Azikiwe', 'Obafemi Awolowo', 'Murtala Muhammed'], correctIndex: 1,
+    explanation: 'Dr. Nnamdi Azikiwe is depicted on the ₦500 note.', hint: 'Zik of Africa.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_2', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Government',
+    questionText: 'Whose portrait is featured on the ₦100 Nigerian Naira note?', options: ['Sir Ahmadu Bello', 'Chief Obafemi Awolowo', 'Alvan Ikoku', 'Herbert Macaulay'], correctIndex: 1,
+    explanation: 'Chief Obafemi Awolowo is featured on the ₦100 note.', hint: 'Premier of Western Region.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_3', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Government',
+    questionText: 'Whose portrait is depicted on the ₦200 Nigerian Naira note?', options: ['Sir Ahmadu Bello', 'Nnamdi Azikiwe', 'Tafawa Balewa', 'Clement Isong'], correctIndex: 0,
+    explanation: 'Sir Ahmadu Bello (Sardauna of Sokoto) is depicted on the ₦200 note.', hint: 'Sardauna of Sokoto.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_4', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Government',
+    questionText: 'Whose portrait is depicted on the ₦20 Nigerian Naira note?', options: ['General Murtala Muhammed', 'Alvan Ikoku', 'Tafawa Balewa', 'Obafemi Awolowo'], correctIndex: 0,
+    explanation: 'General Murtala Muhammed is featured on the ₦20 polymer note.', hint: 'Murtala Muhammed.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_5', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Government',
+    questionText: 'Which two pioneer Governors of the Central Bank of Nigeria are pictured on the ₦1000 note?', options: ['Emefiele & Sanusi', 'Alhaji Aliu Mai-Bornu & Dr. Clement Isong', 'Soludo & Lemo', 'Buhari & Babangida'], correctIndex: 1,
+    explanation: 'Alhaji Aliu Mai-Bornu and Dr. Clement Isong are featured on the ₦1000 note.', hint: 'First CBN Governors.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_hist_5', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Nigerian History',
+    questionText: 'When were the Northern and Southern Protectorates of Nigeria amalgamated into a single nation?', options: ['October 1, 1960', 'January 1, 1914', 'May 29, 1999', 'October 1, 1963'], correctIndex: 1,
+    explanation: 'Lord Lugard signed the amalgamation document on January 1, 1914.', hint: 'January 1, 1914.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_hist_6', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Nigerian History',
+    questionText: 'Who was the first and only Prime Minister of independent Nigeria?', options: ['Nnamdi Azikiwe', 'Sir Abubakar Tafawa Balewa', 'Ahmadu Bello', 'Obafemi Awolowo'], correctIndex: 1,
+    explanation: 'Sir Abubakar Tafawa Balewa was Prime Minister from 1960 to 1966.', hint: 'Tafawa Balewa.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_hist_7', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Nigerian History',
+    questionText: 'Where was crude oil first discovered in commercial quantities in Nigeria in 1956?', options: ['Warri, Delta State', 'Oloibiri, Bayelsa State', 'Port Harcourt, Rivers State', 'Calabar, Cross River'], correctIndex: 1,
+    explanation: 'Shell D’Arcy discovered oil at Oloibiri Oilfield in 1956.', hint: 'Oloibiri, Bayelsa.', difficulty: 'easy'
+  },
+
+  // Grade 9 (JSS 3) - Government & Civics
+  {
+    id: 'ng_gov_6', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Government',
+    questionText: 'In a parliamentary system of government, which official enforces party voting discipline in parliament?', options: ['Speaker of the House', 'Party Chief Whip', 'Clerk of the House', 'Prime Minister'], correctIndex: 1,
+    explanation: 'The Chief Whip ensures party members attend and vote according to party policy.', hint: 'Party Whip.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_gov_7', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Government',
+    questionText: 'A political and social system in which power and wealth are derived from control over land is called:', options: ['Oligarchy', 'Feudalism', 'Socialism', 'Welfarism'], correctIndex: 1,
+    explanation: 'Feudalism bases political power on land ownership.', hint: 'Feudalism.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_gov_8', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Government',
+    questionText: 'Which Nigerian Constitution first recognized Local Government as an autonomous third tier of government?', options: ['1946 Richards Constitution', '1979 Constitution', '1960 Independence Constitution', '1963 Republican Constitution'], correctIndex: 1,
+    explanation: 'The 1979 Constitution incorporated the 1976 LG Reforms recognizing LGAs as the 3rd tier.', hint: '1979 Constitution.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_gov_9', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Government',
+    questionText: 'Which ancient Greek city-state is recognized as the birthplace of direct Democracy?', options: ['Rome', 'Athens', 'Sparta', 'Alexandria'], correctIndex: 1,
+    explanation: 'Ancient Athens established direct democracy around 508 BC.', hint: 'Ancient Athens.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_10', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Government',
+    questionText: 'In Marxist political economic theory, working-class citizens who sell their labor for wages are termed:', options: ['Bourgeoisie', 'Proletariat', 'Feudal lords', 'Aristocrats'], correctIndex: 1,
+    explanation: 'Karl Marx defined the wage-earning working class as the Proletariat.', hint: 'Proletariat.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_hist_8', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Nigerian History',
+    questionText: 'What was the first capital city of Nigeria before Lagos and Abuja?', options: ['Enugu', 'Calabar', 'Ibadan', 'Kaduna'], correctIndex: 1,
+    explanation: 'Calabar served as the first capital of the Oil Rivers Protectorate and Southern Nigeria.', hint: 'Calabar.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_hist_9', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Nigerian History',
+    questionText: 'Who was the first indigenous Governor-General and first Ceremonial President of Nigeria?', options: ['Obafemi Awolowo', 'Dr. Nnamdi Azikiwe', 'Ahmadu Bello', 'Shehu Shagari'], correctIndex: 1,
+    explanation: 'Dr. Nnamdi Azikiwe served as Governor-General (1960-1963) and President (1963-1966).', hint: 'Zik of Africa.', difficulty: 'easy'
+  },
+
+  // Grade 10 (SS 1) - Government & Politics
+  {
+    id: 'ng_gov_11', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Government',
+    questionText: 'Who was the first Executive President of Nigeria elected during the Second Republic (1979)?', options: ['Nnamdi Azikiwe', 'Alhaji Shehu Shagari', 'General Olusegun Obasanjo', 'Murtala Muhammed'], correctIndex: 1,
+    explanation: 'Shehu Shagari was elected as Nigeria’s first executive president in 1979.', hint: 'Shehu Shagari.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_12', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Government',
+    questionText: 'Who served as Chief Justice of Nigeria (appointed August 2024)?', options: ['Justice Olukayode Ariwoola', 'Justice Kudirat Kekere-Ekun', 'Justice Mary Odili', 'Justice Walter Onnoghen'], correctIndex: 1,
+    explanation: 'Justice Kudirat Kekere-Ekun was appointed CJN in August 2024.', hint: 'Justice Kekere-Ekun.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_gov_13', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Government',
+    questionText: 'When was the Nigerian Naira officially introduced to replace the West African Pound?', options: ['October 1, 1960', 'January 1, 1973', 'May 29, 1999', 'October 1, 1979'], correctIndex: 1,
+    explanation: 'The Naira and Kobo decimal currency system was launched on January 1, 1973.', hint: 'January 1, 1973.', difficulty: 'medium'
+  },
+  {
+    id: 'ng_gov_14', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Government',
+    questionText: 'Which Nigerian state has the largest number of Local Government Areas (44 LGAs)?', options: ['Lagos State', 'Kano State', 'Oyo State', 'Kaduna State'], correctIndex: 1,
+    explanation: 'Kano State has 44 LGAs, the highest in Nigeria.', hint: 'Kano State.', difficulty: 'easy'
+  },
+  {
+    id: 'ng_gov_15', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Government',
+    questionText: 'Who was the first female Vice-Chancellor of a Nigerian university (University of Benin, 1985)?', options: ['Prof. Grace Alele-Williams', 'Dr. Bertha Johnson', 'Flora Nwapa', 'Mrs. Rose Ukeje'], correctIndex: 0,
+    explanation: 'Prof. Grace Alele-Williams was appointed VC of UNIBEN in 1985.', hint: 'Grace Alele-Williams.', difficulty: 'medium'
+  },
 ];
 
 export function getCurriculumQuestionsByGrade(gradeCode: string): CurriculumQuestion[] {
