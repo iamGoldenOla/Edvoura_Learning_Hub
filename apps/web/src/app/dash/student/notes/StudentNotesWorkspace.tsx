@@ -406,7 +406,7 @@ export default function StudentNotesWorkspace({
                   <span className="inline-block px-2.5 py-1 bg-indigo-100 border-[2px] border-dark rounded-md text-[10px] font-black uppercase text-indigo-900 shadow-[2px_2px_0px_#060E1C] mb-3">
                     {note.subjectName}
                   </span>
-                  <h3 className="text-sm sm:text-base font-black text-dark mb-2 leading-snug tracking-tight break-words">{note.title}</h3>
+                  <h3 className="text-sm sm:text-base font-extrabold text-dark mb-2 leading-[1.4] tracking-tight break-words" style={{ lineHeight: '1.4' }}>{note.title}</h3>
                   <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-3">{note.description}</p>
                 </div>
 

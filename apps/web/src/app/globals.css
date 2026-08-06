@@ -63,6 +63,7 @@ body[data-mobile-menu='open'] {
 /* Headings use Syne */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading, 'Syne', sans-serif);
+  line-height: 1.35;
 }
 
 /* Custom scrollbar */

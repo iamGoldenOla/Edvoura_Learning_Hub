@@ -2752,7 +2752,7 @@ export default function TutorLessonNotesPage() {
                           {isPub ? 'Live for Students' : 'Draft / Locked'}
                         </span>
                       </div>
-                      <h3 className="text-sm sm:text-base font-black text-dark mb-2 leading-snug tracking-tight break-words">{note.title}</h3>
+                      <h3 className="text-sm sm:text-base font-extrabold text-dark mb-2 leading-[1.4] tracking-tight break-words" style={{ lineHeight: '1.4' }}>{note.title}</h3>
                       <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-3">{note.description}</p>
                     </div>
 
