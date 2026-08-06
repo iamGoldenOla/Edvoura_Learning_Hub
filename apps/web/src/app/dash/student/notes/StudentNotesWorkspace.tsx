@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Sparkles, BookOpen, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
-import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, PRIMARY_4_OFFICIAL_NOTES, PRIMARY_5_OFFICIAL_NOTES, PRIMARY_6_OFFICIAL_NOTES, JSS_1_OFFICIAL_NOTES, JSS_2_OFFICIAL_NOTES, JSS_3_OFFICIAL_NOTES, SS_1_OFFICIAL_NOTES, SS_2_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
+import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, PRIMARY_4_OFFICIAL_NOTES, PRIMARY_5_OFFICIAL_NOTES, PRIMARY_6_OFFICIAL_NOTES, JSS_1_OFFICIAL_NOTES, JSS_2_OFFICIAL_NOTES, JSS_3_OFFICIAL_NOTES, SS_1_OFFICIAL_NOTES, SS_2_OFFICIAL_NOTES, SS_3_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
 
 type ResourceCard = {
   id: string;
@@ -355,6 +355,7 @@ export default function StudentNotesWorkspace({
     'jss3_math', 'jss3_english', 'jss3_science', 'jss3_business', 'jss3_digital_tech', 'jss3_hardware_repair', 'jss3_solar', 'jss3_french', 'jss3_history', 'jss3_arts', 'jss3_social', 'jss3_phe', 'jss3_crs', 'jss3_irs', 'jss3_beauty', 'jss3_fashion', 'jss3_horticulture', 'jss3_livestock',
     'ss1_math', 'ss1_english', 'ss1_physics', 'ss1_chemistry', 'ss1_biology', 'ss1_further_math', 'ss1_agric', 'ss1_geography', 'ss1_economics', 'ss1_government', 'ss1_accounting', 'ss1_commerce', 'ss1_marketing', 'ss1_literature', 'ss1_history', 'ss1_crs', 'ss1_citizenship', 'ss1_digital_tech', 'ss1_hardware_repair', 'ss1_solar', 'ss1_technical_drawing', 'ss1_visual_arts', 'ss1_food_nutrition', 'ss1_catering', 'ss1_beauty', 'ss1_fashion', 'ss1_horticulture', 'ss1_livestock',
     'ss2_math', 'ss2_english', 'ss2_physics', 'ss2_chemistry', 'ss2_biology', 'ss2_further_math', 'ss2_agric', 'ss2_geography', 'ss2_economics', 'ss2_government', 'ss2_accounting', 'ss2_commerce', 'ss2_marketing', 'ss2_literature', 'ss2_history', 'ss2_crs', 'ss2_citizenship', 'ss2_digital_tech', 'ss2_hardware_repair', 'ss2_solar', 'ss2_technical_drawing', 'ss2_visual_arts', 'ss2_food_nutrition', 'ss2_catering', 'ss2_beauty', 'ss2_fashion', 'ss2_horticulture', 'ss2_livestock',
+    'ss3_math', 'ss3_english', 'ss3_physics', 'ss3_chemistry', 'ss3_biology', 'ss3_further_math', 'ss3_agric', 'ss3_geography', 'ss3_economics', 'ss3_accounting', 'ss3_commerce', 'ss3_marketing', 'ss3_literature', 'ss3_history', 'ss3_crs', 'ss3_citizenship', 'ss3_digital_tech', 'ss3_hardware_repair', 'ss3_solar', 'ss3_technical_drawing', 'ss3_visual_arts', 'ss3_food_nutrition', 'ss3_catering', 'ss3_beauty', 'ss3_fashion', 'ss3_horticulture', 'ss3_livestock',
   ]);
 
   useEffect(() => {
@@ -367,7 +368,7 @@ export default function StudentNotesWorkspace({
     } catch (e) {}
   }, []);
 
-  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES, ...PRIMARY_3_OFFICIAL_NOTES, ...PRIMARY_4_OFFICIAL_NOTES, ...PRIMARY_5_OFFICIAL_NOTES, ...PRIMARY_6_OFFICIAL_NOTES, ...JSS_1_OFFICIAL_NOTES, ...JSS_2_OFFICIAL_NOTES, ...JSS_3_OFFICIAL_NOTES, ...SS_1_OFFICIAL_NOTES, ...SS_2_OFFICIAL_NOTES];
+  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES, ...PRIMARY_3_OFFICIAL_NOTES, ...PRIMARY_4_OFFICIAL_NOTES, ...PRIMARY_5_OFFICIAL_NOTES, ...PRIMARY_6_OFFICIAL_NOTES, ...JSS_1_OFFICIAL_NOTES, ...JSS_2_OFFICIAL_NOTES, ...JSS_3_OFFICIAL_NOTES, ...SS_1_OFFICIAL_NOTES, ...SS_2_OFFICIAL_NOTES, ...SS_3_OFFICIAL_NOTES];
   const visibleOfficialNotes = allOfficialNotes.filter(n => publishedOfficialIds.includes(n.id));
 
   return (
