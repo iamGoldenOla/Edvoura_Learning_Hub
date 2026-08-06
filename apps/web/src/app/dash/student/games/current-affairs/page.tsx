@@ -7,6 +7,7 @@ import {
   Sparkles, Clock, Compass, Zap, Trophy, Users, BookOpen, ChevronRight, Filter
 } from 'lucide-react';
 import { generateGlobalCurrentAffairsQuestion, GameQuestion } from '@/lib/games/dynamicQuestionEngine';
+import { useBand } from '@/components/dashboards/BandContext';
 
 const ACCENT_COLOR = '#0284c7'; // Deep Sky Blue Studio Accent
 
@@ -156,7 +157,13 @@ const SPHERES = [
 ];
 
 export default function CurrentAffairsGame() {
-  const [gradeBand, setGradeBand] = useState<'1-3' | '4-6' | '7-12'>('4-6');
+  const { band } = useBand();
+  const [gradeBand, setGradeBand] = useState<'1-3' | '4-6' | '7-12'>(band || '4-6');
+
+  useEffect(() => {
+    if (band) setGradeBand(band);
+  }, [band]);
+
   const [selectedContinent, setSelectedContinent] = useState('All');
   const [selectedSphere, setSelectedSphere] = useState('All');
 

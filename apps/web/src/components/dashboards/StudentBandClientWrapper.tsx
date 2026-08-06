@@ -548,12 +548,25 @@ export default function StudentBandClientWrapper({
             </div>
           </Panel>
 
-          <Panel title="Quick actions" icon={Sparkles} color="bg-yellow/40">
+          <Panel title={band === '4-6' ? 'Mission Quick Actions' : 'Senior Academic Tools'} icon={Sparkles} color={band === '4-6' ? 'bg-indigo-100' : 'bg-yellow/40'}>
             <div className="grid grid-cols-1 gap-3">
-              <QuickLink href="/dash/student/live" label="Join class" />
-              <QuickLink href="/dash/student/assignments" label="Submit homework" />
-              <QuickLink href="/dash/student/exam-prep" label="Practice tests" />
-              <QuickLink href="/dash/student/notes" label="Study notes" />
+              {band === '4-6' ? (
+                <>
+                  <QuickLink href="/dash/student/live" label="🎥 Join Live Class" />
+                  <QuickLink href="/dash/student/homework" label="📋 My Homework" />
+                  <QuickLink href="/dash/student/quiz" label="🤖 AI Study Hub" />
+                  <QuickLink href="/dash/student/games" label="🎮 3D Play Zone" />
+                  <QuickLink href="/dash/student/library" label="📚 Class Library" />
+                </>
+              ) : (
+                <>
+                  <QuickLink href="/dash/student/exam-prep" label="🎯 Exam Prep & Practice" />
+                  <QuickLink href="/dash/student/mock-exams" label="🛡️ Simulated Mock Exams" />
+                  <QuickLink href="/dash/student/past-questions" label="📜 JAMB & WAEC Past Questions" />
+                  <QuickLink href="/dash/student/analytics" label="📊 Subject Mastery Analytics" />
+                  <QuickLink href="/dash/student/flashcards" label="🎴 Revision Cards" />
+                </>
+              )}
             </div>
           </Panel>
 

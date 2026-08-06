@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import GameLayout from '@/components/games/GameLayout';
+import { useBand } from '@/components/dashboards/BandContext';
 import { Award, PhoneCall, Users, RefreshCw, Check, BookOpen, Share2, DollarSign, LogOut, Clock, Volume2, VolumeX, ShieldCheck } from 'lucide-react';
 
 const ACCENT_COLOR = '#8b5cf6'; // Electric Purple Studio Accent
@@ -310,6 +311,7 @@ const QUESTION_BANK: MillionaireQuestion[] = [
 ];
 
 export default function MillionaireGame() {
+  const { band } = useBand();
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('NGN');
   const [currentLevel, setCurrentLevel] = useState(1);
   const [scorePrize, setScorePrize] = useState('0');
@@ -355,7 +357,7 @@ export default function MillionaireGame() {
 
   const activeLadder = CURRENCY_MAP[selectedCurrency].ladder;
 
-  // Load question for current level (STABLE & NON-REPEATING)
+  // Load question for current level (STABLE & GRADE BAND ADAPTIVE)
   const loadQuestionForLevel = useCallback((lvl: number, currency: CurrencyCode) => {
     const ladder = CURRENCY_MAP[currency].ladder;
     const availableQuestions = QUESTION_BANK.filter(q => q.level === lvl && !usedQuestionsRef.current.includes(q.q));
@@ -364,7 +366,8 @@ export default function MillionaireGame() {
     if (availableQuestions.length > 0) {
       q = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
     } else {
-      q = generateDynamicMillionaireQuestion(lvl);
+      const bandLevel = band === '1-3' ? Math.min(lvl, 5) : band === '4-6' ? Math.min(lvl, 10) : lvl;
+      q = generateDynamicMillionaireQuestion(bandLevel);
     }
 
     usedQuestionsRef.current.push(q.q);

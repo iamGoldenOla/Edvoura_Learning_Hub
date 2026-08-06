@@ -176,8 +176,11 @@ const MATH_QUESTIONS = [
   { q: 'What is 96 ÷ 8?', a: 12 },
 ];
 
+import { useBand } from '@/components/dashboards/BandContext';
+
 export default function GamesPage() {
   const router = useRouter();
+  const { band } = useBand();
   const [score, setScore] = useState(0);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [inputValue, setInputValue] = useState('');
@@ -185,6 +188,8 @@ export default function GamesPage() {
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
   const [hoveredExternal, setHoveredExternal] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const bandLabel = band === '1-3' ? 'Grades 1-3 (Early Explorers)' : band === '4-6' ? 'Grades 4-6 (Junior Scholars)' : 'Grades 7-12 (Senior Scholars)';
 
   const categoriesList = ['All', 'World Knowledge', '3D Game Show', 'Strategy', 'Board Game', 'Word Game', 'Sliding Puzzle', 'Physics & Trivia', 'Traditional'];
 
@@ -245,6 +250,9 @@ export default function GamesPage() {
               <Gamepad2 size={28} color="#000000" />
             </div>
             <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0f172a', color: '#fbbf24', padding: '4px 10px', borderRadius: '8px', border: '1.5px solid #000', fontSize: '11px', fontWeight: 950, marginBottom: '6px' }}>
+                <Trophy size={14} /> Assigned: {bandLabel}
+              </div>
               <h1 style={{
                 fontSize: '32px', fontWeight: 900, color: '#000000', margin: 0,
                 letterSpacing: '-0.02em', lineHeight: 1.1, textTransform: 'uppercase'
@@ -252,7 +260,7 @@ export default function GamesPage() {
                 Edvoura Play Zone
               </h1>
               <p style={{ color: '#000000', fontSize: '15px', margin: '4px 0 0 0', fontWeight: 600 }}>
-                Learn while you play — 10 premium 3D games + partner sites!
+                Learn while you play — 10 premium 3D games auto-customized for your grade tier!
               </p>
             </div>
           </div>
