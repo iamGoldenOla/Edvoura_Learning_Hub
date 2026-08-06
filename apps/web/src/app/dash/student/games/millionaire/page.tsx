@@ -19,6 +19,15 @@ const MILLIONAIRE_AUDIO_PATHS = {
 
 const mp3AudioCache: Record<string, HTMLAudioElement> = {};
 
+const SOUND_TIMEOUTS: Record<string, number> = {
+  opening: 6500,
+  lets_play: 5500,
+  light_to_center: 4800,
+  win: 4000,
+  lose: 4000,
+  fastest_finger: 3500,
+};
+
 function playMillionaireMP3(
   soundType: keyof typeof MILLIONAIRE_AUDIO_PATHS,
   isMuted: boolean = false,
@@ -55,17 +64,14 @@ function playMillionaireMP3(
     const triggerEnded = () => {
       if (!hasEnded) {
         hasEnded = true;
-        try {
-          audio.pause();
-        } catch (e) {}
         if (onEnded) onEnded();
       }
     };
 
     if (onEnded) {
       audio.onended = triggerEnded;
-      // Set safety timeout matching full MP3 duration (~4.5s for lets_play)
-      setTimeout(triggerEnded, soundType === 'lets_play' ? 4500 : 2500);
+      const durationMs = SOUND_TIMEOUTS[soundType] || 4000;
+      setTimeout(triggerEnded, durationMs);
     }
 
     audio.play().catch(() => {
@@ -101,13 +107,6 @@ function speakVoice(text: string, isMuted: boolean = false, onComplete?: () => v
     return;
   }
   try {
-    // Pause any background MP3 audio so speech synthesis voice is 100% clear and un-interfered
-    Object.values(mp3AudioCache).forEach(audio => {
-      try {
-        if (!audio.paused) audio.pause();
-      } catch (e) {}
-    });
-
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.0;
@@ -520,10 +519,9 @@ export default function MillionaireGame() {
     setIsLocked(true);
     setIsTimerActive(false);
     setIsLightsDimmed(true); // Studio Lights Blackout / Suspense Mode!
-    playMillionaireMP3('light_to_center', isMutedRef.current);
-    speakVoice("Final Answer locked in. Let's see if you are correct...", isMutedRef.current);
 
-    setTimeout(() => {
+    // PLAY AUTHENTIC LIGHT TO CENTER MP3 TRACK FULLY BEFORE REVEALING ANSWER RESULT
+    playMillionaireMP3('light_to_center', isMutedRef.current, () => {
       setIsLightsDimmed(false);
       setShowAnswerResult(true);
       const isCorrect = selectedOption === activeQ.a;
@@ -556,7 +554,7 @@ export default function MillionaireGame() {
           speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`, isMutedRef.current);
         });
       }
-    }, 2400);
+    });
   };
 
   // Walk Away / Cash Out Feature
