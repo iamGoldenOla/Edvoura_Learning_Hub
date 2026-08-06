@@ -24,6 +24,122 @@ type LessonPlan = {
   status: 'Ready' | 'Draft';
 };
 
+import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
+
+export type OfficialCurriculumNote = {
+  id: string;
+  gradeCode: string;
+  gradeName: string;
+  subjectName: string;
+  title: string;
+  fileName: string;
+  fileUrl: string;
+  description: string;
+  isPublished: boolean;
+};
+
+export const PRIMARY_1_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'p1_basic_science',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Basic Science',
+    title: 'Primary 1 Basic Science Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 1 BASIC SCIENCE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 BASIC SCIENCE LESSON NOTES.pdf',
+    description: 'Complete term-by-term lesson notes covering living & non-living things, plants, animals, weather, and senses.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_mathematics',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Mathematics',
+    title: 'Primary 1 Mathematics Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 1 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 MATHEMATICS LESSON NOTES.pdf',
+    description: 'Complete lesson notes covering counting 1-100, addition, subtraction, shapes, money, and time.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_english',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'English Language',
+    title: 'Primary 1 English Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 1 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    description: 'Comprehensive phonics, grammar, vocabulary, reading comprehension, and handwriting lesson guides.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_history',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Nigerian History',
+    title: 'Primary 1 Nigerian History Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 1 NIGERIAN HISTORY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 NIGERIAN HISTORY LESSON NOTES.pdf',
+    description: 'Introduction to Nigerian heroes, national symbols, culture, traditions, and historical heritage.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_arts',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'Primary 1 Cultural & Creative Arts Lesson Notes',
+    fileName: 'PRIMARY 1 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    description: 'Drawing, color identification, traditional music, dance, and creative crafts for young learners.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_social',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'Primary 1 Social & Citizenship Studies Lesson Notes',
+    fileName: 'PRIMARY 1 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'Family roles, community values, civic duties, friendship, and social responsibility for Grade 1.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_phe',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Physical & Health Education',
+    title: 'Primary 1 Physical & Health Education Lesson Notes',
+    fileName: 'PRIMARY 1 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    description: 'Basic bodily movements, personal hygiene, sportsmanship, and health habits.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_crs',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Christian Religious Studies',
+    title: 'Primary 1 Christian Religious Studies Lesson Notes',
+    fileName: 'PRIMARY 1 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'Creation stories, moral lessons, kindness, love, and spiritual values for young children.',
+    isPublished: true,
+  },
+  {
+    id: 'p1_irs',
+    gradeCode: 'grade_1',
+    gradeName: 'Primary 1 (Grade 1)',
+    subjectName: 'Islamic Studies',
+    title: 'Primary 1 Islamic Studies Lesson Notes',
+    fileName: 'PRIMARY 1 ISLAMIC STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_1/PRIMARY 1 ISLAMIC STUDIES LESSON NOTES.pdf',
+    description: 'Basic Tawheed, short surahs, Islamic manners, and moral teachings for Grade 1 pupils.',
+    isPublished: true,
+  },
+];
+
 const basePlans: LessonPlan[] = [
   {
     id: 'ln-1',
@@ -206,6 +322,34 @@ export default function TutorLessonNotesPage() {
     setShowForm(false);
   };
 
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
+  const [activePdfTitle, setActivePdfTitle] = useState<string>('');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_1');
+  const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
+    'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs'
+  ]);
+
+  // Load published official notes from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('edvoura_published_curriculum_notes');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setPublishedOfficialNoteIds(parsed);
+      }
+    } catch (e) {}
+  }, []);
+
+  const toggleOfficialNotePublish = (noteId: string) => {
+    setPublishedOfficialNoteIds((prev) => {
+      const next = prev.includes(noteId) ? prev.filter((id) => id !== noteId) : [...prev, noteId];
+      try {
+        localStorage.setItem('edvoura_published_curriculum_notes', JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
+
   const startEditPlan = (item: LessonPlan) => {
     setClassName(item.className);
     setTopic(item.topic);
@@ -326,6 +470,80 @@ export default function TutorLessonNotesPage() {
             <Stat title="Ready to Deliver" value={stats.ready} icon={CheckSquare} bgColor="bg-blue-200" />
             <Stat title="Draft Notes" value={stats.draft} icon={FilePenLine} bgColor="bg-amber-200" />
             <Stat title="Resource Packs" value={stats.packs} icon={BookOpen} bgColor="bg-rose-200" />
+          </section>
+
+          {/* ═══════════════════════ OFFICIAL PURCHASED CURRICULUM LESSON NOTES HUB ═══════════════════════ */}
+          <section className="border-[3px] sm:border-[4px] border-dark rounded-[24px] bg-yellow/10 p-6 sm:p-8 shadow-[6px_6px_0px_#060E1C] space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-[3px] border-dark/10 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow border-[2px] border-dark rounded-lg text-[10px] font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C] mb-2">
+                  📚 Official Purchased Curriculum
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">Primary 1 (Grade 1) Master Lesson Notes</h2>
+                <p className="text-xs sm:text-sm font-bold text-dark/70">
+                  Published notes are automatically available to Grade 1 students on their dashboard & class library.
+                </p>
+              </div>
+
+              <select
+                value={selectedGradeFilter}
+                onChange={(e) => setSelectedGradeFilter(e.target.value)}
+                className="px-4 py-2.5 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none"
+              >
+                <option value="grade_1">Primary 1 (Grade 1) - 9 Subjects</option>
+                <option value="grade_2" disabled>Primary 2 (Grade 2) - Pending</option>
+                <option value="grade_7" disabled>JSS 1 (Grade 7) - Pending</option>
+                <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {PRIMARY_1_OFFICIAL_NOTES.map((note) => {
+                const isPub = publishedOfficialNoteIds.includes(note.id);
+                return (
+                  <div
+                    key={note.id}
+                    className="border-[3px] border-dark rounded-[20px] bg-white p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col justify-between hover:translate-y-[-2px] transition-all"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="px-2.5 py-1 bg-indigo-100 border-[2px] border-dark rounded-md text-[10px] font-black uppercase text-indigo-900 shadow-[2px_2px_0px_#060E1C]">
+                          {note.subjectName}
+                        </span>
+                        <span className={`px-2 py-0.5 border-[2px] border-dark rounded-md text-[9px] font-black uppercase tracking-wider ${isPub ? 'bg-emerald-300 text-dark' : 'bg-slate-200 text-dark/60'}`}>
+                          {isPub ? 'Live for Students' : 'Draft / Locked'}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-black text-dark mb-2 leading-tight">{note.title}</h3>
+                      <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-3">{note.description}</p>
+                    </div>
+
+                    <div className="space-y-2 pt-3 border-t-[2px] border-dark/10">
+                      <button
+                        onClick={() => {
+                          setActivePdfUrl(note.fileUrl);
+                          setActivePdfTitle(note.title);
+                        }}
+                        className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+                      >
+                        👁️ Preview PDF Note
+                      </button>
+
+                      <button
+                        onClick={() => toggleOfficialNotePublish(note.id)}
+                        className={`w-full py-2 border-[2px] border-dark rounded-xl text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
+                          isPub
+                            ? 'bg-emerald-400 text-dark hover:bg-emerald-500'
+                            : 'bg-white text-dark hover:bg-slate-100'
+                        }`}
+                      >
+                        {isPub ? '✅ Published to Grade 1' : '🚀 Publish to Grade 1'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           <section className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12 min-w-0">
@@ -623,6 +841,15 @@ export default function TutorLessonNotesPage() {
           </section>
         </div>
       </section>
+      <PDFViewerModal
+        isOpen={activePdfUrl !== null}
+        onClose={() => {
+          setActivePdfUrl(null);
+          setActivePdfTitle('');
+        }}
+        pdfUrl={activePdfUrl}
+        title={activePdfTitle}
+      />
     </div>
   );
 }

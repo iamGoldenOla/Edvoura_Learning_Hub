@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sparkles, BookOpen, ChevronDown } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
+import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
+import { PRIMARY_1_OFFICIAL_NOTES } from '@/app/dash/tutor/lesson-notes/page';
 
 type ResourceCard = {
   id: string;
@@ -340,6 +341,24 @@ export default function StudentNotesWorkspace({
     }
   };
 
+  const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
+  const [activePdfTitle, setActivePdfTitle] = useState<string>('');
+  const [publishedOfficialIds, setPublishedOfficialIds] = useState<string[]>([
+    'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs'
+  ]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('edvoura_published_curriculum_notes');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setPublishedOfficialIds(parsed);
+      }
+    } catch (e) {}
+  }, []);
+
+  const visibleOfficialNotes = PRIMARY_1_OFFICIAL_NOTES.filter(n => publishedOfficialIds.includes(n.id));
+
   return (
     <div className="w-full max-w-[1320px] space-y-6 sm:space-y-8">
       <section className="rounded-[24px] border-[4px] border-dark bg-white p-5 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-8">
@@ -348,6 +367,51 @@ export default function StudentNotesWorkspace({
           Keep study materials, tutor notes, lesson notes, and revision references in one academic base.
         </p>
       </section>
+
+      {/* Official Published Curriculum Lesson Notes */}
+      {visibleOfficialNotes.length > 0 ? (
+        <section className="rounded-[24px] border-[4px] border-dark bg-yellow/10 p-5 sm:p-6 shadow-[8px_8px_0px_#060E1C] space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-dark/10 pb-3">
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-6 w-6 text-dark" />
+              <h2 className="text-xl font-black text-dark sm:text-2xl">Official Grade 1 Curriculum Lesson Notes</h2>
+            </div>
+            <span className="rounded-lg border-[1.5px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+              {visibleOfficialNotes.length} Subjects Published
+            </span>
+          </div>
+          <p className="text-sm font-semibold text-dark/70">
+            Official term-by-term lesson notes published by your tutors. Tap to open and read the complete PDF guide.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pt-2">
+            {visibleOfficialNotes.map((note) => (
+              <div
+                key={note.id}
+                className="border-[3px] border-dark rounded-[20px] bg-white p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col justify-between hover:translate-y-[-2px] transition-all"
+              >
+                <div>
+                  <span className="inline-block px-2.5 py-1 bg-indigo-100 border-[2px] border-dark rounded-md text-[10px] font-black uppercase text-indigo-900 shadow-[2px_2px_0px_#060E1C] mb-3">
+                    {note.subjectName}
+                  </span>
+                  <h3 className="text-base font-black text-dark mb-2 leading-tight">{note.title}</h3>
+                  <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-3">{note.description}</p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setActivePdfUrl(note.fileUrl);
+                    setActivePdfTitle(note.title);
+                  }}
+                  className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+                >
+                  📖 Read Full Lesson Note PDF
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Published lesson notes */}
       {aiLessonNotes.length > 0 ? (
@@ -559,6 +623,15 @@ export default function StudentNotesWorkspace({
           </section>
         </section>
       </div>
+      <PDFViewerModal
+        isOpen={activePdfUrl !== null}
+        onClose={() => {
+          setActivePdfUrl(null);
+          setActivePdfTitle('');
+        }}
+        pdfUrl={activePdfUrl}
+        title={activePdfTitle}
+      />
     </div>
   );
 }
