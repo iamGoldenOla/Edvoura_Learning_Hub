@@ -19,17 +19,28 @@ const MILLIONAIRE_AUDIO_PATHS = {
 
 const mp3AudioCache: Record<string, HTMLAudioElement> = {};
 
-function playMillionaireMP3(soundType: keyof typeof MILLIONAIRE_AUDIO_PATHS, isMuted: boolean = false) {
-  if (isMuted || typeof window === 'undefined') return;
+function playMillionaireMP3(
+  soundType: keyof typeof MILLIONAIRE_AUDIO_PATHS,
+  isMuted: boolean = false,
+  onEnded?: () => void
+) {
+  if (isMuted || typeof window === 'undefined') {
+    if (onEnded) onEnded();
+    return;
+  }
   try {
     const src = MILLIONAIRE_AUDIO_PATHS[soundType];
-    if (!src) return;
+    if (!src) {
+      if (onEnded) onEnded();
+      return;
+    }
 
     // Stop all currently playing audio tracks so sounds don't overlap awkwardly
     Object.values(mp3AudioCache).forEach(audio => {
       try {
         audio.pause();
         audio.currentTime = 0;
+        audio.onended = null;
       } catch (e) {}
     });
 
@@ -39,12 +50,26 @@ function playMillionaireMP3(soundType: keyof typeof MILLIONAIRE_AUDIO_PATHS, isM
 
     const audio = mp3AudioCache[soundType];
     audio.currentTime = 0;
+
+    let hasEnded = false;
+    const triggerEnded = () => {
+      if (!hasEnded) {
+        hasEnded = true;
+        if (onEnded) onEnded();
+      }
+    };
+
+    if (onEnded) {
+      audio.onended = triggerEnded;
+      setTimeout(triggerEnded, 2800);
+    }
+
     audio.play().catch(() => {
-      // Fallback to web AudioContext synthesizer if browser blocks autoplay
       playMillionaireSFX(soundType === 'win' ? 'win' : soundType === 'lose' ? 'lose' : soundType === 'light_to_center' ? 'lights_down' : 'stinger');
+      if (onEnded) onEnded();
     });
   } catch (e) {
-    playMillionaireSFX('stinger');
+    if (onEnded) onEnded();
   }
 }
 
@@ -66,16 +91,35 @@ function getAudioContext(): AudioContext | null {
   }
 }
 
-function speakVoice(text: string, isMuted: boolean = false) {
-  if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+function speakVoice(text: string, isMuted: boolean = false, onComplete?: () => void) {
+  if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    if (onComplete) onComplete();
+    return;
+  }
   try {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
-    utterance.volume = 0.9;
+    utterance.volume = 0.95;
+
+    let hasCompleted = false;
+    const triggerComplete = () => {
+      if (!hasCompleted) {
+        hasCompleted = true;
+        if (onComplete) onComplete();
+      }
+    };
+
+    if (onComplete) {
+      utterance.onend = triggerComplete;
+      utterance.onerror = triggerComplete;
+    }
+
     window.speechSynthesis.speak(utterance);
-  } catch (e) {}
+  } catch (e) {
+    if (onComplete) onComplete();
+  }
 }
 
 function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinger' | 'walkaway' | 'tick' | 'lights_down' | 'heartbeat' | 'suspense_pad') {
@@ -380,10 +424,12 @@ export default function MillionaireGame() {
     setTimeLeft(30);
     setIsTimerActive(true);
 
-    playMillionaireMP3('lets_play', isMutedRef.current);
     const prizeStr = ladder[lvl - 1];
-    speakVoice(`Question for ${prizeStr}. ${q.q}`, isMutedRef.current);
-  }, []);
+    // PLAY MP3 INTRO MUSIC FIRST, THEN READ QUESTION WHEN MUSIC FINISHES
+    playMillionaireMP3('lets_play', isMutedRef.current, () => {
+      speakVoice(`Question for ${prizeStr}. ${q.q}`, isMutedRef.current);
+    });
+  }, [band]);
 
   // Initialize Game
   const initGame = useCallback(() => {
@@ -401,8 +447,9 @@ export default function MillionaireGame() {
       switchQuestion: true,
     });
     setActiveModal(null);
-    playMillionaireMP3('opening', isMutedRef.current);
-    loadQuestionForLevel(1, selectedCurrency);
+    playMillionaireMP3('opening', isMutedRef.current, () => {
+      loadQuestionForLevel(1, selectedCurrency);
+    });
   }, [loadQuestionForLevel, selectedCurrency]);
 
   useEffect(() => {
@@ -416,9 +463,10 @@ export default function MillionaireGame() {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          playMillionaireMP3('lose', isMutedRef.current);
+          playMillionaireMP3('lose', isMutedRef.current, () => {
+            speakVoice("Time's up! You ran out of time.", isMutedRef.current);
+          });
           setIsGameOver(true);
-          speakVoice("Time's up! You ran out of time.", isMutedRef.current);
           return 0;
         }
         if (prev <= 6) playMillionaireSFX('tick');
@@ -450,24 +498,22 @@ export default function MillionaireGame() {
       const isCorrect = selectedOption === activeQ.a;
 
       if (isCorrect) {
-        playMillionaireMP3('win', isMutedRef.current);
         const currentPrize = activeLadder[currentLevel - 1];
         setScorePrize(currentPrize);
 
-        if (currentLevel === 15) {
-          setIsMillionaire(true);
-          setIsGameOver(true);
-          speakVoice(`CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ${currentPrize}!`, isMutedRef.current);
-        } else {
-          speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`, isMutedRef.current);
-          setTimeout(() => {
-            setCurrentLevel(l => l + 1);
-            loadQuestionForLevel(currentLevel + 1, selectedCurrency);
-          }, 2600);
-        }
+        playMillionaireMP3('win', isMutedRef.current, () => {
+          if (currentLevel === 15) {
+            setIsMillionaire(true);
+            setIsGameOver(true);
+            speakVoice(`CONGRATULATIONS! YOU ARE AN EDVOURA MILLIONAIRE! YOU WON ${currentPrize}!`, isMutedRef.current);
+          } else {
+            speakVoice(`Correct! You have won ${currentPrize}! Next level unlocked.`, isMutedRef.current, () => {
+              setCurrentLevel(l => l + 1);
+              loadQuestionForLevel(currentLevel + 1, selectedCurrency);
+            });
+          }
+        });
       } else {
-        playMillionaireMP3('lose', isMutedRef.current);
-        
         // Calculate safe haven payout
         let safePayout = '0';
         if (currentLevel > 10) safePayout = activeLadder[9]; // Level 10 Safe Haven
@@ -475,7 +521,9 @@ export default function MillionaireGame() {
 
         setScorePrize(safePayout);
         setIsGameOver(true);
-        speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`, isMutedRef.current);
+        playMillionaireMP3('lose', isMutedRef.current, () => {
+          speakVoice(`Wrong answer! The correct option was ${activeQ.options[activeQ.a]}. You walk away with ${safePayout}.`, isMutedRef.current);
+        });
       }
     }, 2400);
   };
