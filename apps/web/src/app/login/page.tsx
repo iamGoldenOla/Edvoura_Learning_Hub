@@ -107,8 +107,13 @@ function LoginPageContent() {
           <p className="text-grey text-sm mb-8">Sign in to continue your learning journey.</p>
 
           {state?.error ? (
-            <div className="mb-6 p-4 bg-error/10 border border-error/20 text-error text-sm rounded-xl">
-              {state.error}
+            <div className="mb-6 p-4 bg-error/10 border border-error/20 text-error text-sm rounded-xl space-y-1">
+              <div className="font-semibold">{state.error}</div>
+              {state.error.toLowerCase().includes('invalid login credentials') && (
+                <p className="text-xs opacity-90 font-normal pt-1">
+                  If you just signed up, your account may be awaiting email confirmation. Please check your inbox/spam folder or disable &quot;Confirm email&quot; in Supabase Auth settings for instant logins.
+                </p>
+              )}
             </div>
           ) : null}
 
@@ -119,8 +124,9 @@ function LoginPageContent() {
           ) : null}
 
           {signupState === 'check-email' ? (
-            <div className="mb-6 rounded-xl border border-success/20 bg-success/10 p-4 text-sm text-success">
-              Your account was created. Check your email, confirm your address, then sign in.
+            <div className="mb-6 rounded-xl border border-warning/30 bg-yellow/10 p-4 text-sm text-navy font-medium space-y-1">
+              <div className="font-bold">Account created successfully!</div>
+              <div className="text-xs text-grey">If email confirmation is enabled in your Supabase Auth project, check your inbox/spam to confirm before signing in.</div>
             </div>
           ) : null}
 
