@@ -1151,6 +1151,207 @@ export const JSS_2_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
   },
 ];
 
+export const JSS_3_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'jss3_math',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Mathematics',
+    title: 'JSS 3 Mathematics Comprehensive Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 MATHEMATICS LESSON NOTES.pdf',
+    description: 'BECE / Junior WAEC prep: Simultaneous equations, quadratic expressions, trigonometry, Mensuration, statistics, and matrices.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_english',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'English Studies',
+    title: 'JSS 3 English Studies Comprehensive Lesson Notes (BECE Prep)',
+    fileName: 'JSS3 ENGLISH STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS3 ENGLISH STUDIES LESSON NOTES.pdf',
+    description: 'BECE English prep: Expository & formal letter writing, clause analysis, Figures of speech, set literature books, and oral phonetics.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_science',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Intermediate Science',
+    title: 'JSS 3 Intermediate Science Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 INTERMEDIATE SCIENCE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 INTERMEDIATE SCIENCE LESSON NOTES.pdf',
+    description: 'BECE Science prep: Atomic structure, periodic table, electric circuits, magnetism, genetics basics, space technology, and pollution.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_business',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Business Studies',
+    title: 'JSS 3 Business Studies Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 BUSINESS STUDIES NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 BUSINESS STUDIES NOTES.pdf',
+    description: 'BECE Business Studies prep: Final accounts, balance sheet, trial balance corrections, office communication, and consumer rights.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_digital_tech',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Digital Technologies',
+    title: 'JSS 3 Digital Technologies Lesson Notes',
+    fileName: 'JSS 3 DIGITAL TECHNOLOGIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 DIGITAL TECHNOLOGIES LESSON NOTES.pdf',
+    description: 'High-level programming logic (Python/JavaScript basics), database management systems, spreadsheet formulas, and digital ethics.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_hardware_repair',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Computer Hardware & GSM Repairs',
+    title: 'JSS 3 Computer Hardware and GSM Repairs Lesson Notes',
+    fileName: 'JSS 3 COMPUTER HARDWARE AND GSM REPAIRS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 COMPUTER HARDWARE AND GSM REPAIRS LESSON NOTES.pdf',
+    description: 'Advanced mobile phone flashing, IC chip replacement, diagnostic tools, PC assembly, and setting up a repair workshop.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_solar',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Solar PV Installation & Maintenance',
+    title: 'JSS 3 Solar PV Installation & Maintenance Lesson Notes',
+    fileName: 'JSS 3 SOLAR PHOTOVOLTAIC (PV) INSTALLATION AND MAINTENANCE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 SOLAR PHOTOVOLTAIC (PV) INSTALLATION AND MAINTENANCE LESSON NOTES.pdf',
+    description: 'Off-grid solar design, hybrid inverter commissioning, safety protocols, load auditing, and solar enterprise management.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_french',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'French Language',
+    title: 'JSS 3 French Language Comprehensive Lesson Notes (BECE Prep)',
+    fileName: 'JSS3 FRENCH NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS3 FRENCH NOTES.pdf',
+    description: 'BECE French prep: Future tense (Futur Simple), subjunction, comprehensive reading, oral French examination prep, and letter writing.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_history',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Nigerian History',
+    title: 'JSS 3 Nigerian History Comprehensive Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 NIGERIAN HISTORY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 NIGERIAN HISTORY LESSON NOTES.pdf',
+    description: 'BECE History prep: Amalgamation of 1914, nationalist movements, independence in 1960, republic constitutions, and military rule.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_arts',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'JSS 3 Cultural & Creative Arts Lesson Notes (BECE Prep)',
+    fileName: 'JSS3 CULTURAL AND CREATIVE ARTS NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS3 CULTURAL AND CREATIVE ARTS NOTES.pdf',
+    description: 'BECE CCA prep: Art gallery management, contemporary Nigerian artists, choreography, drama production, and musical composition.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_social',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'JSS 3 Social & Citizenship Studies Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'BECE Social Studies prep: National economy, international organizations (ECOWAS, AU, UN), conflict resolution, and civic duties.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_phe',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Physical & Health Education',
+    title: 'JSS 3 Physical & Health Education Lesson Notes (BECE Prep)',
+    fileName: 'JSS3 PHYSICAL AND HEALTH EDUCATION NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS3 PHYSICAL AND HEALTH EDUCATION NOTES.pdf',
+    description: 'BECE PHE prep: Kinesiology, exercise physiology, health agencies (WHO, NAFDAC), sports management, and recreation leadership.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_crs',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Christian Religious Studies',
+    title: 'JSS 3 Christian Religious Studies Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'BECE CRS prep: Passion, death, and resurrection of Jesus, coming of the Holy Spirit, Peter\'s speech, and early church growth.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_irs',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Islamic Studies',
+    title: 'JSS 3 Islamic Religious Studies Lesson Notes (BECE Prep)',
+    fileName: 'JSS 3 ISLAMIC RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 ISLAMIC RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'BECE IRS prep: Complete JSS Surah revision, Hadith application in daily life, Fiqh of inheritance (Mirath), and Islamic history.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_beauty',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Beauty & Cosmetology',
+    title: 'JSS 3 Beauty & Cosmetology Vocational Lesson Notes',
+    fileName: 'JSS 3 BEAUTY AND COSMETOLOGY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 BEAUTY AND COSMETOLOGY LESSON NOTES.pdf',
+    description: 'Advanced cosmetology, chemical hair relaxers, bridal makeup, nail art extensions, and salon management.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_fashion',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Fashion Design & Garment Making',
+    title: 'JSS 3 Fashion Design & Garment Making Lesson Notes',
+    fileName: 'JSS 3 FASHION DESIGN AND GARMENT MAKING LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 FASHION DESIGN AND GARMENT MAKING LESSON NOTES.pdf',
+    description: 'Haute couture techniques, zipper insertion, lining attachment, fashion show presentation, and garment costing.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_horticulture',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Horticulture & Crop Production',
+    title: 'JSS 3 Horticulture & Crop Production Lesson Notes',
+    fileName: 'JSS 3 HORTICULTURE AND CROP PRODUCTION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 HORTICULTURE AND CROP PRODUCTION LESSON NOTES.pdf',
+    description: 'Hydroponics basics, commercial flower production, agricultural export standards, farm machinery maintenance, and agribusiness.',
+    isPublished: true,
+  },
+  {
+    id: 'jss3_livestock',
+    gradeCode: 'grade_9',
+    gradeName: 'JSS 3 (Grade 9)',
+    subjectName: 'Livestock Farming',
+    title: 'JSS 3 Livestock Farming Vocational Lesson Notes',
+    fileName: 'JSS 3 LIVESTOCK FARMING LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_3/JSS 3 LIVESTOCK FARMING LESSON NOTES.pdf',
+    description: 'Commercial poultry production, fish hatchery operation, animal processing, bio-security, and livestock marketing.',
+    isPublished: true,
+  },
+];
+
 export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote[]> = {
   grade_1: PRIMARY_1_OFFICIAL_NOTES,
   grade_2: PRIMARY_2_OFFICIAL_NOTES,
@@ -1160,6 +1361,7 @@ export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote
   grade_6: PRIMARY_6_OFFICIAL_NOTES,
   grade_7: JSS_1_OFFICIAL_NOTES,
   grade_8: JSS_2_OFFICIAL_NOTES,
+  grade_9: JSS_3_OFFICIAL_NOTES,
 };
 
 const basePlans: LessonPlan[] = [
@@ -1346,7 +1548,7 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_8');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_9');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
     'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
@@ -1356,6 +1558,7 @@ export default function TutorLessonNotesPage() {
     'p6_basic_science', 'p6_digital_literacy', 'p6_mathematics', 'p6_english', 'p6_french', 'p6_history', 'p6_arts', 'p6_prevocational', 'p6_social', 'p6_phe', 'p6_crs', 'p6_irs',
     'jss1_math', 'jss1_english', 'jss1_science', 'jss1_business', 'jss1_digital_tech', 'jss1_computer_repair', 'jss1_solar', 'jss1_french', 'jss1_history', 'jss1_arts', 'jss1_social', 'jss1_phe', 'jss1_crs', 'jss1_irs', 'jss1_beauty', 'jss1_fashion', 'jss1_horticulture', 'jss1_livestock',
     'jss2_math', 'jss2_english', 'jss2_science', 'jss2_business', 'jss2_digital_tech', 'jss2_hardware_repair', 'jss2_solar', 'jss2_french', 'jss2_history', 'jss2_arts', 'jss2_social', 'jss2_phe', 'jss2_crs', 'jss2_irs', 'jss2_beauty', 'jss2_fashion', 'jss2_horticulture', 'jss2_livestock',
+    'jss3_math', 'jss3_english', 'jss3_science', 'jss3_business', 'jss3_digital_tech', 'jss3_hardware_repair', 'jss3_solar', 'jss3_french', 'jss3_history', 'jss3_arts', 'jss3_social', 'jss3_phe', 'jss3_crs', 'jss3_irs', 'jss3_beauty', 'jss3_fashion', 'jss3_horticulture', 'jss3_livestock',
   ]);
 
   // Load published official notes from localStorage
@@ -1509,7 +1712,7 @@ export default function TutorLessonNotesPage() {
                   📚 Official Purchased Curriculum
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
-                  {selectedGradeFilter === 'grade_8' ? 'JSS 2 (Grade 8)' : selectedGradeFilter === 'grade_7' ? 'JSS 1 (Grade 7)' : selectedGradeFilter === 'grade_6' ? 'Primary 6 (Grade 6)' : selectedGradeFilter === 'grade_5' ? 'Primary 5 (Grade 5)' : selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
+                  {selectedGradeFilter === 'grade_9' ? 'JSS 3 (Grade 9)' : selectedGradeFilter === 'grade_8' ? 'JSS 2 (Grade 8)' : selectedGradeFilter === 'grade_7' ? 'JSS 1 (Grade 7)' : selectedGradeFilter === 'grade_6' ? 'Primary 6 (Grade 6)' : selectedGradeFilter === 'grade_5' ? 'Primary 5 (Grade 5)' : selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
                 </h2>
                 <p className="text-xs sm:text-sm font-bold text-dark/70">
                   Published notes are automatically available to students on their dashboard & class library.
@@ -1529,6 +1732,7 @@ export default function TutorLessonNotesPage() {
                 <option value="grade_6">Primary 6 (Grade 6) - 12 Subjects</option>
                 <option value="grade_7">JSS 1 (Grade 7) - 18 Subjects</option>
                 <option value="grade_8">JSS 2 (Grade 8) - 18 Subjects</option>
+                <option value="grade_9">JSS 3 (Grade 9) - 18 Subjects</option>
                 <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
               </select>
             </div>
