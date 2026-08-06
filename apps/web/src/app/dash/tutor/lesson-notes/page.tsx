@@ -749,6 +749,207 @@ export const PRIMARY_6_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
   },
 ];
 
+export const JSS_1_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'jss1_math',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Mathematics',
+    title: 'JSS 1 Mathematics Comprehensive Lesson Notes',
+    fileName: 'JSS 1 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS 1 MATHEMATICS LESSON NOTES.pdf',
+    description: 'Whole numbers, prime factors, LCM/HCF, fractions, decimals, introductory algebra, plane shapes, and statistics.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_english',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'English Studies',
+    title: 'JSS 1 English Studies Comprehensive Lesson Notes',
+    fileName: 'JSS1 ENGLISH STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 ENGLISH STUDIES LESSON NOTES.pdf',
+    description: 'Grammar fundamentals, parts of speech, continuous writing, literature in English, oral English, and reading comprehension.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_science',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Intermediate Science',
+    title: 'JSS 1 Intermediate Science Lesson Notes',
+    fileName: 'JSS1 INTERMEDIATE SCIENCE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 INTERMEDIATE SCIENCE LESSON NOTES.pdf',
+    description: 'Introduction to scientific methods, living vs non-living, matter, energy, human body, renewable resources, and forces.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_business',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Business Studies',
+    title: 'JSS 1 Business Studies Lesson Notes',
+    fileName: 'JSS1 BUSINESS STUDIES NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 BUSINESS STUDIES NOTES.pdf',
+    description: 'Introduction to commerce, office practice, bookkeeping, secretarial duties, trade, and entrepreneurship basics.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_digital_tech',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Digital Technologies',
+    title: 'JSS 1 Digital Technologies Lesson Notes',
+    fileName: 'JSS1 DIGITAL TECHNOLOGIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 DIGITAL TECHNOLOGIES LESSON NOTES.pdf',
+    description: 'Computer evolution, operating systems, word processing, internet security, information processing, and data representation.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_computer_repair',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Computer Hardware & Repairs',
+    title: 'JSS 1 Computer Hardware and Repairs Lesson Notes',
+    fileName: 'JSS1 COMPUTER HARDWARES AND REPAIRS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 COMPUTER HARDWARES AND REPAIRS LESSON NOTES.pdf',
+    description: 'Hardware disassembly, motherboard components, RAM/ROM diagnostics, power supply troubleshooting, and peripheral repair.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_solar',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Solar PV Installation',
+    title: 'JSS 1 Solar Installation Vocational Lesson Notes',
+    fileName: 'JSS1 SOLAR INSTALLATION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 SOLAR INSTALLATION LESSON NOTES.pdf',
+    description: 'Photovoltaic cells, solar panels, inverters, battery banks, charge controllers, wiring, and basic solar maintenance.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_french',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'French Language',
+    title: 'JSS 1 French Language Comprehensive Lesson Notes',
+    fileName: 'JSS1 FRENCH NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 FRENCH NOTES.pdf',
+    description: 'Junior secondary French grammar, dialogue, family relationships, ordering food, telling time, and French culture.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_history',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Nigerian History',
+    title: 'JSS 1 Nigerian History Comprehensive Lesson Notes',
+    fileName: 'JSS1 NIGERIAN HISTORY NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 NIGERIAN HISTORY NOTES.pdf',
+    description: 'Ancient centers of civilization (Nok, Ife, Benin, Igbo Ukwu), trans-Saharan trade, early kingdoms, and heritage preservation.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_arts',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'JSS 1 Cultural & Creative Arts Lesson Notes',
+    fileName: 'JSS1 CULTURAL AND CREATIVE ARTS NOTES1.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 CULTURAL AND CREATIVE ARTS NOTES1.pdf',
+    description: 'Elements and principles of design, traditional music, dance drama, craft production, and Nigerian art history.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_social',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'JSS 1 Social & Citizenship Studies Lesson Notes',
+    fileName: 'JSS1 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'Family life education, social environment, citizenship rights and duties, national values, and crime prevention.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_phe',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Physical & Health Education',
+    title: 'JSS 1 Physical & Health Education Lesson Notes',
+    fileName: 'JSS1 PHYSICAL AND HEALTH EDUCATION NOTES1.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 PHYSICAL AND HEALTH EDUCATION NOTES1.pdf',
+    description: 'Athletics, ball games, gymnastics, personal health, community sanitation, communicable diseases, and first aid.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_crs',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Christian Religious Studies',
+    title: 'JSS 1 Christian Religious Studies Lesson Notes',
+    fileName: 'JSS1 CHRISTIAN RELIGIOUS STUDIES NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 CHRISTIAN RELIGIOUS STUDIES NOTES.pdf',
+    description: 'Sovereignty of God, creation story, call of Abraham, Moses, the Ten Commandments, and Christian moral living.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_irs',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Islamic Studies (IRS)',
+    title: 'JSS 1 Islamic Religious Studies Lesson Notes',
+    fileName: 'JSS 1 ISLAMIC RELIGIOUS STUDIES (IRS) LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS 1 ISLAMIC RELIGIOUS STUDIES (IRS) LESSON NOTES.pdf',
+    description: 'Surah Al-Fatihah to Al-Fil, Hadith studies, Taharah (purification), Salah rules, and Sirah of Prophet Muhammad (PBUH).',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_beauty',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Beauty & Cosmetology',
+    title: 'JSS 1 Beauty & Cosmetology Vocational Lesson Notes',
+    fileName: 'JSS 1 BEAUTY AND COSMETOLOGY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS 1 BEAUTY AND COSMETOLOGY LESSON NOTES.pdf',
+    description: 'Skin care, facial treatment, hair dressing, manicure & pedicure techniques, and beauty salon hygiene.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_fashion',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Fashion Design & Garment Making',
+    title: 'JSS 1 Fashion Design & Garment Making Lesson Notes',
+    fileName: 'JSS1 FASHION DESIGN & GARMENT MAKING LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS1 FASHION DESIGN & GARMENT MAKING LESSON NOTES.pdf',
+    description: 'Body measurements, pattern drafting, sewing machine operation, garment assembly, and textile selection.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_horticulture',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Horticulture & Crop Production',
+    title: 'JSS 1 Horticulture & Crop Production Lesson Notes',
+    fileName: 'JSS 1 HORTICULTURE AND CROP PRODUCTION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS 1 HORTICULTURE AND CROP PRODUCTION LESSON NOTES.pdf',
+    description: 'Vegetable farming, ornamental plants, nursery management, soil preparation, irrigation, and crop protection.',
+    isPublished: true,
+  },
+  {
+    id: 'jss1_livestock',
+    gradeCode: 'grade_7',
+    gradeName: 'JSS 1 (Grade 7)',
+    subjectName: 'Livestock Farming',
+    title: 'JSS 1 Livestock Farming Vocational Lesson Notes',
+    fileName: 'JSS 1 LIVESTOCK FARMING LESSON NOTES.pdf',
+    fileUrl: '/curriculum/jss_1/JSS 1 LIVESTOCK FARMING LESSON NOTES.pdf',
+    description: 'Poultry management, rabbit farming, fish farming basics, animal nutrition, housing, and disease control.',
+    isPublished: true,
+  },
+];
+
 export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote[]> = {
   grade_1: PRIMARY_1_OFFICIAL_NOTES,
   grade_2: PRIMARY_2_OFFICIAL_NOTES,
@@ -756,6 +957,7 @@ export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote
   grade_4: PRIMARY_4_OFFICIAL_NOTES,
   grade_5: PRIMARY_5_OFFICIAL_NOTES,
   grade_6: PRIMARY_6_OFFICIAL_NOTES,
+  grade_7: JSS_1_OFFICIAL_NOTES,
 };
 
 const basePlans: LessonPlan[] = [
@@ -942,7 +1144,7 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_6');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_7');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
     'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
@@ -950,6 +1152,7 @@ export default function TutorLessonNotesPage() {
     'p4_basic_science', 'p4_digital_literacy', 'p4_mathematics', 'p4_english', 'p4_french', 'p4_history', 'p4_arts', 'p4_prevocational', 'p4_social', 'p4_phe', 'p4_crs', 'p4_irs',
     'p5_basic_science', 'p5_digital_literacy', 'p5_mathematics', 'p5_english', 'p5_french', 'p5_history', 'p5_arts', 'p5_prevocational', 'p5_social', 'p5_phe', 'p5_crs', 'p5_irs',
     'p6_basic_science', 'p6_digital_literacy', 'p6_mathematics', 'p6_english', 'p6_french', 'p6_history', 'p6_arts', 'p6_prevocational', 'p6_social', 'p6_phe', 'p6_crs', 'p6_irs',
+    'jss1_math', 'jss1_english', 'jss1_science', 'jss1_business', 'jss1_digital_tech', 'jss1_computer_repair', 'jss1_solar', 'jss1_french', 'jss1_history', 'jss1_arts', 'jss1_social', 'jss1_phe', 'jss1_crs', 'jss1_irs', 'jss1_beauty', 'jss1_fashion', 'jss1_horticulture', 'jss1_livestock',
   ]);
 
   // Load published official notes from localStorage
@@ -1103,7 +1306,7 @@ export default function TutorLessonNotesPage() {
                   📚 Official Purchased Curriculum
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
-                  {selectedGradeFilter === 'grade_6' ? 'Primary 6 (Grade 6)' : selectedGradeFilter === 'grade_5' ? 'Primary 5 (Grade 5)' : selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
+                  {selectedGradeFilter === 'grade_7' ? 'JSS 1 (Grade 7)' : selectedGradeFilter === 'grade_6' ? 'Primary 6 (Grade 6)' : selectedGradeFilter === 'grade_5' ? 'Primary 5 (Grade 5)' : selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
                 </h2>
                 <p className="text-xs sm:text-sm font-bold text-dark/70">
                   Published notes are automatically available to students on their dashboard & class library.
@@ -1121,7 +1324,7 @@ export default function TutorLessonNotesPage() {
                 <option value="grade_4">Primary 4 (Grade 4) - 12 Subjects</option>
                 <option value="grade_5">Primary 5 (Grade 5) - 12 Subjects</option>
                 <option value="grade_6">Primary 6 (Grade 6) - 12 Subjects</option>
-                <option value="grade_7" disabled>JSS 1 (Grade 7) - Pending</option>
+                <option value="grade_7">JSS 1 (Grade 7) - 18 Subjects</option>
                 <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
               </select>
             </div>
