@@ -1,0 +1,21 @@
+{
+  "name": "Edvoura Learning Hub",
+  "short_name": "Edvoura",
+  "description": "Comprehensive K-12 learning portal with official curriculum lesson notes, practice quizzes, and interactive 3D learning games.",
+  "start_url": "/dash/student",
+  "display": "standalone",
+  "background_color": "#060E1C",
+  "theme_color": "#F5C518",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sparkles, BookOpen, ChevronDown } from 'lucide-react';
+import { Sparkles, BookOpen, ChevronDown, Volume2, Square, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, PRIMARY_4_OFFICIAL_NOTES, PRIMARY_5_OFFICIAL_NOTES, PRIMARY_6_OFFICIAL_NOTES, JSS_1_OFFICIAL_NOTES, JSS_2_OFFICIAL_NOTES, JSS_3_OFFICIAL_NOTES, SS_1_OFFICIAL_NOTES, SS_2_OFFICIAL_NOTES, SS_3_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
@@ -52,6 +52,127 @@ const EXPLAINER_OPTIONS: Array<{ value: LessonExplainerMode; label: string }> = 
   { value: 'revision_notes', label: 'Revision Notes' },
 ];
 
+function AudioNotePlayer({ textToRead, title }: { textToRead: string; title: string }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [rate, setRate] = useState(1.0);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  function handlePlay() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setIsPlaying(true);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const cleanText = textToRead
+      .replace(/[*#_~`]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(`${title}. ${cleanText}`);
+    utterance.rate = rate;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+
+    utterance.onerror = () => {
+      setIsPlaying(false);
+      setIsPaused(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+    setIsPlaying(true);
+    setIsPaused(false);
+  }
+
+  function handlePause() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.pause();
+    setIsPaused(true);
+    setIsPlaying(false);
+  }
+
+  function handleStop() {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    setIsPlaying(false);
+    setIsPaused(false);
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border-[2px] border-dark bg-yellow/20 p-2.5 shadow-[2px_2px_0px_#060E1C]">
+      <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-dark">
+        <Volume2 className="h-4 w-4" />
+        <span>Audio Reader</span>
+      </div>
+
+      <div className="flex items-center gap-1.5 ml-auto">
+        {!isPlaying ? (
+          <button
+            type="button"
+            onClick={handlePlay}
+            className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark shadow-[1.5px_1.5px_0px_#060E1C] hover:translate-x-[0.5px] hover:translate-y-[0.5px]"
+          >
+            <Play className="h-3 w-3 fill-current" />
+            <span>{isPaused ? 'Resume' : 'Listen'}</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handlePause}
+            className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-amber-200 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark shadow-[1.5px_1.5px_0px_#060E1C]"
+          >
+            <Pause className="h-3 w-3 fill-current" />
+            <span>Pause</span>
+          </button>
+        )}
+
+        {(isPlaying || isPaused) && (
+          <button
+            type="button"
+            onClick={handleStop}
+            className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-rose-200 px-2 py-1 text-[10px] font-black uppercase text-dark shadow-[1.5px_1.5px_0px_#060E1C]"
+          >
+            <Square className="h-3 w-3 fill-current" />
+            <span>Stop</span>
+          </button>
+        )}
+
+        <select
+          value={rate}
+          onChange={(e) => {
+            const newRate = parseFloat(e.target.value);
+            setRate(newRate);
+            if (isPlaying) {
+              handleStop();
+            }
+          }}
+          className="rounded-lg border-[1.5px] border-dark bg-white px-1.5 py-1 text-[10px] font-black outline-none"
+        >
+          <option value={0.8}>0.8x</option>
+          <option value={1.0}>1.0x</option>
+          <option value={1.2}>1.2x</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+
 function StudentLessonNoteView({ note }: { note: AILessonNote }) {
   const [expanded, setExpanded] = useState(false);
   const content = note.content;
@@ -64,6 +185,15 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
   const realWorldExamples = Array.isArray(content.real_world_examples) ? content.real_world_examples : [];
   const practiceQuestions = Array.isArray(content.practice_questions) ? content.practice_questions : [];
   const learningChecks = Array.isArray(content.learning_checks) ? content.learning_checks : [];
+
+  const fullTextToRead = useMemo(() => {
+    return [
+      lessonSummary,
+      explanation,
+      keyPoints.join('. '),
+      importancePoints.join('. '),
+    ].filter(Boolean).join('. ');
+  }, [lessonSummary, explanation, keyPoints, importancePoints]);
 
   // Instructional materials for student — YouTube and image search links
   const materials = content.instructional_materials;
@@ -94,6 +224,11 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
         </div>
         <ChevronDown className={`h-5 w-5 mt-1 text-dark/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
       </button>
+
+      {/* Audio Reader */}
+      <div className="px-4 pb-3 sm:px-5">
+        <AudioNotePlayer textToRead={fullTextToRead || note.title} title={note.title} />
+      </div>
 
       {/* Expanded content */}
       {expanded ? (

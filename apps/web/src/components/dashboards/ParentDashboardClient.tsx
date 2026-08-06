@@ -199,22 +199,87 @@ export default function ParentDashboardClient({
           </div>
           <div className="p-6 sm:p-8">
             {activeChild ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Child Name</p>
-                  <p className="mt-1 text-xl font-black text-dark">{activeChild.fullName ?? 'Unnamed Child'}</p>
+              <div className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Child Name</p>
+                    <p className="mt-1 text-xl font-black text-dark">{activeChild.fullName ?? 'Unnamed Child'}</p>
+                  </div>
+                  <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Grade</p>
+                    <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeLevelName}</p>
+                  </div>
+                  <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Learner Band</p>
+                    <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeBandName}</p>
+                  </div>
+                  <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">School</p>
+                    <p className="mt-1 text-xl font-black text-dark truncate">{activeChild.schoolName ?? 'Not set'}</p>
+                  </div>
                 </div>
-                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Grade</p>
-                  <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeLevelName}</p>
-                </div>
-                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Learner Band</p>
-                  <p className="mt-1 text-xl font-black text-dark">{activeChild.gradeBandName}</p>
-                </div>
-                <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dark bg-off-white p-4 sm:p-5 shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] min-w-0">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">School</p>
-                  <p className="mt-1 text-xl font-black text-dark truncate">{activeChild.schoolName ?? 'Not set'}</p>
+
+                {/* Weekly Progress Report Digest */}
+                <div className="rounded-2xl border-[3px] border-dark bg-emerald-50 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C]">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b-[2px] border-dark pb-4">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-800">
+                        Automated Guardian Report
+                      </span>
+                      <h3 className="text-xl font-black text-dark">Weekly Progress Digest</h3>
+                    </div>
+                    <span className="rounded-lg border-[1.5px] border-dark bg-emerald-200 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-dark">
+                      Ready to Share
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div className="rounded-xl border-[2px] border-dark bg-white p-3 text-center">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-dark/50">Quiz Score Avg</p>
+                      <p className="text-lg font-black text-dark mt-0.5">{formatPercent(activeSummary?.averageScore ?? null)}</p>
+                    </div>
+                    <div className="rounded-xl border-[2px] border-dark bg-white p-3 text-center">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-dark/50">Attendance</p>
+                      <p className="text-lg font-black text-dark mt-0.5">{formatPercent(activeSummary?.attendanceRate ?? null)}</p>
+                    </div>
+                    <div className="rounded-xl border-[2px] border-dark bg-white p-3 text-center">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-dark/50">Graded Work</p>
+                      <p className="text-lg font-black text-dark mt-0.5">{activeSummary?.gradedSubmissions ?? 0}</p>
+                    </div>
+                    <div className="rounded-xl border-[2px] border-dark bg-white p-3 text-center">
+                      <p className="text-[9px] font-black uppercase tracking-wider text-dark/50">Active Classes</p>
+                      <p className="text-lg font-black text-dark mt-0.5">{activeSummary?.activeClasses ?? 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const childName = activeChild.fullName ?? 'Learner';
+                        const scoreStr = formatPercent(activeSummary?.averageScore ?? null);
+                        const text = `📊 *EDVOURA ACADEMIC DIGEST FOR ${childName.toUpperCase()}*\nGrade: ${activeChild.gradeLevelName}\nAverage Quiz Score: ${scoreStr}\nGraded Submissions: ${activeSummary?.gradedSubmissions ?? 0}\nAttendance Rate: ${formatPercent(activeSummary?.attendanceRate ?? null)}\n\nKeep up the great effort on Edvoura Learning Hub! 🚀`;
+                        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                        window.open(url, '_blank');
+                      }}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-green-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                    >
+                      📲 Share Weekly Digest on WhatsApp
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const childName = activeChild.fullName ?? 'Learner';
+                        const scoreStr = formatPercent(activeSummary?.averageScore ?? null);
+                        const text = `EDVOURA ACADEMIC DIGEST FOR ${childName.toUpperCase()}\nGrade: ${activeChild.gradeLevelName}\nAverage Quiz Score: ${scoreStr}\nGraded Submissions: ${activeSummary?.gradedSubmissions ?? 0}\nAttendance Rate: ${formatPercent(activeSummary?.attendanceRate ?? null)}\n\nReport generated by Edvoura Learning Hub Parent Portal.`;
+                        void navigator.clipboard.writeText(text);
+                        alert('Weekly Progress Report copied to clipboard!');
+                      }}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-white px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                    >
+                      📋 Copy Digest Text
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
