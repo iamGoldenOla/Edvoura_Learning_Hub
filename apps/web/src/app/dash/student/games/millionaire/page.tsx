@@ -257,8 +257,12 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinge
 import { getUniqueDynamicQuestion } from '@/lib/games/dynamicQuestionEngine';
 
 /* ═══════════════════════ DYNAMIC MILLIONAIRE QUESTION ENGINE ═══════════════════════ */
-function generateDynamicMillionaireQuestion(lvl: number): MillionaireQuestion {
-  const generated = getUniqueDynamicQuestion(lvl);
+function generateDynamicMillionaireQuestion(
+  lvl: number,
+  usedQuestions: string[] = [],
+  gradeBand?: '1-3' | '4-6' | '7-12'
+): MillionaireQuestion {
+  const generated = getUniqueDynamicQuestion(lvl, usedQuestions, gradeBand);
   return {
     q: generated.q,
     options: generated.options,
@@ -431,18 +435,12 @@ export default function MillionaireGame() {
 
   const activeLadder = CURRENCY_MAP[selectedCurrency].ladder;
 
-  // Load question for current level (STABLE & GRADE BAND ADAPTIVE)
+  // Load question for current level (100% NON-REPETITIVE & GRADE BAND ADAPTIVE)
   const loadQuestionForLevel = useCallback((lvl: number, currency: CurrencyCode) => {
     const ladder = CURRENCY_MAP[currency].ladder;
-    const availableQuestions = QUESTION_BANK.filter(q => q.level === lvl && !usedQuestionsRef.current.includes(q.q));
-    let q: MillionaireQuestion;
+    const bandLevel = band === '1-3' ? Math.min(lvl, 5) : band === '4-6' ? Math.min(lvl, 10) : lvl;
 
-    if (availableQuestions.length > 0) {
-      q = availableQuestions[Math.floor(Math.random() * availableQuestions.length)];
-    } else {
-      const bandLevel = band === '1-3' ? Math.min(lvl, 5) : band === '4-6' ? Math.min(lvl, 10) : lvl;
-      q = generateDynamicMillionaireQuestion(bandLevel);
-    }
+    const q = generateDynamicMillionaireQuestion(bandLevel, usedQuestionsRef.current, band);
 
     usedQuestionsRef.current.push(q.q);
     setActiveQ(q);

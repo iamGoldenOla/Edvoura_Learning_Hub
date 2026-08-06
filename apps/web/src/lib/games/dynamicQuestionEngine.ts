@@ -233,23 +233,26 @@ export function generateParametricCurrentAffairsQuestion(
 /**
  * Main function: Get a 100% unique, non-repeating question for any game
  */
-export function getUniqueDynamicQuestion(level: number, usedQuestionIds: string[] = []): GameQuestion {
-  const domainChoice = Math.floor(Math.random() * 4);
+export function getUniqueDynamicQuestion(
+  level: number,
+  usedTextsOrIds: string[] = [],
+  gradeBand?: '1-3' | '4-6' | '7-12'
+): GameQuestion {
+  const targetBand = gradeBand || (level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12');
+  let attempts = 0;
   let qObj: GameQuestion;
 
-  if (domainChoice === 0) {
-    qObj = generateMathQuestion(level);
-  } else if (domainChoice === 1) {
-    qObj = generateScienceQuestion(level);
-  } else {
-    const band = level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12';
-    qObj = generateParametricCurrentAffairsQuestion(band);
-  }
-
-  // Guarantee ID uniqueness
-  while (usedQuestionIds.includes(qObj.id)) {
-    qObj = generateParametricCurrentAffairsQuestion(level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12');
-  }
+  do {
+    const domainChoice = Math.floor(Math.random() * 3);
+    if (domainChoice === 0) {
+      qObj = generateMathQuestion(level);
+    } else if (domainChoice === 1) {
+      qObj = generateScienceQuestion(level);
+    } else {
+      qObj = generateParametricCurrentAffairsQuestion(targetBand);
+    }
+    attempts++;
+  } while ((usedTextsOrIds.includes(qObj.id) || usedTextsOrIds.includes(qObj.q)) && attempts < 50);
 
   return qObj;
 }
