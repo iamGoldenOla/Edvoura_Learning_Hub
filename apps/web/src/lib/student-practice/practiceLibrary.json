@@ -201,66 +201,11 @@
             {
               "topic": "Transportation",
               "cards": [
-                { "front": "What is transportation?", "back": "Transportation is the movement of people and goods from one place to another." },
-                { "front": "Name the three main types of transportation.", "back": "The three main types are land transportation, water transportation, and air transportation." },
-                { "front": "Give one example of land transportation.", "back": "Examples include bus, car, bicycle, train, and motorcycle." },
-                { "front": "Give one example of water transportation.", "back": "Examples include canoe, boat, ferry, and ship." },
-                { "front": "Why is transportation important?", "back": "Transportation helps people travel to school, work, hospitals, shops, and other communities." },
-                { "front": "What safety rule should we follow when using transport?", "back": "We should obey road and transport safety rules, board carefully, and respect drivers and other passengers." }
-              ]
-            },
-            {
-              "topic": "Family",
-              "cards": [
-                { "front": "What is a family?", "back": "A family is a group of people related by birth, marriage, or care who live together or support one another." },
-                { "front": "Who are members of a family?", "back": "Family members may include parents, children, grandparents, aunts, uncles, and cousins." },
-                { "front": "Why is family important?", "back": "Family gives love, care, protection, guidance, and support." },
-                { "front": "Name one duty children can do in the family.", "back": "Children can help with simple chores, respect elders, and keep their things tidy." },
-                { "front": "What is cooperation in the family?", "back": "Cooperation means family members helping one another and working together peacefully." },
-                { "front": "How can family members show love?", "back": "They can speak kindly, help each other, share, and care for one another." }
-              ]
-            }
-          ]
-        },
-        "English Language": {
-          "display_name": "English Language",
-          "topics": [
-            {
-              "topic": "Parts of Speech",
-              "cards": [
-                { "front": "What is a noun?", "back": "A noun is a naming word for a person, place, animal, or thing." },
-                { "front": "What is a pronoun?", "back": "A pronoun is a word used in place of a noun, such as he, she, it, or they." },
-                { "front": "What is a verb?", "back": "A verb is an action word or a being word. It tells what someone does or is." },
-                { "front": "What is an adjective?", "back": "An adjective is a describing word. It tells us more about a noun." },
-                { "front": "What is an adverb?", "back": "An adverb tells how, when, where, or how often something happens." },
-                { "front": "Why are parts of speech important?", "back": "They help us understand the job each word is doing so we can read, write, and speak clearly." }
-              ]
-            },
-            {
-              "topic": "Nouns and Verbs",
-              "cards": [
-                { "front": "What is a noun?", "back": "A noun is a naming word for a person, place, animal, or thing." },
-                { "front": "What is a verb?", "back": "A verb is an action word or a being word." },
-                { "front": "Give one example of a noun.", "back": "Examples of nouns are teacher, Lagos, goat, apple, and table." },
-                { "front": "Give one example of a verb.", "back": "Examples of verbs are run, jump, read, sing, is, and are." },
-                { "front": "How do nouns and verbs work together?", "back": "A noun tells who or what the sentence is about, and a verb tells what the noun is doing or being." },
-                { "front": "Find the noun and verb in 'The girl sings loudly.'", "back": "The noun is girl and the verb is sings." }
-              ]
-            }
-          ]
-        },
-        "Mathematics": {
-          "display_name": "Mathematics",
-          "topics": [
-            {
-              "topic": "Multiplication Facts",
-              "cards": [
-                { "front": "What does multiplication mean?", "back": "Multiplication means adding equal groups again and again." },
-                { "front": "What is 3 x 4?", "back": "3 x 4 = 12 because 4 + 4 + 4 = 12." },
-                { "front": "What is 5 x 2?", "back": "5 x 2 = 10." },
-                { "front": "What does 6 x 1 equal?", "back": "6 x 1 = 6 because any number multiplied by 1 stays the same." },
-                { "front": "What is 4 x 0?", "back": "4 x 0 = 0 because any number multiplied by 0 equals 0." },
-                { "front": "Why is multiplication useful?", "back": "Multiplication helps us count quickly and solve repeated addition problems." }
+                { "front": "What is transportation?", "back": "📖 Definition: Transportation is the movement of people, animals, and goods from one location to another.\n\n✏️ Worked Example: Taking a Danfo bus or train from Ikeja to Lagos Island to carry market goods.\n\n💡 Memory Tip: Land, Water, and Air are the 3 main ways to move!" },
+                { "front": "Name the three main types of transportation.", "back": "📖 Definition: Land, Water, and Air transport.\n\n✏️ Worked Example: Cars/Trains (Land), Boats/Ferries (Water), Planes (Air).\n\n💡 Memory Tip: Wheels for land, hulls for water, wings for air!" },
+                { "front": "What is a noun?", "back": "📖 Definition: A noun is a naming word for a person, place, animal, or thing.\n\n✏️ Worked Example: 'Tola' (person), 'Lagos' (place), 'Goat' (animal), 'Book' (thing).\n\n💡 Memory Tip: If you can see it, touch it, or name it, it's a noun!" },
+                { "front": "What is a verb?", "back": "📖 Definition: A verb is an action word or state of being.\n\n✏️ Worked Example: In 'Ade runs to school', 'runs' is the action verb.\n\n💡 Memory Tip: Verbs are what you DO!" },
+                { "front": "What is 3 x 4 in multiplication?", "back": "📖 Definition: Multiplication is repeated addition of equal groups.\n\n✏️ Worked Example: 3 x 4 means 4 + 4 + 4 = 12.\n\n💡 Memory Tip: 3 groups of 4 make 12!" }
               ]
             },
             {

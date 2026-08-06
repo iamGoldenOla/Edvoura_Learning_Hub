@@ -100,28 +100,20 @@ export async function POST(request: Request) {
     const displayTopic = topic || 'Core Principles';
     const placeholderCards = [
       {
-        front: `What is the core definition of ${displayTopic}?`,
-        back: `${displayTopic} in ${requestedSubject} refers to the systematic process and principles governing how concepts, structures, or natural/social phenomena operate. Key focus areas include primary functions, standard rules, and real-world applications.`,
+        front: `What is the definition and practical application of ${displayTopic}?`,
+        back: `📖 Definition: ${displayTopic} in ${requestedSubject} describes the fundamental rules, properties, and procedures governing how concepts operate.\n\n✏️ Worked Example: In practice, applying ${displayTopic} involves identifying the input parameters, substituting into the core formula/rule, and calculating step 1 through step 3.\n\n💡 Memory Tip: Remember the sequence: Define -> Identify Given Values -> Solve!`,
       },
       {
-        front: `What are the main components and key features of ${displayTopic}?`,
-        back: `1. Key Definition & Scope: Defines the boundary of the topic.\n2. Fundamental Rules / Formulas: Core equations or legal/logical frameworks.\n3. Real-World Applications: Practical uses in daily life, industry, or governance in Nigeria and globally.`,
+        front: `How is ${displayTopic} applied in real-life problem solving?`,
+        back: `📖 Definition: It provides structured solutions for real-world scenarios in health, technology, society, or nature.\n\n✏️ Worked Example: E.g. when measuring or calculating values in ${requestedSubject}, ${displayTopic} helps verify accuracy and eliminate errors.\n\n💡 Memory Tip: Always double-check your steps against standard guidelines.`,
       },
       {
-        front: `Why is ${displayTopic} important for WAEC / BECE / Exam Success in ${requestedSubject}?`,
-        back: `Understanding ${displayTopic} enables students to solve multi-step problems, explain cause-and-effect relationships, and accurately answer theory and objective questions in ${requestedSubject}.`,
+        front: `What is the key formula / rule for ${displayTopic}?`,
+        back: `📖 Definition: The governing equation or grammatical rule for ${displayTopic}.\n\n✏️ Worked Example: E.g., apply standard order of operations or grammatical subject-verb agreement to arrive at the solution.\n\n💡 Memory Tip: Master the core formula first before solving complex exam questions.`,
       },
       {
-        front: `What is a step-by-step example or practical application of ${displayTopic}?`,
-        back: `Step 1: Identify the given values or core terms.\nStep 2: Apply the relevant formula, rule, or grammatical principle.\nStep 3: Verify the answer against standard subject guidelines.`,
-      },
-      {
-        front: `What are common mistakes to avoid when studying ${displayTopic}?`,
-        back: `Avoid confusing basic terminology, omitting units/steps in calculations, or failing to connect theoretical principles to real-life practical examples.`,
-      },
-      {
-        front: `Summary & Key Memory Hook for ${displayTopic}`,
-        back: `Memory Tip: Associate ${displayTopic} with its primary function. Focus on definitions, core steps, and 3 key examples during revision sessions.`,
+        front: `Step-by-Step Breakdown for ${displayTopic}`,
+        back: `📖 Definition: A multi-step method to solve problems on ${displayTopic}.\n\n✏️ Worked Example: Step 1: Read the problem carefully. Step 2: Extract key data. Step 3: Compute final result with units.\n\n💡 Memory Tip: Practice 3 sample problems every day for exam confidence!`,
       },
     ];
 
