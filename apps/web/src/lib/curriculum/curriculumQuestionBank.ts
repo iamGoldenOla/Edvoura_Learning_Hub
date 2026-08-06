@@ -1437,7 +1437,146 @@ export const OFFICIAL_CURRICULUM_QUESTIONS: CurriculumQuestion[] = [
     questionText: 'What space agency accord framework governs principles for peaceful lunar and space exploration under NASA’s program?', options: ['Apollo Treaty', 'Artemis Accords', 'Outer Space Pact', 'Gateway Concordat'], correctIndex: 1,
     explanation: 'The Artemis Accords establish international guidelines for civil space exploration.', hint: 'Artemis Accords.', difficulty: 'easy'
   },
+  /* ═══════════════════════ GENERAL SCIENCE, WORLD HISTORY, GEOGRAPHY & SPORTS ═══════════════════════ */
+  // Science & Nature
+  {
+    id: 'gen_sci_1', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Integrated Science',
+    questionText: 'What is the chemical symbol for Iron (derived from Latin "Ferrum")?', options: ['Ir', 'Fe', 'In', 'Fr'], correctIndex: 1,
+    explanation: 'The chemical symbol Fe comes from the Latin word Ferrum.', hint: 'Fe.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sci_2', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Integrated Science',
+    questionText: 'How many bones are in an adult human skeleton?', options: ['180', '206', '215', '300'], correctIndex: 1,
+    explanation: 'Adult humans have 206 bones after infantile bones fuse.', hint: '206 bones.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sci_3', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Basic Science',
+    questionText: 'What is the hardest naturally occurring substance on Earth?', options: ['Quartz', 'Titanium', 'Diamond', 'Corundum'], correctIndex: 2,
+    explanation: 'Diamond rates 10 on the Mohs hardness scale.', hint: 'Diamond.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sci_4', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Basic Science',
+    questionText: 'Which organ in the human body secretes the hormone insulin?', options: ['Liver', 'Pancreas', 'Kidney', 'Gallbladder'], correctIndex: 1,
+    explanation: 'Beta cells in the islets of Langerhans in the pancreas produce insulin.', hint: 'Pancreas.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sci_5', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Basic Science',
+    questionText: 'What is the speed of light in a vacuum?', options: ['150,000,000 m/s', '299,792,458 m/s', '343 m/s', '500,000,000 m/s'], correctIndex: 1,
+    explanation: 'The speed of light in vacuum is exactly 299,792,458 metres per second (approx 3×10⁸ m/s).', hint: '299,792,458 m/s.', difficulty: 'medium'
+  },
+  {
+    id: 'gen_sci_6', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Basic Science',
+    questionText: 'Which organelle is known as the "powerhouse of the cell"?', options: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi apparatus'], correctIndex: 1,
+    explanation: 'Mitochondria produce ATP through cellular respiration.', hint: 'Mitochondria.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sci_7', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Basic Science',
+    questionText: 'Which vitamin is synthesized in human skin when exposed to sunlight?', options: ['Vitamin A', 'Vitamin C', 'Vitamin D', 'Vitamin K'], correctIndex: 2,
+    explanation: 'UVB radiation triggers Vitamin D synthesis in epidermal cells.', hint: 'Vitamin D.', difficulty: 'easy'
+  },
+
+  // World History & Civilizations
+  {
+    id: 'gen_hist_1', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'World History',
+    questionText: 'In which year did World War I break out in Europe?', options: ['1905', '1914', '1918', '1939'], correctIndex: 1,
+    explanation: 'WWI started in July 1914 following the assassination of Archduke Franz Ferdinand.', hint: '1914.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_hist_2', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'World History',
+    questionText: 'Who became the first Roman Emperor following the fall of the Roman Republic?', options: ['Julius Caesar', 'Augustus Caesar (Octavian)', 'Nero', 'Trajan'], correctIndex: 1,
+    explanation: 'Augustus Caesar became emperor in 27 BC.', hint: 'Augustus Caesar.', difficulty: 'medium'
+  },
+  {
+    id: 'gen_hist_3', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'World History',
+    questionText: 'Which country was the first to grant universal voting rights to women in 1893?', options: ['USA', 'UK', 'New Zealand', 'Australia'], correctIndex: 2,
+    explanation: 'New Zealand passed the Electoral Act in September 1893 giving women full suffrage.', hint: 'New Zealand.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_hist_4', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'World History',
+    questionText: 'Who was the first human to step onto the surface of the Moon in 1969?', options: ['Buzz Aldrin', 'Neil Armstrong', 'Yuri Gagarin', 'Michael Collins'], correctIndex: 1,
+    explanation: 'Neil Armstrong stepped onto the lunar surface during Apollo 11 on July 20, 1969.', hint: 'Neil Armstrong.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_hist_5', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'World History',
+    questionText: 'In what year was the historic Magna Carta signed by King John at Runnymede?', options: ['1066', '1215', '1415', '1689'], correctIndex: 1,
+    explanation: 'Magna Carta was agreed to by King John in June 1215.', hint: '1215.', difficulty: 'medium'
+  },
+  {
+    id: 'gen_hist_6', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'World History',
+    questionText: 'Which pre-Columbian civilization built the citadel of Machu Picchu in Peru?', options: ['Aztec Empire', 'Maya Civilization', 'Inca Empire', 'Olmec Empire'], correctIndex: 2,
+    explanation: 'Machu Picchu was built by the Inca Empire around 1450 AD.', hint: 'Inca Empire.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_hist_7', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'World History',
+    questionText: 'In which country did the Industrial Revolution originate in the 18th century?', options: ['France', 'United Kingdom', 'Germany', 'USA'], correctIndex: 1,
+    explanation: 'The Industrial Revolution began in Great Britain in the mid-1700s.', hint: 'United Kingdom.', difficulty: 'easy'
+  },
+
+  // World Geography
+  {
+    id: 'gen_geo_1', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Geography',
+    questionText: 'What is the largest continent on Earth by both land area and population?', options: ['Africa', 'North America', 'Asia', 'Europe'], correctIndex: 2,
+    explanation: 'Asia covers approx 44.5 million sq km and holds over 4.7 billion people.', hint: 'Asia.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_geo_2', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Geography',
+    questionText: 'Which continent contains the largest number of sovereign countries (54 nations)?', options: ['Asia', 'Europe', 'Africa', 'South America'], correctIndex: 2,
+    explanation: 'Africa has 54 fully recognized independent states.', hint: 'Africa.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_geo_3', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Geography',
+    questionText: 'What is the smallest independent city-state nation in the world by both area and population?', options: ['Monaco', 'Vatican City', 'San Marino', 'Liechtenstein'], correctIndex: 1,
+    explanation: 'Vatican City measures 0.49 sq km.', hint: 'Vatican City.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_geo_4', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Geography',
+    questionText: 'What is the capital city of Australia?', options: ['Sydney', 'Melbourne', 'Canberra', 'Brisbane'], correctIndex: 2,
+    explanation: 'Canberra was chosen as the capital in 1908 as a compromise between Sydney and Melbourne.', hint: 'Canberra.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_geo_5', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Geography',
+    questionText: 'What is the capital city of Brazil?', options: ['Rio de Janeiro', 'São Paulo', 'Brasília', 'Salvador'], correctIndex: 2,
+    explanation: 'Brasília replaced Rio de Janeiro as capital in 1960.', hint: 'Brasília.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_geo_6', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Geography',
+    questionText: 'What is the deepest lake in the world, holding 20% of Earth’s unfrozen surface freshwater?', options: ['Lake Superior', 'Lake Victoria', 'Lake Baikal (Russia)', 'Lake Tanganyika'], correctIndex: 2,
+    explanation: 'Lake Baikal in Siberia reaches a depth of 1,642 metres.', hint: 'Lake Baikal.', difficulty: 'medium'
+  },
+  {
+    id: 'gen_geo_7', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Geography',
+    questionText: 'Which country has the largest number of spoken indigenous languages (over 800)?', options: ['India', 'Nigeria', 'Papua New Guinea', 'Indonesia'], correctIndex: 2,
+    explanation: 'Papua New Guinea has over 840 active living languages.', hint: 'Papua New Guinea.', difficulty: 'medium'
+  },
+
+  // Sports & Arts
+  {
+    id: 'gen_sport_1', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Physical Education',
+    questionText: 'Which national football team has won the FIFA World Cup the most times (5 titles)?', options: ['Germany', 'Italy', 'Brazil', 'Argentina'], correctIndex: 2,
+    explanation: 'Brazil won World Cups in 1958, 1962, 1970, 1994, and 2002.', hint: 'Brazil.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sport_2', gradeCode: 'grade_7', gradeName: 'JSS 1 (Grade 7)', subjectName: 'Physical Education',
+    questionText: 'How many interconnected rings feature on the official Olympic Games flag?', options: ['4', '5', '6', '7'], correctIndex: 1,
+    explanation: 'The 5 rings represent the five inhabited continents of the world.', hint: '5 rings.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_sport_3', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Physical Education',
+    questionText: 'What is the official distance of a standard athletic marathon race?', options: ['40.0 km', '42.195 km', '45.0 km', '50.0 km'], correctIndex: 1,
+    explanation: 'The marathon distance was standardized at 42.195 km (26 miles 385 yards) in 1921.', hint: '42.195 km.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_art_1', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Literature',
+    questionText: 'Who authored the classic English novel "Pride and Prejudice"?', options: ['Charlotte Brontë', 'Jane Austen', 'Mary Shelley', 'George Eliot'], correctIndex: 1,
+    explanation: 'Jane Austen published Pride and Prejudice in 1813.', hint: 'Jane Austen.', difficulty: 'easy'
+  },
+  {
+    id: 'gen_art_2', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Fine Arts',
+    questionText: 'Which Renaissance master painted the Mona Lisa and The Last Supper?', options: ['Michelangelo', 'Leonardo da Vinci', 'Raphael', 'Donatello'], correctIndex: 1,
+    explanation: 'Leonardo da Vinci painted the Mona Lisa between 1503 and 1519.', hint: 'Leonardo da Vinci.', difficulty: 'easy'
+  },
 ];
+
 
 
 export function getCurriculumQuestionsByGrade(gradeCode: string): CurriculumQuestion[] {
