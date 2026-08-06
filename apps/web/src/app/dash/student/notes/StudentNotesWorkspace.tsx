@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Sparkles, BookOpen, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
-import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
+import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
 
 type ResourceCard = {
   id: string;
@@ -346,6 +346,7 @@ export default function StudentNotesWorkspace({
   const [publishedOfficialIds, setPublishedOfficialIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
     'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
+    'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
   ]);
 
   useEffect(() => {
@@ -358,7 +359,7 @@ export default function StudentNotesWorkspace({
     } catch (e) {}
   }, []);
 
-  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES];
+  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES, ...PRIMARY_3_OFFICIAL_NOTES];
   const visibleOfficialNotes = allOfficialNotes.filter(n => publishedOfficialIds.includes(n.id));
 
   return (

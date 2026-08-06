@@ -242,9 +242,112 @@ export const PRIMARY_2_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
   },
 ];
 
+export const PRIMARY_3_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'p3_basic_science',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Basic Science',
+    title: 'Primary 3 Basic Science Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 3 BASIC SCIENCE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 BASIC SCIENCE LESSON NOTES.pdf',
+    description: 'Comprehensive lesson notes covering living processes, technology, measurement, forces, and environmental conservation.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_mathematics',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Mathematics',
+    title: 'Primary 3 Mathematics Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 3 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 MATHEMATICS LESSON NOTES.pdf',
+    description: 'Lesson guides covering numbers up to 1000, long addition/subtraction, multiplication tables, division, and introductory geometry.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_english',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'English Language',
+    title: 'Primary 3 English Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 3 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    description: 'Grammar structures, composition writing, tenses, vocabulary expansion, and silent reading comprehension.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_history',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Nigerian History',
+    title: 'Primary 3 Nigerian History Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 3 NIGERIAN HISTORY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 NIGERIAN HISTORY LESSON NOTES.pdf',
+    description: 'Pre-colonial trade routes, ethnic groups, regional geography, national achievements, and pioneer leaders.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_arts',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'Primary 3 Cultural & Creative Arts Lesson Notes',
+    fileName: 'PRIMARY 3 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    description: 'Modelling, traditional crafts, playwriting basics, musical instruments, and cultural festivals across Nigeria.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_social',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'Primary 3 Social & Citizenship Studies Lesson Notes',
+    fileName: 'PRIMARY 3 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'Democracy concepts, constitution basics, environmental protection, consumer rights, and community cooperation.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_phe',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Physical & Health Education',
+    title: 'Primary 3 Physical & Health Education Lesson Notes',
+    fileName: 'PRIMARY 3 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    description: 'Gymnastic movements, team sports, drug awareness, personal hygiene, and safety precautions.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_crs',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Christian Religious Studies',
+    title: 'Primary 3 Christian Religious Studies Lesson Notes',
+    fileName: 'PRIMARY 3 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'Old Testament prophets, parables of Jesus, Christian ethics, forgiveness, and moral courage.',
+    isPublished: true,
+  },
+  {
+    id: 'p3_irs',
+    gradeCode: 'grade_3',
+    gradeName: 'Primary 3 (Grade 3)',
+    subjectName: 'Islamic Studies',
+    title: 'Primary 3 Islamic Studies Lesson Notes',
+    fileName: 'PRIMARY 3 ISLAMIC STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_3/PRIMARY 3 ISLAMIC STUDIES LESSON NOTES.pdf',
+    description: 'Surah memorization, Fiqh of Taharah & Salah, Islamic history, and ethical character building.',
+    isPublished: true,
+  },
+];
+
 export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote[]> = {
   grade_1: PRIMARY_1_OFFICIAL_NOTES,
   grade_2: PRIMARY_2_OFFICIAL_NOTES,
+  grade_3: PRIMARY_3_OFFICIAL_NOTES,
 };
 
 const basePlans: LessonPlan[] = [
@@ -431,10 +534,11 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_2');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_3');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
     'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
+    'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
   ]);
 
   // Load published official notes from localStorage
@@ -588,7 +692,7 @@ export default function TutorLessonNotesPage() {
                   📚 Official Purchased Curriculum
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
-                  {selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
+                  {selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
                 </h2>
                 <p className="text-xs sm:text-sm font-bold text-dark/70">
                   Published notes are automatically available to students on their dashboard & class library.
@@ -602,6 +706,7 @@ export default function TutorLessonNotesPage() {
               >
                 <option value="grade_1">Primary 1 (Grade 1) - 9 Subjects</option>
                 <option value="grade_2">Primary 2 (Grade 2) - 9 Subjects</option>
+                <option value="grade_3">Primary 3 (Grade 3) - 9 Subjects</option>
                 <option value="grade_7" disabled>JSS 1 (Grade 7) - Pending</option>
                 <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
               </select>
