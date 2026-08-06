@@ -344,10 +344,146 @@ export const PRIMARY_3_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
   },
 ];
 
+export const PRIMARY_4_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'p4_basic_science',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Basic Science & Technology',
+    title: 'Primary 4 Basic Science and Technology Lesson Notes',
+    fileName: 'PRIMARY 4 BASIC SCIENCE AND TECHNOLOGY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 BASIC SCIENCE AND TECHNOLOGY LESSON NOTES.pdf',
+    description: 'Comprehensive lesson notes covering living organisms, environmental pollution, energy forms, materials, and simple mechanisms.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_digital_literacy',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Basic Digital Literacy',
+    title: 'Primary 4 Basic Digital Literacy Lesson Notes',
+    fileName: 'PRIMARY 4 BASIC DIGITAL LITERACY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 BASIC DIGITAL LITERACY LESSON NOTES.pdf',
+    description: 'Introduction to computers, hardware/software, internet basics, typing, digital safety, and productivity applications.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_mathematics',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Mathematics',
+    title: 'Primary 4 Mathematics Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 4 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 MATHEMATICS LESSON NOTES.pdf',
+    description: 'Numbers up to 100,000, place value, long division, fractions, decimals, perimeter, area, and estimation.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_english',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'English Language',
+    title: 'Primary 4 English Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 4 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    description: 'Parts of speech, clauses, narrative writing, descriptive essays, listening comprehension, and speech work.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_french',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'French Language',
+    title: 'Primary 4 French Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 4 FRENCH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 FRENCH LANGUAGE LESSON NOTES.pdf',
+    description: 'Basic French greetings, family vocabulary, numbers, classroom objects, simple dialogue, and introductory grammar.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_history',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Nigerian History',
+    title: 'Primary 4 Nigerian History Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 4 NIGERIAN HISTORY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 NIGERIAN HISTORY LESSON NOTES.pdf',
+    description: 'Colonial period in Nigeria, amalgamation of 1914, nationalist leaders, independence movement, and constitutional developments.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_arts',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'Primary 4 Cultural & Creative Arts Lesson Notes',
+    fileName: 'PRIMARY 4 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    description: 'Sculpture, tie and dye, traditional music composition, theatre production, and Nigerian cultural heritage.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_prevocational',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Pre-Vocational Studies',
+    title: 'Primary 4 Pre-Vocational Studies Lesson Notes',
+    fileName: 'PRIMARY 4 PRE-VOCATIONAL STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 PRE-VOCATIONAL STUDIES LESSON NOTES.pdf',
+    description: 'Agriculture fundamentals, crop farming, livestock production, home economics, nutrition, and sewing basics.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_social',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'Primary 4 Social & Citizenship Studies Lesson Notes',
+    fileName: 'PRIMARY 4 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'Social problems, drug abuse prevention, civic responsibilities, state governance, and national unity.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_phe',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Physical & Health Education',
+    title: 'Primary 4 Physical & Health Education Lesson Notes',
+    fileName: 'PRIMARY 4 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    description: 'Athletic field events, ball games, community health, personal fitness, nutrition, and emergency first aid.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_crs',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Christian Religious Studies',
+    title: 'Primary 4 Christian Religious Studies Lesson Notes',
+    fileName: 'PRIMARY 4 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'God as Creator, life of Jesus Christ, miracles, Christian virtues, citizenship, and moral integrity.',
+    isPublished: true,
+  },
+  {
+    id: 'p4_irs',
+    gradeCode: 'grade_4',
+    gradeName: 'Primary 4 (Grade 4)',
+    subjectName: 'Islamic Religious Studies',
+    title: 'Primary 4 Islamic Religious Studies Lesson Notes',
+    fileName: 'PRIMARY 4 ISLAMIC RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_4/PRIMARY 4 ISLAMIC RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'Surah recitation & translation, Hadith study, Pillars of Islam, Sunnah practices, and Islamic moral conduct.',
+    isPublished: true,
+  },
+];
+
 export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote[]> = {
   grade_1: PRIMARY_1_OFFICIAL_NOTES,
   grade_2: PRIMARY_2_OFFICIAL_NOTES,
   grade_3: PRIMARY_3_OFFICIAL_NOTES,
+  grade_4: PRIMARY_4_OFFICIAL_NOTES,
 };
 
 const basePlans: LessonPlan[] = [
@@ -534,11 +670,12 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_3');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_4');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
     'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
     'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
+    'p4_basic_science', 'p4_digital_literacy', 'p4_mathematics', 'p4_english', 'p4_french', 'p4_history', 'p4_arts', 'p4_prevocational', 'p4_social', 'p4_phe', 'p4_crs', 'p4_irs',
   ]);
 
   // Load published official notes from localStorage
@@ -692,7 +829,7 @@ export default function TutorLessonNotesPage() {
                   📚 Official Purchased Curriculum
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
-                  {selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
+                  {selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
                 </h2>
                 <p className="text-xs sm:text-sm font-bold text-dark/70">
                   Published notes are automatically available to students on their dashboard & class library.
@@ -707,6 +844,7 @@ export default function TutorLessonNotesPage() {
                 <option value="grade_1">Primary 1 (Grade 1) - 9 Subjects</option>
                 <option value="grade_2">Primary 2 (Grade 2) - 9 Subjects</option>
                 <option value="grade_3">Primary 3 (Grade 3) - 9 Subjects</option>
+                <option value="grade_4">Primary 4 (Grade 4) - 12 Subjects</option>
                 <option value="grade_7" disabled>JSS 1 (Grade 7) - Pending</option>
                 <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
               </select>
