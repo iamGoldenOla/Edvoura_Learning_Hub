@@ -64,12 +64,10 @@ export default function AIContentGeneratorForm({
   return (
     <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-yellow/20 p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] min-w-0">
       <p className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-dark/70">
-        Edvoura AI Generator
+        Edvoura Content Creator
       </p>
       <p className="mb-4 rounded-[20px] sm:rounded-xl border-[2px] border-dark bg-white p-3 sm:p-4 text-[10px] sm:text-xs font-bold text-dark/70 break-words">
-        AI generation may require a secure Puter sign-in session. This is only
-        used for Tutor and Super Admin dashboard AI tools. Students will never
-        see this.
+        Fill in the lesson details below to generate comprehensive lesson notes, practice questions, worked examples, or spelling content for your class.
       </p>
       <div className="grid gap-3 sm:gap-4 md:grid-cols-2 min-w-0">
         <label className="space-y-1">
@@ -150,7 +148,7 @@ export default function AIContentGeneratorForm({
         <textarea
           value={extraInstruction}
           onChange={(event) => setExtraInstruction(event.target.value)}
-          placeholder="Extra tutor/admin instruction, preferred teaching approach, or material preference"
+          placeholder="Extra tutor instruction, preferred teaching approach, or material preference"
           rows={3}
           className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold outline-none min-w-0"
         />
@@ -158,12 +156,12 @@ export default function AIContentGeneratorForm({
 
       <label className="mt-3 block space-y-1">
         <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">
-          Existing Content (for Improve / Regenerate)
+          Existing Content / Notes (for Improve / Regenerate)
         </span>
         <textarea
           value={existingContent}
           onChange={(event) => setExistingContent(event.target.value)}
-          placeholder="Paste existing JSON/content for improve or regenerate tasks."
+          placeholder="Paste existing lesson notes or text for improve or regenerate tasks."
           rows={4}
           className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold outline-none min-w-0"
         />

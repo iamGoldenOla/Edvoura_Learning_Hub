@@ -22,6 +22,7 @@ import { createClient } from "@/utils/supabase/client";
 import { createQuizOrResource, deleteAssignment, deleteQuiz, deleteResource, updateAssignment } from "./actions";
 import { PDFViewerModal } from "@/components/ui/PDFViewerModal";
 import { ComprehensionLibrary } from "./ComprehensionLibrary";
+import AIContentPreview from "@/components/dashboards/ai/AIContentPreview";
 
 type SubjectOption = {
   id: string;
@@ -1364,9 +1365,9 @@ export default function TutorBuilderPage() {
                               )}
                             </div>
                             {aiResult !== null ? (
-                              <pre className="whitespace-pre-wrap font-mono text-[10px] overflow-auto max-h-[400px]">
-                                {JSON.stringify(aiResult, null, 2)}
-                              </pre>
+                              <div className="overflow-auto max-h-[500px]">
+                                <AIContentPreview content={aiResult} />
+                              </div>
                             ) : (
                               <div className="flex flex-col items-center justify-center h-full text-center space-y-3">
                                 <Sparkles className="w-12 h-12 text-dark/10" />
@@ -1579,9 +1580,9 @@ export default function TutorBuilderPage() {
                         ID: {aiContentId?.split("-")[0]}...
                       </span>
                     </div>
-                    <pre className="whitespace-pre-wrap font-mono text-[9px] sm:text-[10px] overflow-auto max-h-[320px] p-3 sm:p-4 bg-gray-50 border-[2px] border-dark rounded-xl break-words">
-                      {JSON.stringify(aiResult, null, 2)}
-                    </pre>
+                    <div className="overflow-auto max-h-[500px] p-2 bg-gray-50 border-[2px] border-dark rounded-xl">
+                      <AIContentPreview content={aiResult} />
+                    </div>
                   </div>
                 ) : null}
               </div>

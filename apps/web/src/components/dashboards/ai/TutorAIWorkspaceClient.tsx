@@ -68,7 +68,7 @@ export default function TutorAIWorkspaceClient() {
 
   async function connectPuter() {
     setIsConnectingPuter(true);
-    setFeedback("Opening Puter sign-in...");
+    setFeedback("Connecting to Edvoura AI engine...");
     try {
       const user = await signInToPuter();
       const label =
@@ -78,10 +78,10 @@ export default function TutorAIWorkspaceClient() {
             ? user.email
             : "connected user";
       setPuterUserLabel(label);
-      setFeedback(`Puter connected as ${label}.`);
+      setFeedback("Connected to Edvoura AI engine.");
       return label;
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to sign in to Puter.";
+      const message = error instanceof Error ? error.message : "Edvoura AI engine service unavailable.";
       setFeedback(message);
       throw new Error(message);
     } finally {
@@ -98,7 +98,7 @@ export default function TutorAIWorkspaceClient() {
     setIsGenerating(true);
     setFeedback(
       usesLocalBlueprintEngine(payload.taskType)
-        ? "Generating content with the Edvoura lesson blueprint engine..."
+        ? "Generating lesson content..."
         : "Generating content with Edvoura AI...",
     );
     try {
@@ -110,17 +110,13 @@ export default function TutorAIWorkspaceClient() {
         ...payload,
       });
       setPreviewContent(generated.content);
-      setFeedback(
-        usesLocalBlueprintEngine(payload.taskType)
-          ? "Draft generated from the Edvoura lesson blueprint engine and saved."
-          : "Draft generated and saved. Submit it for super admin review.",
-      );
+      setFeedback("Draft generated successfully and saved to your workspace.");
       await loadRecords();
     } catch (error) {
       setFeedback(
         error instanceof Error
           ? error.message
-          : "AI generation is temporarily unavailable. You can still create or edit this content manually.",
+          : "AI generation is temporarily unavailable. You can still create or edit content manually.",
       );
     } finally {
       setIsGenerating(false);
@@ -131,7 +127,7 @@ export default function TutorAIWorkspaceClient() {
     setIsSubmitting(contentId);
     try {
       await submitForReview(contentId);
-      setFeedback("Content submitted for super admin review.");
+      setFeedback("Content submitted for review.");
       await loadRecords();
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "Unable to submit for review.");
@@ -233,28 +229,11 @@ export default function TutorAIWorkspaceClient() {
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-6 p-4 pb-24 sm:space-y-8 sm:p-8">
       <section className="rounded-[20px] sm:rounded-[24px] border-[3px] sm:border-[4px] border-dark bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] min-w-0">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-dark break-words">Tutor AI Content Generator</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-dark break-words">Edvoura Smart Lesson & Content Assistant</h1>
         <p className="mt-2 text-xs sm:text-sm font-bold text-dark/70 break-words">
           Generate teacher-facing lesson plans, student-facing lesson notes, quizzes, spelling content,
-          and adaptive draft content. Tutors can publish directly or submit for super admin review.
+          and adaptive classroom materials. Tutors can publish directly to student dashboards or save as drafts.
         </p>
-        <div className="mt-4 flex flex-col items-stretch sm:items-center gap-3 sm:flex-row sm:flex-wrap min-w-0">
-          <div className="rounded-xl border-[2px] border-dark bg-off-white px-3 py-2 text-[10px] sm:text-xs font-black text-dark break-words text-center sm:text-left">
-            Puter Session: {puterUserLabel ? `Connected as ${puterUserLabel}` : "Not connected"}
-          </div>
-          <Button
-            type="button"
-            onClick={() => void connectPuter()}
-            disabled={isConnectingPuter}
-            className="w-full sm:w-auto bg-white border-[2px] border-dark text-dark px-4 py-2 text-[10px] sm:text-xs font-black shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-          >
-            {isConnectingPuter
-              ? "Connecting..."
-              : puterUserLabel
-                ? "Reconnect Puter"
-                : "Connect Puter"}
-          </Button>
-        </div>
       </section>
 
       {feedback ? (
