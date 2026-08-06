@@ -55,13 +55,17 @@ function playMillionaireMP3(
     const triggerEnded = () => {
       if (!hasEnded) {
         hasEnded = true;
+        try {
+          audio.pause();
+        } catch (e) {}
         if (onEnded) onEnded();
       }
     };
 
     if (onEnded) {
       audio.onended = triggerEnded;
-      setTimeout(triggerEnded, 2800);
+      // Set safety timeout matching full MP3 duration (~4.5s for lets_play)
+      setTimeout(triggerEnded, soundType === 'lets_play' ? 4500 : 2500);
     }
 
     audio.play().catch(() => {
@@ -97,11 +101,18 @@ function speakVoice(text: string, isMuted: boolean = false, onComplete?: () => v
     return;
   }
   try {
+    // Pause any background MP3 audio so speech synthesis voice is 100% clear and un-interfered
+    Object.values(mp3AudioCache).forEach(audio => {
+      try {
+        if (!audio.paused) audio.pause();
+      } catch (e) {}
+    });
+
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.05;
+    utterance.rate = 1.0;
     utterance.pitch = 1.0;
-    utterance.volume = 0.95;
+    utterance.volume = 1.0;
 
     let hasCompleted = false;
     const triggerComplete = () => {
@@ -127,45 +138,65 @@ function playMillionaireSFX(type: 'lock' | 'win' | 'lose' | 'lifeline' | 'stinge
   if (!ctx) return;
 
   try {
+    const now = ctx.currentTime;
     if (type === 'lights_down') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(140, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(35, ctx.currentTime + 0.7);
-      gain.gain.setValueAtTime(0.5, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.7);
+      osc.frequency.setValueAtTime(140, now);
+      osc.frequency.exponentialRampToValueAtTime(35, now + 0.7);
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.7);
+      osc.start(now); osc.stop(now + 0.7);
     } else if (type === 'suspense_pad') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(110, ctx.currentTime);
-      osc.frequency.linearRampToValueAtTime(116, ctx.currentTime + 1.8);
-      gain.gain.setValueAtTime(0.3, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 1.8);
+      osc.frequency.setValueAtTime(110, now);
+      osc.frequency.linearRampToValueAtTime(116, now + 1.8);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.linearRampToValueAtTime(0.01, now + 1.8);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 1.8);
+      osc.start(now); osc.stop(now + 1.8);
     } else if (type === 'heartbeat') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(60, ctx.currentTime);
-      gain.gain.setValueAtTime(0.4, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+      osc.frequency.setValueAtTime(60, now);
+      gain.gain.setValueAtTime(0.4, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.15);
-    } else if (type === 'lock' || type === 'stinger') {
+      osc.start(now); osc.stop(now + 0.15);
+    } else if (type === 'lock') {
+      // Sophisticated Studio Option Lock Sound: Warm Dual Sine Sub-Tone + Resonant Chime (No harsh sawtooth!)
+      const subOsc = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(90, now);
+      subOsc.frequency.exponentialRampToValueAtTime(120, now + 0.2);
+      subGain.gain.setValueAtTime(0.3, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      subOsc.connect(subGain); subGain.connect(ctx.destination);
+      subOsc.start(now); subOsc.stop(now + 0.25);
+
+      const chimeOsc = ctx.createOscillator();
+      const chimeGain = ctx.createGain();
+      chimeOsc.type = 'sine';
+      chimeOsc.frequency.setValueAtTime(523.25, now);
+      chimeGain.gain.setValueAtTime(0.2, now);
+      chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      chimeOsc.connect(chimeGain); chimeGain.connect(ctx.destination);
+      chimeOsc.start(now); chimeOsc.stop(now + 0.2);
+    } else if (type === 'stinger') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(280, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(); osc.stop(ctx.currentTime + 0.25);
+      osc.start(now); osc.stop(now + 0.25);
     } else if (type === 'win') {
       const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
       notes.forEach((freq, idx) => {
