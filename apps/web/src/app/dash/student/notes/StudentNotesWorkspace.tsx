@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Sparkles, BookOpen, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
-import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, PRIMARY_4_OFFICIAL_NOTES, PRIMARY_5_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
+import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, PRIMARY_4_OFFICIAL_NOTES, PRIMARY_5_OFFICIAL_NOTES, PRIMARY_6_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
 
 type ResourceCard = {
   id: string;
@@ -349,6 +349,7 @@ export default function StudentNotesWorkspace({
     'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
     'p4_basic_science', 'p4_digital_literacy', 'p4_mathematics', 'p4_english', 'p4_french', 'p4_history', 'p4_arts', 'p4_prevocational', 'p4_social', 'p4_phe', 'p4_crs', 'p4_irs',
     'p5_basic_science', 'p5_digital_literacy', 'p5_mathematics', 'p5_english', 'p5_french', 'p5_history', 'p5_arts', 'p5_prevocational', 'p5_social', 'p5_phe', 'p5_crs', 'p5_irs',
+    'p6_basic_science', 'p6_digital_literacy', 'p6_mathematics', 'p6_english', 'p6_french', 'p6_history', 'p6_arts', 'p6_prevocational', 'p6_social', 'p6_phe', 'p6_crs', 'p6_irs',
   ]);
 
   useEffect(() => {
@@ -361,7 +362,7 @@ export default function StudentNotesWorkspace({
     } catch (e) {}
   }, []);
 
-  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES, ...PRIMARY_3_OFFICIAL_NOTES, ...PRIMARY_4_OFFICIAL_NOTES, ...PRIMARY_5_OFFICIAL_NOTES];
+  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES, ...PRIMARY_3_OFFICIAL_NOTES, ...PRIMARY_4_OFFICIAL_NOTES, ...PRIMARY_5_OFFICIAL_NOTES, ...PRIMARY_6_OFFICIAL_NOTES];
   const visibleOfficialNotes = allOfficialNotes.filter(n => publishedOfficialIds.includes(n.id));
 
   return (

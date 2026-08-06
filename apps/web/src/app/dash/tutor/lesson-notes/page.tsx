@@ -614,12 +614,148 @@ export const PRIMARY_5_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
   },
 ];
 
+export const PRIMARY_6_OFFICIAL_NOTES: OfficialCurriculumNote[] = [
+  {
+    id: 'p6_basic_science',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Basic Science & Technology',
+    title: 'Primary 6 Basic Science & Technology Lesson Notes',
+    fileName: 'PRIMARY 6 BASIC SCIENCE & TECHNOLOGY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 BASIC SCIENCE & TECHNOLOGY LESSON NOTES.pdf',
+    description: 'National Common Entrance preparation for Science: Earth & space science, solar system, energy transformation, body systems, and simple automation.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_digital_literacy',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Digital Literacy',
+    title: 'Primary 6 Digital Literacy Lesson Notes',
+    fileName: 'PRIMARY 6 DIGITAL LITERACY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 DIGITAL LITERACY LESSON NOTES.pdf',
+    description: 'Advanced computer literacy, algorithms, block programming, internet security, multimedia editing, and tech ethics.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_mathematics',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Mathematics',
+    title: 'Primary 6 Mathematics Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 6 MATHEMATICS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 MATHEMATICS LESSON NOTES.pdf',
+    description: 'National Common Entrance Math prep: Advanced word problems, compound interest, probability, algebra, 3D geometry, and quantitative reasoning.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_english',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'English Language',
+    title: 'Primary 6 English Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 6 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 ENGLISH LANGUAGE LESSON NOTES.pdf',
+    description: 'National Common Entrance English prep: Essay composition, comprehension strategies, figure of speech, verbal reasoning, and advanced grammar.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_french',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'French Language',
+    title: 'Primary 6 French Language Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 6 FRENCH LANGUAGE LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 FRENCH LANGUAGE LESSON NOTES.pdf',
+    description: 'Advanced primary French, essay writing in French, complex sentence structure, listening comprehension, and French culture.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_history',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Nigerian History',
+    title: 'Primary 6 Nigerian History Comprehensive Lesson Notes',
+    fileName: 'PRIMARY 6 NIGERIAN HISTORY LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 NIGERIAN HISTORY LESSON NOTES.pdf',
+    description: 'Comprehensive historical overview of Nigerian nationhood, founding fathers, constitutions, foreign relations, and modern history.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_arts',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Cultural & Creative Arts',
+    title: 'Primary 6 Cultural & Creative Arts Lesson Notes',
+    fileName: 'PRIMARY 6 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 CULTURAL AND CREATIVE ARTS LESSON NOTES.pdf',
+    description: 'Exhibition planning, art criticism, African musical heritage, stagecraft, set design, and creative entrepreneurship.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_prevocational',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Pre-Vocational Studies',
+    title: 'Primary 6 Pre-Vocational Studies Lesson Notes',
+    fileName: 'PRIMARY 6 PREVOCATIONAL STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 PREVOCATIONAL STUDIES LESSON NOTES.pdf',
+    description: 'Agricultural processing, agribusiness management, clothing construction, meal planning, and home budgeting.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_social',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Social & Citizenship Studies',
+    title: 'Primary 6 Social & Citizenship Studies Lesson Notes',
+    fileName: 'PRIMARY 6 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 SOCIAL AND CITIZENSHIP STUDIES LESSON NOTES.pdf',
+    description: 'Global citizenship, human rights violations, anti-corruption agencies (EFCC, ICPC), national security, and civic participation.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_phe',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Physical & Health Education',
+    title: 'Primary 6 Physical & Health Education Lesson Notes',
+    fileName: 'PRIMARY 6 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 PHYSICAL AND HEALTH EDUCATION LESSON NOTES.pdf',
+    description: 'Tournament management, sports injuries & CPR, community health sanitation, substance abuse prevention, and physical fitness testing.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_crs',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Christian Religious Studies',
+    title: 'Primary 6 Christian Religious Studies Lesson Notes',
+    fileName: 'PRIMARY 6 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 CHRISTIAN RELIGIOUS STUDIES LESSON NOTES.pdf',
+    description: 'The Church and society, Christian leadership principles, love and harmony among religious groups, and prep for NCEE CRS.',
+    isPublished: true,
+  },
+  {
+    id: 'p6_irs',
+    gradeCode: 'grade_6',
+    gradeName: 'Primary 6 (Grade 6)',
+    subjectName: 'Islamic Studies',
+    title: 'Primary 6 Islamic Studies Lesson Notes',
+    fileName: 'PRIMARY 6 ISLAMIC STUDIES LESSON NOTES.pdf',
+    fileUrl: '/curriculum/primary_6/PRIMARY 6 ISLAMIC STUDIES LESSON NOTES.pdf',
+    description: 'Exegesis (Tafseer) of selected Surahs, Hadith memorization, Islamic jurisprudence (Fiqh), and preparation for NCEE IRS.',
+    isPublished: true,
+  },
+];
+
 export const OFFICIAL_CURRICULUM_DATABASE: Record<string, OfficialCurriculumNote[]> = {
   grade_1: PRIMARY_1_OFFICIAL_NOTES,
   grade_2: PRIMARY_2_OFFICIAL_NOTES,
   grade_3: PRIMARY_3_OFFICIAL_NOTES,
   grade_4: PRIMARY_4_OFFICIAL_NOTES,
   grade_5: PRIMARY_5_OFFICIAL_NOTES,
+  grade_6: PRIMARY_6_OFFICIAL_NOTES,
 };
 
 const basePlans: LessonPlan[] = [
@@ -806,13 +942,14 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_5');
+  const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_6');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
     'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
     'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
     'p4_basic_science', 'p4_digital_literacy', 'p4_mathematics', 'p4_english', 'p4_french', 'p4_history', 'p4_arts', 'p4_prevocational', 'p4_social', 'p4_phe', 'p4_crs', 'p4_irs',
     'p5_basic_science', 'p5_digital_literacy', 'p5_mathematics', 'p5_english', 'p5_french', 'p5_history', 'p5_arts', 'p5_prevocational', 'p5_social', 'p5_phe', 'p5_crs', 'p5_irs',
+    'p6_basic_science', 'p6_digital_literacy', 'p6_mathematics', 'p6_english', 'p6_french', 'p6_history', 'p6_arts', 'p6_prevocational', 'p6_social', 'p6_phe', 'p6_crs', 'p6_irs',
   ]);
 
   // Load published official notes from localStorage
@@ -966,7 +1103,7 @@ export default function TutorLessonNotesPage() {
                   📚 Official Purchased Curriculum
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
-                  {selectedGradeFilter === 'grade_5' ? 'Primary 5 (Grade 5)' : selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
+                  {selectedGradeFilter === 'grade_6' ? 'Primary 6 (Grade 6)' : selectedGradeFilter === 'grade_5' ? 'Primary 5 (Grade 5)' : selectedGradeFilter === 'grade_4' ? 'Primary 4 (Grade 4)' : selectedGradeFilter === 'grade_3' ? 'Primary 3 (Grade 3)' : selectedGradeFilter === 'grade_2' ? 'Primary 2 (Grade 2)' : 'Primary 1 (Grade 1)'} Master Lesson Notes
                 </h2>
                 <p className="text-xs sm:text-sm font-bold text-dark/70">
                   Published notes are automatically available to students on their dashboard & class library.
@@ -983,6 +1120,7 @@ export default function TutorLessonNotesPage() {
                 <option value="grade_3">Primary 3 (Grade 3) - 9 Subjects</option>
                 <option value="grade_4">Primary 4 (Grade 4) - 12 Subjects</option>
                 <option value="grade_5">Primary 5 (Grade 5) - 12 Subjects</option>
+                <option value="grade_6">Primary 6 (Grade 6) - 12 Subjects</option>
                 <option value="grade_7" disabled>JSS 1 (Grade 7) - Pending</option>
                 <option value="grade_12" disabled>SS 3 (Grade 12) - Pending</option>
               </select>
