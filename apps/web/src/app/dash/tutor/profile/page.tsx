@@ -83,6 +83,9 @@ export default async function TutorProfileDashboard() {
         availabilityNotes: '',
       };
 
+  const { data: { session } } = await supabase.auth.getSession();
+  const meta = session?.user?.user_metadata ?? {};
+
   return (
     <ProfileSettingsClient
       viewer={viewer.currentUser}
@@ -93,6 +96,9 @@ export default async function TutorProfileDashboard() {
         bio: tutorProfile.bio ?? '',
         expertiseSummary: tutorProfile.expertiseSummary ?? '',
         availabilityNotes: tutorProfile.availabilityNotes ?? '',
+        tutorType: (meta.tutor_type as string) || 'class_teacher',
+        tutorGrade: (meta.tutor_grade as string) || 'grade_1',
+        tutorSubjects: (meta.tutor_subjects as string) || 'Mathematics',
       }}
       tutorClasses={tutorClasses}
       studentProfile={null}

@@ -43,6 +43,9 @@ function SignupPageContent() {
   const [parentChildrenCount, setParentChildrenCount] = useState(1);
   const [parentChildren, setParentChildren] = useState<ParentChildDraft[]>([createEmptyParentChild()]);
   const [existingChildLinks, setExistingChildLinks] = useState<string[]>(['']);
+  const [tutorType, setTutorType] = useState<'class_teacher' | 'subject_teacher' | 'both'>('class_teacher');
+  const [tutorGrade, setTutorGrade] = useState<string>('grade_1');
+  const [tutorSubjects, setTutorSubjects] = useState<string>('Mathematics, English Studies');
   const [state, formAction, isPending] = useActionState(signup, null);
 
   const canProceedStep1 = selectedRole !== '' && selectedRole !== 'admin';
@@ -302,6 +305,9 @@ function SignupPageContent() {
                 <input type="hidden" name="parentExistingChildEmailsJson" value={JSON.stringify(existingChildLinks)} />
                 <input type="hidden" name="childName" value={parentChildren[0]?.fullName ?? ''} />
                 <input type="hidden" name="childGrade" value={parentChildren[0]?.grade ?? ''} />
+                <input type="hidden" name="tutorType" value={tutorType} />
+                <input type="hidden" name="tutorGrade" value={tutorGrade} />
+                <input type="hidden" name="tutorSubjects" value={tutorSubjects} />
                 <input type="hidden" name="redirectTo" value={next} />
 
                 {/* Student: Grade selector */}
@@ -452,13 +458,74 @@ function SignupPageContent() {
                   </div>
                 )}
 
-                {/* Tutor: Experience */}
+                {/* Tutor: Experience & Teaching Role */}
                 {selectedRole === 'tutor' && (
                   <div className="space-y-5 mb-8">
-                    <div>
-                      <label className="block text-sm font-semibold text-navy mb-1.5">Subjects you teach</label>
-                      <input name="subjects" type="text" placeholder="e.g. Mathematics, Physics" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey" />
+                    <div className="p-4 rounded-xl border border-navy/20 bg-yellow/10 space-y-3">
+                      <label className="block text-sm font-bold text-navy">Teacher Assignment Role</label>
+                      <p className="text-xs text-grey">Specifies which lesson notes & curriculum subjects you have authorization to manage.</p>
+                      
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'class_teacher', label: 'Class Teacher', desc: 'Grade Level Only' },
+                          { id: 'subject_teacher', label: 'Subject Teacher', desc: 'Specific Subjects' },
+                          { id: 'both', label: 'Both Roles', desc: 'Grade & Subject' },
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setTutorType(item.id as any)}
+                            className={`p-2.5 rounded-lg border text-center transition-all ${
+                              tutorType === item.id
+                                ? 'border-yellow bg-yellow font-bold text-navy shadow-sm'
+                                : 'border-grey-light bg-white text-navy hover:border-navy-light'
+                            }`}
+                          >
+                            <div className="text-xs">{item.label}</div>
+                            <div className="text-[9px] opacity-75 font-normal">{item.desc}</div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
+
+                    {(tutorType === 'class_teacher' || tutorType === 'both') && (
+                      <div>
+                        <label className="block text-sm font-semibold text-navy mb-1.5">Assigned Class Grade</label>
+                        <select
+                          value={tutorGrade}
+                          onChange={(e) => setTutorGrade(e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20"
+                        >
+                          <option value="grade_1">Primary 1 (Grade 1)</option>
+                          <option value="grade_2">Primary 2 (Grade 2)</option>
+                          <option value="grade_3">Primary 3 (Grade 3)</option>
+                          <option value="grade_4">Primary 4 (Grade 4)</option>
+                          <option value="grade_5">Primary 5 (Grade 5)</option>
+                          <option value="grade_6">Primary 6 (Grade 6)</option>
+                          <option value="grade_7">JSS 1 (Grade 7)</option>
+                          <option value="grade_8">JSS 2 (Grade 8)</option>
+                          <option value="grade_9">JSS 3 (Grade 9)</option>
+                          <option value="grade_10">SS 1 (Grade 10)</option>
+                          <option value="grade_11">SS 2 (Grade 11)</option>
+                          <option value="grade_12">SS 3 (Grade 12)</option>
+                        </select>
+                      </div>
+                    )}
+
+                    {(tutorType === 'subject_teacher' || tutorType === 'both') && (
+                      <div>
+                        <label className="block text-sm font-semibold text-navy mb-1.5">Assigned Subject(s)</label>
+                        <input
+                          type="text"
+                          value={tutorSubjects}
+                          onChange={(e) => setTutorSubjects(e.target.value)}
+                          placeholder="e.g. Mathematics, Physics, Chemistry, English"
+                          className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
+                        />
+                        <p className="text-[10px] text-grey mt-1">Separate multiple subjects with commas (e.g. Chemistry, Physics, Further Mathematics)</p>
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-sm font-semibold text-navy mb-1.5">Highest qualification</label>
                       <select name="qualification" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20">

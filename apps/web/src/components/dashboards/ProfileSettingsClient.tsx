@@ -16,6 +16,9 @@ type TutorProfileContext = {
   bio: string;
   expertiseSummary: string;
   availabilityNotes: string;
+  tutorType?: string;
+  tutorGrade?: string;
+  tutorSubjects?: string;
 };
 
 type StudentProfileContext = {
@@ -92,6 +95,9 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
     bio: props.tutorProfile?.bio ?? '',
     expertiseSummary: props.tutorProfile?.expertiseSummary ?? '',
     availabilityNotes: props.tutorProfile?.availabilityNotes ?? '',
+    tutorType: props.tutorProfile?.tutorType ?? 'class_teacher',
+    tutorGrade: props.tutorProfile?.tutorGrade ?? 'grade_1',
+    tutorSubjects: props.tutorProfile?.tutorSubjects ?? 'Mathematics',
   }));
 
   const [studentForm, setStudentForm] = useState<StudentProfileContext>(() => ({
@@ -196,6 +202,9 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
       expertiseSummary: tutorForm.expertiseSummary.trim() || undefined,
       availabilityNotes: tutorForm.availabilityNotes.trim() || undefined,
       timezone: tutorForm.timezone.trim() || 'Africa/Lagos',
+      tutorType: tutorForm.tutorType || 'class_teacher',
+      tutorGrade: tutorForm.tutorGrade || 'grade_1',
+      tutorSubjects: tutorForm.tutorSubjects || 'Mathematics',
     });
   };
 
@@ -254,6 +263,73 @@ export default function ProfileSettingsClient(props: ProfileSettingsClientProps)
         <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight break-words">Tutor Teaching Profile</h2>
       </div>
       <div className="p-5 sm:p-8 space-y-4 sm:space-y-6 min-w-0">
+        {/* Teaching Assignment Authorization Controls */}
+        <div className="p-4 sm:p-5 rounded-2xl border-[3px] border-dark bg-yellow/10 space-y-4">
+          <div>
+            <h3 className="text-sm sm:text-base font-black text-dark tracking-tight">Teaching Assignment & Curriculum Access Role</h3>
+            <p className="text-xs font-semibold text-dark/70">Controls your lesson notes hub and subject authorization in the tutor dashboard.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { id: 'class_teacher', label: 'Class Teacher', desc: 'Grade Level Only' },
+              { id: 'subject_teacher', label: 'Subject Teacher', desc: 'Specific Subject Notes' },
+              { id: 'both', label: 'Class & Subject Teacher', desc: 'Both Access Rights' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTutorForm((prev) => ({ ...prev, tutorType: item.id }))}
+                className={`p-3 rounded-xl border-[3px] border-dark text-left transition-all ${
+                  tutorForm.tutorType === item.id
+                    ? 'bg-yellow text-dark font-black shadow-[3px_3px_0px_#060E1C]'
+                    : 'bg-white text-dark hover:bg-slate-50'
+                }`}
+              >
+                <div className="text-xs font-black uppercase">{item.label}</div>
+                <div className="text-[10px] font-bold text-dark/70">{item.desc}</div>
+              </button>
+            ))}
+          </div>
+
+          {(tutorForm.tutorType === 'class_teacher' || tutorForm.tutorType === 'both') && (
+            <label className="block space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Assigned Class Grade Level</span>
+              <select
+                value={tutorForm.tutorGrade}
+                onChange={(e) => setTutorForm((prev) => ({ ...prev, tutorGrade: e.target.value }))}
+                className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+              >
+                <option value="grade_1">Primary 1 (Grade 1)</option>
+                <option value="grade_2">Primary 2 (Grade 2)</option>
+                <option value="grade_3">Primary 3 (Grade 3)</option>
+                <option value="grade_4">Primary 4 (Grade 4)</option>
+                <option value="grade_5">Primary 5 (Grade 5)</option>
+                <option value="grade_6">Primary 6 (Grade 6)</option>
+                <option value="grade_7">JSS 1 (Grade 7)</option>
+                <option value="grade_8">JSS 2 (Grade 8)</option>
+                <option value="grade_9">JSS 3 (Grade 9)</option>
+                <option value="grade_10">SS 1 (Grade 10)</option>
+                <option value="grade_11">SS 2 (Grade 11)</option>
+                <option value="grade_12">SS 3 (Grade 12)</option>
+              </select>
+            </label>
+          )}
+
+          {(tutorForm.tutorType === 'subject_teacher' || tutorForm.tutorType === 'both') && (
+            <label className="block space-y-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-dark/70">Assigned Subject(s)</span>
+              <input
+                value={tutorForm.tutorSubjects}
+                onChange={(e) => setTutorForm((prev) => ({ ...prev, tutorSubjects: e.target.value }))}
+                placeholder="e.g. Mathematics, Physics, Chemistry, English"
+                className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-yellow"
+              />
+              <p className="text-[10px] font-bold text-dark/60">Separate multiple subjects with commas (e.g. Physics, Chemistry, Further Mathematics)</p>
+            </label>
+          )}
+        </div>
+
         <div className="grid gap-4 sm:gap-6 md:grid-cols-2 min-w-0">
           <label className="block space-y-2 min-w-0">
             <span className="text-[10px] font-black uppercase tracking-widest text-dark/70 break-words">Phone Number</span>

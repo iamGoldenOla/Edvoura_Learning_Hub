@@ -28,6 +28,9 @@ export async function saveTutorProfileAction(form: {
   expertiseSummary?: string;
   availabilityNotes?: string;
   timezone?: string;
+  tutorType?: string;
+  tutorGrade?: string;
+  tutorSubjects?: string;
 }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -42,6 +45,16 @@ export async function saveTutorProfileAction(form: {
     timezone: form.timezone?.trim() || 'Africa/Lagos',
     updated_at: now,
   }).eq('id', user.id);
+
+  // Update auth metadata
+  await supabase.auth.updateUser({
+    data: {
+      full_name: form.fullName.trim(),
+      tutor_type: form.tutorType || 'class_teacher',
+      tutor_grade: form.tutorGrade || 'grade_1',
+      tutor_subjects: form.tutorSubjects || 'Mathematics',
+    },
+  });
 
   // Upsert tutor_profiles
   const { error } = await supabase.from('tutor_profiles').upsert({

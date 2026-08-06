@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { BookOpen, CheckSquare, ClipboardList, FilePenLine, Pencil, PlusCircle, ShieldCheck, Sparkles, Target, Trash2 } from 'lucide-react';
+import { BookOpen, CheckSquare, ClipboardList, FilePenLine, Lock, Pencil, PlusCircle, ShieldCheck, Sparkles, Target, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/utils/supabase/client';
 
 type LessonPlan = {
   id: string;
@@ -2489,6 +2490,43 @@ export default function TutorLessonNotesPage() {
     'ss3_math', 'ss3_english', 'ss3_physics', 'ss3_chemistry', 'ss3_biology', 'ss3_further_math', 'ss3_agric', 'ss3_geography', 'ss3_economics', 'ss3_accounting', 'ss3_commerce', 'ss3_marketing', 'ss3_literature', 'ss3_history', 'ss3_crs', 'ss3_citizenship', 'ss3_digital_tech', 'ss3_hardware_repair', 'ss3_solar', 'ss3_technical_drawing', 'ss3_visual_arts', 'ss3_food_nutrition', 'ss3_catering', 'ss3_beauty', 'ss3_fashion', 'ss3_horticulture', 'ss3_livestock',
   ]);
 
+  const [tutorType, setTutorType] = useState<'class_teacher' | 'subject_teacher' | 'both' | 'all'>('all');
+  const [tutorGrade, setTutorGrade] = useState<string>('grade_12');
+  const [tutorSubjects, setTutorSubjects] = useState<string[]>([]);
+  const [tutorSubjectsRaw, setTutorSubjectsRaw] = useState<string>('');
+
+  // Fetch tutor authorization metadata from Supabase Auth
+  useEffect(() => {
+    const fetchTutorRoleMeta = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata) {
+          const type = (user.user_metadata.tutor_type as 'class_teacher' | 'subject_teacher' | 'both') || 'all';
+          const grade = (user.user_metadata.tutor_grade as string) || 'grade_12';
+          const rawSubj = (user.user_metadata.tutor_subjects as string) || '';
+
+          setTutorType(type);
+          setTutorGrade(grade);
+          setTutorSubjectsRaw(rawSubj);
+
+          const parsedSubjects = rawSubj
+            .split(',')
+            .map((s) => s.trim().toLowerCase())
+            .filter((s) => s.length > 0);
+          setTutorSubjects(parsedSubjects);
+
+          if (type === 'class_teacher' || type === 'both') {
+            setSelectedGradeFilter(grade);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load tutor metadata:', e);
+      }
+    };
+    fetchTutorRoleMeta();
+  }, []);
+
   // Load published official notes from localStorage
   useEffect(() => {
     try {
@@ -2650,7 +2688,10 @@ export default function TutorLessonNotesPage() {
               <select
                 value={selectedGradeFilter}
                 onChange={(e) => setSelectedGradeFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none cursor-pointer"
+                disabled={tutorType === 'class_teacher'}
+                className={`px-4 py-2.5 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none ${
+                  tutorType === 'class_teacher' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+                }`}
               >
                 <option value="grade_1">Primary 1 (Grade 1) - 9 Subjects</option>
                 <option value="grade_2">Primary 2 (Grade 2) - 9 Subjects</option>
@@ -2667,8 +2708,35 @@ export default function TutorLessonNotesPage() {
               </select>
             </div>
 
+            {/* Intellectual Authorization Banner */}
+            {tutorType !== 'all' && (
+              <div className="p-4 rounded-xl border-[3px] border-dark bg-white shadow-[3px_3px_0px_#060E1C] flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-yellow border-[2px] border-dark shrink-0">
+                  <Lock className="w-4 h-4 text-dark" />
+                </div>
+                <div className="text-xs font-bold text-dark">
+                  <span className="font-black uppercase tracking-wider text-[10px] text-dark/70 block">🔒 Intellectual Access Filter Active</span>
+                  {tutorType === 'class_teacher' && `Assigned Class Teacher (${selectedGradeFilter.replace('grade_', 'Grade ')}). You have full access to all subjects in your class.`}
+                  {tutorType === 'subject_teacher' && `Assigned Subject Teacher (${tutorSubjectsRaw || 'Assigned Subjects'}). Showing only authorized subject notes.`}
+                  {tutorType === 'both' && `Class & Subject Teacher. Authorized for Class (${tutorGrade.replace('grade_', 'Grade ')}) and Subjects (${tutorSubjectsRaw}).`}
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {(OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES).map((note) => {
+              {((OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES).filter((note) => {
+                if (tutorType === 'all') return true;
+                const isAssignedGrade = selectedGradeFilter === tutorGrade;
+                const noteSubj = note.subjectName.toLowerCase();
+                const isAssignedSubject =
+                  tutorSubjects.length === 0 ||
+                  tutorSubjects.some((ts) => noteSubj.includes(ts) || ts.includes(noteSubj));
+
+                if (tutorType === 'class_teacher') return isAssignedGrade;
+                if (tutorType === 'subject_teacher') return isAssignedSubject;
+                if (tutorType === 'both') return isAssignedGrade || isAssignedSubject;
+                return true;
+              })).map((note) => {
                 const isPub = publishedOfficialNoteIds.includes(note.id);
                 return (
                   <div

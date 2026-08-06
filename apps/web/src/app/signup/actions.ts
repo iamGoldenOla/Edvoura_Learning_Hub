@@ -19,6 +19,9 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
     const childGrade = formData.get('childGrade') as string
     const parentChildrenJson = formData.get('parentChildrenJson') as string
     const parentExistingChildEmailsJson = formData.get('parentExistingChildEmailsJson') as string
+    const tutorType = formData.get('tutorType') as string | null
+    const tutorGrade = formData.get('tutorGrade') as string | null
+    const tutorSubjects = formData.get('tutorSubjects') as string | null
     const redirectTo = formData.get('redirectTo') as string | null
 
     if (!email || !password) {
@@ -114,6 +117,9 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
           parent_child_grade_band: role === 'parent' ? childGradeBand : null,
           parent_children: role === 'parent' ? parentChildren : null,
           parent_existing_child_emails: role === 'parent' ? parentExistingChildEmails : null,
+          tutor_type: role === 'tutor' ? tutorType || 'class_teacher' : null,
+          tutor_grade: role === 'tutor' ? tutorGrade || 'grade_1' : null,
+          tutor_subjects: role === 'tutor' ? tutorSubjects || 'Mathematics' : null,
         },
       },
     })
