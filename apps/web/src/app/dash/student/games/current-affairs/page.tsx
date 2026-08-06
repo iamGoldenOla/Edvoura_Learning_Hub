@@ -28,6 +28,16 @@ function getAudioContext(): AudioContext | null {
   return globalAudioCtx;
 }
 
+function cleanTextForSpeech(text: string): string {
+  let cleaned = text;
+  cleaned = cleaned.replace(/₦\s*(\d[\d,.]*)/g, "$1 naira");
+  cleaned = cleaned.replace(/nigeria\s+nairas?\b/gi, "naira");
+  cleaned = cleaned.replace(/nigerian?\s+nairas?\b/gi, "naira");
+  cleaned = cleaned.replace(/\bnairas\b/gi, "naira");
+  cleaned = cleaned.replace(/\bNGN\b/g, "naira");
+  return cleaned;
+}
+
 function speakVoice(text: string, isMuted: boolean, onComplete?: () => void) {
   if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onComplete) onComplete();
@@ -35,7 +45,8 @@ function speakVoice(text: string, isMuted: boolean, onComplete?: () => void) {
   }
   try {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const spokenText = cleanTextForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.rate = 1.05;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;

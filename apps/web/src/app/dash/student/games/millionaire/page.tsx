@@ -101,6 +101,45 @@ function getAudioContext(): AudioContext | null {
   }
 }
 
+function cleanTextForSpeech(text: string): string {
+  let cleaned = text;
+
+  // Specific Naira prize values for natural, human speech
+  cleaned = cleaned.replace(/₦\s*1[,.]?000[,.]?000/g, "one million naira");
+  cleaned = cleaned.replace(/₦\s*500[,.]?000/g, "five hundred thousand naira");
+  cleaned = cleaned.replace(/₦\s*250[,.]?000/g, "two hundred and fifty thousand naira");
+  cleaned = cleaned.replace(/₦\s*125[,.]?000/g, "one hundred and twenty five thousand naira");
+  cleaned = cleaned.replace(/₦\s*64[,.]?000/g, "sixty four thousand naira");
+  cleaned = cleaned.replace(/₦\s*32[,.]?000/g, "thirty two thousand naira");
+  cleaned = cleaned.replace(/₦\s*16[,.]?000/g, "sixteen thousand naira");
+  cleaned = cleaned.replace(/₦\s*8[,.]?000/g, "eight thousand naira");
+  cleaned = cleaned.replace(/₦\s*4[,.]?000/g, "four thousand naira");
+  cleaned = cleaned.replace(/₦\s*2[,.]?000/g, "two thousand naira");
+  cleaned = cleaned.replace(/₦\s*1[,.]?000/g, "one thousand naira");
+  cleaned = cleaned.replace(/₦\s*500/g, "five hundred naira");
+  cleaned = cleaned.replace(/₦\s*300/g, "three hundred naira");
+  cleaned = cleaned.replace(/₦\s*200/g, "two hundred naira");
+  cleaned = cleaned.replace(/₦\s*100/g, "one hundred naira");
+
+  // Fallback for any unmapped ₦ amounts
+  cleaned = cleaned.replace(/₦\s*(\d[\d,.]*)/g, "$1 naira");
+
+  // Remove awkward ISO codes or pluralizations
+  cleaned = cleaned.replace(/nigeria\s+nairas?\b/gi, "naira");
+  cleaned = cleaned.replace(/nigerian?\s+nairas?\b/gi, "naira");
+  cleaned = cleaned.replace(/\bnairas\b/gi, "naira");
+  cleaned = cleaned.replace(/\bNGN\b/g, "naira");
+
+  // Other global currencies
+  cleaned = cleaned.replace(/\$\s*(\d[\d,.]*)/g, "$1 dollars");
+  cleaned = cleaned.replace(/£\s*(\d[\d,.]*)/g, "$1 pounds");
+  cleaned = cleaned.replace(/€\s*(\d[\d,.]*)/g, "$1 euros");
+  cleaned = cleaned.replace(/GH₵\s*(\d[\d,.]*)/g, "$1 cedi");
+  cleaned = cleaned.replace(/R\s*(\d[\d,.]*)/g, "$1 rand");
+
+  return cleaned;
+}
+
 function speakVoice(text: string, isMuted: boolean = false, onComplete?: () => void) {
   if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onComplete) onComplete();
@@ -108,7 +147,8 @@ function speakVoice(text: string, isMuted: boolean = false, onComplete?: () => v
   }
   try {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const spokenText = cleanTextForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(spokenText);
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
