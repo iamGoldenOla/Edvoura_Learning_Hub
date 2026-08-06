@@ -39,7 +39,7 @@ function speakVoice(text: string, isMuted: boolean) {
   } catch (e) {}
 }
 
-function playStudioSFX(type: 'correct' | 'error' | 'click' | 'win' | 'lifeline' | 'tick' | 'start', isMuted: boolean) {
+function playStudioSFX(type: 'correct' | 'error' | 'click' | 'win' | 'lifeline' | 'tick' | 'start' | 'timeout', isMuted: boolean) {
   if (isMuted) return;
   const ctx = getAudioContext();
   if (!ctx) return;
@@ -82,6 +82,20 @@ function playStudioSFX(type: 'correct' | 'error' | 'click' | 'win' | 'lifeline' 
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.connect(gain); gain.connect(ctx.destination);
       osc.start(now); osc.stop(now + 0.3);
+    } else if (type === 'timeout') {
+      // Dramatic Studio Time-out Gong (Descending D-Minor triad: F#3 -> D3 -> A2)
+      const gongNotes = [185.00, 146.83, 110.00];
+      gongNotes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+        gain.gain.setValueAtTime(0.5, now + idx * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.45);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now + idx * 0.12);
+        osc.stop(now + idx * 0.12 + 0.45);
+      });
     } else if (type === 'click') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -128,6 +142,11 @@ export default function CurrentAffairsGame() {
   const [selectedSphere, setSelectedSphere] = useState('All');
 
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(isMuted);
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
+
   const [currentQuestion, setCurrentQuestion] = useState<GameQuestion | null>(null);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -165,8 +184,8 @@ export default function CurrentAffairsGame() {
     setShowHintModal(false);
     setTimeLeft(25);
     setTimerActive(true);
-    speakVoice(`Current Affairs Question: ${q.q}`, isMuted);
-  }, [gradeBand, selectedContinent, selectedSphere, isMuted]);
+    speakVoice(`Current Affairs Question: ${q.q}`, isMutedRef.current);
+  }, [gradeBand, selectedContinent, selectedSphere]);
 
   useEffect(() => {
     loadNewQuestion();
@@ -182,22 +201,22 @@ export default function CurrentAffairsGame() {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          playStudioSFX('error', isMuted);
+          playStudioSFX('timeout', isMutedRef.current);
           setIsAnswered(true);
           setStreak(0);
-          speakVoice("Time's up!", isMuted);
+          speakVoice("Time's up!", isMutedRef.current);
           autoAdvanceTimerRef.current = setTimeout(() => {
             setQuestionCount(c => c + 1);
             loadNewQuestion();
           }, 2000);
           return 0;
         }
-        if (prev <= 5) playStudioSFX('tick', isMuted);
+        if (prev <= 5) playStudioSFX('tick', isMutedRef.current);
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [timerActive, isAnswered, loadNewQuestion, isMuted]);
+  }, [timerActive, isAnswered, loadNewQuestion]);
 
   const handleSelectOption = (idx: number) => {
     getAudioContext(); // Unblock audio on click
@@ -208,16 +227,16 @@ export default function CurrentAffairsGame() {
 
     const isCorrect = idx === currentQuestion.a;
     if (isCorrect) {
-      playStudioSFX('correct', isMuted);
+      playStudioSFX('correct', isMutedRef.current);
       const bonus = Math.floor(timeLeft / 2);
       const addedPoints = 20 + bonus;
       setScore(s => s + addedPoints);
       setStreak(s => s + 1);
-      speakVoice(`Correct! Plus ${addedPoints} points.`, isMuted);
+      speakVoice(`Correct! Plus ${addedPoints} points.`, isMutedRef.current);
     } else {
-      playStudioSFX('error', isMuted);
+      playStudioSFX('error', isMutedRef.current);
       setStreak(0);
-      speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`, isMuted);
+      speakVoice(`Incorrect. The correct answer was ${currentQuestion.options[currentQuestion.a]}`, isMutedRef.current);
     }
 
     autoAdvanceTimerRef.current = setTimeout(() => {
@@ -229,7 +248,7 @@ export default function CurrentAffairsGame() {
   const handleFiftyFifty = () => {
     getAudioContext();
     if (fiftyFiftyUsed || !currentQuestion || isAnswered) return;
-    playStudioSFX('lifeline', isMuted);
+    playStudioSFX('lifeline', isMutedRef.current);
     setFiftyFiftyUsed(true);
 
     const wrongIdxs = [0, 1, 2, 3].filter(i => i !== currentQuestion.a);
@@ -240,7 +259,7 @@ export default function CurrentAffairsGame() {
   const handleUseHint = () => {
     getAudioContext();
     if (hintUsed || !currentQuestion || isAnswered) return;
-    playStudioSFX('lifeline', isMuted);
+    playStudioSFX('lifeline', isMutedRef.current);
     setHintUsed(true);
     setShowHintModal(true);
   };
@@ -251,7 +270,7 @@ export default function CurrentAffairsGame() {
       clearTimeout(autoAdvanceTimerRef.current);
       autoAdvanceTimerRef.current = null;
     }
-    playStudioSFX('click', isMuted);
+    playStudioSFX('click', isMutedRef.current);
     setQuestionCount(c => c + 1);
     loadNewQuestion();
   };
@@ -269,7 +288,7 @@ export default function CurrentAffairsGame() {
     getAudioContext();
     navigator.clipboard.writeText(window.location.href);
     setCopiedLink(true);
-    playStudioSFX('lifeline', isMuted);
+    playStudioSFX('lifeline', isMutedRef.current);
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
