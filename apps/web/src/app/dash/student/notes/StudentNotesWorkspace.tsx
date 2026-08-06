@@ -6,6 +6,7 @@ import { Sparkles, BookOpen, ChevronDown, Volume2, Square, Play, Pause } from 'l
 import { Button } from '@/components/ui/button';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 import { PRIMARY_1_OFFICIAL_NOTES, PRIMARY_2_OFFICIAL_NOTES, PRIMARY_3_OFFICIAL_NOTES, PRIMARY_4_OFFICIAL_NOTES, PRIMARY_5_OFFICIAL_NOTES, PRIMARY_6_OFFICIAL_NOTES, JSS_1_OFFICIAL_NOTES, JSS_2_OFFICIAL_NOTES, JSS_3_OFFICIAL_NOTES, SS_1_OFFICIAL_NOTES, SS_2_OFFICIAL_NOTES, SS_3_OFFICIAL_NOTES, OFFICIAL_CURRICULUM_DATABASE } from '@/app/dash/tutor/lesson-notes/page';
+import StudentAITutorWidget from '@/components/dashboards/ai/StudentAITutorWidget';
 
 type ResourceCard = {
   id: string;
@@ -785,6 +786,7 @@ export default function StudentNotesWorkspace({
         pdfUrl={activePdfUrl}
         title={activePdfTitle}
       />
+      <StudentAITutorWidget gradeLevel={studentGradeName} />
     </div>
   );
 }

@@ -66,10 +66,16 @@ export default function PendingReviewList({
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={() => onPreview(record.content_json)}
+                onClick={() => {
+                  onPreview(record.content_json);
+                  const previewEl = document.getElementById("ai-content-preview-section");
+                  if (previewEl) {
+                    previewEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
                 className="rounded-lg border-[2px] border-dark bg-white px-3 py-2 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
               >
-                Preview JSON
+                Preview Draft
               </button>
               {superAdminMode && onImproveWithAI ? (
                 <button

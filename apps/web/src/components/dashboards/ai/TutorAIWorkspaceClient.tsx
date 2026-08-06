@@ -244,7 +244,11 @@ export default function TutorAIWorkspaceClient() {
 
       <AIContentGeneratorForm disabled={isGenerating} onGenerate={onGenerate} />
 
-      {previewContent ? <AIContentPreview content={previewContent} /> : null}
+      {previewContent ? (
+        <div id="ai-content-preview-section" className="scroll-mt-6">
+          <AIContentPreview content={previewContent} />
+        </div>
+      ) : null}
 
       <section className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] min-w-0">
         <h2 className="mb-4 text-lg sm:text-xl font-black text-dark break-words">Drafts Ready For Submission</h2>
@@ -267,10 +271,16 @@ export default function TutorAIWorkspaceClient() {
               <div className="mt-3 grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
                 <Button
                   type="button"
-                  onClick={() => setPreviewContent(record.content_json)}
+                  onClick={() => {
+                    setPreviewContent(record.content_json);
+                    const previewEl = document.getElementById("ai-content-preview-section");
+                    if (previewEl) {
+                      previewEl.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
                   className="border-[2px] border-dark px-3 py-2 text-[10px] font-black text-dark uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
                 >
-                  Preview
+                  Preview Draft
                 </Button>
                 <Button
                   type="button"
