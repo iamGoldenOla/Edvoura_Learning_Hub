@@ -498,12 +498,14 @@ export async function generateFlashcards(params: {
     }),
   ).min(6);
 
-  const prompt = `Generate 10 educational flashcards for a ${params.gradeLevel} student.
+  const prompt = `Generate 10 in-depth, authoritative educational flashcards for a ${params.gradeLevel} student.
 Subject: ${params.subject}
 Topic: ${params.topic}
 
-Each flashcard must have a "front" (question or concept) and a "back" (answer or explanation).
-Make them engaging, simple, and age-appropriate.
+CRITICAL INSTRUCTIONS FOR FLASHCARDS:
+1. "front": Clear, razor-sharp question, problem, formula challenge, or key term.
+2. "back": IN-DEPTH, DETAILED, AND EXAM-READY. Provide exact definitions, formulas/equations, key bulleted points, and concrete memory hooks or real-life Nigerian examples. Do NOT provide vague or generic summaries.
+3. Tailor strictly to ${params.gradeLevel} curriculum standards (WAEC/NECO/BECE level for Senior Secondary/JSS).
 
 Return ONLY a JSON array of objects with "front" and "back" keys.`;
 

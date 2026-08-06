@@ -97,31 +97,31 @@ export async function POST(request: Request) {
     }
 
     const requestedSubject = subject || 'General Studies';
-    const displayTopic = topic || 'Core Ideas';
+    const displayTopic = topic || 'Core Principles';
     const placeholderCards = [
       {
-        front: `What is ${displayTopic}?`,
-        back: `${displayTopic} is an important concept in ${requestedSubject}. Start by learning its meaning, its key features, and where it appears in real life.`,
+        front: `What is the core definition of ${displayTopic}?`,
+        back: `${displayTopic} in ${requestedSubject} refers to the systematic process and principles governing how concepts, structures, or natural/social phenomena operate. Key focus areas include primary functions, standard rules, and real-world applications.`,
       },
       {
-        front: `Why is ${displayTopic} important in ${requestedSubject}?`,
-        back: `${displayTopic} matters because it helps learners understand how the topic affects people, work, nature, or daily life within ${requestedSubject}.`,
+        front: `What are the main components and key features of ${displayTopic}?`,
+        back: `1. Key Definition & Scope: Defines the boundary of the topic.\n2. Fundamental Rules / Formulas: Core equations or legal/logical frameworks.\n3. Real-World Applications: Practical uses in daily life, industry, or governance in Nigeria and globally.`,
       },
       {
-        front: `Give one example or feature of ${displayTopic}.`,
-        back: `A strong answer should name a real example of ${displayTopic} or describe one clear feature that shows what it is and why it matters.`,
+        front: `Why is ${displayTopic} important for WAEC / BECE / Exam Success in ${requestedSubject}?`,
+        back: `Understanding ${displayTopic} enables students to solve multi-step problems, explain cause-and-effect relationships, and accurately answer theory and objective questions in ${requestedSubject}.`,
       },
       {
-        front: `How can learners identify ${displayTopic}?`,
-        back: `Learners should look for the main characteristics, where it is found, and how it affects people, crops, animals, or the environment.`,
+        front: `What is a step-by-step example or practical application of ${displayTopic}?`,
+        back: `Step 1: Identify the given values or core terms.\nStep 2: Apply the relevant formula, rule, or grammatical principle.\nStep 3: Verify the answer against standard subject guidelines.`,
       },
       {
-        front: `How does ${displayTopic} affect daily life or work?`,
-        back: `Think about how ${displayTopic} changes farming, health, transport, learning, or the environment depending on the subject and topic.`,
+        front: `What are common mistakes to avoid when studying ${displayTopic}?`,
+        back: `Avoid confusing basic terminology, omitting units/steps in calculations, or failing to connect theoretical principles to real-life practical examples.`,
       },
       {
-        front: `What is one way to manage, solve, or respond to ${displayTopic}?`,
-        back: `A good answer gives one practical action, explains how it works, and connects it to the topic clearly.`,
+        front: `Summary & Key Memory Hook for ${displayTopic}`,
+        back: `Memory Tip: Associate ${displayTopic} with its primary function. Focus on definitions, core steps, and 3 key examples during revision sessions.`,
       },
     ];
 
