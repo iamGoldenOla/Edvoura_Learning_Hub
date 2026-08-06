@@ -25,7 +25,15 @@ export type QuizCard = {
   data: QuizPayload;
 };
 
-export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
+export function PracticeQuizClient({
+  aiQuizzes,
+  studentGradeCode = 'grade_1',
+  studentGradeName = 'Grade 1',
+}: {
+  aiQuizzes: QuizCard[];
+  studentGradeCode?: string;
+  studentGradeName?: string;
+}) {
   const [quizData, setQuizData] = useState<QuizPayload | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -33,7 +41,7 @@ export function PracticeQuizClient({ aiQuizzes }: { aiQuizzes: QuizCard[] }) {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
 
-  const [selectedGradeCode, setSelectedGradeCode] = useState<string>('grade_12');
+  const [selectedGradeCode, setSelectedGradeCode] = useState<string>(studentGradeCode);
 
   function startQuiz(data: QuizPayload) {
     // Filter out any non-MCQ questions just in case to maintain the layout

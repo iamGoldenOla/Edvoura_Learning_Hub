@@ -70,7 +70,11 @@ export default async function QuizPage() {
         </div>
       </div>
 
-      <PracticeQuizClient aiQuizzes={normalizedAiQuizzes} />
+      <PracticeQuizClient
+        aiQuizzes={normalizedAiQuizzes}
+        studentGradeCode={dashboard?.profile.gradeLevelCode || 'grade_1'}
+        studentGradeName={dashboard?.profile.gradeLevelName || 'Grade 1'}
+      />
 
       <section className="grid gap-6 md:grid-cols-2">
         {quizzes && quizzes.length > 0 ? (

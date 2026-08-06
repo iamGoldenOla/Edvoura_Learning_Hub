@@ -72,6 +72,8 @@ export default async function NotesPage() {
       resources={resources}
       revisionList={revisionList}
       aiLessonNotes={aiLessonNotes}
+      studentGradeCode={dashboard.profile.gradeLevelCode || 'grade_1'}
+      studentGradeName={dashboard.profile.gradeLevelName || 'Grade 1'}
     />
   );
 }

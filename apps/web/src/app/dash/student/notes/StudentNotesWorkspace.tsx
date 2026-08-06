@@ -263,15 +263,21 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
   );
 }
 
+type StudentNotesWorkspaceProps = {
+  resources: ResourceCard[];
+  revisionList: RevisionCard[];
+  aiLessonNotes: AILessonNote[];
+  studentGradeCode?: string;
+  studentGradeName?: string;
+};
+
 export default function StudentNotesWorkspace({
   resources,
   revisionList,
-  aiLessonNotes = [],
-}: {
-  resources: ResourceCard[];
-  revisionList: RevisionCard[];
-  aiLessonNotes?: AILessonNote[];
-}) {
+  aiLessonNotes,
+  studentGradeCode = 'grade_1',
+  studentGradeName = 'Grade 1',
+}: StudentNotesWorkspaceProps) {
   const [selectedResourceId, setSelectedResourceId] = useState<string>(resources[0]?.id ?? '');
   const [explainerMode, setExplainerMode] = useState<LessonExplainerMode>('simple');
   const [isExplaining, setIsExplaining] = useState(false);
@@ -368,7 +374,7 @@ export default function StudentNotesWorkspace({
     } catch (e) {}
   }, []);
 
-  const allOfficialNotes = [...PRIMARY_1_OFFICIAL_NOTES, ...PRIMARY_2_OFFICIAL_NOTES, ...PRIMARY_3_OFFICIAL_NOTES, ...PRIMARY_4_OFFICIAL_NOTES, ...PRIMARY_5_OFFICIAL_NOTES, ...PRIMARY_6_OFFICIAL_NOTES, ...JSS_1_OFFICIAL_NOTES, ...JSS_2_OFFICIAL_NOTES, ...JSS_3_OFFICIAL_NOTES, ...SS_1_OFFICIAL_NOTES, ...SS_2_OFFICIAL_NOTES, ...SS_3_OFFICIAL_NOTES];
+  const allOfficialNotes = OFFICIAL_CURRICULUM_DATABASE[studentGradeCode] ?? PRIMARY_1_OFFICIAL_NOTES;
   const visibleOfficialNotes = allOfficialNotes.filter(n => publishedOfficialIds.includes(n.id));
 
   return (
@@ -386,7 +392,7 @@ export default function StudentNotesWorkspace({
           <div className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-dark/10 pb-3">
             <div className="flex items-center gap-3">
               <BookOpen className="h-6 w-6 text-dark" />
-              <h2 className="text-xl font-black text-dark sm:text-2xl">Official Grade 1 Curriculum Lesson Notes</h2>
+              <h2 className="text-xl font-black text-dark sm:text-2xl">Official {studentGradeName} Curriculum Lesson Notes</h2>
             </div>
             <span className="rounded-lg border-[1.5px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
               {visibleOfficialNotes.length} Subjects Published

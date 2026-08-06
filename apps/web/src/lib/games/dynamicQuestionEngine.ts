@@ -238,7 +238,8 @@ export function generateParametricCurrentAffairsQuestion(
 export function getUniqueDynamicQuestion(
   level: number,
   usedTextsOrIds: string[] = [],
-  gradeBand?: '1-3' | '4-6' | '7-12'
+  gradeBand?: '1-3' | '4-6' | '7-12',
+  exactGradeCode?: string
 ): GameQuestion {
   const targetBand = gradeBand || (level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12');
   let attempts = 0;
@@ -253,7 +254,7 @@ export function getUniqueDynamicQuestion(
     } else if (domainChoice === 2) {
       qObj = generateParametricCurrentAffairsQuestion(targetBand);
     } else {
-      qObj = generateOfficialCurriculumGameQuestion(targetBand);
+      qObj = generateOfficialCurriculumGameQuestion(targetBand, exactGradeCode);
     }
     attempts++;
   } while ((usedTextsOrIds.includes(qObj.id) || usedTextsOrIds.includes(qObj.q)) && attempts < 50);
@@ -386,7 +387,27 @@ export function generateScienceQuestion(level: number): GameQuestion {
   };
 }
 
-export function generateOfficialCurriculumGameQuestion(gradeBand: '1-3' | '4-6' | '7-12' = '4-6'): GameQuestion {
+export function generateOfficialCurriculumGameQuestion(
+  gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
+  exactGradeCode?: string
+): GameQuestion {
+  if (exactGradeCode) {
+    const exactMatches = OFFICIAL_CURRICULUM_QUESTIONS.filter((q) => q.gradeCode === exactGradeCode);
+    if (exactMatches.length > 0) {
+      const picked = exactMatches[Math.floor(Math.random() * exactMatches.length)];
+      return {
+        id: `curr_${picked.id}_${Date.now()}_${Math.random()}`,
+        q: picked.questionText,
+        options: picked.options,
+        a: picked.correctIndex,
+        category: `Curriculum (${picked.subjectName})`,
+        difficulty: picked.difficulty,
+        gradeBand: gradeBand,
+        hint: picked.hint,
+      };
+    }
+  }
+
   const allowedGrades =
     gradeBand === '1-3'
       ? ['grade_1', 'grade_2', 'grade_3']
