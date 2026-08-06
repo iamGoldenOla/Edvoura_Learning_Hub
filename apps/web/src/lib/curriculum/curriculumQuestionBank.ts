@@ -1235,7 +1235,210 @@ export const OFFICIAL_CURRICULUM_QUESTIONS: CurriculumQuestion[] = [
     questionText: 'Who was the first female Vice-Chancellor of a Nigerian university (University of Benin, 1985)?', options: ['Prof. Grace Alele-Williams', 'Dr. Bertha Johnson', 'Flora Nwapa', 'Mrs. Rose Ukeje'], correctIndex: 0,
     explanation: 'Prof. Grace Alele-Williams was appointed VC of UNIBEN in 1985.', hint: 'Grace Alele-Williams.', difficulty: 'medium'
   },
+  /* ═══════════════════════ GLOBAL CURRENT AFFAIRS, SCIENCE & WORLD POLITICS (GRADES 7 TO 12) ═══════════════════════ */
+  // Batch 1: International Law, Science & Agriculture
+  {
+    id: 'g_ca_1', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'Which Article of the UN Charter prohibits the use of force against the territorial integrity of any state?', options: ['Article 2(3)', 'Article 2(4)', 'Article 51', 'Article 55'], correctIndex: 1,
+    explanation: 'Article 2(4) of the UN Charter bans member states from threatening or using force against another country’s territorial integrity.', hint: 'Article 2(4).', difficulty: 'hard'
+  },
+  {
+    id: 'g_ca_2', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'Which country is the world’s largest buyer of Venezuelan crude oil?', options: ['USA', 'Russia', 'China', 'India'], correctIndex: 2,
+    explanation: 'China is the largest purchaser of crude oil exported from Venezuela.', hint: 'China.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_3', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'What is Venezuela’s global ranking regarding crude oil reserves?', options: ['Second largest oil reserves', 'World’s largest proven oil reserves', 'Third largest oil reserves', 'Fourth largest oil reserves'], correctIndex: 1,
+    explanation: 'Venezuela holds over 300 billion barrels, giving it the world’s largest proven oil reserves.', hint: 'World’s largest proven oil reserves.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_4', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What does EDA stand for in semiconductor chip design?', options: ['Electronic Development Architecture', 'Electronic Design Automation', 'Engineering Design Application', 'Electronic Data Analysis'], correctIndex: 1,
+    explanation: 'EDA refers to software tools used to design and verify integrated circuits (ICs).', hint: 'Electronic Design Automation.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_5', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Current Affairs',
+    questionText: 'In what year returned NASA’s OSIRIS-REx space mission with pristine samples from asteroid Bennu?', options: ['24 September 2021', '24 September 2023', '24 September 2025', '24 September 2027'], correctIndex: 1,
+    explanation: 'OSIRIS-REx dropped off asteroid Bennu samples on September 24, 2023.', hint: '24 September 2023.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_6', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Current Affairs',
+    questionText: 'How many non-permanent member states serve on the United Nations Security Council (UNSC)?', options: ['5', '10', '15', '20'], correctIndex: 1,
+    explanation: 'The UNSC has 5 permanent members (P5) and 10 non-permanent members elected for two-year terms.', hint: '10 members.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_7', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Current Affairs',
+    questionText: 'Which tech company released the lightweight AI model family named Phi-3 Mini?', options: ['Google', 'Apple', 'Microsoft', 'Amazon'], correctIndex: 2,
+    explanation: 'Microsoft developed and open-sourced the Phi-3 Mini small language model.', hint: 'Microsoft.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_8', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'What is the title of the acclaimed biographical movie based on mathematician Srinivasa Ramanujan?', options: ['The Man Who Saw Infinity', 'The Man Who Calculated Everything', 'The Man Who Knew Infinity', 'The Genius Mathematician'], correctIndex: 2,
+    explanation: 'Dev Patel starred as Ramanujan in "The Man Who Knew Infinity" (2015).', hint: 'The Man Who Knew Infinity.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_9', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What does NABARD stand for in development banking?', options: ['National Agriculture and Banking Resource Department', 'National Bank for Agriculture and Rural Development', 'National Authority for Banking and Rural Development', 'National Agricultural and Rural Development Bank'], correctIndex: 1,
+    explanation: 'NABARD is India’s apex development bank for rural and agricultural financing.', hint: 'National Bank for Agriculture and Rural Development.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_10', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'In which city is the headquarters of the World Health Organization (WHO) situated?', options: ['New York City, USA', 'London, UK', 'Geneva, Switzerland', 'Paris, France'], correctIndex: 2,
+    explanation: 'WHO headquarters is located in Geneva, Switzerland.', hint: 'Geneva.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_11', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'What is the full form of NEER in economics and international finance?', options: ['National Economic and Exchange Rate', 'Nominal Effective Exchange Rate', 'New Exchange Rate Regulation', 'Net Economic and Exchange Rate'], correctIndex: 1,
+    explanation: 'NEER is an unadjusted weighted average rate at which one currency exchanges for a basket of foreign currencies.', hint: 'Nominal Effective Exchange Rate.', difficulty: 'hard'
+  },
+  {
+    id: 'g_ca_12', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'In which state was India’s first major reserve of lithium discovered in 2023?', options: ['Jammu & Kashmir', 'Chhattisgarh', 'Bihar', 'Odisha'], correctIndex: 0,
+    explanation: '5.9 million tonnes of lithium inferred resources were identified in Salal-Haimana area of Reasi district, J&K.', hint: 'Jammu & Kashmir.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_13', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'Who serves as the current Director-General of the World Health Organization (WHO)?', options: ['Dr. Margaret Chan', 'Dr. Gro Harlem Brundtland', 'Dr. Tedros Adhanom Ghebreyesus', 'Dr. Soumya Swaminathan'], correctIndex: 2,
+    explanation: 'Dr. Tedros Adhanom Ghebreyesus of Ethiopia has served as WHO Director-General since 2017.', hint: 'Dr. Tedros Adhanom Ghebreyesus.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_14', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'Which international treaty adopted in 1997 prohibits the production, stockpiling, and use of chemical weapons?', options: ['Geneva Protocol', 'Chemical Weapons Convention (CWC)', 'Biological Weapons Convention', 'Non-Proliferation Treaty'], correctIndex: 1,
+    explanation: 'The Chemical Weapons Convention entered into force in April 1997.', hint: 'Chemical Weapons Convention.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_15', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'What is the primary objective of the NCQG (New Collective Quantified Goal) in global climate negotiations?', options: ['Reducing carbon emissions in developed countries', 'Mobilizing climate finance for developing countries', 'Implementing solar projects', 'Enforcing carbon penalties'], correctIndex: 1,
+    explanation: 'NCQG sets a new annual financial commitment by developed nations to assist developing countries in climate action.', hint: 'Mobilizing climate finance.', difficulty: 'hard'
+  },
+  {
+    id: 'g_ca_16', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'Which city hosted COP29 (2024 UN Climate Change Conference)?', options: ['New York, USA', 'Geneva, Switzerland', 'Baku, Azerbaijan', 'Beijing, China'], correctIndex: 2,
+    explanation: 'COP29 took place in Baku, Azerbaijan in November 2024.', hint: 'Baku, Azerbaijan.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_17', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Current Affairs',
+    questionText: 'Which country ranked #1 in the World Press Freedom Index 2024 published by Reporters Without Borders?', options: ['Denmark', 'Sweden', 'Norway', 'Finland'], correctIndex: 2,
+    explanation: 'Norway retained the top rank in global press freedom.', hint: 'Norway.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_18', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What sheet material consisting of a single layer of gold atoms was synthesized in 2024?', options: ['Aurumite', 'Goldenium', 'Goldene', 'Aurorium'], correctIndex: 2,
+    explanation: 'Researchers synthesized "Goldene", a 2D single-atom-thick sheet of gold analogous to graphene.', hint: 'Goldene.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_19', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'Which location holds the world record for the highest frequency of atmospheric lightning strikes?', options: ['Amazon Basin', 'Lake Maracaibo (Venezuela)', 'Congo Basin', 'Bermuda Triangle'], correctIndex: 1,
+    explanation: 'Catatumbo lightning at Lake Maracaibo generates over 250 lightning flashes per square kilometer per year.', hint: 'Lake Maracaibo.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_20', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'In which year were the United Nations Sustainable Development Goals (SDGs) officially launched?', options: ['2000', '2015', '2020', '2030'], correctIndex: 1,
+    explanation: 'The 17 SDGs were adopted by all UN Member States in 2015 as part of the 2030 Agenda.', hint: '2015.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_21', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'What does RaaS stand for in cybersecurity threats?', options: ['Ransomware and Antivirus Service', 'Ransomware as a Service', 'Remote Access Security', 'Ransomware Analysis Service'], correctIndex: 1,
+    explanation: 'Ransomware as a Service (RaaS) is a business model where malware developers lease ransomware tools to affiliates.', hint: 'Ransomware as a Service.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_22', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Current Affairs',
+    questionText: 'What is the causative viral agent of West Nile Fever transmitted by mosquitoes?', options: ['West Nile Bacteria', 'West Nile Parasite', 'West Nile Virus', 'Flavivirus H5N1'], correctIndex: 2,
+    explanation: 'West Nile Virus is a single-stranded RNA virus of the family Flaviviridae.', hint: 'West Nile Virus.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_23', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What does SWIFT stand for in international banking messaging?', options: ['Society for Worldwide Interbank Financial Telecommunication', 'Secure Worldwide Interbank Financial Transactions', 'System for Worldwide International Financial Transfer', 'Swift Worldwide Interbank Transfer'], correctIndex: 0,
+    explanation: 'SWIFT provides the global network for financial institutions to securely send and receive transaction information.', hint: 'Society for Worldwide Interbank Financial Telecommunication.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_24', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'Which country initiated the international observance of International Mother Language Day (February 21)?', options: ['India', 'Bangladesh', 'Nepal', 'Sri Lanka'], correctIndex: 1,
+    explanation: 'Bangladesh proposed International Mother Language Day to honor the 1952 Language Movement martyrs.', hint: 'Bangladesh.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_25', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What substance produced in the digestive system of sperm whales is historically valued in perfumery as "Floating Gold"?', options: ['Spermaceti', 'Ambergris', 'Whale Musk', 'Ocean Resin'], correctIndex: 1,
+    explanation: 'Ambergris is a solid, waxy substance created in sperm whale intestines.', hint: 'Ambergris.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_26', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'What is OpenAI’s flagship multimodal AI model launched in May 2024?', options: ['GPT-3.5', 'GPT-4', 'GPT-4o', 'GPT-5'], correctIndex: 2,
+    explanation: 'GPT-4o ("o" for omni) accepts text, audio, and image inputs in real time.', hint: 'GPT-4o.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_27', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'What does TRIPS stand for under the World Trade Organization (WTO)?', options: ['Trade-Related Aspects of International Property Standards', 'Trade-Related Aspects of Intellectual Property Rights', 'Trade Regulations for Intellectual Property Systems', 'Trade-Related International Property Standards'], correctIndex: 1,
+    explanation: 'TRIPS sets minimum standards for intellectual property regulation in WTO member states.', hint: 'Trade-Related Aspects of Intellectual Property Rights.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_28', gradeCode: 'grade_8', gradeName: 'JSS 2 (Grade 8)', subjectName: 'Current Affairs',
+    questionText: 'What is the name of SpaceX’s satellite constellation designed to supply low-latency satellite internet across the globe?', options: ['Starlight', 'Starlink', 'Skylink', 'SkyNet'], correctIndex: 1,
+    explanation: 'Starlink is SpaceX’s low-Earth orbit satellite internet system.', hint: 'Starlink.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_29', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'Where is the headquarters of the United Nations Environment Programme (UNEP) situated?', options: ['New York, USA', 'Geneva, Switzerland', 'Nairobi, Kenya', 'Vienna, Austria'], correctIndex: 2,
+    explanation: 'UNEP headquarters has been based in Nairobi, Kenya since its creation in 1972.', hint: 'Nairobi, Kenya.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_30', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'What is the common name for the free-living amoeba Naegleria fowleri?', options: ['Brain-Munching Bacteria', 'Brain-Eating Amoeba', 'Neuron-Noshing Microbe', 'Cerebral Parasite'], correctIndex: 1,
+    explanation: 'Naegleria fowleri causes primary amoebic meningoencephalitis (PAM) and is popularly called the "brain-eating amoeba".', hint: 'Brain-Eating Amoeba.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_31', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'Which international judicial organ based at The Hague prosecutes individuals for genocide, war crimes, and crimes against humanity?', options: ['International Court of Justice (ICJ)', 'European Court of Human Rights', 'International Criminal Court (ICC)', 'UN Security Council'], correctIndex: 2,
+    explanation: 'The ICC investigates and tries individuals accused of the gravest crimes of international concern.', hint: 'International Criminal Court.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_32', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What novel gold-backed digital currency was introduced by the Reserve Bank of Zimbabwe to combat hyperinflation?', options: ['Bitcoin', 'ZiG (Zimbabwe Gold)', 'USD', 'Euro'], correctIndex: 1,
+    explanation: 'ZiG (Zimbabwe Gold) was introduced in April 2024 backed by physical gold and foreign currencies.', hint: 'ZiG (Zimbabwe Gold).', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_33', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Current Affairs',
+    questionText: 'What is the name of the first wooden satellite built by Kyoto University and Sumitomo Forestry?', options: ['LignoSat', 'WoodSat', 'EcoSat', 'BioSat'], correctIndex: 0,
+    explanation: 'LignoSat was crafted out of magnolia wood to test environmentally friendly satellite materials.', hint: 'LignoSat.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_34', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'In which country is the world’s longest river, the Nile, primarily located before emptying into the Mediterranean Sea?', options: ['Ethiopia', 'Uganda', 'Egypt', 'Sudan'], correctIndex: 2,
+    explanation: 'The Nile flows northwards through northeastern Africa into the Mediterranean Sea via Egypt.', hint: 'Egypt.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_35', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'Which international organization was founded in 1960 in Baghdad by five founding oil-producing nations?', options: ['IEA', 'OPEC', 'OECD', 'BRICS'], correctIndex: 1,
+    explanation: 'OPEC (Organization of the Petroleum Exporting Countries) was created at the Baghdad Conference in September 1960.', hint: 'OPEC.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_36', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'Which country elected Claudia Sheinbaum as its first female President in 2024?', options: ['Argentina', 'Brazil', 'Mexico', 'Peru'], correctIndex: 2,
+    explanation: 'Claudia Sheinbaum won the Mexican presidential election in June 2024.', hint: 'Mexico.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_37', gradeCode: 'grade_10', gradeName: 'SS 1 (Grade 10)', subjectName: 'Current Affairs',
+    questionText: 'Where is the highest temperature ever reliably recorded on Earth (56.7°C in 1913)?', options: ['Sahara Desert', 'Death Valley (California, USA)', 'Atacama Desert', 'Dasht-e Lut'], correctIndex: 1,
+    explanation: 'Death Valley in California recorded 56.7°C (134°F) on July 10, 1913.', hint: 'Death Valley.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_38', gradeCode: 'grade_11', gradeName: 'SS 2 (Grade 11)', subjectName: 'Current Affairs',
+    questionText: 'What intergovernmental forum comprising 7 major advanced economies meets annually to discuss global economic policy?', options: ['G20', 'G7', 'BRICS', 'OECD'], correctIndex: 1,
+    explanation: 'The G7 consists of Canada, France, Germany, Italy, Japan, the UK, and the USA.', hint: 'G7.', difficulty: 'easy'
+  },
+  {
+    id: 'g_ca_39', gradeCode: 'grade_9', gradeName: 'JSS 3 (Grade 9)', subjectName: 'Current Affairs',
+    questionText: 'What is the largest wetland in the world, located predominantly in South America (Brazil, Bolivia, Paraguay)?', options: ['Everglades', 'Pantanal Wetlands', 'Sundarbans', 'Okavango Delta'], correctIndex: 1,
+    explanation: 'The Pantanal is the world’s largest tropical wetland and flooded grassland region.', hint: 'Pantanal Wetlands.', difficulty: 'medium'
+  },
+  {
+    id: 'g_ca_40', gradeCode: 'grade_12', gradeName: 'SS 3 (Grade 12)', subjectName: 'Current Affairs',
+    questionText: 'What space agency accord framework governs principles for peaceful lunar and space exploration under NASA’s program?', options: ['Apollo Treaty', 'Artemis Accords', 'Outer Space Pact', 'Gateway Concordat'], correctIndex: 1,
+    explanation: 'The Artemis Accords establish international guidelines for civil space exploration.', hint: 'Artemis Accords.', difficulty: 'easy'
+  },
 ];
+
 
 export function getCurriculumQuestionsByGrade(gradeCode: string): CurriculumQuestion[] {
   return OFFICIAL_CURRICULUM_QUESTIONS.filter(q => q.gradeCode === gradeCode);
