@@ -281,6 +281,55 @@ export default function ParentDashboardClient({
                     </button>
                   </div>
                 </div>
+
+                {/* Subject Strength Breakdown Meter */}
+                <div className="rounded-2xl border-[3px] border-dark bg-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C]">
+                  <div className="flex items-center justify-between border-b-[2px] border-dark pb-3">
+                    <div>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/50">Curriculum Performance</span>
+                      <h3 className="text-xl font-black text-dark">Subject Mastery Breakdown</h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => alert(`Direct message sent to ${activeChild?.fullName ?? 'child'}'s Class Tutor!`)}
+                      className="inline-flex items-center gap-1.5 rounded-xl border-[2px] border-dark bg-yellow px-3 py-1.5 text-xs font-black uppercase tracking-wider text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                    >
+                      💬 Message Class Tutor
+                    </button>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-dark mb-1">
+                        <span>Mathematics</span>
+                        <span className="font-black text-emerald-600">88% (Excellent)</span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full border border-dark bg-off-white overflow-hidden">
+                        <div className="h-full bg-emerald-500" style={{ width: '88%' }} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-dark mb-1">
+                        <span>English Language</span>
+                        <span className="font-black text-emerald-600">92% (Mastered)</span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full border border-dark bg-off-white overflow-hidden">
+                        <div className="h-full bg-emerald-500" style={{ width: '92%' }} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-bold text-dark mb-1">
+                        <span>Basic Science &amp; Tech</span>
+                        <span className="font-black text-amber-600">75% (Needs Practice)</span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full border border-dark bg-off-white overflow-hidden">
+                        <div className="h-full bg-amber-400" style={{ width: '75%' }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="rounded-xl sm:rounded-2xl border-[2px] sm:border-[3px] border-dashed border-dark/20 bg-slate-50 p-6 sm:p-8 text-center text-xs sm:text-sm font-bold text-dark/60 break-words">

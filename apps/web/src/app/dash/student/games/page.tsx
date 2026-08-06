@@ -266,25 +266,54 @@ export default function GamesPage() {
           </div>
         </div>
 
-        <div style={{
-          background: '#ffffff',
-          border: '3px solid #000000',
-          borderRadius: '16px',
-          padding: '16px 28px',
-          textAlign: 'center',
-          boxShadow: '4px 4px 0px #000000',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <p style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>
-            Your Points
-          </p>
-          <p style={{
-            fontSize: '32px', fontWeight: 900, color: '#000000', margin: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <div style={{
+            background: '#ffffff',
+            border: '3px solid #000000',
+            borderRadius: '16px',
+            padding: '16px 28px',
+            textAlign: 'center',
+            boxShadow: '4px 4px 0px #000000',
+            position: 'relative',
+            zIndex: 1
           }}>
-            {score} <Star size={22} style={{ fill: '#fbbf24', color: '#000000' }} />
-          </p>
+            <p style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>
+              Your Play Points
+            </p>
+            <div style={{ fontSize: '32px', fontWeight: 900, color: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Star size={24} color="#fbbf24" fill="#fbbf24" /> {score * 10} XP
+            </div>
+          </div>
+
+          {/* Top Gamers Leaderboard Card */}
+          <div style={{
+            background: '#fef3c7',
+            border: '3px solid #000000',
+            borderRadius: '16px',
+            padding: '14px 20px',
+            boxShadow: '4px 4px 0px #000000',
+            position: 'relative',
+            zIndex: 1,
+            minWidth: '220px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', color: '#92400e', marginBottom: '8px' }}>
+              <Trophy size={14} color="#d97706" /> Top Gamers Leaderboard
+            </div>
+            <div style={{ fontSize: '12px', fontWeight: 800, color: '#000000', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>🥇 Tola A. (Millionaire 3D)</span>
+                <span style={{ fontWeight: 900, marginLeft: 'auto' }}>1,500 XP</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>🥈 Chidi K. (Scrabble)</span>
+                <span style={{ fontWeight: 900, marginLeft: 'auto' }}>1,240 XP</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                <span>🥉 Amina M. (Ayò Ọ̀pọ́n)</span>
+                <span style={{ fontWeight: 900, marginLeft: 'auto' }}>980 XP</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

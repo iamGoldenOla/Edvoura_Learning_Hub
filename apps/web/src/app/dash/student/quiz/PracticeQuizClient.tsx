@@ -43,8 +43,9 @@ export function PracticeQuizClient({
 
   const [selectedGradeCode, setSelectedGradeCode] = useState<string>(studentGradeCode);
 
+  const [missedQuestions, setMissedQuestions] = useState<QuizQuestion[]>([]);
+
   function startQuiz(data: QuizPayload) {
-    // Filter out any non-MCQ questions just in case to maintain the layout
     const mcqs = data.questions.filter((q) => q.options && q.options.length >= 2);
     setQuizData({ ...data, questions: mcqs });
     setCurrentQuestionIndex(0);
@@ -52,6 +53,7 @@ export function PracticeQuizClient({
     setQuizFinished(false);
     setSelectedAnswer(null);
     setHasSubmitted(false);
+    setMissedQuestions([]);
   }
 
   function handleOptionClick(opt: string) {
@@ -65,19 +67,20 @@ export function PracticeQuizClient({
     setHasSubmitted(true);
     const currentQuestion = quizData.questions[currentQuestionIndex];
     if (selectedAnswer === currentQuestion.correctAnswer) {
-      setScore(s => s + 1);
+      setScore((s) => s + 1);
+    } else {
+      setMissedQuestions((prev) => [...prev, currentQuestion]);
     }
   }
 
   function handleNextQuestion() {
     if (!quizData) return;
     if (currentQuestionIndex < quizData.questions.length - 1) {
-      setCurrentQuestionIndex(i => i + 1);
+      setCurrentQuestionIndex((i) => i + 1);
       setSelectedAnswer(null);
       setHasSubmitted(false);
     } else {
       setQuizFinished(true);
-      // Save results to DB (optional endpoint check)
       void fetch('/api/ai/practice/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -85,10 +88,19 @@ export function PracticeQuizClient({
           subjectName: quizData.title,
           topic: quizData.description || 'Practice Challenge',
           score: score,
-          totalQuestions: quizData.questions.length
-        })
+          totalQuestions: quizData.questions.length,
+        }),
       });
     }
+  }
+
+  function handleRetryMissed() {
+    if (!quizData || missedQuestions.length === 0) return;
+    startQuiz({
+      title: `${quizData.title} (Review Missed Questions)`,
+      description: `Retrying the ${missedQuestions.length} questions you missed.`,
+      questions: missedQuestions,
+    });
   }
 
   if (quizFinished && quizData) {
@@ -101,12 +113,23 @@ export function PracticeQuizClient({
         <p className="mb-8 text-xl font-bold text-dark/70 sm:text-2xl">
           You scored <span className="text-emerald-600 font-black">{score}</span> out of {quizData.questions.length}
         </p>
-        <Button 
-          onClick={() => setQuizData(null)}
-          className="bg-emerald-400 border-[3px] border-dark text-dark font-black px-8 py-4 text-lg rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
-        >
-          Back to Hub
-        </Button>
+
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          {missedQuestions.length > 0 && (
+            <Button
+              onClick={handleRetryMissed}
+              className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-3 text-base rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
+            >
+              🔁 Retry Missed Questions ({missedQuestions.length})
+            </Button>
+          )}
+          <Button
+            onClick={() => setQuizData(null)}
+            className="bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-3 text-base rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
+          >
+            Back to Quiz Hub
+          </Button>
+        </div>
       </div>
     );
   }
