@@ -230,24 +230,35 @@ export default function ColorRingSortGame() {
       setSelectedPegIdx(pegIdx);
       playPopSound();
     } else if (selectedPegIdx === pegIdx) {
+      // Tapping the same peg deselects it
       setSelectedPegIdx(null);
     } else {
       const sourcePeg = [...pegs[selectedPegIdx]];
       const targetPeg = [...pegs[pegIdx]];
 
+      // Target peg is full
       if (targetPeg.length >= pegCapacity) {
-        setSelectedPegIdx(null);
+        // Auto-switch selection to target peg if it has rings
+        if (targetPeg.length > 0) {
+          setSelectedPegIdx(pegIdx);
+          playPopSound();
+        } else {
+          setSelectedPegIdx(null);
+        }
         return;
       }
 
       const ringToMove = sourcePeg[sourcePeg.length - 1];
       const targetTopRing = targetPeg[targetPeg.length - 1];
 
+      // Colors do not match: auto-switch selection to the newly tapped peg!
       if (targetPeg.length > 0 && targetTopRing !== ringToMove) {
-        setSelectedPegIdx(null);
+        setSelectedPegIdx(pegIdx);
+        playPopSound();
         return;
       }
 
+      // Execute valid move
       sourcePeg.pop();
       targetPeg.push(ringToMove);
 
@@ -416,27 +427,48 @@ export default function ColorRingSortGame() {
               const isFull = peg.length === pegCapacity;
               const isCompletePeg = isFull && peg.every((c) => c === peg[0]);
 
+              // Check if this peg can accept the currently selected ring
+              const selectedPeg = selectedPegIdx !== null ? pegs[selectedPegIdx] : null;
+              const selectedRing = selectedPeg && selectedPeg.length > 0 ? selectedPeg[selectedPeg.length - 1] : null;
+              const isCanAccept = selectedPegIdx !== null && selectedPegIdx !== pegIdx && selectedRing !== null && !isFull && (peg.length === 0 || peg[peg.length - 1] === selectedRing);
+
               return (
                 <div
                   key={`peg-${pegIdx}`}
                   onClick={() => handlePegClick(pegIdx)}
-                  className={`relative cursor-pointer flex flex-col items-center group transition-all duration-200 ${
-                    isSelected ? '-translate-y-2' : 'hover:-translate-y-1'
+                  className={`relative cursor-pointer flex flex-col items-center group transition-all duration-200 active:scale-95 touch-manipulation ${
+                    isSelected
+                      ? '-translate-y-2'
+                      : isCanAccept
+                      ? 'scale-105'
+                      : 'hover:-translate-y-1'
                   }`}
                 >
-                  {/* Floating Lifted Ring when Selected */}
+                  {/* Floating Lifted Ring when Selected or Valid Drop Highlight */}
                   <div className="h-12 w-full flex items-center justify-center mb-1">
-                    {isSelected && peg.length > 0 && (
+                    {isSelected && peg.length > 0 ? (
                       <div
                         className={`w-14 sm:w-20 h-6 sm:h-8 rounded-full bg-gradient-to-r ${COLORS[peg[peg.length - 1]]?.gradient} border-[3px] border-dark shadow-[0px_8px_16px_rgba(0,0,0,0.3)] animate-bounce flex items-center justify-center`}
                       >
                         <div className="w-4 sm:w-6 h-2 rounded-full bg-white/40" />
                       </div>
-                    )}
+                    ) : isCanAccept ? (
+                      <div className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider border border-dark shadow-sm animate-pulse">
+                        Drop Here ↓
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Vertical Metal Pole */}
-                  <div className="relative flex flex-col items-center justify-end w-16 sm:w-24 h-52 sm:h-64 rounded-b-xl border-[3px] border-dark bg-slate-200/90 shadow-[inset_0px_0px_10px_rgba(0,0,0,0.1)] p-1">
+                  <div
+                    className={`relative flex flex-col items-center justify-end w-16 sm:w-24 h-52 sm:h-64 rounded-b-xl border-[3px] border-dark transition-all ${
+                      isCanAccept
+                        ? 'bg-emerald-100/90 shadow-[0px_0px_16px_#10b981] border-emerald-600'
+                        : isSelected
+                        ? 'bg-purple-100/90 border-purple-600'
+                        : 'bg-slate-200/90 shadow-[inset_0px_0px_10px_rgba(0,0,0,0.1)]'
+                    } p-1`}
+                  >
                     {/* Metal Pole Bar */}
                     <div className="absolute inset-y-0 w-3 sm:w-4 bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 rounded-t-full border-x border-dark shadow-inner -z-0" />
 
