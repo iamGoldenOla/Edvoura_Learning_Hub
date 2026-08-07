@@ -309,13 +309,35 @@ export default function SudokuGame() {
       fullscreen={true}
     >
       {/* Widescreen 16:9 Zero-Scroll Layout */}
-      <div style={{
+      <div className="sudoku-main-layout" style={{
         display: 'flex', alignItems: 'stretch', height: '100%',
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .sudoku-main-layout {
+              flex-direction: column !important;
+              align-items: center !important;
+              overflow-y: auto !important;
+              padding: 4px !important;
+              gap: 8px !important;
+            }
+            .sudoku-side-panel {
+              width: 100% !important;
+              flex: none !important;
+            }
+            .sudoku-board-wrapper {
+              width: 100% !important;
+              max-width: min(92vw, 44vh) !important;
+              height: auto !important;
+              aspect-ratio: 1 / 1 !important;
+              flex: none !important;
+            }
+          }
+        `}</style>
         
         {/* ─── LEFT PANEL: CONTROLS & STATUS ─── */}
-        <div style={{
+        <div className="sudoku-side-panel" style={{
           flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>
@@ -392,13 +414,13 @@ export default function SudokuGame() {
         </div>
 
         {/* ─── CENTER AREA: DYNAMIC 1:1 SUDOKU GRID BOARD ─── */}
-        <div style={{
+        <div className="sudoku-board-wrapper" style={{
           flex: 1, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
         }}>
           <div style={{
             height: '100%', maxWidth: '100%', aspectRatio: '1 / 1',
             borderRadius: '16px', padding: '2px', boxSizing: 'border-box',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
+            display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'
           }}>
             <div style={{
               width: '100%', height: '100%',
@@ -454,7 +476,7 @@ export default function SudokuGame() {
         </div>
 
         {/* ─── RIGHT PANEL: NUMBER PAD CONTROLS ─── */}
-        <div style={{
+        <div className="sudoku-side-panel" style={{
           flex: '0 0 160px', width: '160px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>

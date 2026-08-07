@@ -345,12 +345,12 @@ export default function CurrentAffairsGame() {
       accentColor={ACCENT_COLOR}
       fullscreen={true}
     >
-      <div style={{
-        display: 'flex', gap: '16px', height: '100%', padding: '8px',
+      <div className="ca-layout" style={{
+        display: 'flex', gap: '16px', height: '100%', padding: '12px',
         boxSizing: 'border-box', overflow: 'hidden'
       }}>
         {/* ─── LEFT SIDEBAR: FILTERS & CONTROLS ─── */}
-        <div style={{
+        <div className="ca-sidebar" style={{
           width: '260px', background: '#0f172a', border: '3px solid #000000',
           borderRadius: '16px', padding: '14px', display: 'flex', flexDirection: 'column',
           gap: '12px', boxShadow: '4px 4px 0px #000000', overflowY: 'auto'
@@ -488,7 +488,7 @@ export default function CurrentAffairsGame() {
         </div>
 
         {/* ─── MAIN STAGE: 3D GLOBAL STUDIO VIEWPORT ─── */}
-        <div style={{
+        <div className="ca-main-stage" style={{
           flex: 1, background: '#0284c715', border: '3px solid #000000',
           borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'space-between', boxShadow: '4px 4px 0px #000000',
@@ -498,7 +498,7 @@ export default function CurrentAffairsGame() {
           <div style={{
             width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             background: '#0f172a', border: '2px solid #000', borderRadius: '12px', padding: '10px 16px',
-            color: '#fff'
+            color: '#fff', flexWrap: 'wrap', gap: '8px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Globe size={18} style={{ color: '#38bdf8' }} />
@@ -537,9 +537,9 @@ export default function CurrentAffairsGame() {
               </div>
 
               <h2 style={{
-                fontSize: '22px', fontWeight: 950, color: '#0f172a', lineHeight: 1.3,
+                fontSize: '18px', fontWeight: 950, color: '#0f172a', lineHeight: 1.35,
                 background: '#ffffff', border: '3.5px solid #000', borderRadius: '20px',
-                padding: '24px 20px', boxShadow: '6px 6px 0px #000'
+                padding: '16px 14px', boxShadow: '6px 6px 0px #000', wordBreak: 'break-word'
               }}>
                 {currentQuestion.q}
               </h2>
@@ -556,7 +556,7 @@ export default function CurrentAffairsGame() {
               )}
 
               {/* 4 Option Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+              <div className="ca-options-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
                 {currentQuestion.options.map((opt, idx) => {
                   const isSelected = selectedOption === idx;
                   const isCorrect = idx === currentQuestion.a;
@@ -592,11 +592,11 @@ export default function CurrentAffairsGame() {
                       <span style={{
                         width: '24px', height: '24px', borderRadius: '6px',
                         background: '#0f172a', color: '#fff', fontSize: '11px', fontWeight: 950,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                       }}>
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      <span style={{ flex: 1 }}>{opt}</span>
+                      <span style={{ flex: 1, wordBreak: 'break-word' }}>{opt}</span>
                     </button>
                   );
                 })}
@@ -609,17 +609,41 @@ export default function CurrentAffairsGame() {
             <button
               onClick={handleNext}
               style={{
-                padding: '12px 36px', borderRadius: '14px', border: '3px solid #000',
-                background: isAnswered ? '#22c55e' : '#0284c7', color: '#ffffff', fontSize: '14px', fontWeight: 950,
+                padding: '12px 24px', borderRadius: '14px', border: '3px solid #000',
+                background: isAnswered ? '#22c55e' : '#0284c7', color: '#ffffff', fontSize: '13px', fontWeight: 950,
                 boxShadow: '4px 4px 0px #000', cursor: 'pointer', textTransform: 'uppercase',
                 display: 'flex', alignItems: 'center', gap: '8px'
               }}
             >
-              <span>{isAnswered ? 'Next Question (Auto in 2s) ➔' : 'Skip to Next Question ➔'}</span>
+              <span>{isAnswered ? 'Next Question ➔' : 'Skip ➔'}</span>
             </button>
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .ca-layout {
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            padding: 6px !important;
+            gap: 10px !important;
+          }
+          .ca-sidebar {
+            width: 100% !important;
+            flex: none !important;
+          }
+          .ca-main-stage {
+            width: 100% !important;
+            flex: none !important;
+            padding: 12px !important;
+          }
+          .ca-options-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+        }
+      `}</style>
     </GameLayout>
   );
 }

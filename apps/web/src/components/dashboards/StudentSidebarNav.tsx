@@ -290,46 +290,33 @@ export default function StudentSidebarNav({ initialBand }: { initialBand: Learne
   );
 }
 
+const PRIMARY_BOTTOM_ITEMS: NavEntry[] = [
+  { href: '/dash/student/rewards', icon: Star, label: 'Rewards' },
+  { href: '/dash/student/live', icon: PlayCircle, label: 'Live Room' },
+  { href: '/dash/student/tutor-chat', icon: MessageCircle, label: 'Messages' },
+  { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
+  { href: '/dash/profile', icon: UserCircle2, label: 'Profile' },
+];
+
 const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
-  <Link href={safeHref(href)} className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-2 text-[9px] font-black uppercase tracking-wider transition-all shrink-0 min-w-[52px] ${
+  <Link href={safeHref(href)} className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all flex-1 text-center ${
     active
       ? 'bg-yellow border-[2px] border-dark text-dark shadow-[2px_2px_0px_#060E1C]'
-      : 'text-dark/40 hover:text-dark/70 border-[2px] border-transparent'
+      : 'text-dark/50 hover:text-dark border-[2px] border-transparent'
   }`}>
     <Icon className="h-4 w-4" />
-    <span className="whitespace-nowrap">{label}</span>
+    <span className="whitespace-nowrap overflow-hidden text-ellipsis max-w-full">{label}</span>
   </Link>
 );
 
-function StudentBottomNavContent({ initialBand }: { initialBand: LearnerBand }) {
-  const { band } = useBand();
+function StudentBottomNavContent() {
   const pathname = usePathname();
-  const activeBand = band || initialBand;
-  const sections = LOCKED_NAV_BY_BAND[activeBand] ?? LOCKED_NAV_BY_BAND[initialBand] ?? LOCKED_NAV_BY_BAND['7-12'];
-
-  const allItems = sections.flatMap((section) => section.items);
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
-        {allItems.map((item) => (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1 lg:hidden">
+      <div className="mx-auto flex items-center justify-around gap-1 px-2 max-w-md w-full">
+        {PRIMARY_BOTTOM_ITEMS.map((item) => (
            <BottomNavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
-        ))}
-      </div>
-    </nav>
-  );
-}
-
-function LockedStudentBottomNav({ initialBand }: { initialBand: LearnerBand }) {
-  const pathname = usePathname();
-  const sections = LOCKED_NAV_BY_BAND[initialBand] ?? LOCKED_NAV_BY_BAND['7-12'];
-  const allItems = sections.flatMap((section) => section.items);
-
-  return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t-[3px] border-dark bg-white py-1.5 lg:hidden">
-      <div className="mx-auto flex items-center gap-1 overflow-x-auto hide-scrollbar px-3 pb-1">
-        {allItems.map((item) => (
-          <BottomNavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
         ))}
       </div>
     </nav>
@@ -338,8 +325,8 @@ function LockedStudentBottomNav({ initialBand }: { initialBand: LearnerBand }) {
 
 export function StudentBottomNav({ initialBand }: { initialBand: LearnerBand }) {
   return (
-    <SidebarErrorBoundary fallback={<LockedStudentBottomNav initialBand={initialBand} />}>
-      <StudentBottomNavContent initialBand={initialBand} />
+    <SidebarErrorBoundary fallback={<StudentBottomNavContent />}>
+      <StudentBottomNavContent />
     </SidebarErrorBoundary>
   );
 }

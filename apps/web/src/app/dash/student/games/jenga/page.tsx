@@ -336,13 +336,29 @@ export default function JengaGame() {
       score={score}
       fullscreen={true}
     >
-      <div style={{
+      {/* Widescreen 16:9 Zero-Scroll Layout */}
+      <div className="jenga-main-layout" style={{
         display: 'flex', alignItems: 'stretch', height: '100%',
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .jenga-main-layout {
+              flex-direction: column !important;
+              align-items: center !important;
+              overflow-y: auto !important;
+              padding: 4px !important;
+              gap: 8px !important;
+            }
+            .jenga-side-panel {
+              width: 100% !important;
+              flex: none !important;
+            }
+          }
+        `}</style>
         
         {/* ─── LEFT SIDEBAR: GRADE TIER & WOBBLE GAUGE ─── */}
-        <div style={{
+        <div className="jenga-side-panel" style={{
           flex: '0 0 210px', width: '210px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>

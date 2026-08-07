@@ -1156,13 +1156,13 @@ export default function MonopolyPage() {
         </div>
       ) : (
         /* Widescreen 16:9 Zero-Scroll Main Play Area */
-        <div style={{
+        <div className="mono-main-layout" style={{
           display: 'flex', alignItems: 'stretch', height: '100%',
           overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
         }}>
           
           {/* ─── LEFT SIDEBAR: PLAYERS & QUICK ACTIONS ─── */}
-          <div style={{
+          <div className="mono-left-sidebar" style={{
             flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '6px',
             overflow: 'hidden'
           }}>
@@ -1278,7 +1278,7 @@ export default function MonopolyPage() {
           </div>
 
           {/* ─── CENTER AREA: 14×8 RECTANGULAR WIDESCREEN BOARD ─── */}
-          <div style={{
+          <div className="mono-board-wrapper" style={{
             flex: 1,
             height: '100%',
             display: 'flex',
@@ -1296,7 +1296,8 @@ export default function MonopolyPage() {
               boxSizing: 'border-box',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              width: '100%'
             }}>
               {/* 14x8 Grid Board */}
               <div style={{
@@ -1559,7 +1560,7 @@ export default function MonopolyPage() {
           </div>
 
           {/* ─── RIGHT SIDEBAR: GAME LOG & PROPERTY MANAGEMENT ─── */}
-          <div style={{
+          <div className="mono-right-sidebar" style={{
             flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '6px',
             overflow: 'hidden'
           }}>
@@ -1773,6 +1774,29 @@ export default function MonopolyPage() {
         @keyframes pulse {
           0% { opacity: 0.6; }
           100% { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+          .mono-main-layout {
+            flex-direction: column !important;
+            align-items: center !important;
+            overflow-y: auto !important;
+            gap: 8px !important;
+            padding: 4px !important;
+          }
+          .mono-left-sidebar {
+            width: 100% !important;
+            flex: none !important;
+          }
+          .mono-board-wrapper {
+            width: 100% !important;
+            height: auto !important;
+            flex: none !important;
+          }
+          .mono-right-sidebar {
+            width: 100% !important;
+            flex: none !important;
+          }
         }
       `}</style>
     </GameLayout>

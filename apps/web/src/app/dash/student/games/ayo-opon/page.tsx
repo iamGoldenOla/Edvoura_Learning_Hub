@@ -420,8 +420,7 @@ export default function AyoOpon() {
       </GameLayout>
     );
   }
-
-  return (
+return (
     <GameLayout
       title="Ayò Ọ̀pọ́n"
       icon={<Circle style={{ width: '24px', height: '24px' }} />}
@@ -430,33 +429,33 @@ export default function AyoOpon() {
       fullscreen={true}
     >
       {/* Zero-Scroll Widescreen Main Game Deck */}
-      <div style={{
+      <div className="ayo-main-layout" style={{
         display: 'flex', alignItems: 'stretch', height: '100%',
-        overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
+        overflow: 'hidden', padding: '8px', gap: '10px', boxSizing: 'border-box'
       }}>
         
         {/* ─── LEFT PANEL: SCORE CARDS & QUICK CONTROLS ─── */}
-        <div style={{
+        <div className="ayo-side-panel" style={{
           flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>
           {/* Game Title Badge */}
           <div style={{
             background: '#111827', border: '2px solid #1e293b', borderRadius: '12px',
-            padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
           }}>
             <div>
-              <div style={{ fontSize: '12px', fontWeight: 900, color: '#f97316', textTransform: 'uppercase' }}>🫘 Ayò Ọ̀pọ́n</div>
-              <div style={{ fontSize: '10px', fontWeight: 600, color: '#64748b' }}>Yoruba Mancala</div>
+              <div style={{ fontSize: '11px', fontWeight: 900, color: '#f97316', textTransform: 'uppercase' }}>🫘 Ayò Ọ̀pọ́n</div>
+              <div style={{ fontSize: '9px', fontWeight: 600, color: '#64748b' }}>Yorùbá Mancala</div>
             </div>
             <button
               onClick={quitToLobby}
               style={{
-                padding: '4px 8px', background: '#fee2e2', color: '#ef4444', border: '1.5px solid #000',
-                borderRadius: '6px', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                padding: '3px 6px', background: '#334155', color: '#fff', border: '1px solid #000',
+                borderRadius: '6px', fontSize: '9px', fontWeight: 900, cursor: 'pointer'
               }}
             >
-              Quit
+              Lobby
             </button>
           </div>
 
@@ -516,7 +515,7 @@ export default function AyoOpon() {
         </div>
 
         {/* ─── CENTER AREA: ULTRAWIDE 16:9 ULTRAWIDE AYÒ Ọ̀PỌ́N BOARD ─── */}
-        <div style={{
+        <div className="ayo-board-area" style={{
           flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
         }}>
@@ -530,7 +529,7 @@ export default function AyoOpon() {
           </div>
 
           {/* Ultrawide 3D Wooden Ayò Board Viewport */}
-          <div style={{
+          <div className="ayo-wooden-board" style={{
             height: 'calc(100% - 40px)',
             maxWidth: '100%',
             aspectRatio: '2.2 / 1',
@@ -598,7 +597,7 @@ export default function AyoOpon() {
         </div>
 
         {/* ─── RIGHT PANEL: LIVE GAME LOG ─── */}
-        <div style={{
+        <div className="ayo-side-panel" style={{
           flex: '0 0 200px', width: '200px', display: 'flex', flexDirection: 'column', gap: '6px',
           overflow: 'hidden'
         }}>
@@ -628,6 +627,34 @@ export default function AyoOpon() {
           </button>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .ayo-main-layout {
+            flex-direction: column !important;
+            align-items: center !important;
+            overflow-y: auto !important;
+            padding: 4px !important;
+            gap: 8px !important;
+          }
+          .ayo-side-panel {
+            width: 100% !important;
+            flex: none !important;
+          }
+          .ayo-board-area {
+            width: 100% !important;
+            height: auto !important;
+            flex: none !important;
+          }
+          .ayo-wooden-board {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: auto !important;
+            padding: 10px !important;
+            gap: 6px !important;
+          }
+        }
+      `}</style>
 
       {/* ─── RULES & HERITAGE POPUP MODAL WITH TAB NAVIGATION ─── */}
       {showRulesModal && (

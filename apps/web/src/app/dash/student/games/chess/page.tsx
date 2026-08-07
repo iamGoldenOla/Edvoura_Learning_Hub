@@ -550,10 +550,10 @@ export default function ChessPage() {
           </button>
           <span style={{ fontSize: '13px', fontWeight: 800 }}>♟ You <span style={{ color: '#475569', margin: '0 6px' }}>vs</span> 🤖 {oppName}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="chess-header-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
           {/* Board Mat Theme Toggle */}
           <div style={{ display: 'flex', gap: '3px', background: '#1e293b', padding: '2px 4px', borderRadius: '8px', border: '1px solid #334155' }}>
-            <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', alignSelf: 'center', padding: '0 4px' }}>Board Mat:</span>
+            <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', alignSelf: 'center', padding: '0 4px' }}>Board:</span>
             {[
               { id: 'wood', label: '🪵 Wood' },
               { id: 'green', label: '🟢 Green' },
@@ -563,7 +563,7 @@ export default function ChessPage() {
                 key={t.id}
                 onClick={() => setBoardTheme(t.id as any)}
                 style={{
-                  padding: '2px 8px', borderRadius: '6px', border: 'none',
+                  padding: '2px 6px', borderRadius: '6px', border: 'none',
                   fontSize: '10px', fontWeight: 900, cursor: 'pointer',
                   background: boardTheme === t.id ? '#fbbf24' : 'transparent',
                   color: boardTheme === t.id ? '#000' : '#cbd5e1'
@@ -574,32 +574,40 @@ export default function ChessPage() {
             ))}
           </div>
 
-          <div style={{ background: '#1e293b', padding: '3px 10px', borderRadius: '8px', fontSize: '12px', fontWeight: 800, fontFamily: 'monospace', border: '1px solid #334155' }}>
+          <div style={{ background: '#1e293b', padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 800, fontFamily: 'monospace', border: '1px solid #334155' }}>
             <Clock size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />{fmt(elapsed)}
           </div>
-          <div style={{ background: '#1e293b', padding: '3px 10px', borderRadius: '8px', fontSize: '11px', fontWeight: 800, border: '1px solid #334155' }}>
-            <Swords size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />Engine: {currentEval > 0 ? `+${currentEval.toFixed(1)}` : currentEval.toFixed(1)}
+          <div style={{ background: '#1e293b', padding: '3px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 800, border: '1px solid #334155' }}>
+            <Swords size={11} style={{ marginRight: '4px', verticalAlign: '-1px' }} />Eval: {currentEval > 0 ? `+${currentEval.toFixed(1)}` : currentEval.toFixed(1)}
           </div>
-          <button onClick={() => setFlat(!flat)} style={{ background: '#fbbf24', border: '2px solid #000', borderRadius: '8px', padding: '3px 10px', fontWeight: 900, fontSize: '11px', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button onClick={() => setFlat(!flat)} style={{ background: '#fbbf24', border: '2px solid #000', borderRadius: '8px', padding: '3px 8px', fontWeight: 900, fontSize: '11px', cursor: 'pointer', color: '#000', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <Layers size={11} />{flat ? '3D' : 'Flat'}
           </button>
         </div>
       </div>
 
+      {/* MOBILE EVALUATION BAR */}
+      <div className="chess-eval-bar-mobile" style={{
+        display: 'none', width: '100%', height: '8px', background: '#ffffff',
+        borderBottom: '1px solid #334155', overflow: 'hidden'
+      }} title={`Engine Eval: ${currentEval > 0 ? `+${currentEval.toFixed(1)}` : currentEval.toFixed(1)}`}>
+        <div style={{
+          width: `${Math.min(Math.max(50 + currentEval * 5, 5), 95)}%`,
+          background: '#000000', transition: 'width 0.4s ease', height: '100%'
+        }} />
+      </div>
+
       {/* ─── MAIN AREA: LEFT PANEL | EVAL BAR | BOARD | RIGHT PANEL ─── */}
-      <div style={{
-        display: 'flex', alignItems: 'stretch',
-        overflow: 'hidden', padding: '4px 6px', gap: '6px'
-      }}>
-        {/* LEFT PANEL */}
-        <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+      <div className="chess-main-area">
+        {/* TOP / LEFT PANEL (Computer Status) */}
+        <div className="chess-side-panel chess-side-panel-top" style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Computer Card */}
           <div style={{
             background: gs.turn === 'b' ? '#1a1a2e' : '#111827',
             border: gs.turn === 'b' ? '2px solid #fbbf24' : '2px solid #1e293b',
             borderRadius: '14px', padding: '8px 10px',
             boxShadow: gs.turn === 'b' ? '0 0 12px rgba(251,191,36,.2)' : 'none',
-            transition: 'all .3s'
+            transition: 'all .3s', flex: 1
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -615,8 +623,8 @@ export default function ChessPage() {
             </div>
           </div>
 
-          {/* Captured Black */}
-          <div style={{
+          {/* Captured Black (Desktop View) */}
+          <div className="chess-desktop-only" style={{
             flex: 1, background: '#111827', border: '2px solid #1e293b',
             borderRadius: '14px', padding: '8px 10px', display: 'flex', flexDirection: 'column',
             overflow: 'hidden'
@@ -631,8 +639,8 @@ export default function ChessPage() {
             </div>
           </div>
 
-          {/* Move History / SAN PGN */}
-          <div style={{
+          {/* Move History / SAN PGN (Desktop View) */}
+          <div className="chess-desktop-only" style={{
             background: '#111827', border: '2px solid #1e293b',
             borderRadius: '14px', padding: '8px 10px', maxHeight: '110px', overflowY: 'auto'
           }}>
@@ -649,8 +657,8 @@ export default function ChessPage() {
           </div>
         </div>
 
-        {/* ─── REAL-TIME ENGINE EVALUATION BAR ─── */}
-        <div style={{
+        {/* ─── DESKTOP REAL-TIME ENGINE EVALUATION BAR ─── */}
+        <div className="chess-eval-bar-desktop" style={{
           width: '12px', height: '100%', background: '#000', borderRadius: '6px',
           border: '1.5px solid #334155', overflow: 'hidden', display: 'flex', flexDirection: 'column'
         }} title={`Engine Eval: ${currentEval > 0 ? `+${currentEval.toFixed(1)}` : currentEval.toFixed(1)}`}>
@@ -663,8 +671,8 @@ export default function ChessPage() {
           }} />
         </div>
 
-        {/* ─── CHESSBOARD (fills all remaining space) ─── */}
-        <div style={{
+        {/* ─── CHESSBOARD (Square locked) ─── */}
+        <div className="chess-board-wrapper" style={{
           flex: 1,
           height: '100%',
           display: 'flex',
@@ -682,7 +690,8 @@ export default function ChessPage() {
             boxSizing: 'border-box',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            width: '100%'
           }}>
             <div style={{
               width: '100%', height: '100%',
@@ -718,7 +727,7 @@ export default function ChessPage() {
                     }}
                   >
                     {pc && (
-                      <span style={{
+                      <span className="chess-piece-text" style={{
                         fontSize: 'calc(min(100vw, 100vh) / 14)',
                         lineHeight: 1,
                         color: pc.color === 'w' ? '#ffffff' : '#000000',
@@ -746,15 +755,15 @@ export default function ChessPage() {
           </div>
         </div>
 
-        {/* RIGHT PANEL (Player 1 Info & Captured White) */}
-        <div style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px', overflow: 'hidden' }}>
+        {/* BOTTOM / RIGHT PANEL (Player 1 Info & Captured White) */}
+        <div className="chess-side-panel chess-side-panel-bottom" style={{ flex: '0 0 150px', width: '150px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Player Card */}
           <div style={{
             background: gs.turn === 'w' ? '#1a1a2e' : '#111827',
             border: gs.turn === 'w' ? '2px solid #22c55e' : '2px solid #1e293b',
             borderRadius: '14px', padding: '8px 10px',
             boxShadow: gs.turn === 'w' ? '0 0 12px rgba(34,197,94,.2)' : 'none',
-            transition: 'all .3s'
+            transition: 'all .3s', flex: 1
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -770,8 +779,8 @@ export default function ChessPage() {
             </div>
           </div>
 
-          {/* Captured White */}
-          <div style={{
+          {/* Captured White (Desktop View) */}
+          <div className="chess-desktop-only" style={{
             flex: 1, background: '#111827', border: '2px solid #1e293b',
             borderRadius: '14px', padding: '8px 10px', display: 'flex', flexDirection: 'column',
             overflow: 'hidden'
@@ -789,7 +798,7 @@ export default function ChessPage() {
           {/* Status Message */}
           <div style={{
             background: '#111827', border: '2px solid #1e293b',
-            borderRadius: '14px', padding: '8px 10px', textAlign: 'center'
+            borderRadius: '14px', padding: '8px 10px', textAlign: 'center', flex: 1
           }}>
             <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Status</div>
             <div style={{ fontSize: '11px', fontWeight: 900, color: status.includes('Checkmate') ? '#ef4444' : '#22c55e', marginTop: '2px' }}>
@@ -799,27 +808,105 @@ export default function ChessPage() {
         </div>
       </div>
 
+      {/* MOBILE COLLAPSIBLE DRAWER FOR PGN & CAPTURED PIECES */}
+      <div className="chess-mobile-only" style={{ display: 'none', padding: '0 8px 6px 8px' }}>
+        <details style={{ background: '#111827', border: '1px solid #1e293b', borderRadius: '10px', padding: '6px 10px' }}>
+          <summary style={{ fontSize: '11px', fontWeight: 800, color: '#fbbf24', cursor: 'pointer', userSelect: 'none' }}>
+            📋 Move Log & Captured Pieces ({gs.history.length} moves)
+          </summary>
+          <div style={{ marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div>
+              <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Captured by White ({gs.cap.w.length})</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', fontSize: '14px', minHeight: '24px' }}>
+                {gs.cap.w.map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Captured by Black ({gs.cap.b.length})</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', fontSize: '14px', minHeight: '24px' }}>
+                {gs.cap.b.map((s, i) => <span key={i}>{s}</span>)}
+              </div>
+            </div>
+          </div>
+          <div style={{ marginTop: '6px', maxHeight: '80px', overflowY: 'auto', borderTop: '1px solid #1e293b', paddingTop: '4px' }}>
+            <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Recent Moves</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {gs.history.map((h, i) => (
+                <span key={i} style={{ fontSize: '10px', fontWeight: 700, color: i === gs.history.length - 1 ? '#fbbf24' : '#94a3b8', fontFamily: 'monospace' }}>
+                  {Math.floor(i / 2) + 1}.{h.san}
+                </span>
+              ))}
+            </div>
+          </div>
+        </details>
+      </div>
+
       {/* ─── BOTTOM BAR CONTROLS ─── */}
       <div style={{
-        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
-        padding: '4px 12px', background: '#111827', borderTop: '1px solid #1e293b'
+        display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap',
+        padding: '6px 12px', background: '#111827', borderTop: '1px solid #1e293b'
       }}>
-        <button onClick={undo} disabled={gs.history.length === 0 || thinking} style={{ padding: '4px 12px', background: '#3b82f6', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: (gs.history.length === 0 || thinking) ? 'not-allowed' : 'pointer', opacity: (gs.history.length === 0 || thinking) ? .5 : 1, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
-          <Undo2 size={11} /> Undo
+        <button onClick={undo} disabled={gs.history.length === 0 || thinking} style={{ padding: '6px 12px', background: '#3b82f6', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: (gs.history.length === 0 || thinking) ? 'not-allowed' : 'pointer', opacity: (gs.history.length === 0 || thinking) ? .5 : 1, display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <Undo2 size={12} /> Undo
         </button>
-        <button onClick={resign} disabled={thinking} style={{ padding: '4px 12px', background: '#ef4444', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
-          <Flag size={11} /> Resign
+        <button onClick={resign} disabled={thinking} style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <Flag size={12} /> Resign
         </button>
-        <button onClick={offerDraw} disabled={thinking} style={{ padding: '4px 12px', background: '#8b5cf6', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
-          <Handshake size={11} /> Offer Draw
+        <button onClick={offerDraw} disabled={thinking} style={{ padding: '6px 12px', background: '#8b5cf6', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <Handshake size={12} /> Draw
         </button>
-        <button onClick={reset} disabled={thinking} style={{ padding: '4px 12px', background: '#334155', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '10.5px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
-          <RotateCcw size={11} /> Reset
+        <button onClick={reset} disabled={thinking} style={{ padding: '6px 12px', background: '#334155', color: '#fff', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '1.5px 1.5px 0 #000' }}>
+          <RotateCcw size={12} /> Reset
         </button>
       </div>
 
       <style jsx global>{`
         .chess-root * { box-sizing: border-box; }
+        .chess-main-area {
+          display: flex;
+          align-items: stretch;
+          overflow: hidden;
+          padding: 4px 6px;
+          gap: 6px;
+          flex: 1;
+        }
+
+        @media (max-width: 768px) {
+          .chess-main-area {
+            flex-direction: column !important;
+            align-items: center !important;
+            overflow-y: auto !important;
+            padding: 4px !important;
+            gap: 6px !important;
+          }
+          .chess-side-panel {
+            width: 100% !important;
+            flex: none !important;
+            flex-direction: row !important;
+          }
+          .chess-desktop-only {
+            display: none !important;
+          }
+          .chess-mobile-only {
+            display: block !important;
+          }
+          .chess-eval-bar-desktop {
+            display: none !important;
+          }
+          .chess-eval-bar-mobile {
+            display: block !important;
+          }
+          .chess-board-wrapper {
+            width: 100% !important;
+            max-width: min(92vw, 44vh) !important;
+            height: auto !important;
+            aspect-ratio: 1 / 1 !important;
+            flex: none !important;
+          }
+          .chess-piece-text {
+            font-size: calc(min(92vw, 44vh) / 9) !important;
+          }
+        }
       `}</style>
     </div>
   );

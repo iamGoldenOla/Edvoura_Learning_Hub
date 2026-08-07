@@ -653,8 +653,8 @@ export default function WordPlay() {
     >
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: '8px', boxSizing: 'border-box' }}>
         {/* Top Tab Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111827', padding: '6px 12px', borderRadius: '12px', border: '1.5px solid #1e293b' }}>
-          <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#111827', padding: '6px 12px', borderRadius: '12px', border: '1.5px solid #1e293b', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '2px' }}>
             {[
               { id: 'scramble', title: 'Word Scramble' },
               { id: 'hangman', title: 'Hangman' },
@@ -664,7 +664,7 @@ export default function WordPlay() {
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id as any)}
-                style={{ padding: '5px 12px', borderRadius: '8px', border: '1.5px solid #000', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeTab === t.id ? '#8b5cf6' : '#1e293b', color: '#fff' }}
+                style={{ padding: '5px 12px', borderRadius: '8px', border: '1.5px solid #000', fontWeight: 900, fontSize: '11px', cursor: 'pointer', background: activeTab === t.id ? '#8b5cf6' : '#1e293b', color: '#fff', whiteSpace: 'nowrap' }}
               >
                 {t.title}
               </button>
@@ -673,9 +673,9 @@ export default function WordPlay() {
 
           <button
             onClick={() => setShowRulesModal(true)}
-            style={{ padding: '5px 12px', background: '#38bdf8', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+            style={{ padding: '5px 12px', background: '#38bdf8', color: '#000', border: '1.5px solid #000', borderRadius: '8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap' }}
           >
-            <BookOpen size={12} /> Rules & Guide ({getGameTitle()})
+            <BookOpen size={12} /> Rules & Guide
           </button>
         </div>
 

@@ -191,13 +191,35 @@ export default function PuzzleGame() {
       fullscreen={true}
     >
       {/* 16:9 Zero-Scroll Widescreen Layout */}
-      <div style={{
+      <div className="puz-main-layout" style={{
         display: 'flex', alignItems: 'stretch', height: '100%',
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .puz-main-layout {
+              flex-direction: column !important;
+              align-items: center !important;
+              overflow-y: auto !important;
+              padding: 4px !important;
+              gap: 8px !important;
+            }
+            .puz-side-panel {
+              width: 100% !important;
+              flex: none !important;
+            }
+            .puz-board-wrapper {
+              width: 100% !important;
+              max-width: min(92vw, 44vh) !important;
+              height: auto !important;
+              aspect-ratio: 1 / 1 !important;
+              flex: none !important;
+            }
+          }
+        `}</style>
         
         {/* ─── LEFT SIDEBAR: GRADE TIER & THEME SELECTOR ─── */}
-        <div style={{
+        <div className="puz-side-panel" style={{
           flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>
@@ -283,7 +305,7 @@ export default function PuzzleGame() {
         </div>
 
         {/* ─── CENTER AREA: BIGGER & COLOURFUL 1:1 SLIDING PUZZLE CANVAS ─── */}
-        <div style={{
+        <div className="puz-board-wrapper" style={{
           flex: 1, height: '100%', display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
         }}>

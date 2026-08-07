@@ -532,13 +532,28 @@ export default function ScrabbleGame() {
       fullscreen={true}
     >
       {/* Widescreen 16:9 Zero-Scroll Layout */}
-      <div style={{
+      <div className="scrabble-main-layout" style={{
         display: 'flex', alignItems: 'stretch', height: '100%',
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .scrabble-main-layout {
+              flex-direction: column !important;
+              align-items: center !important;
+              overflow-y: auto !important;
+              padding: 4px !important;
+              gap: 8px !important;
+            }
+            .scrabble-side-panel {
+              width: 100% !important;
+              flex: none !important;
+            }
+          }
+        `}</style>
         
         {/* ─── LEFT PANEL: SCORE, DIFFICULTY & INVITE LINK ─── */}
-        <div style={{
+        <div className="scrabble-side-panel" style={{
           flex: '0 0 190px', width: '190px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>

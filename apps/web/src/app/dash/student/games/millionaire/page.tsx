@@ -695,13 +695,28 @@ export default function MillionaireGame() {
       accentColor={ACCENT_COLOR}
       fullscreen={true}
     >
-      <div style={{
+      <div className="mill-main-layout" style={{
         display: 'flex', alignItems: 'stretch', height: '100%',
         overflow: 'hidden', padding: '6px', gap: '10px', boxSizing: 'border-box'
       }}>
+        <style jsx global>{`
+          @media (max-width: 768px) {
+            .mill-main-layout {
+              flex-direction: column !important;
+              align-items: center !important;
+              overflow-y: auto !important;
+              padding: 4px !important;
+              gap: 8px !important;
+            }
+            .mill-side-panel {
+              width: 100% !important;
+              flex: none !important;
+            }
+          }
+        `}</style>
         
         {/* ─── LEFT SIDEBAR: CURRENCY SELECTOR, 4 LIFELINES & SCOREBOARD ─── */}
-        <div style={{
+        <div className="mill-side-panel" style={{
           flex: '0 0 220px', width: '220px', display: 'flex', flexDirection: 'column', gap: '8px',
           overflow: 'hidden'
         }}>

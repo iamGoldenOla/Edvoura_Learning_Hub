@@ -218,9 +218,9 @@ export default function GamesPage() {
   };
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px 48px', color: '#0f172a' }}>
+    <div className="games-page-root" style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px 48px', color: '#0f172a', boxSizing: 'border-box', overflowX: 'hidden' }}>
       {/* Hero Header Banner - Neo-brutalist Yellow */}
-      <section style={{
+      <section className="games-hero-section" style={{
         borderRadius: '20px',
         background: '#fbbf24',
         border: '3px solid #000000',
@@ -235,8 +235,8 @@ export default function GamesPage() {
         position: 'relative',
         overflow: 'hidden'
       }}>
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '100%' }}>
+          <div className="games-hero-title-group" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <div style={{
               background: '#ffffff',
               borderRadius: '12px',
@@ -245,29 +245,30 @@ export default function GamesPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '3px 3px 0px #000000'
+              boxShadow: '3px 3px 0px #000000',
+              flexShrink: 0
             }}>
               <Gamepad2 size={28} color="#000000" />
             </div>
-            <div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0f172a', color: '#fbbf24', padding: '4px 10px', borderRadius: '8px', border: '1.5px solid #000', fontSize: '11px', fontWeight: 950, marginBottom: '6px' }}>
-                <Trophy size={14} /> Assigned: {bandLabel}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0f172a', color: '#fbbf24', padding: '4px 10px', borderRadius: '8px', border: '1.5px solid #000', fontSize: '11px', fontWeight: 950, marginBottom: '6px', maxWidth: '100%', wordBreak: 'break-word' }}>
+                <Trophy size={14} style={{ flexShrink: 0 }} /> Assigned: {bandLabel}
               </div>
               <h1 style={{
-                fontSize: '32px', fontWeight: 900, color: '#000000', margin: 0,
-                letterSpacing: '-0.02em', lineHeight: 1.1, textTransform: 'uppercase'
+                fontSize: 'clamp(20px, 5vw, 32px)', fontWeight: 900, color: '#000000', margin: 0,
+                letterSpacing: '-0.02em', lineHeight: 1.1, textTransform: 'uppercase', wordBreak: 'break-word'
               }}>
                 Edvoura Play Zone
               </h1>
-              <p style={{ color: '#000000', fontSize: '15px', margin: '4px 0 0 0', fontWeight: 600 }}>
+              <p style={{ color: '#000000', fontSize: '14px', margin: '4px 0 0 0', fontWeight: 600, lineHeight: 1.4 }}>
                 Learn while you play — 10 premium 3D games auto-customized for your grade tier!
               </p>
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '16px' }}>
-          <div style={{
+        <div className="games-hero-stats" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', width: '100%', maxWidth: '100%' }}>
+          <div className="games-stat-card" style={{
             background: '#ffffff',
             border: '3px solid #000000',
             borderRadius: '16px',
@@ -275,18 +276,20 @@ export default function GamesPage() {
             textAlign: 'center',
             boxShadow: '4px 4px 0px #000000',
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
+            flex: '1 1 180px',
+            minWidth: '0'
           }}>
             <p style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>
               Your Play Points
             </p>
-            <div style={{ fontSize: '32px', fontWeight: 900, color: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '28px', fontWeight: 900, color: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
               <Star size={24} color="#fbbf24" fill="#fbbf24" /> {score * 10} XP
             </div>
           </div>
 
           {/* Top Gamers Leaderboard Card */}
-          <div style={{
+          <div className="games-stat-card" style={{
             background: '#fef3c7',
             border: '3px solid #000000',
             borderRadius: '16px',
@@ -294,23 +297,24 @@ export default function GamesPage() {
             boxShadow: '4px 4px 0px #000000',
             position: 'relative',
             zIndex: 1,
-            minWidth: '220px'
+            flex: '1 1 220px',
+            minWidth: '0'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', color: '#92400e', marginBottom: '8px' }}>
               <Trophy size={14} color="#d97706" /> Top Gamers Leaderboard
             </div>
-            <div style={{ fontSize: '12px', fontWeight: 800, color: '#000000', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <span>🥇 Tola A. (Millionaire 3D)</span>
-                <span style={{ fontWeight: 900, marginLeft: 'auto' }}>1,500 XP</span>
+            <div style={{ fontSize: '11.5px', fontWeight: 800, color: '#000000', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🥇 Tola A. (Millionaire)</span>
+                <span style={{ fontWeight: 900, marginLeft: 'auto', flexShrink: 0 }}>1,500 XP</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <span>🥈 Chidi K. (Scrabble)</span>
-                <span style={{ fontWeight: 900, marginLeft: 'auto' }}>1,240 XP</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🥈 Chidi K. (Scrabble)</span>
+                <span style={{ fontWeight: 900, marginLeft: 'auto', flexShrink: 0 }}>1,240 XP</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                <span>🥉 Amina M. (Ayò Ọ̀pọ́n)</span>
-                <span style={{ fontWeight: 900, marginLeft: 'auto' }}>980 XP</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>🥉 Amina M. (Ayò Ọ̀pọ́n)</span>
+                <span style={{ fontWeight: 900, marginLeft: 'auto', flexShrink: 0 }}>980 XP</span>
               </div>
             </div>
           </div>
@@ -318,7 +322,7 @@ export default function GamesPage() {
       </section>
 
       {/* Category Filter Pills */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px', maxWidth: '100%' }}>
         {categoriesList.map(cat => {
           const isActive = selectedCategory === cat;
           return (
@@ -342,7 +346,7 @@ export default function GamesPage() {
         })}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px', alignItems: 'start' }}>
+      <div className="games-page-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px', alignItems: 'start' }}>
         {/* Left Column - Games */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
           
@@ -762,6 +766,20 @@ export default function GamesPage() {
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 1024px) {
+          .games-page-grid {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .games-hero-stats {
+            flex-direction: column !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

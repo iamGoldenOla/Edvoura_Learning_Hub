@@ -333,7 +333,7 @@ export default function DashboardClientShell({
                   <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-[2px] border-white bg-rose-500" />
                 </button>
                 <div className="lg:hidden shrink-0">
-                  <LogoutButton variant="brutalist" />
+                  <LogoutButton />
                 </div>
               </div>
             </div>
