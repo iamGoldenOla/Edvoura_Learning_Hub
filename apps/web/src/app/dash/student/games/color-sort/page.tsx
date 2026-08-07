@@ -69,52 +69,53 @@ type LevelConfig = {
 const LEVELS: LevelConfig[] = [
   {
     level: 1,
-    pegCapacity: 3,
+    pegCapacity: 4,
     pegs: [
-      ['green', 'purple', 'green'],
-      ['purple', 'green', 'purple'],
+      ['green', 'purple', 'green', 'purple'],
+      ['purple', 'green', 'purple', 'green'],
       [],
     ],
   },
   {
     level: 2,
-    pegCapacity: 3,
+    pegCapacity: 4,
     pegs: [
-      ['green', 'white', 'purple'],
-      ['white', 'purple', 'green'],
-      ['purple', 'green', 'white'],
+      ['green', 'white', 'purple', 'green'],
+      ['white', 'purple', 'green', 'white'],
+      ['purple', 'green', 'white', 'purple'],
       [],
     ],
   },
   {
     level: 3,
-    pegCapacity: 3,
+    pegCapacity: 4,
     pegs: [
-      ['blue', 'red', 'green'],
-      ['red', 'green', 'blue'],
-      ['green', 'blue', 'red'],
+      ['blue', 'red', 'green', 'blue'],
+      ['red', 'green', 'blue', 'red'],
+      ['green', 'blue', 'red', 'green'],
+      [],
       [],
     ],
   },
   {
     level: 4,
-    pegCapacity: 3,
+    pegCapacity: 4,
     pegs: [
-      ['amber', 'purple', 'blue'],
-      ['purple', 'blue', 'amber'],
-      ['blue', 'amber', 'purple'],
+      ['amber', 'purple', 'blue', 'amber'],
+      ['purple', 'blue', 'amber', 'purple'],
+      ['blue', 'amber', 'purple', 'blue'],
       [],
       [],
     ],
   },
   {
     level: 5,
-    pegCapacity: 3,
+    pegCapacity: 4,
     pegs: [
-      ['green', 'white', 'purple'],
-      ['red', 'green', 'white'],
-      ['blue', 'red', 'green'],
-      ['purple', 'blue', 'red'],
+      ['green', 'white', 'purple', 'blue'],
+      ['red', 'green', 'white', 'purple'],
+      ['blue', 'red', 'green', 'white'],
+      ['purple', 'blue', 'red', 'amber'],
       [],
       [],
     ],
@@ -379,7 +380,7 @@ export default function ColorRingSortGame() {
                   </div>
 
                   {/* Vertical Metal Pole */}
-                  <div className="relative flex flex-col items-center justify-end w-16 sm:w-24 h-44 sm:h-52 rounded-b-xl border-[3px] border-dark bg-slate-200/90 shadow-[inset_0px_0px_10px_rgba(0,0,0,0.1)] p-1">
+                  <div className="relative flex flex-col items-center justify-end w-16 sm:w-24 h-52 sm:h-64 rounded-b-xl border-[3px] border-dark bg-slate-200/90 shadow-[inset_0px_0px_10px_rgba(0,0,0,0.1)] p-1">
                     {/* Metal Pole Bar */}
                     <div className="absolute inset-y-0 w-3 sm:w-4 bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 rounded-t-full border-x border-dark shadow-inner -z-0" />
 
