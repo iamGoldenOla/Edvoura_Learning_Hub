@@ -4,6 +4,7 @@ export {
   generateParentReport,
   generateFlashcards,
   explainLessonContent,
+  generateDirectTextWithFallback,
   extractJsonPayload,
 } from './orchestrator';
 export { CONTENT_TYPES, getSchemaForType } from './schemas';

@@ -525,3 +525,42 @@ Return ONLY a JSON array of objects with "front" and "back" keys.`;
 
   return { success: true as const, data: result.data, attempts: result.attempts, provider: result.provider };
 }
+
+export async function generateDirectTextWithFallback(options: {
+  systemPrompt?: string;
+  userPrompt: string;
+  temperature?: number;
+}) {
+  const systemPrompt = options.systemPrompt || SYSTEM_IDENTITY;
+  const temperature = options.temperature ?? 0.7;
+
+  // 1. Try OpenRouter
+  try {
+    const keys = getOpenRouterKeys();
+    if (keys.length > 0) {
+      const openRouterResult = await tryOpenRouterText(`${systemPrompt}\n\n${options.userPrompt}`, temperature);
+      if (openRouterResult.text?.trim()) {
+        return { success: true as const, text: openRouterResult.text.trim(), provider: openRouterResult.provider };
+      }
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('[AI Orchestrator] Direct text OpenRouter failed, trying Gemini...', msg);
+  }
+
+  // 2. Try Gemini
+  try {
+    const keys = getGeminiKeys();
+    if (keys.length > 0) {
+      const geminiResult = await tryGeminiText(`${systemPrompt}\n\n${options.userPrompt}`);
+      if (geminiResult.text?.trim()) {
+        return { success: true as const, text: geminiResult.text.trim(), provider: geminiResult.provider };
+      }
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('[AI Orchestrator] Direct text Gemini failed:', msg);
+  }
+
+  return { success: false as const, error: 'AI providers unavailable' };
+}
