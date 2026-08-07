@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  ArrowLeft, RotateCcw, Award, Sparkles, Volume2, VolumeX, HelpCircle, Trophy, Play, CheckCircle2, Flame, Layers
+  ArrowLeft, RotateCcw, Award, Sparkles, Volume2, VolumeX, HelpCircle, Trophy, Play, CheckCircle2, Flame, Layers, Clock, Brain, AlertCircle, PlusCircle
 } from 'lucide-react';
 import GameLayout from '@/components/games/GameLayout';
 
@@ -63,6 +63,7 @@ const COLORS: Record<string, ColorDef> = {
 type LevelConfig = {
   level: number;
   pegCapacity: number;
+  timeLimit: number; // In seconds
   pegs: string[][]; // Arrays of color keys from bottom to top
 };
 
@@ -70,6 +71,7 @@ const LEVELS: LevelConfig[] = [
   {
     level: 1,
     pegCapacity: 4,
+    timeLimit: 90,
     pegs: [
       ['green', 'purple', 'green', 'purple'],
       ['purple', 'green', 'purple', 'green'],
@@ -79,6 +81,7 @@ const LEVELS: LevelConfig[] = [
   {
     level: 2,
     pegCapacity: 4,
+    timeLimit: 90,
     pegs: [
       ['green', 'white', 'purple', 'green'],
       ['white', 'purple', 'green', 'white'],
@@ -89,6 +92,7 @@ const LEVELS: LevelConfig[] = [
   {
     level: 3,
     pegCapacity: 4,
+    timeLimit: 120,
     pegs: [
       ['blue', 'red', 'green', 'blue'],
       ['red', 'green', 'blue', 'red'],
@@ -100,6 +104,7 @@ const LEVELS: LevelConfig[] = [
   {
     level: 4,
     pegCapacity: 4,
+    timeLimit: 120,
     pegs: [
       ['amber', 'purple', 'blue', 'amber'],
       ['purple', 'blue', 'amber', 'purple'],
@@ -111,6 +116,7 @@ const LEVELS: LevelConfig[] = [
   {
     level: 5,
     pegCapacity: 4,
+    timeLimit: 150,
     pegs: [
       ['green', 'white', 'purple', 'blue'],
       ['red', 'green', 'white', 'purple'],
@@ -132,24 +138,47 @@ export default function ColorRingSortGame() {
   const [isLevelComplete, setIsLevelComplete] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showEducationalValue, setShowEducationalValue] = useState(false);
 
+  // Time Limit Countdown State
   const currentLevelConfig = LEVELS[currentLevelIdx] || LEVELS[0];
   const pegCapacity = currentLevelConfig.pegCapacity;
+  const [timeLeft, setTimeLeft] = useState(currentLevelConfig.timeLimit);
+  const [isTimeUp, setIsTimeUp] = useState(false);
 
   // Initialize level
   useEffect(() => {
     loadLevel(currentLevelIdx);
   }, [currentLevelIdx]);
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (isLevelComplete || isTimeUp || showHowToPlay || showEducationalValue) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setIsTimeUp(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isLevelComplete, isTimeUp, showHowToPlay, showEducationalValue, currentLevelIdx]);
+
   function loadLevel(idx: number) {
     const config = LEVELS[idx] || LEVELS[0];
-    // Deep clone pegs
     const initialPegs = config.pegs.map((peg) => [...peg]);
     setPegs(initialPegs);
     setSelectedPegIdx(null);
     setMoveCount(0);
     setHistory([]);
     setIsLevelComplete(false);
+    setIsTimeUp(false);
+    setTimeLeft(config.timeLimit);
   }
 
   function playPopSound() {
@@ -194,23 +223,19 @@ export default function ColorRingSortGame() {
   }
 
   function handlePegClick(pegIdx: number) {
-    if (isLevelComplete) return;
+    if (isLevelComplete || isTimeUp) return;
 
     if (selectedPegIdx === null) {
-      // Selecting a peg to pick top ring
       if (pegs[pegIdx].length === 0) return; // Cannot select empty peg
       setSelectedPegIdx(pegIdx);
       playPopSound();
     } else if (selectedPegIdx === pegIdx) {
-      // Deselect peg
       setSelectedPegIdx(null);
     } else {
-      // Move ring from selectedPegIdx to pegIdx
       const sourcePeg = [...pegs[selectedPegIdx]];
       const targetPeg = [...pegs[pegIdx]];
 
       if (targetPeg.length >= pegCapacity) {
-        // Target peg is full
         setSelectedPegIdx(null);
         return;
       }
@@ -218,18 +243,14 @@ export default function ColorRingSortGame() {
       const ringToMove = sourcePeg[sourcePeg.length - 1];
       const targetTopRing = targetPeg[targetPeg.length - 1];
 
-      // Rule: Target must be empty OR top ring must match the same color
       if (targetPeg.length > 0 && targetTopRing !== ringToMove) {
-        // Invalid move
         setSelectedPegIdx(null);
         return;
       }
 
-      // Execute valid move
       sourcePeg.pop();
       targetPeg.push(ringToMove);
 
-      // Save history for Undo
       setHistory((prev) => [...prev, pegs.map((p) => [...p])]);
 
       const newPegs = pegs.map((p, i) => {
@@ -243,7 +264,6 @@ export default function ColorRingSortGame() {
       setMoveCount((m) => m + 1);
       playPopSound();
 
-      // Check level victory
       checkLevelVictory(newPegs);
     }
   }
@@ -258,13 +278,14 @@ export default function ColorRingSortGame() {
 
     if (isWon) {
       setIsLevelComplete(true);
-      setScore((s) => s + 100 + Math.max(0, 50 - moveCount * 5));
+      const timeBonus = Math.floor(timeLeft * 2);
+      setScore((s) => s + 100 + timeBonus + Math.max(0, 50 - moveCount * 5));
       playWinSound();
     }
   }
 
   function handleUndo() {
-    if (history.length === 0 || isLevelComplete) return;
+    if (history.length === 0 || isLevelComplete || isTimeUp) return;
     const previousPegs = history[history.length - 1];
     setPegs(previousPegs);
     setHistory((prev) => prev.slice(0, prev.length - 1));
@@ -276,77 +297,112 @@ export default function ColorRingSortGame() {
     if (currentLevelIdx + 1 < LEVELS.length) {
       setCurrentLevelIdx((prev) => prev + 1);
     } else {
-      // Loop or finish
       setCurrentLevelIdx(0);
     }
   }
+
+  function handleAddExtraTime() {
+    setTimeLeft((prev) => prev + 30);
+    setIsTimeUp(false);
+  }
+
+  const formatSeconds = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const timerRatio = Math.max(0, timeLeft / currentLevelConfig.timeLimit);
+  const isUrgentTimer = timeLeft <= 15;
 
   return (
     <GameLayout title="Color Ring Sort 3D" icon={<Layers className="h-6 w-6 text-purple-600" />}>
       <div className="color-sort-root flex flex-col items-center justify-between min-h-[85vh] p-3 sm:p-6 max-w-5xl mx-auto w-full select-none">
         
         {/* Top Controls Bar */}
-        <div className="w-full flex items-center justify-between gap-2 border-[3px] border-dark bg-white rounded-2xl p-3 shadow-[4px_4px_0px_#060E1C]">
-          <div className="flex items-center gap-2">
-            <Link
-              href="/dash/student/games"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all"
-              title="Back to Games Hub"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-            <div>
-              <h1 className="text-sm sm:text-base font-black text-dark uppercase tracking-tight flex items-center gap-1.5">
-                <Layers className="h-4 w-4 text-purple-600" /> Level {currentLevelConfig.level}
-              </h1>
-              <p className="text-[10px] font-bold text-dark/60 uppercase">Color Sort Tower</p>
+        <div className="w-full flex flex-col gap-2 border-[3px] border-dark bg-white rounded-2xl p-3 shadow-[4px_4px_0px_#060E1C]">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/dash/student/games"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all"
+                title="Back to Games Hub"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+              <div>
+                <h1 className="text-sm sm:text-base font-black text-dark uppercase tracking-tight flex items-center gap-1.5">
+                  <Layers className="h-4 w-4 text-purple-600" /> Level {currentLevelConfig.level}
+                </h1>
+                <p className="text-[10px] font-bold text-dark/60 uppercase">Color Sort Tower</p>
+              </div>
+            </div>
+
+            {/* Timer & XP Indicators */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`flex items-center gap-1 text-xs font-black border-[2px] border-dark px-2.5 py-1 rounded-xl shadow-[1.5px_1.5px_0px_#060E1C] transition-colors ${
+                  isUrgentTimer
+                    ? 'bg-rose-500 text-white animate-pulse'
+                    : 'bg-indigo-100 text-dark'
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5" />
+                <span>{formatSeconds(timeLeft)}</span>
+              </div>
+
+              <div className="flex items-center gap-1 text-xs font-black text-dark bg-amber-100 border-[2px] border-dark px-2.5 py-1 rounded-xl shadow-[1.5px_1.5px_0px_#060E1C]">
+                <Trophy className="h-3.5 w-3.5 text-amber-600" />
+                <span>{score} XP</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleUndo}
+                disabled={history.length === 0 || isLevelComplete || isTimeUp}
+                className="inline-flex h-9 px-2.5 items-center justify-center gap-1 rounded-xl border-[2px] border-dark bg-white text-dark text-xs font-black uppercase shadow-[2px_2px_0px_#060E1C] disabled:opacity-40 active:scale-95"
+                title="Undo Move"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Undo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => loadLevel(currentLevelIdx)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-slate-100 text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                title="Reset Level"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEducationalValue(true)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-purple-100 text-purple-900 shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                title="Educational Value & Brain Power"
+              >
+                <Brain className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowHowToPlay(true)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                title="How to Play Guide"
+              >
+                <HelpCircle className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 text-xs font-black text-dark bg-amber-100 border-[2px] border-dark px-2.5 py-1 rounded-xl shadow-[1.5px_1.5px_0px_#060E1C]">
-              <Trophy className="h-3.5 w-3.5 text-amber-600" />
-              <span>{score} XP</span>
-            </div>
-            <div className="flex items-center gap-1 text-xs font-black text-dark bg-slate-100 border-[2px] border-dark px-2.5 py-1 rounded-xl shadow-[1.5px_1.5px_0px_#060E1C]">
-              <Flame className="h-3.5 w-3.5 text-rose-500" />
-              <span>{moveCount} Moves</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handleUndo}
-              disabled={history.length === 0 || isLevelComplete}
-              className="inline-flex h-9 px-2.5 items-center justify-center gap-1 rounded-xl border-[2px] border-dark bg-white text-dark text-xs font-black uppercase shadow-[2px_2px_0px_#060E1C] disabled:opacity-40 active:scale-95"
-              title="Undo Move"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Undo</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => loadLevel(currentLevelIdx)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-slate-100 text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95"
-              title="Reset Level"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-white text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95"
-            >
-              {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4 text-rose-500" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowHowToPlay(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-[2px] border-dark bg-yellow text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </button>
+          {/* Time Progress Bar */}
+          <div className="h-2 w-full rounded-full border-[1.5px] border-dark bg-slate-100 overflow-hidden">
+            <div
+              className={`h-full transition-all duration-1000 ${
+                isUrgentTimer ? 'bg-rose-500' : 'bg-emerald-400'
+              }`}
+              style={{ width: `${timerRatio * 100}%` }}
+            />
           </div>
         </div>
 
@@ -401,7 +457,6 @@ export default function ColorRingSortGame() {
                               boxShadow: `0px 4px 10px ${colDef.glow}, 2px 3px 0px #060E1C`,
                             }}
                           >
-                            {/* 3D Ring Inner Hole Accent */}
                             <div className="w-5 sm:w-7 h-2.5 sm:h-3 rounded-full bg-dark/20 border border-white/30 flex items-center justify-center">
                               <div className="w-2 sm:w-3 h-1 rounded-full bg-white/50" />
                             </div>
@@ -449,6 +504,10 @@ export default function ColorRingSortGame() {
                   <p className="text-xl font-black text-dark">{moveCount}</p>
                 </div>
                 <div>
+                  <p className="text-[10px] font-black uppercase text-dark/60">Time Left</p>
+                  <p className="text-xl font-black text-indigo-600">{formatSeconds(timeLeft)}</p>
+                </div>
+                <div>
                   <p className="text-[10px] font-black uppercase text-dark/60">Total Score</p>
                   <p className="text-xl font-black text-emerald-600">+{score} XP</p>
                 </div>
@@ -459,6 +518,87 @@ export default function ColorRingSortGame() {
                 className="w-full py-3.5 rounded-2xl border-[3px] border-dark bg-yellow hover:bg-yellow/90 text-dark font-black uppercase tracking-wider text-sm shadow-[4px_4px_0px_#060E1C] active:scale-95 transition-all flex items-center justify-center gap-2"
               >
                 <Play className="h-4 w-4 fill-current" /> Next Level
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Time's Up Modal Overlay */}
+        {isTimeUp && !isLevelComplete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/60 backdrop-blur-xs p-4 animate-in fade-in zoom-in duration-200">
+            <div className="border-[4px] border-dark bg-white rounded-[28px] p-6 sm:p-8 max-w-md w-full text-center shadow-[12px_12px_0px_#060E1C] space-y-5">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-dark bg-rose-500 shadow-[4px_4px_0px_#060E1C] text-white">
+                <AlertCircle className="h-8 w-8" />
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">Time&apos;s Up! ⏱️</h2>
+                <p className="text-xs font-bold text-dark/60 mt-1 uppercase">The clock ran out before sorting all rings!</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleAddExtraTime}
+                  className="w-full py-3 rounded-2xl border-[3px] border-dark bg-yellow hover:bg-yellow/90 text-dark font-black uppercase tracking-wider text-xs shadow-[3px_3px_0px_#060E1C] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <PlusCircle className="h-4 w-4" /> Add +30 Seconds
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadLevel(currentLevelIdx)}
+                  className="w-full py-3 rounded-2xl border-[3px] border-dark bg-slate-100 hover:bg-slate-200 text-dark font-black uppercase tracking-wider text-xs shadow-[3px_3px_0px_#060E1C] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  <RotateCcw className="h-4 w-4" /> Restart Level
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Educational Value & Brain Power Modal */}
+        {showEducationalValue && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+            <div className="border-[4px] border-dark bg-white rounded-[28px] p-6 sm:p-8 max-w-xl w-full shadow-[12px_12px_0px_#060E1C] space-y-5 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between border-b-[3px] border-dark pb-3">
+                <h3 className="text-lg font-black text-dark uppercase flex items-center gap-2">
+                  <Brain className="h-5 w-5 text-purple-600" /> Educational Value & Cognitive Power
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowEducationalValue(false)}
+                  className="rounded-lg border-[2px] border-dark bg-rose-100 p-1 text-dark"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4 text-xs font-semibold text-dark/80 leading-relaxed">
+                <div className="border-[2px] border-dark rounded-xl bg-purple-50 p-3.5 space-y-1">
+                  <h4 className="font-black text-purple-950 uppercase text-xs">💻 Algorithmic Logic & Stack Data Structures</h4>
+                  <p>Operates on <strong>Stack Mechanics (LIFO — Last In, First Out)</strong>. Teaches students how computer programs manipulate memory stacks, execute subroutines, and evaluate mathematical expressions.</p>
+                </div>
+
+                <div className="border-[2px] border-dark rounded-xl bg-sky-50 p-3.5 space-y-1">
+                  <h4 className="font-black text-sky-950 uppercase text-xs">👁️ Spatial Pattern Recognition</h4>
+                  <p>Trains visual discrimination to quickly isolate color groups and anticipate sequence chains before touching the board.</p>
+                </div>
+
+                <div className="border-[2px] border-dark rounded-xl bg-amber-50 p-3.5 space-y-1">
+                  <h4 className="font-black text-amber-950 uppercase text-xs">🎯 Executive Function & Working Memory</h4>
+                  <p>Students must simulate 3 to 5 moves ahead in their minds under a countdown timer, building focus, strategic planning, and crisis management skills.</p>
+                </div>
+
+                <div className="border-[2px] border-dark rounded-xl bg-emerald-50 p-3.5 space-y-1">
+                  <h4 className="font-black text-emerald-950 uppercase text-xs">⚡ Rapid Problem Solving Under Pressure</h4>
+                  <p>Enforces swift, decisive analytical thinking without fear of failure through trial-and-error reflection.</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowEducationalValue(false)}
+                className="w-full py-3 rounded-xl border-[3px] border-dark bg-purple-600 text-white font-black uppercase tracking-wider text-xs shadow-[3px_3px_0px_#060E1C]"
+              >
+                Back to Game
               </button>
             </div>
           </div>
@@ -484,14 +624,14 @@ export default function ColorRingSortGame() {
                 <p>1. <strong>Tap any peg</strong> to lift the top color ring into the air.</p>
                 <p>2. <strong>Tap another peg</strong> to move the ring onto that peg.</p>
                 <p>3. You can only place a ring on an <strong>empty peg</strong> OR on top of a ring of the <strong>SAME color</strong>.</p>
-                <p>4. Sort all matching colors onto their own dedicated pegs to win the level!</p>
+                <p>4. ⏱️ <strong>Watch the countdown timer!</strong> Sort all matching colors onto their own dedicated pegs before time runs out to earn XP & Time Bonuses!</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowHowToPlay(false)}
                 className="w-full py-3 rounded-xl border-[3px] border-dark bg-yellow text-dark font-black uppercase tracking-wider text-xs shadow-[3px_3px_0px_#060E1C]"
               >
-                Got It, Let's Play!
+                Got It, Let&apos;s Play!
               </button>
             </div>
           </div>
