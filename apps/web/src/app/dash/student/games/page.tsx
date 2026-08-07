@@ -9,6 +9,18 @@ import {
 
 const GAMES = [
   {
+    id: 'color-sort',
+    title: 'Color Ring Sort 3D',
+    description: 'Lift, stack, and sort colorful rings onto matching 3D pegs! Test your spatial logic and algorithmic thinking.',
+    icon: Layers,
+    color: '#8b5cf6',
+    badgeBg: '#f3e8ff',
+    badgeText: '#6d28d9',
+    difficulty: 'Easy – Hard',
+    emoji: '⭕',
+    category: 'Spatial Logic'
+  },
+  {
     id: 'current-affairs',
     title: 'Global Current Affairs (3D)',
     description: 'Explore the world across 7 continents and 7 global spheres! Auto-generated questions tailored by Grade Tier.',
