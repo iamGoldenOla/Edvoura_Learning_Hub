@@ -278,6 +278,26 @@ export default function DashboardClientShell({
           <header className="border-b-[4px] border-dark bg-white px-4 py-3 sm:px-8 sm:py-4 z-[45] relative w-full min-w-0">
             <div className="flex items-center justify-between gap-2 sm:gap-4 w-full min-w-0">
               <div className="flex min-w-0 items-center gap-2 sm:gap-3 flex-shrink">
+                {/* Back Arrow Button for Sub-pages */}
+                {pathname !== '/dash/student' && pathname !== '/dash/tutor' && pathname !== '/dash/parent' && pathname !== '/dash/admin' && pathname !== '/dash' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (typeof window !== 'undefined' && window.history.length > 1) {
+                        router.back();
+                      } else {
+                        router.push('/dash/student');
+                      }
+                    }}
+                    className="flex items-center gap-1 sm:gap-1.5 rounded-xl border-[3px] border-dark bg-yellow px-2.5 py-1.5 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:scale-95 shrink-0"
+                    title="Go Back to Dashboard"
+                    aria-label="Go Back"
+                  >
+                    <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" />
+                    <span className="hidden sm:inline text-xs font-black uppercase tracking-wider">Back</span>
+                  </button>
+                )}
+
                 {/* Mobile Menu Toggle */}
                 <button
                   type="button"

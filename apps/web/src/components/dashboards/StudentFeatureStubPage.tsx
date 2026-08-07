@@ -22,7 +22,13 @@ export default function StudentFeatureStubPage({
             </h1>
             <p className="mt-3 text-white/60 text-sm font-bold">Focused tools and activities for this learning area.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center flex-wrap">
+            <Link
+              href="/dash/student"
+              className="inline-flex items-center gap-2 rounded-xl border-[3px] border-dark bg-white px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#ffffff] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+            >
+              <ArrowRight className="h-4 w-4 rotate-180" /> Back
+            </Link>
             <DashboardActionButton
               label="Open Workspace"
               actionKey={`student.${scope}.open`}

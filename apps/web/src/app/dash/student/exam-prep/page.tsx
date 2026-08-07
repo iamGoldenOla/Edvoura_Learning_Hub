@@ -47,11 +47,19 @@ export default async function ExamPrepPage() {
 
   return (
     <div className="space-y-8 max-w-[1320px]">
-      <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
-        <h1 className="text-4xl font-heading tracking-tight text-dark">Test and Drill Center</h1>
-        <p className="mt-3 text-sm normal-case text-dark/70 font-semibold">
-          Build exam readiness with timed drills, challenge sessions, and score-based feedback loops.
-        </p>
+      <section className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-6 sm:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl sm:text-4xl font-heading tracking-tight text-dark">Test and Drill Center</h1>
+          <p className="mt-2 text-sm normal-case text-dark/70 font-semibold">
+            Build exam readiness with timed drills, challenge sessions, and score-based feedback loops.
+          </p>
+        </div>
+        <Link
+          href="/dash/student"
+          className="inline-flex items-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all shrink-0"
+        >
+          ← Back to Dashboard
+        </Link>
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
