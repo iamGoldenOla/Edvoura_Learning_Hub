@@ -203,7 +203,7 @@ export default function GamesPage() {
 
   const bandLabel = band === '1-3' ? 'Grades 1-3 (Early Explorers)' : band === '4-6' ? 'Grades 4-6 (Junior Scholars)' : 'Grades 7-12 (Senior Scholars)';
 
-  const categoriesList = ['All', 'World Knowledge', '3D Game Show', 'Strategy', 'Board Game', 'Word Game', 'Sliding Puzzle', 'Physics & Trivia', 'Traditional'];
+  const categoriesList = ['All', 'Spatial Logic', 'World Knowledge', '3D Game Show', 'Strategy', 'Board Game', 'Word Game', 'Sliding Puzzle', 'Physics & Trivia', 'Traditional'];
 
   const filteredGames = selectedCategory === 'All'
     ? GAMES
@@ -273,7 +273,7 @@ export default function GamesPage() {
                 Edvoura Play Zone
               </h1>
               <p style={{ color: '#000000', fontSize: '14px', margin: '4px 0 0 0', fontWeight: 600, lineHeight: 1.4 }}>
-                Learn while you play — 10 premium 3D games auto-customized for your grade tier!
+                Learn while you play — {GAMES.length} premium 3D games auto-customized for your grade tier!
               </p>
             </div>
           </div>
