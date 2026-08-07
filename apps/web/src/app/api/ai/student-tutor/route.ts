@@ -2,103 +2,104 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { generateDirectTextWithFallback } from '@/lib/ai';
 
-const PROFESSOR_EDDIE_SYSTEM_PROMPT = `You are Professor Eddie, Edvoura's Lead AI Senior Academic Professor & Personal Tutor.
-You are an exceptionally brilliant, encouraging, patient, and world-class educator holding doctorates in Science, Mathematics, Pedagogy, and Humanities.
-Your mission is to answer student questions with academic precision, engaging clarity, vivid real-world analogies, and relatable examples tailored to their grade level.
+const PROFESSOR_EDDIE_SYSTEM_PROMPT = `You are Professor Eddie, Edvoura's Lead AI Senior Academic Professor & Global Personal Tutor.
+You are an exceptionally brilliant, encouraging, patient, and world-class educator holding doctorates in Science, Mathematics, Pedagogy, and International Curricula (Cambridge, IB, SAT, WAEC, AP).
+Your mission is to answer student questions with world-class academic precision, engaging clarity, universal real-world analogies, and global educational standards.
 
 RULES FOR PROFESSOR EDDIE:
-1. DIRECT ANSWER FIRST: Address the student's exact question immediately with top-tier scientific/academic accuracy.
-2. VIVID ANALOGY: Use a simple, memorable everyday analogy (e.g. sponge in water, tea bag, train on tracks, baking bread).
-3. NIGERIAN & AFRICAN CONTEXT: Include a relatable Nigerian/African real-life example (e.g. garri or beans swelling in water for Osmosis, solar panels in Lagos for Energy, market bargaining for Supply & Demand).
-4. CLEAR FORMATTING: Use clean bullet points, bold key terms, and short paragraphs so it is easy to read.
-5. NO PLACEHOLDERS: NEVER say "ask your tutor in class" or give generic non-answers. Always demonstrate master-level teaching!
-6. MINI CHECK-FOR-UNDERSTANDING: End with 1 friendly question asking the student if they can apply what they just learned.`;
+1. WORLD-CLASS ACADEMIC DIRECT ANSWER: Address the student's exact question immediately with scientific and mathematical excellence of international standard.
+2. UNIVERSAL VIVID ANALOGY: Use a simple, universally recognized everyday analogy (e.g. tea bags soaking, sponges in water, solar panels, pizza slices, railway tracks).
+3. GLOBAL & INCLUSIVE REAL-WORLD EXAMPLES: Provide globally applicable real-world examples (and if relevant to the student's context, weave in local cultural examples smoothly alongside international references).
+4. ELEGANT FORMATTING: Use clean bullet points, bold scientific terms, and clear sections.
+5. NO PLACEHOLDERS: NEVER give generic non-answers. Always demonstrate master-level international academic teaching.
+6. INTERACTIVE KNOWLEDGE CHECK: End with 1 engaging mini check-for-understanding or challenge question.`;
 
 function getAcademicSmartExplanation(question: string, topic: string, subject: string, gradeLevel: string): string {
   const q = question.toLowerCase();
 
   if (q.includes('osmosis')) {
-    return `🧪 **What is Osmosis? (Professor Eddie's Explanation)**
+    return `🧪 **What is Osmosis? (Professor Eddie's Science Guide)**
 
-**Osmosis** is the movement of water molecules through a **semi-permeable membrane** (a thin barrier with microscopic holes) from an area where there is a **lot of water** (low solute concentration) to an area where there is **less water** (high solute concentration).
-
----
-
-💡 **Vivid Analogy:**
-Imagine a sponge placed in a puddle of water! The sponge soaks up the water until balance is reached.
-
-🇳🇬 **Nigerian Everyday Example:**
-When you put dried **Garri** or **Dry Beans** into a bowl of water, after 10-15 minutes, the grains swell up big and soft! That happens because water moved into the dry cell walls by **osmosis**!
+**Osmosis** is the net movement of water molecules across a **selectively permeable (semi-permeable) membrane** from a region of **higher water concentration** (lower solute concentration) to a region of **lower water concentration** (higher solute concentration) until equilibrium is reached.
 
 ---
 
-🌱 **Why is Osmosis Important in Biology?**
-1. **Plant Roots:** Roots absorb water from soil via osmosis.
-2. **Cell Survival:** Your body's blood cells stay hydrated and alive through osmosis.
+💡 **Universal Analogy:**
+Imagine placing a tea bag or a sponge into warm water! Water molecules naturally pass through the tiny pores of the membrane to balance out the concentration on both sides.
+
+🌍 **Everyday Global Examples:**
+1. **Plant Root Hydration:** Roots absorb soil water via osmosis to transport nutrients throughout the plant.
+2. **Food Preservation:** Soaking raisins or dried fruits/beans in water causes them to absorb moisture and expand by osmosis!
+3. **Human Cell Function:** Red blood cells rely on osmotic balance in blood plasma to remain plump and functional.
 
 ---
 
-🎯 **Quick Check for You:**
-If you place a piece of fresh yam in salty water, will the yam swell up or shrink? What do you think?`;
+🌱 **Key Takeaway:**
+Osmosis is a passive transport process — it requires **zero cellular energy**!
+
+---
+
+🎯 **Professor Eddie's Challenge:**
+If you place a fresh potato slice in concentrated salt water overnight, will the potato slice become **stiff and swollen** or **soft and limp**? What do you think?`;
   }
 
   if (q.includes('photosynthesis')) {
-    return `🌿 **What is Photosynthesis? (Professor Eddie's Explanation)**
+    return `🌿 **What is Photosynthesis? (Professor Eddie's Science Guide)**
 
-**Photosynthesis** is the process by which green plants use **sunlight**, **water**, and **carbon dioxide** to manufacture their own food (glucose sugar) and release **oxygen** gas into the atmosphere.
-
----
-
-🧪 **Chemical Equation Made Simple:**
-**Water + Carbon Dioxide + Sunlight (in Chlorophyll) ➔ Glucose (Food) + Oxygen**
-
-🇳🇬 **Everyday Example:**
-Think of a green leaf as a solar-powered kitchen! In sunny places like Kano or Lagos, plant leaves absorb sunlight using green pigment called **chlorophyll** to cook glucose food for the tree!
+**Photosynthesis** is the fundamental biochemical process by which green plants, algae, and cyanobacteria convert light energy from the Sun into chemical energy in the form of **glucose (sugar)**, releasing **oxygen gas** as a vital byproduct.
 
 ---
 
-🎯 **Quick Check:**
-Why do you think human beings and animals cannot survive on Earth without green plants performing photosynthesis?`;
+🧪 **Universal Chemical Equation:**
+**6CO₂ (Carbon Dioxide) + 6H₂O (Water) + Light Energy ➔ C₆H₁₂O₆ (Glucose) + 6O₂ (Oxygen)**
+
+🌍 **Real-World Application:**
+Think of a plant leaf as a solar-powered biochemical factory! Green pigment called **chlorophyll** inside plant cells traps sunlight photons to split water molecules and fix atmospheric carbon dioxide into organic food.
+
+---
+
+🎯 **Professor Eddie's Challenge:**
+Why is photosynthesis considered the single most important biochemical reaction supporting animal and human life on planet Earth?`;
   }
 
   if (q.includes('fraction') || q.includes('numerator') || q.includes('denominator')) {
     return `📐 **Understanding Fractions (Professor Eddie's Math Guide)**
 
-A **fraction** represents a **part of a whole**. It tells us how many equal parts of a whole thing we have.
+A **fraction** represents an exact **equal part of a whole quantity or shape**.
 
 ---
 
-🔢 **The 2 Parts of a Fraction:**
-- **Numerator (Top Number):** How many parts you have.
-- **Denominator (Bottom Number):** Total equal parts the whole is divided into.
+🔢 **The 2 Core Parts:**
+- **Numerator (Top Number):** The number of equal parts being selected or counted.
+- **Denominator (Bottom Number):** The total number of equal parts the whole is divided into.
 
-🇳🇬 **Everyday Example:**
-If you buy a large **pepperoni pizza** or a loaf of **Agege bread** cut into **8 equal slices**, and you eat **3 slices**, you have eaten **3/8** (three-eighths) of the loaf!
+🌍 **Global Real-World Example:**
+If a standard circular pizza or pie is sliced into **8 equal portions** and you share **3 slices**, you have taken **3/8** (three-eighths) of the total pie!
 
 ---
 
-🎯 **Quick Math Challenge:**
-If a box contains 12 oranges and you give 4 to your friend, what fraction of oranges did you give away? (Hint: Simplify your answer!)`;
+🎯 **Professor Eddie's Challenge:**
+If a library shelf has 20 books and 5 are science textbooks, what is the fraction of science textbooks in simplest form?`;
   }
 
   // Dynamic intelligent answer builder for any general topic
-  return `📚 **Professor Eddie's Guide to ${topic || 'This Key Concept'}**
+  return `📚 **Professor Eddie's International Guide to ${topic || 'This Key Concept'}**
 
-In **${gradeLevel} ${subject}**, understanding **"${question}"** comes down to 3 core ideas:
+In **${gradeLevel} ${subject}**, mastering **"${question}"** relies on 3 core academic pillars:
 
-1. **The Core Definition:**
-   "${question}" focuses on understanding how systems operate, how variables interact, and why specific rules govern the phenomenon.
+1. **The Scientific & Academic Principle:**
+   "${question}" examines how fundamental laws, logical systems, or natural phenomena interact under specific conditions.
 
-2. 💡 **Real-World Analogy:**
-   Think of this concept like a well-structured team or puzzle. When each component performs its specific role, the entire system functions smoothly and predictably.
+2. 💡 **Universal Analogy:**
+   Consider this concept like an interconnected global network or a precision instrument. Every component works in harmony according to established principles.
 
-3. 🇳🇬 **Practical Application:**
-   Whether observing natural phenomena or solving daily tasks, applying a step-by-step analytical approach allows you to break down complex problems into simple, manageable parts.
+3. 🌍 **Global Practical Application:**
+   From international technology standards to everyday environmental observations, applying structured step-by-step reasoning allows you to solve complex challenges with confidence.
 
 ---
 
-🎯 **Professor Eddie's Mini Challenge:**
-How would you explain the main idea of "${question}" in your own 1-sentence summary? Give it a try!`;
+🎯 **Professor Eddie's Challenge:**
+How would you explain the core idea of "${question}" in your own 1-sentence summary? Give it a go!`;
 }
 
 export async function POST(request: NextRequest) {
