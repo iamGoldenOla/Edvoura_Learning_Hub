@@ -70,6 +70,7 @@ const KNOWN_STUDENT_ROUTES = new Set([
   '/dash/student/games/ayo-opon',
   '/dash/student/games/puzzle',
   '/dash/student/games/sudoku',
+  '/dash/student/games/color-sort',
   '/dash/student/garden',
   '/dash/student/leaderboard',
   '/dash/student/library',

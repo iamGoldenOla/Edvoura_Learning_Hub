@@ -506,13 +506,78 @@ export default function StudentBandClientWrapper({
                      ) : (
                        <p className="text-xs text-dark/40 italic mt-auto">No files attached.</p>
                      )}
-                  </div>
+                   </div>
                 ))
               ) : (
                 <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[32px] p-8 text-center">
                   <p className="font-bold text-dark/30 italic">No resources shared recently. 📂</p>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Featured Educational Games & Spatial Logic */}
+          <div className="mt-8 space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight flex items-center gap-2">
+                  🎮 Edvoura Play Zone <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full font-bold">11 Games</span>
+                </h2>
+                <p className="text-xs font-bold text-dark/60">Brain training, spatial logic puzzles, and 3D learning games.</p>
+              </div>
+              <Link href="/dash/student/games" className="text-sm font-black text-indigo-600 uppercase tracking-widest hover:underline">
+                Explore All Games →
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Link
+                href="/dash/student/games/color-sort"
+                className="bg-purple-100 border-[3px] border-dark rounded-[24px] p-5 shadow-[4px_4px_0px_#060E1C] hover:-translate-y-1 transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-3xl group-hover:scale-110 transition-transform">⭕</span>
+                    <span className="bg-purple-600 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-dark">
+                      NEW GAME
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-dark leading-snug">Color Ring Sort 3D</h3>
+                  <p className="text-xs font-bold text-dark/70 mt-1 line-clamp-2">
+                    Lift, stack, and sort colorful rings onto matching 3D pegs! Spatial logic challenge.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-dark/10">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-purple-900">Spatial Logic</span>
+                  <span className="text-xs font-black text-dark flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    Play Now →
+                  </span>
+                </div>
+              </Link>
+
+              <Link
+                href="/dash/student/games/current-affairs"
+                className="bg-sky-100 border-[3px] border-dark rounded-[24px] p-5 shadow-[4px_4px_0px_#060E1C] hover:-translate-y-1 transition-all flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-3xl group-hover:scale-110 transition-transform">🌍</span>
+                    <span className="bg-sky-600 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-dark">
+                      3D QUIZ
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-dark leading-snug">Global Current Affairs</h3>
+                  <p className="text-xs font-bold text-dark/70 mt-1 line-clamp-2">
+                    Explore the globe across 7 continents with grade-tailored current affairs!
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-dark/10">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-sky-900">World Knowledge</span>
+                  <span className="text-xs font-black text-dark flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    Play Now →
+                  </span>
+                </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -555,7 +620,8 @@ export default function StudentBandClientWrapper({
                   <QuickLink href="/dash/student/live" label="🎥 Join Live Class" />
                   <QuickLink href="/dash/student/homework" label="📋 My Homework" />
                   <QuickLink href="/dash/student/quiz" label="🤖 AI Study Hub" />
-                  <QuickLink href="/dash/student/games" label="🎮 3D Play Zone" />
+                  <QuickLink href="/dash/student/games" label="🎮 3D Play Zone (11 Games)" />
+                  <QuickLink href="/dash/student/games/color-sort" label="⭕ Color Ring Sort 3D (New!)" />
                   <QuickLink href="/dash/student/library" label="📚 Class Library" />
                 </>
               ) : (
@@ -563,6 +629,8 @@ export default function StudentBandClientWrapper({
                   <QuickLink href="/dash/student/exam-prep" label="🎯 Exam Prep & Practice" />
                   <QuickLink href="/dash/student/mock-exams" label="🛡️ Simulated Mock Exams" />
                   <QuickLink href="/dash/student/past-questions" label="📜 JAMB & WAEC Past Questions" />
+                  <QuickLink href="/dash/student/games" label="🎮 3D Play Zone (11 Games)" />
+                  <QuickLink href="/dash/student/games/color-sort" label="⭕ Color Ring Sort 3D (New!)" />
                   <QuickLink href="/dash/student/analytics" label="📊 Subject Mastery Analytics" />
                   <QuickLink href="/dash/student/flashcards" label="🎴 Revision Cards" />
                 </>
