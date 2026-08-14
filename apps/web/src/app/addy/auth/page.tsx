@@ -87,6 +87,19 @@ export default function AdminAuthPage() {
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" 
             />
           </div>
+          {mode === 'signin' ? (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Unique Admin Security Code</label>
+              <input 
+                name="uniqueCode" 
+                type="text" 
+                required 
+                placeholder="e.g. ADM-ADMIN-20260814-1234"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-mono uppercase tracking-wider" 
+              />
+              <p className="mt-1 text-[11px] text-slate-500 font-semibold">Required 2-Factor Security Gate code.</p>
+            </div>
+          ) : null}
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
             <input 

@@ -42,9 +42,14 @@ export async function adminSignIn(_: FormState, formData: FormData): Promise<For
 
   const email = ((formData.get('email') as string | null) ?? '').trim().toLowerCase()
   const password = formData.get('password') as string
+  const uniqueCodeInput = ((formData.get('uniqueCode') as string | null) ?? '').trim().toUpperCase()
 
   if (!email || !password) {
     return { error: 'Email and password are required' }
+  }
+
+  if (!uniqueCodeInput) {
+    return { error: 'Admin Unique Access Pass Code is required to sign in. (e.g. ADM-ADMIN-20260814-1234)' }
   }
 
   let { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -63,12 +68,23 @@ export async function adminSignIn(_: FormState, formData: FormData): Promise<For
   }
 
   if (error) {
-    if (error.message.toLowerCase().includes('email not confirmed')) {
-      return {
-        error: 'Email confirmation is pending in Supabase. Please turn OFF "Confirm email" in Supabase Dashboard (Authentication -> Sign In / Providers -> Email) to sign in immediately.',
-      }
-    }
     return { error: error.message }
+  }
+
+  // Security Gate Verification
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const assignedCode = (user.user_metadata?.unique_code as string | undefined || '').trim().toUpperCase();
+    if (assignedCode && assignedCode !== uniqueCodeInput) {
+      await supabase.auth.signOut()
+      return { error: 'Invalid Admin Unique Access Pass Code. Authentication rejected.' }
+    }
+
+    if (!assignedCode) {
+      await supabase.auth.updateUser({
+        data: { ...user.user_metadata, unique_code: uniqueCodeInput }
+      })
+    }
   }
 
   redirect('/addy')

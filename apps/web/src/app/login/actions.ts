@@ -20,10 +20,15 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
 
     const email = ((formData.get('email') as string | null) ?? '').trim().toLowerCase()
     const password = formData.get('password') as string
+    const uniqueCodeInput = ((formData.get('uniqueCode') as string | null) ?? '').trim().toUpperCase()
     const next = formData.get('next') as string | null
 
     if (!email || !password) {
       return { error: 'Email and password are required' }
+    }
+
+    if (!uniqueCodeInput) {
+      return { error: 'Unique Security Pass Code is required to sign in. (e.g. EDV-JOHN-20260814-1234 or PAR-MARY-20260814-5678)' }
     }
 
     let { error } = await supabase.auth.signInWithPassword({
@@ -32,7 +37,6 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
     })
 
     if (error && (error.message.toLowerCase().includes('invalid login credentials') || error.message.toLowerCase().includes('user not found'))) {
-      // Auto-provision default demo accounts if needed for instant testing
       const isDefaultDemo = ['admin@edvoura.com', 'parent@edvoura.com', 'tutor@edvoura.com', 'student@edvoura.com'].includes(email);
       if (isDefaultDemo) {
         const role = email.split('@')[0];
@@ -46,12 +50,12 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
             data: {
               full_name: fullName,
               role: roleName,
+              unique_code: uniqueCodeInput,
             }
           }
         });
 
         if (!signUpRes.error && signUpRes.data.user) {
-          // Insert into user_roles if needed
           await supabase.from('user_roles').insert({
             user_id: signUpRes.data.user.id,
             role: roleName,
@@ -70,7 +74,6 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
             });
           }
 
-          // Retry login
           const retry = await supabase.auth.signInWithPassword({ email, password });
           error = retry.error;
         }
@@ -79,6 +82,22 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
 
     if (error) {
       return { error: error.message }
+    }
+
+    // Mandatory Security Verification Gate
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const assignedCode = (user.user_metadata?.unique_code as string | undefined || '').trim().toUpperCase();
+      if (assignedCode && assignedCode !== uniqueCodeInput) {
+        await supabase.auth.signOut();
+        return { error: 'Invalid Unique Security Pass Code. Authentication failed. Please provide your exact assigned Security Pass Code.' };
+      }
+
+      if (!assignedCode) {
+        await supabase.auth.updateUser({
+          data: { ...user.user_metadata, unique_code: uniqueCodeInput }
+        });
+      }
     }
 
     revalidatePath('/', 'layout')
@@ -94,7 +113,7 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
     }
     console.error('Login action error:', err)
     return {
-      error: err?.message || 'Authentication service is currently unavailable. Please verify your Supabase environment variables on Vercel.',
+      error: err?.message || 'Authentication service is currently unavailable.',
     }
   }
 }

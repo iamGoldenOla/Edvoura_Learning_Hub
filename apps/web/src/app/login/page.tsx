@@ -17,6 +17,7 @@ function LoginPageContent() {
   const [isGooglePending, setIsGooglePending] = useState(false);
   const [emailVal, setEmailVal] = useState('');
   const [passVal, setPassVal] = useState('');
+  const [codeVal, setCodeVal] = useState('');
 
   const handleGoogleSignIn = async () => {
     setGoogleError(null);
@@ -133,6 +134,19 @@ function LoginPageContent() {
                 placeholder="you@example.com"
                 className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-navy mb-1.5">Unique Security Pass Code</label>
+              <input
+                name="uniqueCode"
+                type="text"
+                required
+                value={codeVal}
+                onChange={(e) => setCodeVal(e.target.value.toUpperCase())}
+                placeholder="e.g. EDV-JOHN-20260814-1234 or PAR-MARY-20260814-5678"
+                className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm font-mono uppercase tracking-wider focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey placeholder:normal-case placeholder:font-sans"
+              />
+              <p className="text-[11px] font-bold text-grey mt-1">Required security gate code generated at signup.</p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">Password</label>

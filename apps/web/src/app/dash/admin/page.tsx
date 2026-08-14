@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Activity, BookOpenCheck, CreditCard, Gift, LifeBuoy, ShieldCheck, UserPlus, Users, ArrowRight } from 'lucide-react';
 
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
+import { AdminCommandCenterClient } from '@/components/dashboards/admin/AdminCommandCenterClient';
 import RecentUiActionsPanel from '@/components/dashboards/RecentUiActionsPanel';
 import { requireAdminAccess } from './_lib/role-guard';
 import { getAdminDashboardData } from '@/lib/app-context';
@@ -123,6 +124,9 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      {/* Enterprise Platform Governance Bar */}
+      <AdminCommandCenterClient />
 
       {/* Admin Security Pass Card */}
       <SecurityPassCard
