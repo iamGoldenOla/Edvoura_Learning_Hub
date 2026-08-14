@@ -57,6 +57,20 @@ export function AdminFinanceClient({
         </div>
       )}
 
+      {/* Official Company Bank Account Card */}
+      <div className="border-[3px] border-dark rounded-2xl bg-white p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Official Company Deposit Account (Lessons &amp; Salaries)</p>
+          <h3 className="text-xl font-black text-dark mt-1">First Bank • Account Number: <span className="font-mono bg-yellow px-2 py-0.5 rounded border border-dark text-dark font-extrabold">3110197941</span></h3>
+          <p className="text-xs font-bold text-dark/70 mt-0.5">Account Name: <strong>Olujobi Akinola</strong></p>
+        </div>
+        <div className="flex gap-2">
+          <span className="px-3 py-1 bg-emerald-100 text-emerald-900 border border-dark rounded-xl text-xs font-black uppercase tracking-wider">
+            Verified Account
+          </span>
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-blue-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">

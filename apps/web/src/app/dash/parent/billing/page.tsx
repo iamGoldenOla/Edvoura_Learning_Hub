@@ -6,6 +6,8 @@ import { getBillingSummary, requireAppViewer } from '@/lib/app-context';
 import CheckoutButton from '@/components/dashboards/CheckoutButton';
 import { createClient } from '@/utils/supabase/server';
 
+import { BankTransferPaymentCard } from '@/components/dashboards/BankTransferPaymentCard';
+
 export default async function ParentBillingPage(props: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
@@ -90,10 +92,13 @@ export default async function ParentBillingPage(props: {
             Billing & Subscription
           </h1>
           <p className="mt-3 sm:mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl break-words">
-            Manage Paystack subscription status, payment history, and account billing records.
+            Manage Paystack subscription status, bank transfer payments, and account billing records.
           </p>
         </div>
       </div>
+
+      {/* Official Bank Account Payment Card */}
+      <BankTransferPaymentCard parentName={viewer.currentUser.profile.fullName || 'Parent'} userEmail={viewer.currentUser.email} />
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Current Plan */}

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
+import { BankTransferPaymentCard } from '@/components/dashboards/BankTransferPaymentCard';
 import { Button } from '@/components/ui/button';
 import DashboardFeedWidget from '@/components/dashboards/DashboardFeedWidget';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
@@ -479,6 +480,9 @@ export default function ParentDashboardClient({
           )}
         </div>
       )}
+
+      {/* Direct Bank Transfer & Instant Invoice Generator */}
+      <BankTransferPaymentCard parentName={parentName} />
 
       <SecurityPassCard
         fullName={parentName}
