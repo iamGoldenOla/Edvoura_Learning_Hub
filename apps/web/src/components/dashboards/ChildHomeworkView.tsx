@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BookOpen, Star, CheckCircle2, PlayCircle, Clock, X, Upload, Send, ArrowLeft, Eye, Download } from 'lucide-react';
+import { BookOpen, Star, CheckCircle2, PlayCircle, Clock, X, Upload, Send, ArrowLeft, Eye, Download, Target, Sparkles, Trophy } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 
@@ -168,19 +168,19 @@ export default function ChildHomeworkView({ assignments }: { assignments: Assign
                   {/* Direct Interactive Launchers */}
                   {(activeMission.title.toLowerCase().includes('quiz') || activeMission.title.toLowerCase().includes('subtraction') || activeMission.title.toLowerCase().includes('math') || activeMission.title.toLowerCase().includes('test')) && (
                     <a href="/dash/student/quiz" className="w-full py-4 bg-emerald-400 hover:bg-emerald-300 border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest text-dark shadow-[4px_4px_0px_#060E1C] flex items-center justify-center gap-2 transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none">
-                      🎯 Launch Interactive Quiz Now
+                      <Target className="h-5 w-5 text-dark" /> Launch Interactive Quiz Now
                     </a>
                   )}
 
                   {(activeMission.title.toLowerCase().includes('spelling') || activeMission.title.toLowerCase().includes('spell')) && (
                     <a href="/dash/student/spelling-bee" className="w-full py-4 bg-yellow hover:bg-yellow-light border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest text-dark shadow-[4px_4px_0px_#060E1C] flex items-center justify-center gap-2 transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none">
-                      🐝 Launch Spelling Bee Now
+                      <Sparkles className="h-5 w-5 text-dark" /> Launch Spelling Bee Now
                     </a>
                   )}
 
                   {(activeMission.title.toLowerCase().includes('story') || activeMission.title.toLowerCase().includes('read')) && (
                     <a href="/dash/student/library" className="w-full py-4 bg-amber-300 hover:bg-amber-200 border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest text-dark shadow-[4px_4px_0px_#060E1C] flex items-center justify-center gap-2 transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none">
-                      📖 Read Story in Library
+                      <BookOpen className="h-5 w-5 text-dark" /> Read Story in Library
                     </a>
                   )}
                 </div>

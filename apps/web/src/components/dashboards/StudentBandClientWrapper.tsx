@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight } from 'lucide-react';
+import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight, Gamepad2, FileText, Zap, BookMarked, Tv, Folder, CircleDot, Globe, Award, UserCheck } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import DashboardFeedWidget from './DashboardFeedWidget';
@@ -180,7 +180,7 @@ export default function StudentBandClientWrapper({
         <div className="rounded-[24px] border-[3px] border-dark bg-purple-100 p-5 shadow-[6px_6px_0px_#060E1C] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🎯</span>
+              <Target className="h-5 w-5 text-dark" />
               <h3 className="text-base font-black text-dark uppercase tracking-tight">Today&apos;s Daily XP Goal</h3>
               <span className="px-2 py-0.5 bg-yellow text-dark border border-dark rounded-md text-[9px] font-black uppercase tracking-wider shadow-[1px_1px_0px_#060E1C]">
                 Active Target
@@ -201,12 +201,12 @@ export default function StudentBandClientWrapper({
 
         {/* Quick Fun Links */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
-          <FunCard icon="📚" label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />
-          <FunCard icon="📝" label="Notes" href="/dash/student/notes" color="bg-indigo-300" />
-          <FunCard icon="🐝" label="Spelling Bee" href="/dash/student/spelling-bee" color="bg-yellow" />
-          <FunCard icon="🎮" label="Play Zone" href="/dash/student/games" color="bg-green-400" />
-          <FunCard icon="📖" label="Read Corner" href="/dash/student/read" color="bg-blue-400" />
-          <FunCard icon="📺" label="Stories" href="/dash/student/stories" color="bg-red-400" />
+          <FunCard icon={BookOpen} label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />
+          <FunCard icon={FileText} label="Notes" href="/dash/student/notes" color="bg-indigo-300" />
+          <FunCard icon={Sparkles} label="Spelling Bee" href="/dash/student/spelling-bee" color="bg-yellow" />
+          <FunCard icon={Gamepad2} label="Play Zone" href="/dash/student/games" color="bg-green-400" />
+          <FunCard icon={BookMarked} label="Read Corner" href="/dash/student/read" color="bg-blue-400" />
+          <FunCard icon={Tv} label="Stories" href="/dash/student/stories" color="bg-red-400" />
         </div>
 
         <div className="grid grid-cols-1 gap-6 pt-2 sm:gap-8 lg:grid-cols-3 sm:pt-4">
@@ -234,8 +234,8 @@ export default function StudentBandClientWrapper({
 
                   return (
                     <div key={hw.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col min-w-0">
-                       <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shrink-0">
-                          {isQuiz ? '🎯' : isSpelling ? '🐝' : isStory ? '📖' : '📚'}
+                       <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-dark mb-4 sm:mb-6 shrink-0">
+                          {isQuiz ? <Target className="h-6 w-6 text-dark" /> : isSpelling ? <Sparkles className="h-6 w-6 text-dark" /> : isStory ? <BookMarked className="h-6 w-6 text-dark" /> : <BookOpen className="h-6 w-6 text-dark" />}
                        </div>
                        <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{hw.subjectName}</p>
                        <h3 className="text-lg sm:text-2xl font-black text-dark mb-4 sm:mb-6 flex-1 break-words">{hw.title}</h3>
@@ -709,13 +709,15 @@ export default function StudentBandClientWrapper({
   );
 }
 
-function FunCard({ icon, label, href, color }: { icon: string; label: string; href: string; color: string }) {
+function FunCard({ icon: Icon, label, href, color }: { icon: React.ComponentType<{ className?: string }>; label: string; href: string; color: string }) {
   return (
     <Link 
       href={href}
       className={`${color} border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-4 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex flex-col items-center text-center group min-w-0`}
     >
-       <div className="text-3xl sm:text-4xl mb-2 group-hover:scale-125 transition-transform">{icon}</div>
+       <div className="mb-2 group-hover:scale-125 transition-transform">
+         <Icon className="h-7 w-7 text-dark" />
+       </div>
        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-dark break-words">{label}</span>
     </Link>
   );

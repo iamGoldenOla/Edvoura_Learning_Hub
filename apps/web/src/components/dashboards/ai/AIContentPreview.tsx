@@ -1,5 +1,7 @@
 "use client";
 
+import { Video, Image as ImageIcon, ClipboardList, GraduationCap, CheckCircle2, Sparkles, BookOpen, Target, FileText, RotateCcw, Pin, HelpCircle, Lightbulb, Globe } from "lucide-react";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -29,8 +31,8 @@ function renderResources(materials: unknown) {
       </p>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
-          <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">
-            📺 YouTube Videos
+          <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60 flex items-center gap-1.5">
+            <Video className="h-3.5 w-3.5 text-dark" /> YouTube Videos
           </p>
           <div className="space-y-3">
             {youtube.length > 0 ? youtube.map((item, index) => {
@@ -50,8 +52,8 @@ function renderResources(materials: unknown) {
           </div>
         </div>
         <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
-          <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">
-            🖼️ Image Resources
+          <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60 flex items-center gap-1.5">
+            <ImageIcon className="h-3.5 w-3.5 text-dark" /> Image Resources
           </p>
           <div className="space-y-3">
             {images.length > 0 ? images.map((item, index) => {
@@ -71,8 +73,8 @@ function renderResources(materials: unknown) {
           </div>
         </div>
         <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
-          <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">
-            📋 Classroom Materials
+          <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60 flex items-center gap-1.5">
+            <ClipboardList className="h-3.5 w-3.5 text-dark" /> Classroom Materials
           </p>
           {renderStringList(classroom) ?? <p className="text-xs text-dark/50 font-semibold">None listed</p>}
         </div>
@@ -188,15 +190,21 @@ function renderLessonStages(stages: unknown) {
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-lg border border-dark/15 bg-blue-50 p-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-1">👩‍🏫 Teacher Activity</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-1 flex items-center gap-1">
+                    <GraduationCap className="h-3.5 w-3.5 text-dark/70" /> Teacher Activity
+                  </p>
                   <p className="text-xs font-semibold text-dark/80">{teacherActivity}</p>
                 </div>
                 <div className="rounded-lg border border-dark/15 bg-green-50 p-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-1">👩‍🎓 Student Activity</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-1 flex items-center gap-1">
+                    <BookOpen className="h-3.5 w-3.5 text-dark/70" /> Student Activity
+                  </p>
                   <p className="text-xs font-semibold text-dark/80">{studentActivity}</p>
                 </div>
                 <div className="rounded-lg border border-dark/15 bg-amber-50 p-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-1">✅ Assessment Check</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-dark/50 mb-1 flex items-center gap-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Assessment Check
+                  </p>
                   <p className="text-xs font-semibold text-dark/80">{assessmentCheck}</p>
                 </div>
               </div>
@@ -226,14 +234,18 @@ function renderStory(record: Record<string, unknown>) {
 
       {moralLesson ? (
         <div className="rounded-xl border-[2px] border-dark bg-amber-100 p-4 shadow-[2px_2px_0px_#060E1C]">
-          <p className="mb-1 text-xs font-black uppercase tracking-widest text-dark/70">🌟 Moral Lesson</p>
+          <p className="mb-1 text-xs font-black uppercase tracking-widest text-dark/70 flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5 text-dark" /> Moral Lesson
+          </p>
           <p className="text-sm font-black text-dark">{moralLesson}</p>
         </div>
       ) : null}
 
       {storyText ? (
         <div className="rounded-xl border-[2px] border-dark bg-amber-50/40 p-5 shadow-[2px_2px_0px_#060E1C]">
-          <p className="mb-3 text-xs font-black uppercase tracking-widest text-dark/60">📖 Story Narrative</p>
+          <p className="mb-3 text-xs font-black uppercase tracking-widest text-dark/60 flex items-center gap-1.5">
+            <BookOpen className="h-3.5 w-3.5 text-dark" /> Story Narrative
+          </p>
           <div className="space-y-4 text-sm font-semibold leading-7 text-dark/90 whitespace-pre-line">
             {storyText}
           </div>
@@ -242,7 +254,9 @@ function renderStory(record: Record<string, unknown>) {
 
       {vocabulary.length > 0 ? (
         <div className="rounded-xl border-[2px] border-dark bg-white p-4">
-          <p className="mb-3 text-xs font-black uppercase tracking-widest text-dark/60">📚 Vocabulary Words & Meanings</p>
+          <p className="mb-3 text-xs font-black uppercase tracking-widest text-dark/60 flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5 text-dark" /> Vocabulary Words & Meanings
+          </p>
           <div className="grid gap-3 sm:grid-cols-2">
             {vocabulary.map((item, idx) => {
               const row = isRecord(item) ? item : {};
