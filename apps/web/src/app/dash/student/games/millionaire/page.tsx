@@ -44,7 +44,7 @@ function playMillionaireMP3(
       return;
     }
 
-    // Stop all currently playing audio tracks so sounds don't overlap awkwardly
+    // Stop all currently playing audio tracks and cancel any ongoing speech so sounds don't collide
     Object.values(mp3AudioCache).forEach(audio => {
       try {
         audio.pause();
@@ -52,6 +52,12 @@ function playMillionaireMP3(
         audio.onended = null;
       } catch (e) {}
     });
+
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    }
 
     if (!mp3AudioCache[soundType]) {
       mp3AudioCache[soundType] = new Audio(src);
@@ -64,14 +70,20 @@ function playMillionaireMP3(
     const triggerEnded = () => {
       if (!hasEnded) {
         hasEnded = true;
+        audio.onended = null;
         if (onEnded) onEnded();
       }
     };
 
     if (onEnded) {
       audio.onended = triggerEnded;
-      const durationMs = SOUND_TIMEOUTS[soundType] || 4000;
-      setTimeout(triggerEnded, durationMs);
+      // Fallback timer only if audio.onended doesn't fire naturally
+      const durationMs = SOUND_TIMEOUTS[soundType] || 4500;
+      setTimeout(() => {
+        if (!hasEnded) {
+          triggerEnded();
+        }
+      }, durationMs);
     }
 
     audio.play().catch(() => {
@@ -969,24 +981,54 @@ export default function MillionaireGame() {
               }}>
                 {/* Host Seat */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#8b5cf6', border: '2px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                    🎙️
+                  <div style={{
+                    width: '64px', height: '64px', borderRadius: '50%', background: '#8b5cf6',
+                    border: '3px solid #fbbf24', boxShadow: '0 0 15px rgba(251, 191, 36, 0.6)',
+                    overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {/* 3D Rendered Studio TV Host */}
+                    <img
+                      src="/images/millionaire/millionaire_3d_host.jpg"
+                      alt="3D TV Game Show Host"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#c084fc' }}>AI HOST</span>
+                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#c084fc', textShadow: '0 2px 4px #000' }}>AI TV HOST</span>
                 </div>
 
                 {/* Hot Seat Center Screen */}
-                <div style={{ background: '#000', padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #fbbf24', textAlign: 'center' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24' }}>CURRENT PRIZE</div>
-                  <div style={{ fontSize: '14px', fontWeight: 950, color: '#fff' }}>{activeLadder[currentLevel - 1]}</div>
+                <div style={{
+                  background: 'linear-gradient(180deg, #1e1b4b 0%, #090d16 100%)',
+                  padding: '8px 16px', borderRadius: '12px', border: '2px solid #fbbf24',
+                  boxShadow: '0 0 20px rgba(251, 191, 36, 0.3)', textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24', letterSpacing: '0.1em' }}>CURRENT PRIZE</div>
+                  <div style={{ fontSize: '16px', fontWeight: 950, color: '#ffffff', textShadow: '0 0 8px rgba(255,255,255,0.6)' }}>
+                    {activeLadder[currentLevel - 1]}
+                  </div>
                 </div>
 
                 {/* Player Seat */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#22c55e', border: '2px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                    🎓
+                  <div style={{
+                    width: '64px', height: '64px', borderRadius: '50%', background: '#22c55e',
+                    border: '3px solid #4ade80', boxShadow: '0 0 15px rgba(74, 222, 128, 0.6)',
+                    overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    {/* 3D Student Contestant Avatar */}
+                    <img
+                      src="/images/millionaire/millionaire_3d_contestant.jpg"
+                      alt="3D Student Contestant"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#4ade80' }}>SCHOLAR</span>
+                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#4ade80', textShadow: '0 2px 4px #000' }}>3D SCHOLAR</span>
                 </div>
               </div>
             </div>
