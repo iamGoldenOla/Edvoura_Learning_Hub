@@ -1104,11 +1104,13 @@ export default function MillionaireGame() {
                     style={{
                       width: '100%', height: '100%', objectFit: 'contain',
                       mixBlendMode: 'screen',
-                      filter: 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.5))'
+                      filter: 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.5))',
+                      backgroundColor: 'transparent'
                     }}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_contestant_profile.jpg';
-                      (e.target as HTMLImageElement).style.mixBlendMode = 'normal';
+                      (e.target as HTMLImageElement).style.mixBlendMode = 'screen';
+                      (e.target as HTMLImageElement).style.backgroundColor = '#000000';
                     }}
                   />
                 </div>
