@@ -189,6 +189,7 @@ const MATH_QUESTIONS = [
 ];
 
 import { useBand } from '@/components/dashboards/BandContext';
+import { KeyStagePeerChallengeModal, getKeyStage } from '@/components/dashboards/student/KeyStagePeerChallengeModal';
 
 export default function GamesPage() {
   const router = useRouter();
@@ -200,6 +201,11 @@ export default function GamesPage() {
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
   const [hoveredExternal, setHoveredExternal] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [activeChallengeGame, setActiveChallengeGame] = useState<{ id: string; title: string } | null>(null);
+
+  // Deriving student grade code from active band
+  const studentGradeCode = band === '1-3' ? 'grade_1' : band === '4-6' ? 'grade_4' : 'grade_7';
+  const activeKsInfo = getKeyStage(studentGradeCode);
 
   const bandLabel = band === '1-3' ? 'Grades 1-3 (Early Explorers)' : band === '4-6' ? 'Grades 4-6 (Junior Scholars)' : 'Grades 7-12 (Senior Scholars)';
 
@@ -442,28 +448,50 @@ export default function GamesPage() {
                         Difficulty: <span style={{ color: game.badgeText, fontWeight: 950 }}>{game.difficulty}</span>
                       </span>
                       
-                      {/* Bold Neo-Brutalist Play Now Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/dash/student/games/${game.id}`);
-                        }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '6px',
-                          padding: '8px 16px', borderRadius: '10px',
-                          border: '2px solid #000000',
-                          background: isHovered ? '#8b5cf6' : '#fbbf24',
-                          color: isHovered ? '#ffffff' : '#000000',
-                          fontSize: '12px', fontWeight: 950,
-                          cursor: 'pointer',
-                          boxShadow: isHovered ? '4px 4px 0px #000000' : '2px 2px 0px #000000',
-                          transform: isHovered ? 'translate(-2px, -2px)' : 'none',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <span>Play Now</span>
-                        <ArrowRight size={14} style={{ transform: isHovered ? 'translateX(3px)' : 'none', transition: 'transform 0.15s' }} />
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveChallengeGame({ id: game.id, title: game.title });
+                          }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '4px',
+                            padding: '8px 12px', borderRadius: '10px',
+                            border: '2px solid #000000',
+                            background: '#ffffff',
+                            color: '#000000',
+                            fontSize: '11px', fontWeight: 950,
+                            cursor: 'pointer',
+                            boxShadow: '2px 2px 0px #000000',
+                            transition: 'all 0.15s ease'
+                          }}
+                          title={`Generate peer challenge link for ${activeKsInfo.allowedGrades}`}
+                        >
+                          <span>⚔️ Challenge Link</span>
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/dash/student/games/${game.id}`);
+                          }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '8px 16px', borderRadius: '10px',
+                            border: '2px solid #000000',
+                            background: isHovered ? '#8b5cf6' : '#fbbf24',
+                            color: isHovered ? '#ffffff' : '#000000',
+                            fontSize: '12px', fontWeight: 950,
+                            cursor: 'pointer',
+                            boxShadow: isHovered ? '4px 4px 0px #000000' : '2px 2px 0px #000000',
+                            transform: isHovered ? 'translate(-2px, -2px)' : 'none',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <span>Play Now</span>
+                          <ArrowRight size={14} style={{ transform: isHovered ? 'translateX(3px)' : 'none', transition: 'transform 0.15s' }} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -778,6 +806,16 @@ export default function GamesPage() {
           </div>
         </div>
       </div>
+
+      {activeChallengeGame ? (
+        <KeyStagePeerChallengeModal
+          gameTitle={activeChallengeGame.title}
+          gameId={activeChallengeGame.id}
+          studentGradeCode={studentGradeCode}
+          studentName="Learner"
+          onClose={() => setActiveChallengeGame(null)}
+        />
+      ) : null}
 
       <style jsx global>{`
         @media (max-width: 1024px) {
