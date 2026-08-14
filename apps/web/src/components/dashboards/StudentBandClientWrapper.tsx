@@ -195,21 +195,36 @@ export default function StudentBandClientWrapper({
               </div>
               
               <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
-                {featuredAssignments.map((hw) => (
-                  <div key={hw.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col min-w-0">
-                     <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shrink-0">
-                        📚
-                     </div>
-                     <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{hw.subjectName}</p>
-                     <h3 className="text-lg sm:text-2xl font-black text-dark mb-4 sm:mb-6 flex-1 break-words">{hw.title}</h3>
-                     <Link 
-                       href="/dash/student/homework"
-                       className="w-full py-3 sm:py-4 bg-indigo-600 text-white border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] text-center block"
-                     >
-                       Start Now!
-                     </Link>
-                  </div>
-                ))}
+                {featuredAssignments.map((hw) => {
+                  const titleLower = hw.title.toLowerCase();
+                  const isQuiz = titleLower.includes('quiz') || titleLower.includes('subtraction') || titleLower.includes('math') || titleLower.includes('test');
+                  const isSpelling = titleLower.includes('spelling') || titleLower.includes('spell');
+                  const isStory = titleLower.includes('story') || titleLower.includes('read');
+
+                  const targetHref = isQuiz 
+                    ? '/dash/student/quiz' 
+                    : isSpelling 
+                    ? '/dash/student/spelling-bee' 
+                    : isStory 
+                    ? '/dash/student/stories' 
+                    : '/dash/student/homework';
+
+                  return (
+                    <div key={hw.id} className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] hover:translate-y-[-4px] transition-all flex flex-col min-w-0">
+                       <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-indigo-50 border-[3px] border-dark flex items-center justify-center text-2xl sm:text-3xl mb-4 sm:mb-6 shrink-0">
+                          {isQuiz ? '🎯' : isSpelling ? '🐝' : isStory ? '📖' : '📚'}
+                       </div>
+                       <p className="text-[10px] font-black uppercase text-dark/30 tracking-widest mb-1">{hw.subjectName}</p>
+                       <h3 className="text-lg sm:text-2xl font-black text-dark mb-4 sm:mb-6 flex-1 break-words">{hw.title}</h3>
+                       <Link 
+                         href={targetHref}
+                         className="w-full py-3 sm:py-4 bg-yellow hover:bg-yellow-light text-dark border-[3px] border-dark rounded-2xl font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] text-center block transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                       >
+                         Start Now!
+                       </Link>
+                    </div>
+                  );
+                })}
                 {featuredAssignments.length === 0 && (
                   <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[40px] p-8 sm:p-12 text-center">
                     <CheckCircle2 className="h-10 w-10 text-dark/20 mx-auto mb-3" />

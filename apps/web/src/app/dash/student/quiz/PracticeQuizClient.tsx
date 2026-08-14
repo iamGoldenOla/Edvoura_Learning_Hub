@@ -170,7 +170,7 @@ export function PracticeQuizClient({
               Official Lesson Notes Test & Revision
             </h2>
             <p className="text-sm font-bold text-dark/70">
-              Generate 5-question retention tests extracted directly from your 204 official purchased lesson notes (Primary 1 to SS 3 / Grade 1 to 12).
+              Generate 5-question retention tests extracted directly from your official curriculum lesson notes (Primary 1 to SS 3 / Grade 1 to 12).
             </p>
           </div>
 
@@ -178,7 +178,7 @@ export function PracticeQuizClient({
             <select
               value={selectedGradeCode}
               onChange={(e) => setSelectedGradeCode(e.target.value)}
-              className="px-4 py-3 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none cursor-pointer"
+              className="px-4 py-3 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none cursor-pointer text-dark"
             >
               <option value="grade_1">Primary 1 (Grade 1)</option>
               <option value="grade_2">Primary 2 (Grade 2)</option>
@@ -196,9 +196,9 @@ export function PracticeQuizClient({
 
             <Button
               onClick={() => startCurriculumQuiz(selectedGradeCode)}
-              className="border-[3px] border-dark bg-yellow hover:bg-yellow-light text-dark font-black px-6 py-3 text-sm rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none h-auto"
+              className="border-[3px] border-dark bg-yellow hover:bg-yellow-light text-dark font-black px-6 py-3 text-sm rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none h-auto flex items-center justify-center gap-2"
             >
-              Take Retention Test <Play className="ml-2 h-4 w-4" />
+              Take Retention Test <Play className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export function PracticeQuizClient({
           {aiQuizzes.length > 0 ? (
             aiQuizzes.map((q) => (
               <div key={q.id} className="flex flex-col rounded-[24px] border-[4px] border-dark bg-indigo-50 p-4 shadow-[6px_6px_0px_#060E1C] transition-all hover:-translate-y-1 sm:rounded-[28px] sm:p-6 sm:shadow-[8px_8px_0px_#060E1C]">
-                <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+                <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-lg border-[2px] border-dark bg-yellow px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
                   <Sparkles className="h-3 w-3" /> Practice Challenge
                 </div>
                 <h3 className="mb-2 text-lg font-black leading-tight tracking-tight text-dark break-words sm:text-xl">
@@ -219,9 +219,9 @@ export function PracticeQuizClient({
                 </p>
                 <Button
                   onClick={() => startQuiz(q.data)}
-                  className="w-full border-[3px] border-dark bg-white py-3 font-black text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                  className="w-full border-[3px] border-dark bg-yellow hover:bg-yellow-light py-3.5 font-black text-dark uppercase tracking-wider shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none flex items-center justify-center gap-2 text-xs"
                 >
-                  Start Practice <Play className="ml-2 h-4 w-4" />
+                  Start Practice <Play className="h-4 w-4 text-dark" />
                 </Button>
               </div>
             ))
