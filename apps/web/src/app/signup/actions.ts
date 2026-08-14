@@ -4,6 +4,20 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { type FormState } from '../login/actions'
 
+function generateGuaranteedUniqueCode(fullName: string, role = 'student'): string {
+  const prefix = role === 'admin' ? 'ADM' : role === 'parent' ? 'PAR' : role === 'tutor' ? 'TUT' : 'EDV';
+  const namePart = (fullName || 'USER')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '')
+    .slice(0, 5) || 'EXPLORER';
+  
+  const dateObj = new Date();
+  const datePart = dateObj.toISOString().slice(0, 10).replace(/-/g, '');
+  const randEntropy = Math.floor(1000 + Math.random() * 9000);
+
+  return `${prefix}-${namePart}-${datePart}-${randEntropy}`;
+}
+
 export async function signup(prevState: FormState, formData: FormData): Promise<FormState> {
   try {
     const supabase = await createClient()
@@ -100,6 +114,8 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
       }
     }
 
+    const uniqueCode = generateGuaranteedUniqueCode(fullName, role)
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -107,6 +123,7 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
         data: {
           full_name: fullName,
           role: role,
+          unique_code: uniqueCode,
           learner_band: inferredLearnerBand,
           selected_grade: Number.isFinite(parsedGrade) ? parsedGrade : null,
           grade_level_code: gradeLevelCode,
@@ -124,25 +141,33 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
       },
     })
 
-    let hasSession = Boolean(data?.session)
-
-    if (!hasSession) {
-      // Attempt instant sign in to bypass email confirmation delay if confirmation is disabled or created
-      const signInRes = await supabase.auth.signInWithPassword({ email, password })
-      if (!signInRes.error) {
-        hasSession = true
+    if (error) {
+      if (error.message.toLowerCase().includes('error sending confirmation email') || error.message.toLowerCase().includes('confirmation email')) {
+        const signInRes = await supabase.auth.signInWithPassword({ email, password })
+        if (!signInRes.error) {
+          return {
+            pendingVerification: true,
+            fullName,
+            email,
+            role,
+            uniqueCode,
+            redirectTo: redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dash',
+          }
+        }
       }
+      return { error: error.message }
     }
 
-    if (!hasSession) {
-      redirect('/login?signup=check-email')
-    }
+    await supabase.auth.signInWithPassword({ email, password })
 
-    if (redirectTo && redirectTo.startsWith('/')) {
-      redirect(redirectTo)
+    return {
+      pendingVerification: true,
+      fullName,
+      email,
+      role,
+      uniqueCode,
+      redirectTo: redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dash',
     }
-
-    redirect('/dash')
   } catch (err: any) {
     if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
       throw err;

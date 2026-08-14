@@ -4,7 +4,15 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
-export type FormState = { error: string } | null;
+export type FormState = {
+  error?: string;
+  pendingVerification?: boolean;
+  fullName?: string;
+  email?: string;
+  role?: string;
+  uniqueCode?: string;
+  redirectTo?: string;
+} | null;
 
 export async function login(prevState: FormState, formData: FormData): Promise<FormState> {
   try {

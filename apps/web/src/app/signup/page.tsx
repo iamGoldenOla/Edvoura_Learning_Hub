@@ -10,6 +10,7 @@ import {
   ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff,
   Video
 } from 'lucide-react';
+import { UniqueCodeVerificationGate } from '@/components/ui/UniqueCodeVerificationGate';
 
 const roles = [
   { id: 'student', label: 'Student', desc: 'I want to learn and grow', icon: GraduationCap },
@@ -79,6 +80,18 @@ function SignupPageContent() {
 
   return (
     <div className="min-h-screen flex">
+      {state?.pendingVerification && state.uniqueCode ? (
+        <UniqueCodeVerificationGate
+          fullName={state.fullName || formData.fullName || 'New Member'}
+          email={state.email || formData.email}
+          role={selectedRole || state.role || 'student'}
+          uniqueCode={state.uniqueCode}
+          onVerified={() => {
+            window.location.href = state.redirectTo || '/dash';
+          }}
+        />
+      ) : null}
+
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-navy relative flex-col items-center justify-center p-12 overflow-hidden">
         <div className="hero-grid-overlay absolute inset-0 pointer-events-none" />

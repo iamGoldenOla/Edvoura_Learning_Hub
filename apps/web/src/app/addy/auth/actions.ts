@@ -5,7 +5,14 @@ import { createClient as createAdminSupabaseClient } from '@supabase/supabase-js
 
 import { createClient } from '@/utils/supabase/server'
 
-export type FormState = { error: string } | null
+export type FormState = {
+  error?: string
+  pendingVerification?: boolean
+  fullName?: string
+  email?: string
+  role?: string
+  uniqueCode?: string
+} | null
 
 function getAdminClient() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -14,6 +21,20 @@ function getAdminClient() {
   return createAdminSupabaseClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
+}
+
+function generateGuaranteedUniqueCode(fullName: string, role = 'student'): string {
+  const prefix = role === 'admin' ? 'ADM' : role === 'parent' ? 'PAR' : role === 'tutor' ? 'TUT' : 'EDV';
+  const namePart = (fullName || 'USER')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '')
+    .slice(0, 5) || 'EXPLORER';
+  
+  const dateObj = new Date();
+  const datePart = dateObj.toISOString().slice(0, 10).replace(/-/g, '');
+  const randEntropy = Math.floor(1000 + Math.random() * 9000);
+
+  return `${prefix}-${namePart}-${datePart}-${randEntropy}`;
 }
 
 export async function adminSignIn(_: FormState, formData: FormData): Promise<FormState> {
@@ -64,6 +85,7 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
     return { error: 'Full name, email and password are required' }
   }
 
+  const uniqueCode = generateGuaranteedUniqueCode(fullName, 'admin')
   const adminClient = getAdminClient()
 
   if (adminClient) {
@@ -74,6 +96,7 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
       user_metadata: {
         full_name: fullName,
         role: 'admin',
+        unique_code: uniqueCode,
       },
     })
 
@@ -82,9 +105,13 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
       await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' })
       await supabase.from('admin_profiles').insert({ user_id: userId, full_name: fullName, access_level: 'super_admin' })
 
-      const signInRes = await supabase.auth.signInWithPassword({ email, password })
-      if (!signInRes.error) {
-        redirect('/addy')
+      await supabase.auth.signInWithPassword({ email, password })
+      return {
+        pendingVerification: true,
+        fullName,
+        email,
+        role: 'admin',
+        uniqueCode,
       }
     }
   }
@@ -98,6 +125,7 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
       data: {
         full_name: fullName,
         role: 'admin',
+        unique_code: uniqueCode,
       },
     },
   })
@@ -106,7 +134,13 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
     if (error.message.toLowerCase().includes('error sending confirmation email') || error.message.toLowerCase().includes('confirmation email')) {
       const signInRes = await supabase.auth.signInWithPassword({ email, password })
       if (!signInRes.error) {
-        redirect('/addy')
+        return {
+          pendingVerification: true,
+          fullName,
+          email,
+          role: 'admin',
+          uniqueCode,
+        }
       }
       return {
         error: 'Email confirmation is active in your Supabase Auth project. Please go to Supabase Dashboard -> Authentication -> Sign In / Providers -> Email -> Toggle OFF "Confirm email" to complete registration instantly.',
@@ -119,12 +153,22 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
     await supabase.from('user_roles').insert({ user_id: data.user.id, role: 'admin' })
     await supabase.from('admin_profiles').insert({ user_id: data.user.id, full_name: fullName, access_level: 'super_admin' })
 
-    const signInRes = await supabase.auth.signInWithPassword({ email, password })
-    if (!signInRes.error) {
-      redirect('/addy')
+    await supabase.auth.signInWithPassword({ email, password })
+    return {
+      pendingVerification: true,
+      fullName,
+      email,
+      role: 'admin',
+      uniqueCode,
     }
   }
 
-  redirect('/addy')
+  return {
+    pendingVerification: true,
+    fullName,
+    email,
+    role: 'admin',
+    uniqueCode,
+  }
 }
 
