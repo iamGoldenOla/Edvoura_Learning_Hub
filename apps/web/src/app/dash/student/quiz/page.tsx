@@ -30,8 +30,8 @@ export default async function QuizPage() {
   // 2. Fetch published AI quizzes
   const { data: aiQuizzes } = await supabaseAdmin
     .from('ai_generated_content')
-    .select('id, subject, grade, content_json, created_at')
-    .in('task_type', ['GENERATE_QUIZ'])
+    .select('id, subject, grade, content_json, created_at, content_type, task_type')
+    .or('task_type.eq.GENERATE_QUIZ,content_type.eq.quiz,task_type.eq.quiz')
     .eq('status', 'PUBLISHED')
     .order('created_at', { ascending: false });
 

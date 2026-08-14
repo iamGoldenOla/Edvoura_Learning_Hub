@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, Download, Eye, BookOpen, Library as LibraryIcon, Sparkles } from 'lucide-react';
+import { FileText, Download, Eye, BookOpen, Target, Library as LibraryIcon, Sparkles } from 'lucide-react';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 import { StoryViewerModal, type StoryContent } from '@/components/ui/StoryViewerModal';
 
@@ -80,16 +80,27 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
               resource.payload.title?.toLowerCase().includes('story') ||
               resource.payload.title?.toLowerCase().includes('lion');
 
+            const isQuiz =
+              resource.content_type === 'quiz' ||
+              resource.payload.content_type === 'quiz' ||
+              resource.payload.title?.toLowerCase().includes('quiz') ||
+              resource.payload.title?.toLowerCase().includes('test');
+
             return (
               <div key={resource.id} className="flex flex-col gap-6 rounded-[28px] border-[4px] border-dark bg-white p-6 shadow-[10px_10px_0px_#060E1C] transition-all hover:-translate-y-1 hover:shadow-[12px_12px_0px_#060E1C]">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div className="flex items-start gap-5 min-w-0">
-                    <div className={`rounded-2xl border-[3px] border-dark p-4 shadow-[3px_3px_0px_#060E1C] shrink-0 ${isStory ? 'bg-amber-300' : resource.event_type === 'spelling_bee_created' ? 'bg-amber-100' : 'bg-blue-100'}`}>
-                      {isStory ? <BookOpen className="h-7 w-7 text-dark" /> : <FileText className="h-7 w-7 text-dark" />}
+                    <div className={`rounded-2xl border-[3px] border-dark p-4 shadow-[3px_3px_0px_#060E1C] shrink-0 ${isQuiz ? 'bg-purple-200' : isStory ? 'bg-amber-300' : resource.event_type === 'spelling_bee_created' ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                      {isQuiz ? <Target className="h-7 w-7 text-dark" /> : isStory ? <BookOpen className="h-7 w-7 text-dark" /> : <FileText className="h-7 w-7 text-dark" />}
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-3">
                         <h3 className="text-xl font-black text-dark truncate">{resource.payload.title}</h3>
+                        {isQuiz && (
+                          <span className="inline-flex rounded-xl border-[2px] border-dark bg-purple-200 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+                            Interactive Quiz
+                          </span>
+                        )}
                         {isStory && (
                           <span className="inline-flex rounded-xl border-[2px] border-dark bg-amber-300 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
                             Storybook Fable
@@ -108,15 +119,24 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
                     </div>
                   </div>
 
-                  {/* Read Story / View Content Action Button */}
+                  {/* Action Button */}
                   <div className="flex items-center gap-3 shrink-0">
-                    <button
-                      onClick={() => handleOpenStory(resource)}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
-                    >
-                      <BookOpen className="h-4 w-4 text-dark" />
-                      {isStory ? 'Read Story' : 'Open Resource'}
-                    </button>
+                    {isQuiz ? (
+                      <a href="/dash/student/quiz">
+                        <button className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-purple-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+                          <Target className="h-4 w-4 text-dark" />
+                          Take Interactive Quiz
+                        </button>
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => handleOpenStory(resource)}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
+                      >
+                        <BookOpen className="h-4 w-4 text-dark" />
+                        {isStory ? 'Read Story' : 'Open Resource'}
+                      </button>
+                    )}
                   </div>
                 </div>
 

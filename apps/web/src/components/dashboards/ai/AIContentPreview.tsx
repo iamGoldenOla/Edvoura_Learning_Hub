@@ -426,35 +426,70 @@ export default function AIContentPreview({
             </div>
           ) : null}
 
-          {/* Quiz: Questions */}
+          {/* Quiz: Questions Preview */}
           {Array.isArray(record.questions) ? (
             <div>
-              <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-dark/60">Quiz Questions</p>
-              <div className="space-y-3">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-dark/60">Quiz Questions Preview</p>
+                <span className="rounded-lg border border-dark/20 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                  ✨ Interactive Student Mode Enabled
+                </span>
+              </div>
+              
+              <div className="mb-4 rounded-xl border-[2px] border-dark bg-sky-50 p-3 text-xs font-bold text-dark/80">
+                💡 <strong>Student Live Experience:</strong> When published, students will see clean question choices (without answer hints). Clicking an option provides immediate <strong>Correct/Wrong feedback</strong>, score tracking, and instant explanations!
+              </div>
+
+              <div className="space-y-4">
                 {record.questions.map((item, index) => {
                   const row = isRecord(item) ? item : {};
+                  const questionText = String(row.questionText ?? row.question ?? "");
+                  const correctAnswer = String(row.correctAnswer ?? row.correct_answer ?? "");
+                  const explanation = String(row.explanation ?? "");
+                  const options = Array.isArray(row.options) ? row.options : [];
+
                   return (
-                    <div key={`qq-${index}`} className="rounded-xl border-[2px] border-dark bg-off-white p-4">
-                      <p className="text-sm font-black text-dark">{String(row.question ?? "")}</p>
-                      {Array.isArray(row.options) ? (
-                        <div className="mt-2 grid grid-cols-2 gap-2">
-                          {row.options.map((opt, oi) => (
-                            <span
+                    <div key={`qq-${index}`} className="rounded-xl border-[2px] border-dark bg-white p-4 shadow-[2px_2px_0px_#060E1C]">
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-[2px] border-dark bg-yellow text-xs font-black text-dark">
+                          {index + 1}
+                        </span>
+                        <p className="text-sm font-black text-dark pt-0.5">{questionText}</p>
+                      </div>
+
+                      {/* Options Grid */}
+                      {options.length > 0 ? (
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 pl-9">
+                          {options.map((opt, oi) => (
+                            <div
                               key={`opt-${index}-${oi}`}
-                              className={`rounded-lg border px-2 py-1 text-xs font-semibold ${
-                                String(opt) === String(row.correct_answer ?? "")
-                                  ? "border-green-500 bg-green-50 text-green-800 font-black"
-                                  : "border-dark/20 bg-white text-dark/70"
-                              }`}
+                              className="rounded-lg border-[2px] border-dark/30 bg-off-white px-3 py-2 text-xs font-bold text-dark flex items-center gap-2"
                             >
-                              {String(opt)}
-                            </span>
+                              <span className="h-4 w-4 rounded-full border border-dark/40 bg-white flex items-center justify-center text-[10px] font-black text-dark/60">
+                                {String.fromCharCode(65 + oi)}
+                              </span>
+                              <span>{String(opt)}</span>
+                            </div>
                           ))}
                         </div>
                       ) : null}
-                      {typeof row.explanation === "string" ? (
-                        <p className="mt-2 text-xs font-semibold text-dark/60">💡 {row.explanation}</p>
-                      ) : null}
+
+                      {/* Collapsible Teacher Answer Key */}
+                      <details className="mt-3 pl-9">
+                        <summary className="cursor-pointer text-[10px] font-black uppercase tracking-widest text-dark/50 hover:text-dark transition-colors inline-flex items-center gap-1">
+                          🔒 View Teacher Answer Key & Explanation
+                        </summary>
+                        <div className="mt-2 rounded-lg border border-dashed border-dark/30 bg-amber-50/70 p-3 space-y-1">
+                          <p className="text-xs font-black text-emerald-900">
+                            Correct Answer: <span className="underline">{correctAnswer}</span>
+                          </p>
+                          {explanation ? (
+                            <p className="text-xs font-semibold text-dark/70">
+                              💡 Explanation: {explanation}
+                            </p>
+                          ) : null}
+                        </div>
+                      </details>
                     </div>
                   );
                 })}
