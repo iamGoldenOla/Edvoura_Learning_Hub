@@ -726,6 +726,34 @@ export default function MillionaireGame() {
               flex: none !important;
             }
           }
+          @keyframes sweepNightclubLeft {
+            0% { transform: rotate(-32deg) scaleX(0.9); opacity: 0.6; }
+            50% { transform: rotate(15deg) scaleX(1.2); opacity: 0.9; }
+            100% { transform: rotate(-10deg) scaleX(1); opacity: 0.7; }
+          }
+          @keyframes sweepNightclubRight {
+            0% { transform: rotate(32deg) scaleX(0.9); opacity: 0.6; }
+            50% { transform: rotate(-15deg) scaleX(1.2); opacity: 0.9; }
+            100% { transform: rotate(10deg) scaleX(1); opacity: 0.7; }
+          }
+          @keyframes sweepNightclubCenter {
+            0% { transform: rotate(-15deg) scaleX(1); opacity: 0.4; }
+            100% { transform: rotate(18deg) scaleX(1.3); opacity: 0.85; }
+          }
+          @keyframes contestantPulse {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-4px) scale(1.02); }
+            100% { transform: translateY(0px) scale(1); }
+          }
+          @keyframes hostPulse {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
+          }
+          @keyframes fadeInOverlay {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+          }
         `}</style>
         
         {/* ─── LEFT SIDEBAR: CURRENCY SELECTOR, 4 LIFELINES & SCOREBOARD ─── */}
@@ -1026,33 +1054,6 @@ export default function MillionaireGame() {
               pointerEvents: 'none', zIndex: 3
             }} />
 
-            <style jsx>{`
-              @keyframes sweepNightclubLeft {
-                0% { transform: rotate(-32deg) scaleX(0.9); opacity: 0.6; }
-                50% { transform: rotate(15deg) scaleX(1.2); opacity: 0.9; }
-                100% { transform: rotate(-10deg) scaleX(1); opacity: 0.7; }
-              }
-              @keyframes sweepNightclubRight {
-                0% { transform: rotate(32deg) scaleX(0.9); opacity: 0.6; }
-                50% { transform: rotate(-15deg) scaleX(1.2); opacity: 0.9; }
-                100% { transform: rotate(10deg) scaleX(1); opacity: 0.7; }
-              }
-              @keyframes sweepNightclubCenter {
-                0% { transform: rotate(-15deg) scaleX(1); opacity: 0.4; }
-                100% { transform: rotate(18deg) scaleX(1.3); opacity: 0.85; }
-              }
-              @keyframes contestantPulse {
-                0% { transform: translateY(0px) scale(1); }
-                50% { transform: translateY(-4px) scale(1.02); }
-                100% { transform: translateY(0px) scale(1); }
-              }
-              @keyframes hostPulse {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-3px); }
-                100% { transform: translateY(0px); }
-              }
-            `}</style>
-            
             {/* 3D Authentic TV Studio Hot Seats Environment */}
             <div style={{
               width: '100%', height: '62%', position: 'relative',
@@ -1294,12 +1295,6 @@ export default function MillionaireGame() {
               padding: '24px', zIndex: 50, color: '#fff', textAlign: 'center',
               animation: 'fadeInOverlay 0.4s ease-out'
             }}>
-              <style jsx>{`
-                @keyframes fadeInOverlay {
-                  from { opacity: 0; transform: scale(0.96); }
-                  to { opacity: 1; transform: scale(1); }
-                }
-              `}</style>
               <Award size={64} color={isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444'} />
               <h2 style={{ fontSize: '28px', fontWeight: 950, color: isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444', margin: '12px 0 6px 0', textShadow: '0 0 20px rgba(0,0,0,0.8)' }}>
                 {isMillionaire ? '🎉 CONGRATULATIONS MILLIONAIRE! 🎉' : isWalkedAway ? '🛡️ CASHED OUT & WALKED AWAY!' : 'GAME OVER!'}
