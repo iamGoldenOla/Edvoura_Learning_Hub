@@ -1068,11 +1068,10 @@ export default function MillionaireGame() {
                 : `rotateX(14deg) rotateY(${rotationAngle}deg)`,
               transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)', zIndex: 5
             }}>
-              
-              {/* 🎓 CONTESTANT HOT SEAT (Seamless Cutout & Reaction Speech Bubble) */}
+              {/* 🎓 CONTESTANT HOT SEAT (Seamless Cutout with Laptop Desk & Reaction Speech Bubble) */}
               <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                position: 'absolute', left: '10%', bottom: '10px', zIndex: 10,
+                position: 'absolute', left: '8%', bottom: '10px', zIndex: 10,
                 animation: 'contestantPulse 4s ease-in-out infinite'
               }}>
                 {/* Dynamic Reaction Speech Bubble */}
@@ -1095,13 +1094,13 @@ export default function MillionaireGame() {
                 </div>
 
                 <div style={{
-                  position: 'relative', width: '150px', height: '180px',
+                  position: 'relative', width: '160px', height: '190px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {/* Seamless Cutout Contestant Avatar with mix-blend-mode: screen */}
+                  {/* Seamless Cutout Contestant Avatar at Laptop Desk */}
                   <img
-                    src="/images/millionaire/millionaire_contestant_cutout.jpg"
-                    alt="3D Contestant Seated Profile Cutout"
+                    src="/images/millionaire/millionaire_contestant_laptop_cutout.jpg"
+                    alt="3D Contestant Seated at Laptop Desk Cutout"
                     style={{
                       width: '100%', height: '100%', objectFit: 'contain',
                       mixBlendMode: 'screen',
@@ -1117,26 +1116,47 @@ export default function MillionaireGame() {
                 <div style={{
                   background: 'rgba(15, 23, 42, 0.95)', border: '1.5px solid #38bdf8', borderRadius: '8px',
                   padding: '3px 10px', fontSize: '10px', fontWeight: 950, color: '#38bdf8',
-                  boxShadow: '0 0 12px rgba(56, 189, 248, 0.5)', marginTop: '-12px'
+                  boxShadow: '0 0 12px rgba(56, 189, 248, 0.5)', marginTop: '-12px',
+                  display: 'flex', alignItems: 'center', gap: '4px'
                 }}>
-                  🎓 Contestant Hot Seat
+                  💻 Contestant Hot Seat &amp; Laptop
                 </div>
               </div>
 
-              {/* ⚡ CENTER V-SHAPED BLUE NEON TERMINAL PODIUM */}
+              {/* ⚡ CENTER V-SHAPED BLUE NEON TERMINAL PODIUM WITH TWIN LAPTOP MONITORS */}
               <div style={{
-                position: 'relative', width: '240px', height: '160px',
+                position: 'relative', width: '260px', height: '170px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 zIndex: 8, transform: 'translateZ(20px)'
               }}>
                 {/* Blue Neon V-Shape Arc Base */}
                 <div style={{
-                  position: 'absolute', bottom: 0, width: '220px', height: '100px',
+                  position: 'absolute', bottom: 0, width: '240px', height: '110px',
                   borderBottom: '6px solid #38bdf8', borderLeft: '4px solid #38bdf8', borderRight: '4px solid #38bdf8',
                   borderRadius: '0 0 50px 50px',
                   boxShadow: '0 0 35px #38bdf8, inset 0 0 20px #38bdf8',
                   background: 'linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.2) 100%)'
                 }} />
+
+                {/* Left Laptop Screen Mounted on Podium facing Contestant */}
+                <div style={{
+                  position: 'absolute', left: '-25px', top: '15px', width: '48px', height: '36px',
+                  background: '#090d16', border: '2px solid #38bdf8', borderRadius: '6px',
+                  boxShadow: '0 0 12px #38bdf8', transform: 'rotateY(25deg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 950, color: '#38bdf8'
+                }}>
+                  💻
+                </div>
+
+                {/* Right Laptop Screen Mounted on Podium facing Host */}
+                <div style={{
+                  position: 'absolute', right: '-25px', top: '15px', width: '48px', height: '36px',
+                  background: '#090d16', border: '2px solid #fbbf24', borderRadius: '6px',
+                  boxShadow: '0 0 12px #fbbf24', transform: 'rotateY(-25deg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: 950, color: '#fbbf24'
+                }}>
+                  💻
+                </div>
 
                 {/* Central Monitor Screen (Current Prize Display) */}
                 <div style={{
@@ -1154,20 +1174,20 @@ export default function MillionaireGame() {
                 </div>
               </div>
 
-              {/* 🎙️ AI TV HOST HOT SEAT (Seamless Cutout & Host Animation) */}
+              {/* 🎙️ AI TV HOST HOT SEAT WITH LAPTOP DESK (Seamless Cutout & Host Animation) */}
               <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                position: 'absolute', right: '10%', bottom: '10px', zIndex: 10,
+                position: 'absolute', right: '8%', bottom: '10px', zIndex: 10,
                 animation: 'hostPulse 4.5s ease-in-out infinite'
               }}>
                 <div style={{
-                  position: 'relative', width: '150px', height: '180px',
+                  position: 'relative', width: '160px', height: '190px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {/* Seamless Cutout Host Avatar with mix-blend-mode: screen */}
+                  {/* Seamless Cutout Host Avatar at Laptop Desk */}
                   <img
-                    src="/images/millionaire/millionaire_host_cutout.jpg"
-                    alt="3D Host Seated Profile Cutout"
+                    src="/images/millionaire/millionaire_host_laptop_cutout.jpg"
+                    alt="3D Host Seated Profile at Laptop Desk Cutout"
                     style={{
                       width: '100%', height: '100%', objectFit: 'contain',
                       mixBlendMode: 'screen',
@@ -1183,9 +1203,10 @@ export default function MillionaireGame() {
                 <div style={{
                   background: 'rgba(15, 23, 42, 0.95)', border: '1.5px solid #fbbf24', borderRadius: '8px',
                   padding: '3px 10px', fontSize: '10px', fontWeight: 950, color: '#fbbf24',
-                  boxShadow: '0 0 12px rgba(251, 191, 36, 0.5)', marginTop: '-12px'
+                  boxShadow: '0 0 12px rgba(251, 191, 36, 0.5)', marginTop: '-12px',
+                  display: 'flex', alignItems: 'center', gap: '4px'
                 }}>
-                  🎙️ AI TV Host
+                  💻 AI TV Host &amp; Laptop
                 </div>
               </div>
 
