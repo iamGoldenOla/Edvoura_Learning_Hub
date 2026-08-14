@@ -984,33 +984,74 @@ export default function MillionaireGame() {
               ? '#02040a'
               : 'url("/images/millionaire/millionaire_tv_studio_real.jpg") center/cover no-repeat #090d16',
             border: isLightsDimmed ? '3.5px solid #8b5cf6' : '3px solid #000',
-            boxShadow: isLightsDimmed ? 'inset 0 0 120px rgba(139, 92, 246, 0.7)' : 'inset 0 0 60px rgba(0,0,0,0.9)',
+            boxShadow: isLightsDimmed ? 'inset 0 0 140px rgba(139, 92, 246, 0.8)' : 'inset 0 0 70px rgba(0,0,0,0.95)',
             borderRadius: '16px', overflow: 'hidden', position: 'relative',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 16px', boxSizing: 'border-box', perspective: '1200px',
             transition: 'all 0.5s ease'
           }}>
 
-            {/* Ambient Studio Blackout Overlay during answer lock */}
+            {/* Ambient Studio Dimming Overlay during answer lock */}
             <div style={{
               position: 'absolute', inset: 0,
               background: isLightsDimmed
-                ? 'radial-gradient(circle at center, rgba(11, 15, 25, 0.3) 0%, rgba(2, 4, 10, 0.95) 85%)'
-                : 'radial-gradient(circle at center, transparent 40%, rgba(9, 13, 22, 0.6) 100%)',
-              pointerEvents: 'none', transition: 'all 0.5s ease'
+                ? 'radial-gradient(circle at center, rgba(11, 15, 25, 0.2) 0%, rgba(2, 4, 10, 0.92) 85%)'
+                : 'radial-gradient(circle at center, transparent 40%, rgba(9, 13, 22, 0.5) 100%)',
+              pointerEvents: 'none', transition: 'all 0.5s ease', zIndex: 2
             }} />
 
-            {/* 💡 Authentic Overhead Spotlights Beam */}
+            {/* 🕺 NIGHTCLUB-STYLE SWEEPING MOVING SPOTLIGHTS (Sweeping Left to Right) */}
             <div style={{
-              position: 'absolute', top: 0, left: '15%', width: '120px', height: '100%',
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(56,189,248,0.08) 60%, transparent 100%)',
-              clipPath: 'polygon(30% 0, 70% 0, 100% 100%, 0% 100%)', pointerEvents: 'none', zIndex: 3
+              position: 'absolute', top: 0, left: '10%', width: '160px', height: '120%',
+              background: 'linear-gradient(180deg, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0.05) 70%, transparent 100%)',
+              clipPath: 'polygon(35% 0, 65% 0, 100% 100%, 0% 100%)',
+              transformOrigin: 'top center',
+              animation: 'sweepNightclubLeft 4.5s ease-in-out infinite alternate',
+              pointerEvents: 'none', zIndex: 3
             }} />
             <div style={{
-              position: 'absolute', top: 0, right: '15%', width: '120px', height: '100%',
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(139,92,246,0.08) 60%, transparent 100%)',
-              clipPath: 'polygon(30% 0, 70% 0, 100% 100%, 0% 100%)', pointerEvents: 'none', zIndex: 3
+              position: 'absolute', top: 0, right: '10%', width: '160px', height: '120%',
+              background: 'linear-gradient(180deg, rgba(139, 92, 246, 0.4) 0%, rgba(139, 92, 246, 0.05) 70%, transparent 100%)',
+              clipPath: 'polygon(35% 0, 65% 0, 100% 100%, 0% 100%)',
+              transformOrigin: 'top center',
+              animation: 'sweepNightclubRight 5.2s ease-in-out infinite alternate',
+              pointerEvents: 'none', zIndex: 3
             }} />
+            <div style={{
+              position: 'absolute', top: 0, left: '42%', width: '140px', height: '120%',
+              background: 'linear-gradient(180deg, rgba(251, 191, 36, 0.35) 0%, rgba(251, 191, 36, 0.03) 70%, transparent 100%)',
+              clipPath: 'polygon(40% 0, 60% 0, 100% 100%, 0% 100%)',
+              transformOrigin: 'top center',
+              animation: 'sweepNightclubCenter 3.8s ease-in-out infinite alternate',
+              pointerEvents: 'none', zIndex: 3
+            }} />
+
+            <style jsx>{`
+              @keyframes sweepNightclubLeft {
+                0% { transform: rotate(-32deg) scaleX(0.9); opacity: 0.6; }
+                50% { transform: rotate(15deg) scaleX(1.2); opacity: 0.9; }
+                100% { transform: rotate(-10deg) scaleX(1); opacity: 0.7; }
+              }
+              @keyframes sweepNightclubRight {
+                0% { transform: rotate(32deg) scaleX(0.9); opacity: 0.6; }
+                50% { transform: rotate(-15deg) scaleX(1.2); opacity: 0.9; }
+                100% { transform: rotate(10deg) scaleX(1); opacity: 0.7; }
+              }
+              @keyframes sweepNightclubCenter {
+                0% { transform: rotate(-15deg) scaleX(1); opacity: 0.4; }
+                100% { transform: rotate(18deg) scaleX(1.3); opacity: 0.85; }
+              }
+              @keyframes contestantPulse {
+                0% { transform: translateY(0px) scale(1); }
+                50% { transform: translateY(-4px) scale(1.02); }
+                100% { transform: translateY(0px) scale(1); }
+              }
+              @keyframes hostPulse {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-3px); }
+                100% { transform: translateY(0px); }
+              }
+            `}</style>
             
             {/* 3D Authentic TV Studio Hot Seats Environment */}
             <div style={{
@@ -1027,33 +1068,55 @@ export default function MillionaireGame() {
               transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)', zIndex: 5
             }}>
               
-              {/* 🎓 CONTESTANT HOT SEAT (Left Stool & Seated Profile Avatar) */}
+              {/* 🎓 CONTESTANT HOT SEAT (Seamless Cutout & Reaction Speech Bubble) */}
               <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                position: 'absolute', left: '12%', bottom: '15px', zIndex: 10
+                position: 'absolute', left: '10%', bottom: '10px', zIndex: 10,
+                animation: 'contestantPulse 4s ease-in-out infinite'
               }}>
+                {/* Dynamic Reaction Speech Bubble */}
                 <div style={{
-                  position: 'relative', width: '130px', height: '170px',
+                  background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+                  border: '2px solid #38bdf8', borderRadius: '12px',
+                  padding: '4px 10px', fontSize: '10px', fontWeight: 950, color: '#ffffff',
+                  boxShadow: '0 0 15px rgba(56, 189, 248, 0.6)',
+                  marginBottom: '-4px', zIndex: 15, textAlign: 'center', whiteSpace: 'nowrap'
+                }}>
+                  {isLocked
+                    ? '🔒 Final Answer Locked!'
+                    : showAnswerResult
+                    ? selectedOption === activeQ?.a
+                      ? '🎉 YES! Level Cleared!'
+                      : '😰 Oh no!'
+                    : selectedOption !== null
+                    ? `⚡ Option ${String.fromCharCode(65 + selectedOption)} Selected!`
+                    : '🧠 Thinking carefully...'}
+                </div>
+
+                <div style={{
+                  position: 'relative', width: '150px', height: '180px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {/* Seated Contestant Avatar Image */}
+                  {/* Seamless Cutout Contestant Avatar with mix-blend-mode: screen */}
                   <img
-                    src="/images/millionaire/millionaire_contestant_profile.jpg"
-                    alt="3D Contestant Seated Profile"
+                    src="/images/millionaire/millionaire_contestant_cutout.jpg"
+                    alt="3D Contestant Seated Profile Cutout"
                     style={{
                       width: '100%', height: '100%', objectFit: 'contain',
-                      filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.8))'
+                      mixBlendMode: 'screen',
+                      filter: 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.5))'
                     }}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_contestant.jpg';
+                      (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_contestant_profile.jpg';
+                      (e.target as HTMLImageElement).style.mixBlendMode = 'normal';
                     }}
                   />
                 </div>
                 {/* Badge Label */}
                 <div style={{
-                  background: 'rgba(15, 23, 42, 0.9)', border: '1.5px solid #38bdf8', borderRadius: '8px',
+                  background: 'rgba(15, 23, 42, 0.95)', border: '1.5px solid #38bdf8', borderRadius: '8px',
                   padding: '3px 10px', fontSize: '10px', fontWeight: 950, color: '#38bdf8',
-                  boxShadow: '0 0 12px rgba(56, 189, 248, 0.5)', marginTop: '-8px'
+                  boxShadow: '0 0 12px rgba(56, 189, 248, 0.5)', marginTop: '-12px'
                 }}>
                   🎓 Contestant Hot Seat
                 </div>
@@ -1070,8 +1133,8 @@ export default function MillionaireGame() {
                   position: 'absolute', bottom: 0, width: '220px', height: '100px',
                   borderBottom: '6px solid #38bdf8', borderLeft: '4px solid #38bdf8', borderRight: '4px solid #38bdf8',
                   borderRadius: '0 0 50px 50px',
-                  boxShadow: '0 0 25px #38bdf8, inset 0 0 15px #38bdf8',
-                  background: 'linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.15) 100%)'
+                  boxShadow: '0 0 35px #38bdf8, inset 0 0 20px #38bdf8',
+                  background: 'linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.2) 100%)'
                 }} />
 
                 {/* Central Monitor Screen (Current Prize Display) */}
@@ -1090,33 +1153,36 @@ export default function MillionaireGame() {
                 </div>
               </div>
 
-              {/* 🎙️ AI TV HOST HOT SEAT (Right Stool & Seated Profile Avatar) */}
+              {/* 🎙️ AI TV HOST HOT SEAT (Seamless Cutout & Host Animation) */}
               <div style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                position: 'absolute', right: '12%', bottom: '15px', zIndex: 10
+                position: 'absolute', right: '10%', bottom: '10px', zIndex: 10,
+                animation: 'hostPulse 4.5s ease-in-out infinite'
               }}>
                 <div style={{
-                  position: 'relative', width: '130px', height: '170px',
+                  position: 'relative', width: '150px', height: '180px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  {/* Seated Host Avatar Image */}
+                  {/* Seamless Cutout Host Avatar with mix-blend-mode: screen */}
                   <img
-                    src="/images/millionaire/millionaire_host_profile.jpg"
-                    alt="3D Host Seated Profile"
+                    src="/images/millionaire/millionaire_host_cutout.jpg"
+                    alt="3D Host Seated Profile Cutout"
                     style={{
                       width: '100%', height: '100%', objectFit: 'contain',
-                      filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.8))'
+                      mixBlendMode: 'screen',
+                      filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))'
                     }}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_host.jpg';
+                      (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_host_profile.jpg';
+                      (e.target as HTMLImageElement).style.mixBlendMode = 'normal';
                     }}
                   />
                 </div>
                 {/* Badge Label */}
                 <div style={{
-                  background: 'rgba(15, 23, 42, 0.9)', border: '1.5px solid #fbbf24', borderRadius: '8px',
+                  background: 'rgba(15, 23, 42, 0.95)', border: '1.5px solid #fbbf24', borderRadius: '8px',
                   padding: '3px 10px', fontSize: '10px', fontWeight: 950, color: '#fbbf24',
-                  boxShadow: '0 0 12px rgba(251, 191, 36, 0.5)', marginTop: '-8px'
+                  boxShadow: '0 0 12px rgba(251, 191, 36, 0.5)', marginTop: '-12px'
                 }}>
                   🎙️ AI TV Host
                 </div>
@@ -1218,15 +1284,24 @@ export default function MillionaireGame() {
             )}
           </div>
 
-          {/* Game Over / Winner / Walked Away Overlay */}
+          {/* Game Over Glassmorphic Overlay (No Total Blackout, Studio Lights & Stage Remain Alive Behind!) */}
           {isGameOver && (
             <div style={{
-              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)',
+              position: 'absolute', inset: 0,
+              background: 'rgba(9, 13, 22, 0.72)',
+              backdropFilter: 'blur(8px)',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              padding: '24px', zIndex: 50, color: '#fff', textAlign: 'center'
+              padding: '24px', zIndex: 50, color: '#fff', textAlign: 'center',
+              animation: 'fadeInOverlay 0.4s ease-out'
             }}>
+              <style jsx>{`
+                @keyframes fadeInOverlay {
+                  from { opacity: 0; transform: scale(0.96); }
+                  to { opacity: 1; transform: scale(1); }
+                }
+              `}</style>
               <Award size={64} color={isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444'} />
-              <h2 style={{ fontSize: '28px', fontWeight: 950, color: isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444', margin: '12px 0 6px 0' }}>
+              <h2 style={{ fontSize: '28px', fontWeight: 950, color: isMillionaire ? '#fbbf24' : isWalkedAway ? '#38bdf8' : '#ef4444', margin: '12px 0 6px 0', textShadow: '0 0 20px rgba(0,0,0,0.8)' }}>
                 {isMillionaire ? '🎉 CONGRATULATIONS MILLIONAIRE! 🎉' : isWalkedAway ? '🛡️ CASHED OUT & WALKED AWAY!' : 'GAME OVER!'}
               </h2>
               <p style={{ fontSize: '15px', color: '#e2e8f0', margin: '0 0 20px 0', fontWeight: 800 }}>
