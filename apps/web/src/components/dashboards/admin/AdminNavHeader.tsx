@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, ShieldCheck, BookOpenCheck, Gift, CreditCard, LifeBuoy, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, ShieldCheck, BookOpenCheck, Gift, CreditCard, LifeBuoy, Video, ArrowLeft } from 'lucide-react';
 
 const adminLinks = [
   { href: '/dash/admin', label: 'Command Center', icon: LayoutDashboard },
   { href: '/dash/admin/users', label: 'Users & Roles', icon: Users },
   { href: '/dash/admin/tutors', label: 'Tutors', icon: ShieldCheck },
   { href: '/dash/admin/academic', label: 'Academic', icon: BookOpenCheck },
+  { href: '/dash/admin/lessons', label: 'Lesson Oversight', icon: Video },
   { href: '/dash/admin/engagement', label: 'Engagement', icon: Gift },
   { href: '/dash/admin/finance', label: 'Finance', icon: CreditCard },
   { href: '/dash/admin/support', label: 'Support', icon: LifeBuoy },
