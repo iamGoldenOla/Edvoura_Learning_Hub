@@ -477,6 +477,7 @@ export default function MillionaireGame() {
   const [friendAdvice, setFriendAdvice] = useState('');
   const [audiencePoll, setAudiencePoll] = useState<number[]>([25, 25, 25, 25]);
   const [rotationAngle, setRotationAngle] = useState(0);
+  const [cameraAnglePreset, setCameraAnglePreset] = useState<'iso' | 'host' | 'contestant' | 'overhead'>('iso');
   const [copiedLink, setCopiedLink] = useState(false);
 
   const [isMuted, setIsMuted] = useState(false);
@@ -894,7 +895,7 @@ export default function MillionaireGame() {
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
               }}
             >
-              <BookOpen size={12} /> Rules & Guide
+              <BookOpen size={12} /> Rules &amp; Guide
             </button>
           </div>
         </div>
@@ -905,130 +906,204 @@ export default function MillionaireGame() {
           alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative'
         }}>
           
-          {/* Top Bar: 3D Camera & Timer */}
+          {/* Top Bar: Sophisticated 3D Studio Camera Suite & Timer */}
           <div style={{
-            display: 'flex', gap: '16px', alignItems: 'center', background: '#111827',
-            padding: '4px 16px', borderRadius: '10px', border: '1.5px solid #1e293b',
-            marginBottom: '6px', zIndex: 10
+            display: 'flex', gap: '12px', alignItems: 'center', background: '#111827',
+            padding: '6px 16px', borderRadius: '12px', border: '2px solid #1e293b',
+            marginBottom: '6px', zIndex: 10, flexWrap: 'wrap', justifyContent: 'between'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 950, color: '#fbbf24' }}>📹 Studio 3D Angle:</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '11px', fontWeight: 950, color: '#fbbf24' }}>📹 3D Studio Camera Angle:</span>
+              <button
+                onClick={() => { setCameraAnglePreset('iso'); setRotationAngle(0); }}
+                style={{
+                  padding: '3px 8px', borderRadius: '6px', border: '1.5px solid #000',
+                  background: cameraAnglePreset === 'iso' ? '#8b5cf6' : '#1e293b',
+                  color: '#ffffff', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                }}
+              >
+                🎬 Full Stage (Wide)
+              </button>
+              <button
+                onClick={() => { setCameraAnglePreset('host'); setRotationAngle(-25); }}
+                style={{
+                  padding: '3px 8px', borderRadius: '6px', border: '1.5px solid #000',
+                  background: cameraAnglePreset === 'host' ? '#8b5cf6' : '#1e293b',
+                  color: '#ffffff', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                }}
+              >
+                🎙️ Host Desk
+              </button>
+              <button
+                onClick={() => { setCameraAnglePreset('contestant'); setRotationAngle(25); }}
+                style={{
+                  padding: '3px 8px', borderRadius: '6px', border: '1.5px solid #000',
+                  background: cameraAnglePreset === 'contestant' ? '#8b5cf6' : '#1e293b',
+                  color: '#ffffff', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                }}
+              >
+                🎓 Contestant Laptop
+              </button>
+              <button
+                onClick={() => { setCameraAnglePreset('overhead'); setRotationAngle(0); }}
+                style={{
+                  padding: '3px 8px', borderRadius: '6px', border: '1.5px solid #000',
+                  background: cameraAnglePreset === 'overhead' ? '#8b5cf6' : '#1e293b',
+                  color: '#ffffff', fontSize: '10px', fontWeight: 900, cursor: 'pointer'
+                }}
+              >
+                ⚡ Overhead Suspense
+              </button>
+
               <input
                 type="range"
                 min="-45"
                 max="45"
                 value={rotationAngle}
                 onChange={e => setRotationAngle(Number(e.target.value))}
-                style={{ width: '100px', cursor: 'pointer', accentColor: ACCENT_COLOR }}
+                style={{ width: '80px', cursor: 'pointer', accentColor: ACCENT_COLOR }}
+                title="Pan Studio Camera Angle"
               />
-              <button
-                onClick={() => setRotationAngle(0)}
-                style={{ padding: '2px 6px', background: '#1e293b', border: '1px solid #334155', borderRadius: '6px', color: '#fff', fontSize: '9px', fontWeight: 800, cursor: 'pointer' }}
-              >
-                Center
-              </button>
             </div>
 
             {/* 30s High-Stakes Timer Badge */}
             <div style={{
               display: 'flex', alignItems: 'center', gap: '4px',
               background: timeLeft <= 10 ? '#ef4444' : '#1e293b',
-              color: '#fff', padding: '2px 8px', borderRadius: '6px', border: '1px solid #000',
+              color: '#fff', padding: '3px 10px', borderRadius: '8px', border: '1.5px solid #000',
               fontWeight: 950, fontSize: '11px', fontFamily: 'monospace'
             }}>
               <Clock size={12} /> {timeLeft}s
             </div>
           </div>
 
-          {/* 3D Studio Stage Viewport */}
+          {/* 3D TV Studio Stage Viewport */}
           <div style={{
-            width: '100%', height: 'calc(100% - 40px)',
-            background: isLightsDimmed ? '#02040a' : '#090d16',
+            width: '100%', height: 'calc(100% - 46px)',
+            background: isLightsDimmed ? '#02040a' : 'url("/images/millionaire/millionaire_3d_studio_bg.jpg") center/cover no-repeat #090d16',
             border: isLightsDimmed ? '3.5px solid #8b5cf6' : '3px solid #000',
-            boxShadow: isLightsDimmed ? 'inset 0 0 80px rgba(139, 92, 246, 0.4)' : 'none',
+            boxShadow: isLightsDimmed ? 'inset 0 0 100px rgba(139, 92, 246, 0.6)' : 'inset 0 0 50px rgba(0,0,0,0.8)',
             borderRadius: '16px', overflow: 'hidden', position: 'relative',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
             padding: '16px', boxSizing: 'border-box', perspective: '1200px',
             transition: 'all 0.5s ease'
           }}>
-            
-            {/* 3D Hot Seats Studio Environment */}
+
+            {/* Ambient Studio Lighting Overlay */}
             <div style={{
-              width: '100%', height: '55%', position: 'relative',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              position: 'absolute', inset: 0,
+              background: isLightsDimmed
+                ? 'radial-gradient(circle at center, rgba(11, 15, 25, 0.4) 0%, rgba(2, 4, 10, 0.95) 80%)'
+                : 'radial-gradient(circle at center, transparent 30%, rgba(9, 13, 22, 0.75) 100%)',
+              pointerEvents: 'none', transition: 'all 0.5s ease'
+            }} />
+            
+            {/* 3D Hot Seats Studio Environment with Laptops & Desks */}
+            <div style={{
+              width: '100%', height: '58%', position: 'relative',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               transformStyle: 'preserve-3d',
-              transform: `rotateX(28deg) rotateY(${rotationAngle}deg)`,
-              transition: 'transform 0.4s ease'
+              transform: cameraAnglePreset === 'overhead'
+                ? 'rotateX(55deg) scale(0.9)'
+                : cameraAnglePreset === 'host'
+                ? 'rotateX(20deg) rotateY(-22deg) scale(1.1) translateX(40px)'
+                : cameraAnglePreset === 'contestant'
+                ? 'rotateX(20deg) rotateY(22deg) scale(1.1) translateX(-40px)'
+                : `rotateX(26deg) rotateY(${rotationAngle}deg)`,
+              transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
             }}>
               {/* Studio Spotlight Beam (Focuses dramatically during blackout) */}
               <div style={{
-                position: 'absolute', top: 0,
-                width: isLightsDimmed ? '300px' : '220px',
-                height: isLightsDimmed ? '300px' : '220px',
+                position: 'absolute', top: '-20px',
+                width: isLightsDimmed ? '360px' : '260px',
+                height: isLightsDimmed ? '360px' : '260px',
                 background: isLightsDimmed
-                  ? 'radial-gradient(circle, rgba(251, 191, 36, 0.45) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 75%)'
-                  : 'radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%)',
+                  ? 'radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(139, 92, 246, 0.3) 50%, transparent 75%)'
+                  : 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)',
                 borderRadius: '50%', pointerEvents: 'none', transition: 'all 0.5s ease'
               }} />
 
-              {/* Hot Seat Podium */}
+              {/* Glowing Stage Ring Floor */}
               <div style={{
-                width: '290px', height: '120px', background: '#111827',
+                position: 'absolute', bottom: '10px', width: '380px', height: '140px',
+                borderRadius: '50%', border: '3px solid #8b5cf6',
+                boxShadow: '0 0 30px #8b5cf6, inset 0 0 30px #8b5cf6',
+                background: 'rgba(139, 92, 246, 0.1)', transform: 'rotateX(75deg)'
+              }} />
+
+              {/* Hot Seat Arena & Laptop Desks */}
+              <div style={{
+                width: '380px', height: '140px', background: 'rgba(17, 24, 39, 0.85)',
+                backdropFilter: 'blur(8px)',
                 border: '3.5px solid #8b5cf6', borderRadius: '24px',
-                boxShadow: '0 20px 40px rgba(139, 92, 246, 0.4), inset 0 0 15px rgba(139, 92, 246, 0.3)',
+                boxShadow: '0 20px 50px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.4)',
                 display: 'flex', alignItems: 'center', justifyContent: 'space-around',
-                padding: '12px', transform: 'translateZ(20px)'
+                padding: '12px 16px', transform: 'translateZ(30px)', position: 'relative', zIndex: 5
               }}>
-                {/* Host Seat */}
+                {/* 3D Host Desk with Laptop */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                   <div style={{
-                    width: '64px', height: '64px', borderRadius: '50%', background: '#8b5cf6',
-                    border: '3px solid #fbbf24', boxShadow: '0 0 15px rgba(251, 191, 36, 0.6)',
+                    width: '72px', height: '72px', borderRadius: '50%', background: '#8b5cf6',
+                    border: '3px solid #fbbf24', boxShadow: '0 0 20px rgba(251, 191, 36, 0.8)',
                     overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}>
-                    {/* 3D Rendered Studio TV Host */}
+                    {/* 3D Rendered Studio TV Host at Desk */}
                     <img
-                      src="/images/millionaire/millionaire_3d_host.jpg"
-                      alt="3D TV Game Show Host"
+                      src="/images/millionaire/millionaire_3d_host_desk.jpg"
+                      alt="3D TV Game Show Host at Desk"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_host.jpg';
                       }}
                     />
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#c084fc', textShadow: '0 2px 4px #000' }}>AI TV HOST</span>
+                  {/* Host Laptop Indicator */}
+                  <div style={{
+                    background: '#1e293b', border: '1.5px solid #fbbf24', borderRadius: '6px',
+                    padding: '2px 6px', fontSize: '9px', fontWeight: 950, color: '#fbbf24',
+                    display: 'flex', alignItems: 'center', gap: '3px', boxShadow: '0 0 8px rgba(251, 191, 36, 0.4)'
+                  }}>
+                    💻 Host Studio Laptop
+                  </div>
                 </div>
 
                 {/* Hot Seat Center Screen */}
                 <div style={{
                   background: 'linear-gradient(180deg, #1e1b4b 0%, #090d16 100%)',
-                  padding: '8px 16px', borderRadius: '12px', border: '2px solid #fbbf24',
-                  boxShadow: '0 0 20px rgba(251, 191, 36, 0.3)', textAlign: 'center'
+                  padding: '10px 18px', borderRadius: '14px', border: '2.5px solid #fbbf24',
+                  boxShadow: '0 0 25px rgba(251, 191, 36, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2)', textAlign: 'center'
                 }}>
-                  <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24', letterSpacing: '0.1em' }}>CURRENT PRIZE</div>
-                  <div style={{ fontSize: '16px', fontWeight: 950, color: '#ffffff', textShadow: '0 0 8px rgba(255,255,255,0.6)' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24', letterSpacing: '0.15em' }}>CURRENT PRIZE</div>
+                  <div style={{ fontSize: '18px', fontWeight: 950, color: '#ffffff', textShadow: '0 0 10px rgba(255,255,255,0.8)' }}>
                     {activeLadder[currentLevel - 1]}
                   </div>
                 </div>
 
-                {/* Player Seat */}
+                {/* 3D Contestant Hot Seat Desk with Laptop */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                   <div style={{
-                    width: '64px', height: '64px', borderRadius: '50%', background: '#22c55e',
-                    border: '3px solid #4ade80', boxShadow: '0 0 15px rgba(74, 222, 128, 0.6)',
+                    width: '72px', height: '72px', borderRadius: '50%', background: '#22c55e',
+                    border: '3px solid #4ade80', boxShadow: '0 0 20px rgba(74, 222, 128, 0.8)',
                     overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}>
-                    {/* 3D Student Contestant Avatar */}
+                    {/* 3D Student Contestant at Desk */}
                     <img
-                      src="/images/millionaire/millionaire_3d_contestant.jpg"
-                      alt="3D Student Contestant"
+                      src="/images/millionaire/millionaire_3d_player_desk.jpg"
+                      alt="3D Student Contestant at Desk"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
+                        (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_contestant.jpg';
                       }}
                     />
                   </div>
-                  <span style={{ fontSize: '10px', fontWeight: 950, color: '#4ade80', textShadow: '0 2px 4px #000' }}>3D SCHOLAR</span>
+                  {/* Player Laptop Indicator */}
+                  <div style={{
+                    background: '#1e293b', border: '1.5px solid #4ade80', borderRadius: '6px',
+                    padding: '2px 6px', fontSize: '9px', fontWeight: 950, color: '#4ade80',
+                    display: 'flex', alignItems: 'center', gap: '3px', boxShadow: '0 0 8px rgba(74, 222, 128, 0.4)'
+                  }}>
+                    💻 Contestant Laptop
+                  </div>
                 </div>
               </div>
             </div>
