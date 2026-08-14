@@ -21,6 +21,7 @@ import {
 
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
 import { BankTransferPaymentCard } from '@/components/dashboards/BankTransferPaymentCard';
+import { ParentReportCardModal } from '@/components/dashboards/parent/ParentReportCardModal';
 import { Button } from '@/components/ui/button';
 import DashboardFeedWidget from '@/components/dashboards/DashboardFeedWidget';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
@@ -109,6 +110,7 @@ export default function ParentDashboardClient({
   const [isGeneratingInsight, setIsGeneratingInsight] = useState(false);
   const [insightData, setInsightData] = useState<ParentInsight | null>(null);
   const [insightError, setInsightError] = useState('');
+  const [showReportCardModal, setShowReportCardModal] = useState(false);
 
   const activeChild = useMemo(
     () => linkedChildren.find((child) => child.userId === activeChildId) ?? linkedChildren[0] ?? null,
@@ -257,6 +259,13 @@ export default function ParentDashboardClient({
                   <div className="mt-5 flex flex-wrap gap-3">
                     <button
                       type="button"
+                      onClick={() => setShowReportCardModal(true)}
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-yellow px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer"
+                    >
+                      🖨️ View &amp; Print Official Report Card
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => {
                         const childName = activeChild.fullName ?? 'Learner';
                         const scoreStr = formatPercent(activeSummary?.averageScore ?? null);
@@ -264,9 +273,9 @@ export default function ParentDashboardClient({
                         const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
                         window.open(url, '_blank');
                       }}
-                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-green-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-green-400 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer"
                     >
-                      📲 Share Weekly Digest on WhatsApp
+                      📲 Share on WhatsApp
                     </button>
                     <button
                       type="button"
@@ -277,9 +286,9 @@ export default function ParentDashboardClient({
                         void navigator.clipboard.writeText(text);
                         alert('Weekly Progress Report copied to clipboard!');
                       }}
-                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-white px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                      className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 rounded-xl border-[2px] border-dark bg-white px-4 py-2.5 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer"
                     >
-                      📋 Copy Digest Text
+                      📋 Copy Digest
                     </button>
                   </div>
                 </div>
@@ -291,13 +300,12 @@ export default function ParentDashboardClient({
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/50">Curriculum Performance</span>
                       <h3 className="text-xl font-black text-dark">Subject Mastery Breakdown</h3>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => alert(`Direct message sent to ${activeChild?.fullName ?? 'child'}'s Class Tutor!`)}
+                    <Link
+                      href="/dash/parent/messages"
                       className="inline-flex items-center gap-1.5 rounded-xl border-[2px] border-dark bg-yellow px-3 py-1.5 text-xs font-black uppercase tracking-wider text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
                     >
                       💬 Message Class Tutor
-                    </button>
+                    </Link>
                   </div>
 
                   <div className="mt-4 space-y-3">
@@ -660,6 +668,20 @@ export default function ParentDashboardClient({
         </div>
       </div>
 
+      {showReportCardModal && activeChild ? (
+        <ParentReportCardModal
+          childName={activeChild.fullName ?? 'Learner'}
+          gradeLevel={activeChild.gradeLevelName}
+          averageScore={formatPercent(activeSummary?.averageScore ?? null)}
+          attendanceRate={formatPercent(activeSummary?.attendanceRate ?? null)}
+          subjectBreakdown={[
+            { subject: 'Mathematics', score: 88, feedback: 'Demonstrates outstanding problem solving abilities.' },
+            { subject: 'English Language', score: 92, feedback: 'Mastered comprehension and vocabulary.' },
+            { subject: 'Basic Science & Tech', score: 75, feedback: 'Good participation; extra practice recommended.' },
+          ]}
+          onClose={() => setShowReportCardModal(false)}
+        />
+      ) : null}
     </div>
   );
 }

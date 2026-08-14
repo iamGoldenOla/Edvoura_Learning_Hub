@@ -82,6 +82,8 @@ const attendanceColor = (status: string) => {
   }
 };
 
+import { ParentNavHeader } from '@/components/dashboards/parent/ParentNavHeader';
+
 export default function ParentMonitorClient({
   linkedChildren,
   lessons,
@@ -113,15 +115,11 @@ export default function ParentMonitorClient({
 
   return (
     <div className="mx-auto max-w-[1680px] space-y-10 p-6 sm:p-8 pb-24">
+      <ParentNavHeader
+        title="Lessons & Attendance"
+        subtitle="Monitor timetable, lesson participation, and attendance risk for each child."
+      />
       <div className="border-[4px] border-dark rounded-[28px] bg-white shadow-[10px_10px_0px_#060E1C] overflow-hidden">
-        <div className="p-8 border-b-[4px] border-dark bg-yellow/20">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
-            Lessons & Attendance
-          </h1>
-          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Monitor timetable, lesson participation, and attendance risk for each child.
-          </p>
-        </div>
         <div className="p-6 bg-off-white flex flex-wrap items-center gap-4">
           <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
             <Users className="h-4 w-4" />
