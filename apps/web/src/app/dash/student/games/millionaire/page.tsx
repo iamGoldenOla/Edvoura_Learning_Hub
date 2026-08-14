@@ -980,132 +980,148 @@ export default function MillionaireGame() {
           {/* 3D TV Studio Stage Viewport */}
           <div style={{
             width: '100%', height: 'calc(100% - 46px)',
-            background: isLightsDimmed ? '#02040a' : 'url("/images/millionaire/millionaire_3d_studio_bg.jpg") center/cover no-repeat #090d16',
+            background: isLightsDimmed
+              ? '#02040a'
+              : 'url("/images/millionaire/millionaire_tv_studio_real.jpg") center/cover no-repeat #090d16',
             border: isLightsDimmed ? '3.5px solid #8b5cf6' : '3px solid #000',
-            boxShadow: isLightsDimmed ? 'inset 0 0 100px rgba(139, 92, 246, 0.6)' : 'inset 0 0 50px rgba(0,0,0,0.8)',
+            boxShadow: isLightsDimmed ? 'inset 0 0 120px rgba(139, 92, 246, 0.7)' : 'inset 0 0 60px rgba(0,0,0,0.9)',
             borderRadius: '16px', overflow: 'hidden', position: 'relative',
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
-            padding: '16px', boxSizing: 'border-box', perspective: '1200px',
+            padding: '12px 16px', boxSizing: 'border-box', perspective: '1200px',
             transition: 'all 0.5s ease'
           }}>
 
-            {/* Ambient Studio Lighting Overlay */}
+            {/* Ambient Studio Blackout Overlay during answer lock */}
             <div style={{
               position: 'absolute', inset: 0,
               background: isLightsDimmed
-                ? 'radial-gradient(circle at center, rgba(11, 15, 25, 0.4) 0%, rgba(2, 4, 10, 0.95) 80%)'
-                : 'radial-gradient(circle at center, transparent 30%, rgba(9, 13, 22, 0.75) 100%)',
+                ? 'radial-gradient(circle at center, rgba(11, 15, 25, 0.3) 0%, rgba(2, 4, 10, 0.95) 85%)'
+                : 'radial-gradient(circle at center, transparent 40%, rgba(9, 13, 22, 0.6) 100%)',
               pointerEvents: 'none', transition: 'all 0.5s ease'
             }} />
-            
-            {/* 3D Hot Seats Studio Environment with Laptops & Desks */}
+
+            {/* 💡 Authentic Overhead Spotlights Beam */}
             <div style={{
-              width: '100%', height: '58%', position: 'relative',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              position: 'absolute', top: 0, left: '15%', width: '120px', height: '100%',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(56,189,248,0.08) 60%, transparent 100%)',
+              clipPath: 'polygon(30% 0, 70% 0, 100% 100%, 0% 100%)', pointerEvents: 'none', zIndex: 3
+            }} />
+            <div style={{
+              position: 'absolute', top: 0, right: '15%', width: '120px', height: '100%',
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(139,92,246,0.08) 60%, transparent 100%)',
+              clipPath: 'polygon(30% 0, 70% 0, 100% 100%, 0% 100%)', pointerEvents: 'none', zIndex: 3
+            }} />
+            
+            {/* 3D Authentic TV Studio Hot Seats Environment */}
+            <div style={{
+              width: '100%', height: '62%', position: 'relative',
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
               transformStyle: 'preserve-3d',
               transform: cameraAnglePreset === 'overhead'
-                ? 'rotateX(55deg) scale(0.9)'
+                ? 'rotateX(50deg) scale(0.95)'
                 : cameraAnglePreset === 'host'
-                ? 'rotateX(20deg) rotateY(-22deg) scale(1.1) translateX(40px)'
+                ? 'rotateX(12deg) rotateY(-24deg) scale(1.15) translateX(60px)'
                 : cameraAnglePreset === 'contestant'
-                ? 'rotateX(20deg) rotateY(22deg) scale(1.1) translateX(-40px)'
-                : `rotateX(26deg) rotateY(${rotationAngle}deg)`,
-              transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+                ? 'rotateX(12deg) rotateY(24deg) scale(1.15) translateX(-60px)'
+                : `rotateX(14deg) rotateY(${rotationAngle}deg)`,
+              transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)', zIndex: 5
             }}>
-              {/* Studio Spotlight Beam (Focuses dramatically during blackout) */}
+              
+              {/* 🎓 CONTESTANT HOT SEAT (Left Stool & Seated Profile Avatar) */}
               <div style={{
-                position: 'absolute', top: '-20px',
-                width: isLightsDimmed ? '360px' : '260px',
-                height: isLightsDimmed ? '360px' : '260px',
-                background: isLightsDimmed
-                  ? 'radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, rgba(139, 92, 246, 0.3) 50%, transparent 75%)'
-                  : 'radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%)',
-                borderRadius: '50%', pointerEvents: 'none', transition: 'all 0.5s ease'
-              }} />
-
-              {/* Glowing Stage Ring Floor */}
-              <div style={{
-                position: 'absolute', bottom: '10px', width: '380px', height: '140px',
-                borderRadius: '50%', border: '3px solid #8b5cf6',
-                boxShadow: '0 0 30px #8b5cf6, inset 0 0 30px #8b5cf6',
-                background: 'rgba(139, 92, 246, 0.1)', transform: 'rotateX(75deg)'
-              }} />
-
-              {/* Hot Seat Arena & Laptop Desks */}
-              <div style={{
-                width: '380px', height: '140px', background: 'rgba(17, 24, 39, 0.85)',
-                backdropFilter: 'blur(8px)',
-                border: '3.5px solid #8b5cf6', borderRadius: '24px',
-                boxShadow: '0 20px 50px rgba(139, 92, 246, 0.5), inset 0 0 20px rgba(139, 92, 246, 0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-around',
-                padding: '12px 16px', transform: 'translateZ(30px)', position: 'relative', zIndex: 5
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                position: 'absolute', left: '12%', bottom: '15px', zIndex: 10
               }}>
-                {/* 3D Host Desk with Laptop */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <div style={{
-                    width: '72px', height: '72px', borderRadius: '50%', background: '#8b5cf6',
-                    border: '3px solid #fbbf24', boxShadow: '0 0 20px rgba(251, 191, 36, 0.8)',
-                    overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    {/* 3D Rendered Studio TV Host at Desk */}
-                    <img
-                      src="/images/millionaire/millionaire_3d_host_desk.jpg"
-                      alt="3D TV Game Show Host at Desk"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_host.jpg';
-                      }}
-                    />
-                  </div>
-                  {/* Host Laptop Indicator */}
-                  <div style={{
-                    background: '#1e293b', border: '1.5px solid #fbbf24', borderRadius: '6px',
-                    padding: '2px 6px', fontSize: '9px', fontWeight: 950, color: '#fbbf24',
-                    display: 'flex', alignItems: 'center', gap: '3px', boxShadow: '0 0 8px rgba(251, 191, 36, 0.4)'
-                  }}>
-                    💻 Host Studio Laptop
-                  </div>
+                <div style={{
+                  position: 'relative', width: '130px', height: '170px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  {/* Seated Contestant Avatar Image */}
+                  <img
+                    src="/images/millionaire/millionaire_contestant_profile.jpg"
+                    alt="3D Contestant Seated Profile"
+                    style={{
+                      width: '100%', height: '100%', objectFit: 'contain',
+                      filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.8))'
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_contestant.jpg';
+                    }}
+                  />
                 </div>
+                {/* Badge Label */}
+                <div style={{
+                  background: 'rgba(15, 23, 42, 0.9)', border: '1.5px solid #38bdf8', borderRadius: '8px',
+                  padding: '3px 10px', fontSize: '10px', fontWeight: 950, color: '#38bdf8',
+                  boxShadow: '0 0 12px rgba(56, 189, 248, 0.5)', marginTop: '-8px'
+                }}>
+                  🎓 Contestant Hot Seat
+                </div>
+              </div>
 
-                {/* Hot Seat Center Screen */}
+              {/* ⚡ CENTER V-SHAPED BLUE NEON TERMINAL PODIUM */}
+              <div style={{
+                position: 'relative', width: '240px', height: '160px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                zIndex: 8, transform: 'translateZ(20px)'
+              }}>
+                {/* Blue Neon V-Shape Arc Base */}
+                <div style={{
+                  position: 'absolute', bottom: 0, width: '220px', height: '100px',
+                  borderBottom: '6px solid #38bdf8', borderLeft: '4px solid #38bdf8', borderRight: '4px solid #38bdf8',
+                  borderRadius: '0 0 50px 50px',
+                  boxShadow: '0 0 25px #38bdf8, inset 0 0 15px #38bdf8',
+                  background: 'linear-gradient(180deg, transparent 0%, rgba(56, 189, 248, 0.15) 100%)'
+                }} />
+
+                {/* Central Monitor Screen (Current Prize Display) */}
                 <div style={{
                   background: 'linear-gradient(180deg, #1e1b4b 0%, #090d16 100%)',
-                  padding: '10px 18px', borderRadius: '14px', border: '2.5px solid #fbbf24',
-                  boxShadow: '0 0 25px rgba(251, 191, 36, 0.4), inset 0 0 10px rgba(251, 191, 36, 0.2)', textAlign: 'center'
+                  padding: '10px 20px', borderRadius: '14px', border: '2.5px solid #fbbf24',
+                  boxShadow: '0 0 30px rgba(251, 191, 36, 0.6), inset 0 0 12px rgba(251, 191, 36, 0.3)',
+                  textAlign: 'center', zIndex: 12, marginBottom: '20px'
                 }}>
-                  <div style={{ fontSize: '9px', fontWeight: 900, color: '#fbbf24', letterSpacing: '0.15em' }}>CURRENT PRIZE</div>
-                  <div style={{ fontSize: '18px', fontWeight: 950, color: '#ffffff', textShadow: '0 0 10px rgba(255,255,255,0.8)' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 950, color: '#fbbf24', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                    CURRENT PRIZE
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 950, color: '#ffffff', textShadow: '0 0 12px rgba(255,255,255,0.9)' }}>
                     {activeLadder[currentLevel - 1]}
                   </div>
                 </div>
+              </div>
 
-                {/* 3D Contestant Hot Seat Desk with Laptop */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <div style={{
-                    width: '72px', height: '72px', borderRadius: '50%', background: '#22c55e',
-                    border: '3px solid #4ade80', boxShadow: '0 0 20px rgba(74, 222, 128, 0.8)',
-                    overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    {/* 3D Student Contestant at Desk */}
-                    <img
-                      src="/images/millionaire/millionaire_3d_player_desk.jpg"
-                      alt="3D Student Contestant at Desk"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_contestant.jpg';
-                      }}
-                    />
-                  </div>
-                  {/* Player Laptop Indicator */}
-                  <div style={{
-                    background: '#1e293b', border: '1.5px solid #4ade80', borderRadius: '6px',
-                    padding: '2px 6px', fontSize: '9px', fontWeight: 950, color: '#4ade80',
-                    display: 'flex', alignItems: 'center', gap: '3px', boxShadow: '0 0 8px rgba(74, 222, 128, 0.4)'
-                  }}>
-                    💻 Contestant Laptop
-                  </div>
+              {/* 🎙️ AI TV HOST HOT SEAT (Right Stool & Seated Profile Avatar) */}
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                position: 'absolute', right: '12%', bottom: '15px', zIndex: 10
+              }}>
+                <div style={{
+                  position: 'relative', width: '130px', height: '170px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  {/* Seated Host Avatar Image */}
+                  <img
+                    src="/images/millionaire/millionaire_host_profile.jpg"
+                    alt="3D Host Seated Profile"
+                    style={{
+                      width: '100%', height: '100%', objectFit: 'contain',
+                      filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.8))'
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_3d_host.jpg';
+                    }}
+                  />
+                </div>
+                {/* Badge Label */}
+                <div style={{
+                  background: 'rgba(15, 23, 42, 0.9)', border: '1.5px solid #fbbf24', borderRadius: '8px',
+                  padding: '3px 10px', fontSize: '10px', fontWeight: 950, color: '#fbbf24',
+                  boxShadow: '0 0 12px rgba(251, 191, 36, 0.5)', marginTop: '-8px'
+                }}>
+                  🎙️ AI TV Host
                 </div>
               </div>
+
             </div>
 
             {/* 3D Question Card & 4 Option Hexagon Buttons */}
