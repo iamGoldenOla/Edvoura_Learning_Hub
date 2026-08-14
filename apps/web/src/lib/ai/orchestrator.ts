@@ -274,13 +274,154 @@ function buildEmergencyEducationalContent(params: {
     };
   }
 
+  if (topicLower.includes('subtraction') || topicLower.includes('math') || subjectLower.includes('math')) {
+    return {
+      title: `${subject} ${grade}: ${baseTopic} Master Quiz`,
+      instructions: 'Solve each subtraction question carefully. Show your working and select or state the correct answer.',
+      questions: [
+        {
+          questionText: 'What is the result of 15 - 7?',
+          questionType: 'multiple_choice' as const,
+          options: ['6', '8', '9', '10'],
+          correctAnswer: '8',
+          explanation: 'Subtract 7 from 15: 15 - 7 = 8.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'In the equation 20 - 6 = 14, what is the starting number 20 called?',
+          questionType: 'multiple_choice' as const,
+          options: ['Minuend', 'Subtrahend', 'Difference', 'Product'],
+          correctAnswer: 'Minuend',
+          explanation: 'In subtraction, the starting number from which another is subtracted is called the minuend.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'What is the difference between 50 and 18?',
+          questionType: 'multiple_choice' as const,
+          options: ['30', '32', '34', '38'],
+          correctAnswer: '32',
+          explanation: '50 - 18 = 32.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'True or False: Subtraction is commutative, meaning a - b is always equal to b - a.',
+          questionType: 'true_false' as const,
+          correctAnswer: 'False',
+          explanation: 'Subtraction is not commutative. For example, 10 - 4 = 6, but 4 - 10 = -6.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'If Maya has 14 pencils and gives 5 pencils to her friend, how many pencils does Maya have left?',
+          questionType: 'multiple_choice' as const,
+          options: ['7', '8', '9', '10'],
+          correctAnswer: '9',
+          explanation: '14 - 5 = 9 pencils.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'Complete the missing number: 45 - ___ = 30.',
+          questionType: 'fill_in_blank' as const,
+          correctAnswer: '15',
+          explanation: 'Subtract 30 from 45: 45 - 30 = 15.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'What do we call the final result obtained after subtracting one number from another?',
+          questionType: 'short_answer' as const,
+          correctAnswer: 'Difference',
+          explanation: 'The result of a subtraction problem is known as the difference.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'Solve: 100 - 43.',
+          questionType: 'multiple_choice' as const,
+          options: ['53', '57', '63', '67'],
+          correctAnswer: '57',
+          explanation: '100 - 43 = 57.',
+          difficulty: 'hard' as const,
+        },
+        {
+          questionText: 'What is the value of any number n minus 0 (n - 0)?',
+          questionType: 'short_answer' as const,
+          correctAnswer: 'n',
+          explanation: 'Subtracting zero from any number leaves the number unchanged.',
+          difficulty: 'hard' as const,
+        },
+        {
+          questionText: 'Solve: 64 - 28.',
+          questionType: 'multiple_choice' as const,
+          options: ['34', '36', '38', '40'],
+          correctAnswer: '36',
+          explanation: '64 - 28 = 36.',
+          difficulty: 'hard' as const,
+        },
+      ],
+    };
+  }
+
   return {
     title: `${subject} ${grade}: ${baseTopic} Global Master Quiz`,
-    instructions: 'Select or write the best answer for each question.',
+    instructions: 'Answer each question carefully. Select or write the correct option.',
     questions: [
-      { questionText: `Define ${baseTopic} and state its core scientific or mathematical principles.`, questionType: 'short_answer' as const, correctAnswer: `A fundamental concept in ${subject} dealing with core principles.`, explanation: 'State exact definitions and properties clearly.', difficulty: 'easy' as const },
-      { questionText: `Which of the following best describes ${baseTopic}?`, questionType: 'multiple_choice' as const, options: [`Core concept in ${subject}`, 'Unrelated phenomenon', 'Irrelevant theory', 'Temporary placeholder'], correctAnswer: `Core concept in ${subject}`, explanation: 'The topic forms part of the core global curriculum.', difficulty: 'easy' as const },
-      { questionText: `True or False: ${baseTopic} has real-world applications across daily life and technology.`, questionType: 'true_false' as const, correctAnswer: 'True', explanation: 'Curriculum topics directly connect to observable real-world phenomena.', difficulty: 'easy' as const },
+      {
+        questionText: `Define ${baseTopic} and state its core scientific or mathematical principles.`,
+        questionType: 'short_answer' as const,
+        correctAnswer: `A fundamental concept in ${subject} dealing with core principles.`,
+        explanation: 'State exact definitions and properties clearly.',
+        difficulty: 'easy' as const,
+      },
+      {
+        questionText: `Which of the following best describes ${baseTopic}?`,
+        questionType: 'multiple_choice' as const,
+        options: [`Core concept in ${subject}`, 'Unrelated phenomenon', 'Irrelevant theory', 'Temporary placeholder'],
+        correctAnswer: `Core concept in ${subject}`,
+        explanation: 'The topic forms part of the core global curriculum.',
+        difficulty: 'easy' as const,
+      },
+      {
+        questionText: `True or False: ${baseTopic} has real-world applications across daily life and technology.`,
+        questionType: 'true_false' as const,
+        correctAnswer: 'True',
+        explanation: 'Curriculum topics directly connect to observable real-world phenomena.',
+        difficulty: 'easy' as const,
+      },
+      {
+        questionText: `What is a key step when solving problems on ${baseTopic}?`,
+        questionType: 'multiple_choice' as const,
+        options: ['Break the problem into smaller steps', 'Guess the answer immediately', 'Skip intermediate calculations', 'Ignore definitions'],
+        correctAnswer: 'Break the problem into smaller steps',
+        explanation: 'Structured step-by-step problem solving leads to accurate results.',
+        difficulty: 'medium' as const,
+      },
+      {
+        questionText: `Complete: Learning ${baseTopic} helps students build ____ skills.`,
+        questionType: 'fill_in_blank' as const,
+        correctAnswer: 'critical thinking',
+        explanation: 'Mastering core topics develops analytical and problem-solving abilities.',
+        difficulty: 'medium' as const,
+      },
+      {
+        questionText: `How can a student verify their answer when working on ${baseTopic}?`,
+        questionType: 'short_answer' as const,
+        correctAnswer: 'Re-check each step and substitute values back into the equation.',
+        explanation: 'Verification confirms solution accuracy.',
+        difficulty: 'medium' as const,
+      },
+      {
+        questionText: `Which action should be taken if a common mistake occurs in ${baseTopic}?`,
+        questionType: 'multiple_choice' as const,
+        options: ['Identify the root cause and practice similar examples', 'Hide the mistake', 'Give up on the topic', 'Memorize without understanding'],
+        correctAnswer: 'Identify the root cause and practice similar examples',
+        explanation: 'Targeted practice corrects errors effectively.',
+        difficulty: 'hard' as const,
+      },
+      {
+        questionText: `True or False: ${baseTopic} requires active practice to achieve mastery.`,
+        questionType: 'true_false' as const,
+        correctAnswer: 'True',
+        explanation: 'Consistent effort and practice lead to long-term mastery.',
+        difficulty: 'hard' as const,
+      },
     ],
   };
 }
