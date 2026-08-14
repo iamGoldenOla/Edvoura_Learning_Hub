@@ -1103,14 +1103,13 @@ export default function MillionaireGame() {
                     alt="3D Contestant Seated at Laptop Desk Cutout"
                     style={{
                       width: '100%', height: '100%', objectFit: 'contain',
-                      mixBlendMode: 'screen',
-                      filter: 'drop-shadow(0 0 20px rgba(56, 189, 248, 0.5))',
+                      mixBlendMode: 'multiply',
+                      filter: 'contrast(1.15) brightness(1.1) drop-shadow(0 0 20px rgba(56, 189, 248, 0.6))',
                       backgroundColor: 'transparent'
                     }}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = '/images/millionaire/millionaire_contestant_profile.jpg';
-                      (e.target as HTMLImageElement).style.mixBlendMode = 'screen';
-                      (e.target as HTMLImageElement).style.backgroundColor = '#000000';
+                      (e.target as HTMLImageElement).style.mixBlendMode = 'multiply';
                     }}
                   />
                 </div>
