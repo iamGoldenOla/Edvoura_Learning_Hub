@@ -65,10 +65,12 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
     return { error: 'Full name, email and password are required' }
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.edvouralearninghub.com'
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: `${siteUrl}/addy`,
       data: {
         full_name: fullName,
         role: 'admin',
@@ -82,9 +84,6 @@ export async function adminSignUp(_: FormState, formData: FormData): Promise<For
       if (!signInRes.error) {
         redirect('/addy');
       }
-      return {
-        error: 'Supabase Email Auth Notice: "Confirm email" is currently enabled in your Supabase Auth project, but custom SMTP is not set up. Please go to Supabase Dashboard -> Authentication -> Email -> Toggle OFF "Confirm email" for instant account creation.',
-      };
     }
     return { error: error.message }
   }
