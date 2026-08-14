@@ -175,27 +175,13 @@ export function PracticeQuizClient({
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-            <select
-              value={selectedGradeCode}
-              onChange={(e) => setSelectedGradeCode(e.target.value)}
-              className="px-4 py-3 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] outline-none cursor-pointer text-dark"
-            >
-              <option value="grade_1">Primary 1 (Grade 1)</option>
-              <option value="grade_2">Primary 2 (Grade 2)</option>
-              <option value="grade_3">Primary 3 (Grade 3)</option>
-              <option value="grade_4">Primary 4 (Grade 4)</option>
-              <option value="grade_5">Primary 5 (Grade 5)</option>
-              <option value="grade_6">Primary 6 (Grade 6)</option>
-              <option value="grade_7">JSS 1 (Grade 7)</option>
-              <option value="grade_8">JSS 2 (Grade 8)</option>
-              <option value="grade_9">JSS 3 (Grade 9)</option>
-              <option value="grade_10">SS 1 (Grade 10)</option>
-              <option value="grade_11">SS 2 (Grade 11)</option>
-              <option value="grade_12">SS 3 (Grade 12)</option>
-            </select>
+            <div className="px-4 py-3 rounded-xl border-[3px] border-dark bg-white font-black text-xs uppercase shadow-[3px_3px_0px_#060E1C] text-dark flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{studentGradeName} Enrolled</span>
+            </div>
 
             <Button
-              onClick={() => startCurriculumQuiz(selectedGradeCode)}
+              onClick={() => startCurriculumQuiz(studentGradeCode)}
               className="border-[3px] border-dark bg-yellow hover:bg-yellow-light text-dark font-black px-6 py-3 text-sm rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none h-auto flex items-center justify-center gap-2"
             >
               Take Retention Test <Play className="h-4 w-4" />
