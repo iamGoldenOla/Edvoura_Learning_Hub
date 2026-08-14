@@ -25,6 +25,11 @@ export const metadata: Metadata = {
   title: "Edvoura | Premium K-12 Online Tutoring Hub — Nigeria",
   description:
     "Edvoura connects K-12 students across Nigeria with expert tutors for live sessions via Google Meet. Interactive quizzes, assignments, progress tracking, and parent dashboards — all in one platform. Learn. Grow. Excel.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   keywords: [
     "online tutoring Nigeria",
     "K-12 learning platform",
