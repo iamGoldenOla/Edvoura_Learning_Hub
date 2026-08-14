@@ -359,6 +359,177 @@ function buildEmergencyEducationalContent(params: {
     };
   }
 
+  if (subjectLower.includes('science') || topicLower.includes('air') || topicLower.includes('biology') || topicLower.includes('physics') || topicLower.includes('chemistry')) {
+    return {
+      title: `${subject} ${grade}: ${baseTopic} Science Challenge Quiz`,
+      instructions: 'Answer each scientific question carefully. Select or write the correct option.',
+      questions: [
+        {
+          questionText: 'What is the approximate percentage of Oxygen in Earth\'s atmosphere?',
+          questionType: 'multiple_choice' as const,
+          options: ['78%', '21%', '0.04%', '1%'],
+          correctAnswer: '21%',
+          explanation: 'Oxygen makes up approximately 21% of atmospheric gas composition.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'Which gas is the most abundant in Earth\'s atmosphere?',
+          questionType: 'multiple_choice' as const,
+          options: ['Nitrogen', 'Oxygen', 'Carbon Dioxide', 'Hydrogen'],
+          correctAnswer: 'Nitrogen',
+          explanation: 'Nitrogen accounts for nearly 78% of the air surrounding Earth.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'What property of air is proven when blowing air into a rubber balloon makes it expand?',
+          questionType: 'multiple_choice' as const,
+          options: ['Air has weight', 'Air occupies space', 'Air is cold', 'Air is invisible'],
+          correctAnswer: 'Air occupies space',
+          explanation: 'Air molecules take up interior space, pushing out the balloon walls.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'True or False: Combustion (burning) requires oxygen gas from the air.',
+          questionType: 'true_false' as const,
+          correctAnswer: 'True',
+          explanation: 'Fire cannot burn without oxygen gas.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'Which gas do green plants absorb from the air during photosynthesis?',
+          questionType: 'multiple_choice' as const,
+          options: ['Carbon Dioxide', 'Oxygen', 'Helium', 'Argon'],
+          correctAnswer: 'Carbon Dioxide',
+          explanation: 'Plants combine carbon dioxide and sunlight to manufacture food.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'What scientific instrument is used to measure atmospheric air pressure?',
+          questionType: 'multiple_choice' as const,
+          options: ['Barometer', 'Thermometer', 'Anemometer', 'Hygrometer'],
+          correctAnswer: 'Barometer',
+          explanation: 'A barometer measures atmospheric pressure.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'What biological process describes living organisms taking in oxygen to break down food and release energy?',
+          questionType: 'short_answer' as const,
+          correctAnswer: 'Respiration',
+          explanation: 'Respiration is the cellular process of releasing energy using oxygen.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'True or False: Air exerts pressure equally in all directions.',
+          questionType: 'true_false' as const,
+          correctAnswer: 'True',
+          explanation: 'Atmospheric pressure pushes on surfaces in all directions.',
+          difficulty: 'hard' as const,
+        },
+        {
+          questionText: 'Which component of air is responsible for forming clouds and precipitation?',
+          questionType: 'multiple_choice' as const,
+          options: ['Water Vapor', 'Nitrogen', 'Methane', 'Neon'],
+          correctAnswer: 'Water Vapor',
+          explanation: 'Water vapor condenses in the upper atmosphere to form clouds.',
+          difficulty: 'hard' as const,
+        },
+        {
+          questionText: 'Explain why covering a burning candle with a sealed glass jar puts out the flame.',
+          questionType: 'short_answer' as const,
+          correctAnswer: 'The flame consumes trapped oxygen. Once oxygen is exhausted, combustion stops.',
+          explanation: 'Fire requires continuous oxygen supply to sustain burning.',
+          difficulty: 'hard' as const,
+        },
+      ],
+    };
+  }
+
+  if (subjectLower.includes('english') || subjectLower.includes('language') || subjectLower.includes('literacy') || subjectLower.includes('reading')) {
+    return {
+      title: `${subject} ${grade}: ${baseTopic} English Language Quiz`,
+      instructions: 'Read each grammar and vocabulary question carefully. Choose the correct answer.',
+      questions: [
+        {
+          questionText: 'What part of speech describes or modifies a noun (e.g., "majestic lion")?',
+          questionType: 'multiple_choice' as const,
+          options: ['Adjective', 'Verb', 'Adverb', 'Conjunction'],
+          correctAnswer: 'Adjective',
+          explanation: 'An adjective describes or gives more information about a noun.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'Identify the verb in the sentence: "The students completed the quiz enthusiastically."',
+          questionType: 'multiple_choice' as const,
+          options: ['students', 'completed', 'quiz', 'enthusiastically'],
+          correctAnswer: 'completed',
+          explanation: '"Completed" is the action verb performed by the subject.',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'What figure of speech compares two different things using "like" or "as"?',
+          questionType: 'multiple_choice' as const,
+          options: ['Simile', 'Metaphor', 'Personification', 'Alliteration'],
+          correctAnswer: 'Simile',
+          explanation: 'A simile compares two things using "like" or "as" (e.g., "brave as a lion").',
+          difficulty: 'easy' as const,
+        },
+        {
+          questionText: 'True or False: A synonym is a word that means the exact opposite of another word.',
+          questionType: 'true_false' as const,
+          correctAnswer: 'False',
+          explanation: 'An antonym means the opposite; a synonym has a similar or identical meaning.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'What is the antonym of the word "courageous"?',
+          questionType: 'multiple_choice' as const,
+          options: ['Brave', 'Fearful', 'Strong', 'Wise'],
+          correctAnswer: 'Fearful',
+          explanation: '"Fearful" or "cowardly" is the opposite of "courageous".',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'Which word is spelled correctly?',
+          questionType: 'multiple_choice' as const,
+          options: ['Receive', 'Recieve', 'Receeve', 'Recive'],
+          correctAnswer: 'Receive',
+          explanation: 'Remember the rule: "i before e except after c" — Receive.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'What is the plural form of the noun "child"?',
+          questionType: 'short_answer' as const,
+          correctAnswer: 'Children',
+          explanation: 'The irregular plural of child is children.',
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: 'True or False: A proper noun must always begin with a capital letter.',
+          questionType: 'true_false' as const,
+          correctAnswer: 'True',
+          explanation: 'Names of specific people, places, and organizations are proper nouns and must be capitalized.',
+          difficulty: 'hard' as const,
+        },
+        {
+          questionText: 'What punctuation mark belongs at the end of an interrogative sentence?',
+          questionType: 'multiple_choice' as const,
+          options: ['Question Mark (?)', 'Period (.)', 'Exclamation Point (!)', 'Comma (,)'],
+          correctAnswer: 'Question Mark (?)',
+          explanation: 'An interrogative sentence asks a question and ends with a question mark.',
+          difficulty: 'hard' as const,
+        },
+        {
+          questionText: 'Complete the sentence with the correct pronoun: "Zuri and ___ walked to the library."',
+          questionType: 'multiple_choice' as const,
+          options: ['I', 'me', 'him', 'us'],
+          correctAnswer: 'I',
+          explanation: '"Zuri and I" is the compound subject of the verb "walked".',
+          difficulty: 'hard' as const,
+        },
+      ],
+    };
+  }
+
   return {
     title: `${subject} ${grade}: ${baseTopic} Global Master Quiz`,
     instructions: 'Answer each question carefully. Select or write the correct option.',
