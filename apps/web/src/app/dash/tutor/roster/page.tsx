@@ -226,14 +226,14 @@ export default async function TutorRosterPage(props: {
               <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-amber-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
                 <h3 className="text-lg sm:text-xl font-black text-dark flex items-center gap-2 mb-4 break-words">
                   <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-dark shrink-0" />
-                  Enrollment Notes
+                  Roster Overview
                 </h3>
                 <div className="space-y-3 text-xs sm:text-sm font-semibold text-dark/80 min-w-0">
                   <div className="rounded-xl border-[2px] border-dark bg-white p-3 sm:p-4 shadow-[2px_2px_0px_#060E1C] break-words">
-                    This roster now reflects real Supabase enrollments, not a hardcoded list.
+                    This roster displays all active students currently assigned to your classes. Student profiles and class rosters update automatically in real time.
                   </div>
                   <div className="rounded-xl border-[2px] border-dark bg-white p-3 sm:p-4 shadow-[2px_2px_0px_#060E1C] break-words">
-                    Tutor-created assignments auto-create classes when needed and enroll students with the matching grade profile.
+                    New assignments automatically align with students in the matching grade level for seamless curriculum delivery.
                   </div>
                 </div>
               </div>

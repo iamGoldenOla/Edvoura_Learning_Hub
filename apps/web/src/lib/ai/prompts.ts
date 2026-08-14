@@ -78,16 +78,23 @@ export function buildGenerationPrompt(params: {
 
   switch (contentType) {
     case 'lesson_note':
-      return `Generate a highly comprehensive lesson note for ${gradeLevel} ${subject} on the topic "${topic}".
+      return `Generate a highly comprehensive, expert-level lesson note for ${gradeLevel} ${subject} on the topic "${topic}".
 Curriculum system: ${curriculumSystem}.
 Difficulty level: ${difficultyLabel} (${difficulty ?? 5}/10).
 ${objectivesBlock}
 ${studentBlock}
 
+DIRECT PEDAGOGICAL DIRECTIVES:
+- DIVE DIRECTLY INTO SUBJECT FACTS: Provide exact scientific facts, formulas, principles, categories, and real-life mechanics of "${topic}". DO NOT write generic meta-talk or fictional stories about students studying in class.
+- IF SCIENCE / BASIC SCIENCE: Explain composition, properties, key components, physical/biological laws, respiration/combustion/chemical effects, and simple hands-on observations or experiments.
+- IF MATHEMATICS: Explain step-by-step mathematical reasoning, rules, formulas, worked calculations, and common traps.
+- IF LANGUAGES: Explain grammar rules, stylistic devices, vocabulary, and contextual usage.
+- IF SOCIAL/CIVIC/GEOGRAPHY: Explain factual structures, historical facts, civic duties, or geographical phenomena.
+
 The lesson note MUST include:
 - topic: the exact topic title
 - objectives: at least 3 clear, measurable learning objectives
-- explanation: a thorough, detailed explanation (${lengthDesc}). Write as if you are the best teacher in Nigeria explaining this to a ${gradeLevel} student. Use analogies, real-life Nigerian examples, and step-by-step breakdowns.
+- explanation: a thorough, detailed explanation (${lengthDesc}). Write as if you are a master educator explaining this to a ${gradeLevel} student. Use clear analogies, step-by-step breakdowns, and concrete real-world examples.
 - examples: at least 2 worked examples with detailed context and solution
 - practiceQuestions: at least 5 questions with answers, covering easy/medium/hard difficulties
 - teacherNotes: optional tips for the tutor delivering this lesson
@@ -95,17 +102,20 @@ The lesson note MUST include:
 Output only valid JSON matching this structure.`;
 
     case 'story':
-      return `Write a captivating, age-appropriate story for ${gradeLevel} students.
+      return `Write a captivating, creative narrative story / fable for ${gradeLevel} students.
 Theme/Topic: "${topic}"
 Subject connection: ${subject}
 ${studentBlock}
 
-The story MUST:
-- Be set in an African context (Nigerian town, school, market, family compound, etc.)
-- Have vivid characters with African names
-- Teach a clear moral lesson
-- Be rich, immersive, and ${lengthDesc}
-- Include at least 3 vocabulary words with meanings
+CRITICAL STORYTELLING INSTRUCTIONS:
+- You are writing a creative, imaginative, narrative story / fable / tale about "${topic}".
+- DO NOT treat "${topic}" as an academic school subject or write a meta-story about a student studying in a classroom! Write an actual engaging story where "${topic}" is the main character, plot, or central element!
+- For example, if the topic is "The Great Lion", write a story about a majestic, brave lion in a sun-drenched savanna, his adventures, his kingdom, and the lessons he learns.
+- Set the story in a rich, vivid setting (African savanna, forest, ancient kingdom, or village setting).
+- Give characters vivid names and distinct personalities.
+- Have a clear narrative arc with a beginning, middle/conflict, and satisfying resolution.
+- Teach a clear moral lesson embedded naturally in the tale.
+- Include at least 3 vocabulary words from the story with their definitions.
 
 Output only valid JSON with: title, moralLesson, ageSuitability, content, vocabulary[{word, meaning}]`;
 

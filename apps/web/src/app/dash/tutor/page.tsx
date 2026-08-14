@@ -85,13 +85,19 @@ export default async function TutorDashboard() {
 
             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto mt-4 sm:mt-0">
               <Link href="/dash/tutor/schedule" className="w-full sm:flex-1 lg:flex-none">
-                <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <CalendarClock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Open Scheduler
                 </button>
               </Link>
+              <Link href="/dash/tutor/roster" className="w-full sm:flex-1 lg:flex-none">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-blue-200 border-[3px] border-dark text-dark hover:bg-blue-300 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
+                  <Users className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  Student Roster
+                </button>
+              </Link>
               <Link href="/dash/tutor/builder" className="w-full sm:flex-1 lg:flex-none">
-                <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark hover:bg-slate-50 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <Plus className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   New Assignment
                 </button>

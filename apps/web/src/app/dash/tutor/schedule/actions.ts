@@ -170,8 +170,14 @@ export async function createTutorLiveSlot(formData: FormData) {
         currentJoinUrl = meetUrls.joinUrl;
         currentHostUrl = meetUrls.hostUrl;
       } catch (err: any) {
-        console.error('Failed to auto-generate Google Meet link:', err);
+        console.error('Failed to auto-generate Google Meet link via API:', err);
       }
+    }
+
+    if (!currentJoinUrl) {
+      const uniqueCode = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
+      currentJoinUrl = `https://meet.google.com/lookup/edvoura-${uniqueCode}`;
+      currentHostUrl = currentJoinUrl;
     }
 
     const { error } = await supabase.rpc('create_tutor_live_slot', {

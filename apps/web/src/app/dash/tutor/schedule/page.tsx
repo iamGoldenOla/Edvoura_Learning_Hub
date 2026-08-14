@@ -114,11 +114,11 @@ export default async function TutorSchedulePage(props: {
             </div>
 
             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 w-full lg:w-auto">
-              <div className="w-full sm:flex-1 lg:flex-none">
-                <button disabled className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] text-sm sm:text-base inline-flex items-center justify-center opacity-60 cursor-not-allowed">
-                  <Clock className="mr-2 w-4 h-4" /> Sync Calendar <span className="ml-1 text-[9px] uppercase tracking-widest text-dark/50">(Soon)</span>
+              <Link href="/dash/tutor/roster" className="w-full sm:flex-1 lg:flex-none">
+                <button className="w-full h-12 sm:h-14 px-4 sm:px-6 bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
+                  <Users className="mr-2 w-4 h-4 text-dark" /> Student Roster
                 </button>
-              </div>
+              </Link>
               <a href="#scheduler" className="w-full sm:flex-1 lg:flex-none">
                 <button className="w-full h-12 sm:h-14 px-4 sm:px-8 bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 text-sm sm:text-base inline-flex items-center justify-center">
                   <Plus className="mr-2 w-5 h-5" /> New Session
@@ -387,18 +387,17 @@ export default async function TutorSchedulePage(props: {
 
                   <div className="space-y-2">
                     <label htmlFor="joinUrl" className="text-[11px] font-black uppercase tracking-widest text-dark/60 break-words">
-                      Google Meet Link <span className="text-rose-500 font-bold">(Required)</span>
+                      Google Meet Link <span className="text-emerald-600 font-bold">(Optional — Auto-generated if left blank)</span>
                     </label>
                     <input
                       id="joinUrl"
                       name="joinUrl"
                       type="url"
-                      required
-                      placeholder="e.g. https://meet.google.com/abc-defg-hij"
-                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/30"
+                      placeholder="Paste link OR leave blank to auto-generate unique Meet link"
+                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/40"
                     />
                     <p className="text-[10px] sm:text-[11px] text-dark/60 font-semibold leading-snug break-words">
-                      Go to <a href="https://meet.google.com" target="_blank" rel="noreferrer" className="underline text-blue-600">meet.google.com</a> → New Meeting → Create for later → paste link here.
+                      Leave empty to automatically generate a unique Google Meet link for this session, or paste a custom link from <a href="https://meet.google.com" target="_blank" rel="noreferrer" className="underline text-blue-600">meet.google.com</a>.
                     </p>
                   </div>
 

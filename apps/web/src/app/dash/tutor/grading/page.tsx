@@ -162,9 +162,9 @@ export default function TutorGradingPage() {
                 </Button>
               </Link>
               <Link href="/dash/tutor/roster" className="w-full sm:w-auto">
-                <Button className="w-full sm:w-auto bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto text-xs sm:text-sm">
+                <button className="w-full sm:w-auto bg-white border-[3px] border-dark text-dark font-black hover:bg-slate-50 rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 text-xs sm:text-sm flex items-center justify-center">
                   Student Roster
-                </Button>
+                </button>
               </Link>
             </div>
           </div>

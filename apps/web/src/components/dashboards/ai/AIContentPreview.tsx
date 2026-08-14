@@ -208,6 +208,60 @@ function renderLessonStages(stages: unknown) {
   );
 }
 
+function renderStory(record: Record<string, unknown>) {
+  const storyText = typeof record.content === "string" ? record.content : typeof record.story === "string" ? record.story : "";
+  const moralLesson = typeof record.moralLesson === "string" ? record.moralLesson : typeof record.moral_lesson === "string" ? record.moral_lesson : "";
+  const ageSuitability = typeof record.ageSuitability === "string" ? record.ageSuitability : typeof record.age_suitability === "string" ? record.age_suitability : "";
+  const vocabulary = Array.isArray(record.vocabulary) ? record.vocabulary : [];
+
+  if (!storyText && !moralLesson) return null;
+
+  return (
+    <div className="space-y-5">
+      {ageSuitability ? (
+        <div className="inline-flex items-center gap-2 rounded-lg border-[1.5px] border-dark bg-yellow/30 px-3 py-1 text-xs font-black text-dark">
+          <span>Target Ages:</span> {ageSuitability}
+        </div>
+      ) : null}
+
+      {moralLesson ? (
+        <div className="rounded-xl border-[2px] border-dark bg-amber-100 p-4 shadow-[2px_2px_0px_#060E1C]">
+          <p className="mb-1 text-xs font-black uppercase tracking-widest text-dark/70">🌟 Moral Lesson</p>
+          <p className="text-sm font-black text-dark">{moralLesson}</p>
+        </div>
+      ) : null}
+
+      {storyText ? (
+        <div className="rounded-xl border-[2px] border-dark bg-amber-50/40 p-5 shadow-[2px_2px_0px_#060E1C]">
+          <p className="mb-3 text-xs font-black uppercase tracking-widest text-dark/60">📖 Story Narrative</p>
+          <div className="space-y-4 text-sm font-semibold leading-7 text-dark/90 whitespace-pre-line">
+            {storyText}
+          </div>
+        </div>
+      ) : null}
+
+      {vocabulary.length > 0 ? (
+        <div className="rounded-xl border-[2px] border-dark bg-white p-4">
+          <p className="mb-3 text-xs font-black uppercase tracking-widest text-dark/60">📚 Vocabulary Words & Meanings</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {vocabulary.map((item, idx) => {
+              const row = isRecord(item) ? item : {};
+              const word = String(row.word ?? `Word ${idx + 1}`);
+              const meaning = String(row.meaning ?? row.definition ?? "");
+              return (
+                <div key={`voc-${idx}`} className="rounded-lg border-[1.5px] border-dark bg-off-white p-3">
+                  <span className="text-xs font-black text-dark">{word}</span>
+                  {meaning ? <p className="mt-1 text-xs font-semibold text-dark/70">{meaning}</p> : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function AIContentPreview({
   content,
   title = "Generated Content Preview",
@@ -219,7 +273,8 @@ export default function AIContentPreview({
 
   // Detect content type
   const isLessonPlan = record && Array.isArray(record.lesson_stages);
-  const isLessonNote = record && typeof record.explanation === "string";
+  const isLessonNote = record && typeof record.explanation === "string" && !record.moralLesson;
+  const isStory = record && Boolean(record.content || record.moralLesson || record.story || record.vocabulary);
 
   return (
     <section className="rounded-2xl border-[3px] border-dark bg-white p-5 shadow-[4px_4px_0px_#060E1C]">
@@ -227,7 +282,11 @@ export default function AIContentPreview({
         <p className="text-[10px] font-black uppercase tracking-[0.16em] text-dark/60">
           {title}
         </p>
-        {isLessonPlan ? (
+        {isStory ? (
+          <span className="rounded-lg border-[1.5px] border-dark bg-amber-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-amber-900">
+            Educational Story
+          </span>
+        ) : isLessonPlan ? (
           <span className="rounded-lg border-[1.5px] border-dark bg-blue-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-blue-900">
             Teacher Lesson Plan
           </span>
@@ -249,6 +308,9 @@ export default function AIContentPreview({
               ) : null}
             </div>
           ) : null}
+
+          {/* Story View */}
+          {isStory ? renderStory(record) : null}
 
           {/* Lesson Plan: Objectives */}
           {record.lesson_objectives ? (
@@ -275,7 +337,7 @@ export default function AIContentPreview({
           ) : null}
 
           {/* Lesson Note: Explanation */}
-          {typeof record.explanation === "string" ? (
+          {!isStory && typeof record.explanation === "string" ? (
             <div className="rounded-xl border-[2px] border-dark bg-off-white p-4">
               <p className="mb-2 text-xs font-black uppercase tracking-widest text-dark/60">📖 Explanation</p>
               <p className="text-sm font-semibold leading-7 text-dark/80 whitespace-pre-line">{record.explanation}</p>
@@ -399,21 +461,11 @@ export default function AIContentPreview({
               </div>
             </div>
           ) : null}
-
-          {/* Raw JSON collapse */}
-          <details className="rounded-xl border-[2px] border-dark bg-slate-50 p-4">
-            <summary className="cursor-pointer text-xs font-black uppercase tracking-widest text-dark/70">
-              Raw JSON
-            </summary>
-            <pre className="mt-3 max-h-[420px] overflow-auto whitespace-pre-wrap text-[11px] font-mono">
-              {JSON.stringify(content, null, 2)}
-            </pre>
-          </details>
         </div>
       ) : (
-        <pre className="max-h-[420px] overflow-auto whitespace-pre-wrap rounded-xl border-[2px] border-dark bg-slate-50 p-4 text-[11px] font-mono">
-          {JSON.stringify(content, null, 2)}
-        </pre>
+        <div className="py-8 text-center text-xs font-bold text-dark/60">
+          Draft content generated successfully.
+        </div>
       )}
     </section>
   );

@@ -407,7 +407,7 @@ function TutorSidebarNav() {
     { href: '/dash/tutor/builder?tool=assignment', label: 'Assignments', icon: NotebookPen },
     { href: '/dash/tutor/builder?tool=quiz', label: 'Quizzes & Challenges', icon: Star },
     { href: '/dash/tutor/grading', label: 'Grading Queue', icon: ClipboardCheck },
-    { href: '/dash/tutor/roster', label: 'Engagement Insights', icon: TrendingUp },
+    { href: '/dash/tutor/roster?view=insights', label: 'Engagement Insights', icon: TrendingUp },
     { href: '/dash/tutor/messages', label: 'Messages', icon: MessageCircle },
     { href: '/dash/tutor/builder?tool=resources', label: 'Resources', icon: BookOpen },
     { href: '/dash/tutor/earnings', label: 'Invoice and Payment', icon: DollarSign },
@@ -415,7 +415,7 @@ function TutorSidebarNav() {
   ];
   const toolsNav = [
     { href: '/dash/tutor/schedule', label: 'Start or Join Lesson', icon: PanelTop },
-    { href: '/dash/tutor/roster', label: 'Attendance and Performance', icon: BookCheck },
+    { href: '/dash/tutor/roster?view=attendance', label: 'Attendance and Performance', icon: BookCheck },
     { href: '/dash/tutor/ai', label: 'Edvoura AI Generator', icon: Sparkles },
   ];
   const isActive = (href: string) => {
