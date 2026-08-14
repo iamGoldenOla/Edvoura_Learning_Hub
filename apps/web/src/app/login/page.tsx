@@ -15,6 +15,8 @@ function LoginPageContent() {
   const [state, formAction, isPending] = useActionState(login, null);
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [isGooglePending, setIsGooglePending] = useState(false);
+  const [emailVal, setEmailVal] = useState('');
+  const [passVal, setPassVal] = useState('');
 
   const handleGoogleSignIn = async () => {
     setGoogleError(null);
@@ -130,6 +132,45 @@ function LoginPageContent() {
             </div>
           ) : null}
 
+          {/* Quick Demo Credentials Assistant */}
+          <div className="mb-6 rounded-2xl border-[2px] border-dark bg-amber-50 p-4 shadow-[4px_4px_0px_#060E1C]">
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mb-2">⚡ Quick 1-Click Demo Accounts</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => { setEmailVal('admin@edvoura.com'); setPassVal('Admin123!'); }}
+                className="px-3 py-2 bg-purple-100 border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-purple-200 transition-all text-left shadow-[2px_2px_0px_#060E1C]"
+              >
+                <span className="block font-black">🛡️ Admin Portal</span>
+                <span className="text-[9px] font-bold text-dark/60">admin@edvoura.com</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmailVal('parent@edvoura.com'); setPassVal('Parent123!'); }}
+                className="px-3 py-2 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-yellow-light transition-all text-left shadow-[2px_2px_0px_#060E1C]"
+              >
+                <span className="block font-black">👨‍👩‍👧 Parent Portal</span>
+                <span className="text-[9px] font-bold text-dark/60">parent@edvoura.com</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmailVal('tutor@edvoura.com'); setPassVal('Tutor123!'); }}
+                className="px-3 py-2 bg-blue-100 border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-blue-200 transition-all text-left shadow-[2px_2px_0px_#060E1C]"
+              >
+                <span className="block font-black">👩‍🏫 Tutor Command</span>
+                <span className="text-[9px] font-bold text-dark/60">tutor@edvoura.com</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setEmailVal('student@edvoura.com'); setPassVal('Student123!'); }}
+                className="px-3 py-2 bg-emerald-100 border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-emerald-200 transition-all text-left shadow-[2px_2px_0px_#060E1C]"
+              >
+                <span className="block font-black">👨‍🎓 Student Overview</span>
+                <span className="text-[9px] font-bold text-dark/60">student@edvoura.com</span>
+              </button>
+            </div>
+          </div>
+
           <form action={formAction} className="space-y-5">
             <input type="hidden" name="next" value={next} />
             <div>
@@ -138,6 +179,8 @@ function LoginPageContent() {
                 name="email"
                 type="email"
                 required
+                value={emailVal}
+                onChange={(e) => setEmailVal(e.target.value)}
                 placeholder="you@example.com"
                 className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
               />
@@ -148,6 +191,8 @@ function LoginPageContent() {
                 name="password"
                 type="password"
                 required
+                value={passVal}
+                onChange={(e) => setPassVal(e.target.value)}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey"
               />
