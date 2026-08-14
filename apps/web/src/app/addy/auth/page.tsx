@@ -27,21 +27,7 @@ export default function AdminAuthPage() {
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Admin Portal</h1>
         <p className="mt-1 text-sm text-slate-600">Use this page for operations admin access.</p>
 
-        {/* 1-Click Preset Button */}
-        <div className="mt-4 p-3.5 bg-amber-50 border border-amber-300 rounded-xl">
-          <p className="text-[10px] font-black uppercase tracking-wider text-amber-900 mb-1.5">⚡ 1-Click Default Admin Credentials</p>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('signin');
-              setEmailVal('admin@edvoura.com');
-              setPassVal('Admin123!');
-            }}
-            className="w-full py-2 px-3 bg-yellow border-[2px] border-dark rounded-lg text-xs font-black text-dark hover:bg-yellow-light transition-all shadow-[2px_2px_0px_#060E1C] text-left"
-          >
-            🛡️ Fill Default Admin (`admin@edvoura.com` / `Admin123!`)
-          </button>
-        </div>
+
 
         <div className="mt-4 grid grid-cols-2 rounded-lg border border-slate-200 p-1 text-sm">
           <button

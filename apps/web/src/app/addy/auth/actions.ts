@@ -18,36 +18,12 @@ export async function adminSignIn(_: FormState, formData: FormData): Promise<For
 
   let { error } = await supabase.auth.signInWithPassword({ email, password })
 
-  if (error && (error.message.toLowerCase().includes('invalid login credentials') || error.message.toLowerCase().includes('user not found'))) {
-    if (email.trim().toLowerCase() === 'admin@edvoura.com') {
-      const signUpRes = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: 'System Administrator',
-            role: 'admin',
-          },
-        },
-      });
-
-      if (!signUpRes.error && signUpRes.data.user) {
-        await supabase.from('user_roles').insert({
-          user_id: signUpRes.data.user.id,
-          role: 'admin',
-        });
-        await supabase.from('admin_profiles').insert({
-          user_id: signUpRes.data.user.id,
-          full_name: 'System Administrator',
-          access_level: 'super_admin',
-        });
-        const retry = await supabase.auth.signInWithPassword({ email, password });
-        error = retry.error;
+  if (error) {
+    if (error.message.toLowerCase().includes('email not confirmed')) {
+      return {
+        error: 'Email confirmation is pending for this account. Please check your email inbox for the activation link, or disable "Confirm email" in Supabase Dashboard (Authentication -> Providers -> Email) to sign in immediately.',
       }
     }
-  }
-
-  if (error) {
     return { error: error.message }
   }
 
