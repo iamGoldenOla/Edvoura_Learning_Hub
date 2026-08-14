@@ -106,6 +106,49 @@ export default async function TutorDashboard() {
           </div>
         </div>
 
+        {/* Quick AI Action Toolbar */}
+        <div className="p-4 sm:p-6 bg-slate-50 border-b-[3px] border-dark">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/50 mb-3">⚡ Quick AI Studio Launchers</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Link href="/dash/tutor/builder?tool=resources&preset=story">
+              <div className="rounded-2xl border-[3px] border-dark bg-amber-100 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
+                <span className="text-2xl group-hover:scale-110 transition-transform">📖</span>
+                <div>
+                  <h4 className="font-black text-dark text-sm leading-tight">Story AI</h4>
+                  <p className="text-[10px] font-bold text-dark/60">Fables & Narratives</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/dash/tutor/builder?tool=resources&preset=quiz">
+              <div className="rounded-2xl border-[3px] border-dark bg-purple-100 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
+                <span className="text-2xl group-hover:scale-110 transition-transform">🎯</span>
+                <div>
+                  <h4 className="font-black text-dark text-sm leading-tight">Quiz Generator</h4>
+                  <p className="text-[10px] font-bold text-dark/60">Auto-Graded MCQs</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/dash/tutor/builder?tool=resources&preset=note">
+              <div className="rounded-2xl border-[3px] border-dark bg-emerald-100 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
+                <span className="text-2xl group-hover:scale-110 transition-transform">📝</span>
+                <div>
+                  <h4 className="font-black text-dark text-sm leading-tight">Lesson Notes</h4>
+                  <p className="text-[10px] font-bold text-dark/60">Curriculum Guides</p>
+                </div>
+              </div>
+            </Link>
+            <Link href="/dash/tutor/builder?tool=resources&preset=spelling">
+              <div className="rounded-2xl border-[3px] border-dark bg-yellow p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
+                <span className="text-2xl group-hover:scale-110 transition-transform">🐝</span>
+                <div>
+                  <h4 className="font-black text-dark text-sm leading-tight">Spelling Bee</h4>
+                  <p className="text-[10px] font-bold text-dark/60">Audio Pronunciations</p>
+                </div>
+              </div>
+            </Link>
+          </div>
+        </div>
+
         <div className="p-4 sm:p-5 md:p-8 lg:p-12 min-w-0">
           <div className="grid grid-cols-1 gap-6 sm:gap-8 xl:grid-cols-12 min-w-0">
             
@@ -189,6 +232,38 @@ export default async function TutorDashboard() {
                 </h3>
                 <p className="text-sm text-dark/70 font-semibold mb-6">Send an instant alert to your active students.</p>
                 <TutorLiveContentPublisher />
+              </div>
+
+              {/* Live Student Activity & Quiz Results Feed */}
+              <div className="border-[3px] border-dark rounded-[20px] sm:rounded-3xl bg-amber-50 p-4 sm:p-5 md:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-black text-dark flex items-center gap-2">
+                    ⚡ Live Student Quiz Activity
+                  </h3>
+                  <span className="px-2 py-0.5 bg-emerald-300 text-dark border border-dark rounded-md text-[9px] font-black uppercase tracking-wider">
+                    Realtime
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-white border-[2px] border-dark shadow-[2px_2px_0px_#060E1C] flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black text-dark">James Jedidiahz</p>
+                      <p className="text-[10px] font-bold text-dark/60 mt-0.5">Subtraction Master Quiz (Grade 3)</p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 border border-emerald-400 font-black text-xs rounded-lg shadow-[1px_1px_0px_#060E1C]">
+                      90% (9/10)
+                    </span>
+                  </div>
+                  <div className="p-3.5 rounded-xl bg-white border-[2px] border-dark shadow-[2px_2px_0px_#060E1C] flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black text-dark">Titomi Oluwa</p>
+                      <p className="text-[10px] font-bold text-dark/60 mt-0.5">Spelling Bee Practice Challenge</p>
+                    </div>
+                    <span className="px-2.5 py-1 bg-yellow text-dark border border-dark font-black text-xs rounded-lg shadow-[1px_1px_0px_#060E1C]">
+                      100% (5/5)
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Grading Queue Mini */}

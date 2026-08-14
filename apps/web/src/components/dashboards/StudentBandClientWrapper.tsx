@@ -176,6 +176,29 @@ export default function StudentBandClientWrapper({
           </div>
         </header>
 
+        {/* Daily Learning Goal Progress Bar */}
+        <div className="rounded-[24px] border-[3px] border-dark bg-purple-100 p-5 shadow-[6px_6px_0px_#060E1C] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🎯</span>
+              <h3 className="text-base font-black text-dark uppercase tracking-tight">Today&apos;s Daily XP Goal</h3>
+              <span className="px-2 py-0.5 bg-yellow text-dark border border-dark rounded-md text-[9px] font-black uppercase tracking-wider shadow-[1px_1px_0px_#060E1C]">
+                Active Target
+              </span>
+            </div>
+            <p className="text-xs font-bold text-dark/70">Complete 2 daily learning missions or quizzes to keep your streak glowing!</p>
+          </div>
+          <div className="w-full sm:w-64 space-y-1.5 shrink-0">
+            <div className="flex justify-between items-center text-xs font-black text-dark">
+              <span>Goal Progress</span>
+              <span>2 / 3 Missions</span>
+            </div>
+            <div className="h-4 w-full rounded-full border-[2.5px] border-dark bg-white overflow-hidden shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]">
+              <div className="h-full bg-emerald-400 border-r-[2px] border-dark" style={{ width: '66%' }} />
+            </div>
+          </div>
+        </div>
+
         {/* Quick Fun Links */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
           <FunCard icon="📚" label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />

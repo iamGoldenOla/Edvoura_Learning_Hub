@@ -104,28 +104,57 @@ export function PracticeQuizClient({
   }
 
   if (quizFinished && quizData) {
+    const totalQ = quizData.questions.length;
+    const ratio = totalQ > 0 ? score / totalQ : 0;
+    const isMastery = ratio >= 0.8;
+    const xpEarned = Math.round(score * 10 + (isMastery ? 50 : 20));
+
     return (
-      <div className="flex flex-col items-center rounded-[24px] border-[4px] border-dark bg-white p-5 text-center shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-8 md:p-12 sm:shadow-[10px_10px_0px_#060E1C]">
-        <div className="h-24 w-24 bg-yellow border-[4px] border-dark rounded-full flex items-center justify-center shadow-[4px_4px_0px_#060E1C] mb-6">
+      <div className="relative overflow-hidden flex flex-col items-center rounded-[24px] border-[4px] border-dark bg-white p-5 text-center shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-8 md:p-12 sm:shadow-[10px_10px_0px_#060E1C]">
+        {/* Floating Particle Stars */}
+        <div className="absolute top-4 left-6 text-2xl animate-bounce">✨</div>
+        <div className="absolute top-8 right-8 text-2xl animate-bounce delay-150">🌟</div>
+        <div className="absolute bottom-6 left-8 text-2xl animate-bounce delay-300">🎉</div>
+        <div className="absolute bottom-8 right-6 text-2xl animate-bounce delay-500">🏆</div>
+
+        <div className={`h-24 w-24 border-[4px] border-dark rounded-full flex items-center justify-center shadow-[4px_4px_0px_#060E1C] mb-6 ${isMastery ? 'bg-emerald-400' : 'bg-yellow'}`}>
           <Sparkles className="h-12 w-12 text-dark" />
         </div>
-        <h2 className="mb-4 text-3xl font-black tracking-tight text-dark sm:text-4xl md:text-5xl">Quiz Complete!</h2>
-        <p className="mb-8 text-xl font-bold text-dark/70 sm:text-2xl">
-          You scored <span className="text-emerald-600 font-black">{score}</span> out of {quizData.questions.length}
+
+        <span className="mb-2 inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-purple-200 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+          🏆 +{xpEarned} Learning XP Earned!
+        </span>
+
+        <h2 className="mb-3 text-3xl font-black tracking-tight text-dark sm:text-4xl md:text-5xl">
+          {isMastery ? 'Outstanding Mastery! 🎉' : 'Great Effort! Keep Going! 🌟'}
+        </h2>
+        <p className="mb-6 text-xl font-bold text-dark/70 sm:text-2xl">
+          You scored <span className="text-emerald-600 font-black text-3xl">{score}</span> out of {totalQ}
         </p>
+
+        {isMastery && (
+          <div className="mb-8 rounded-2xl border-[3px] border-dark bg-emerald-50 p-4 max-w-md shadow-[3px_3px_0px_#060E1C]">
+            <p className="text-xs font-black uppercase tracking-wider text-emerald-900">
+              🎖️ Mastery Badge Unlocked: Subject Master!
+            </p>
+            <p className="text-xs font-bold text-emerald-800 mt-1">
+              You correctly answered over 80% of the questions on this topic.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center justify-center gap-4">
           {missedQuestions.length > 0 && (
             <Button
               onClick={handleRetryMissed}
-              className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-3 text-base rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
+              className="bg-yellow border-[3px] border-dark text-dark font-black px-6 py-3.5 text-base rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
             >
               🔁 Retry Missed Questions ({missedQuestions.length})
             </Button>
           )}
           <Button
             onClick={() => setQuizData(null)}
-            className="bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-3 text-base rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
+            className="bg-emerald-400 border-[3px] border-dark text-dark font-black px-6 py-3.5 text-base rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 h-auto"
           >
             Back to Quiz Hub
           </Button>

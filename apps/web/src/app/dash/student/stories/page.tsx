@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Play, Sparkles, Tv, BookOpen, Volume2, PlusCircle } from 'lucide-react';
+import { StoryViewerModal, type StoryContent } from '@/components/ui/StoryViewerModal';
 
 const STORY_VIDEOS = [
   { id: '1', title: "The Hungry Caterpillar", type: "video", thumbnail: "🐛", youtubeId: "75NQK-Sm1YY", color: "bg-green-100" },
@@ -9,8 +10,29 @@ const STORY_VIDEOS = [
   { id: '3', title: "The Ugly Duckling", type: "video", thumbnail: "🦆", youtubeId: "THX7_94E3hU", color: "bg-blue-100" },
 ];
 
+const GREAT_LION_STORY: StoryContent = {
+  title: "The Great Lion of the Savanna",
+  moralLesson: "True strength comes from wisdom, kindness, and leadership—not just raw power.",
+  ageSuitability: "Ages 6 to 12 (Primary 1 to JSS 3)",
+  content: `Deep in the heart of the vast African savanna, beneath the shade of giant baobab trees, lived Simba the Great Lion. Simba was known across all seven kingdoms for his golden mane that gleamed like sunshine and his roar that echoed across mountains.
+
+One scorching afternoon, water became scarce in the savanna. Smaller animals—zebras, gazelles, and meerkats—gathered nervously near the shrinking waterhole. A selfish leopard named Jabari tried to block the waterhole, claiming it belonged only to the strongest hunters.
+
+Rather than using force, Simba walked forward calmly. He spoke to the animals about unity: "The savanna thrives when every creature flourishes together." Simba used his wisdom to guide the herd to an undiscovered underground spring hidden beneath the marble rocks.
+
+The animals rejoiced, drank fresh cool water, and realized that true leadership is protecting everyone, big and small. From that day on, Simba was celebrated as the wisest ruler of the African savanna.`,
+  vocabulary: [
+    { word: "Savanna", meaning: "A large grassy plain in tropical regions with scattered trees." },
+    { word: "Scarce", meaning: "In short supply; rare or hard to find." },
+    { word: "Wisdom", meaning: "The quality of having knowledge, good judgment, and experience." },
+    { word: "Flourish", meaning: "To grow, prosper, and develop healthily." },
+  ],
+  contentType: "story",
+};
+
 export default function StoriesPage() {
   const [selectedVideo, setSelectedVideo] = useState<typeof STORY_VIDEOS[0] | null>(null);
+  const [activeStory, setActiveStory] = useState<StoryContent | null>(null);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 pb-12 w-full min-w-0">
@@ -18,16 +40,22 @@ export default function StoriesPage() {
         <div className="min-w-0">
           <h1 className="text-3xl sm:text-4xl font-heading font-black text-dark flex items-center gap-3 break-words">
             <Play className="h-8 w-8 sm:h-10 sm:w-10 text-red-600 shrink-0" />
-            Story Time!
+            Story Time & Audio Reader!
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-dark/60 font-semibold">Watch and listen to amazing stories.</p>
+          <p className="mt-2 text-sm sm:text-base text-dark/60 font-semibold">Watch animated stories or listen to AI audio fables.</p>
         </div>
         
         <div className="flex gap-3 sm:gap-4 flex-wrap">
-           <button className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-[2px] sm:border-[3px] border-dark bg-white text-dark font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
-             <PlusCircle className="h-4 w-4" /> Add Story
+           <button 
+             onClick={() => setActiveStory(GREAT_LION_STORY)}
+             className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-[2px] sm:border-[3px] border-dark bg-yellow text-dark font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+           >
+             <BookOpen className="h-4 w-4" /> Read Storybook
            </button>
-           <button className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-[2px] sm:border-[3px] border-dark bg-red-600 text-white font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+           <button 
+             onClick={() => setActiveStory(GREAT_LION_STORY)}
+             className="inline-flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl border-[2px] sm:border-[3px] border-dark bg-red-600 text-white font-black uppercase text-[10px] sm:text-xs tracking-widest shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+           >
              <Sparkles className="h-4 w-4" /> AI Storyteller
            </button>
         </div>
@@ -90,14 +118,26 @@ export default function StoriesPage() {
           ))}
 
           {/* AI Storyteller Box */}
-          <div className="bg-gradient-to-br from-red-500 to-rose-600 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] p-6 sm:p-8 flex flex-col items-center justify-center text-white text-center group cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+          <div 
+            onClick={() => setActiveStory(GREAT_LION_STORY)}
+            className="bg-gradient-to-br from-red-500 to-rose-600 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] shadow-[4px_4px_0px_#060E1C] sm:shadow-[8px_8px_0px_#060E1C] p-6 sm:p-8 flex flex-col items-center justify-center text-white text-center group cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          >
              <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                <Volume2 className="h-12 w-12 text-white" />
              </div>
-             <h3 className="text-2xl font-black">AI Audio Story</h3>
-             <p className="mt-2 text-rose-100 font-bold italic">Click to listen to a random AI story!</p>
+             <h3 className="text-2xl font-black">AI Audio Storybook</h3>
+             <p className="mt-2 text-rose-100 font-bold italic">Click to listen to "The Great Lion" story with Audio Reader!</p>
           </div>
         </div>
+      )}
+
+      {/* Audio Reader Story Modal */}
+      {activeStory && (
+        <StoryViewerModal
+          isOpen={activeStory !== null}
+          onClose={() => setActiveStory(null)}
+          story={activeStory}
+        />
       )}
     </div>
   );
