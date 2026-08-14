@@ -6,6 +6,8 @@ import { adminSignIn, adminSignUp, type FormState } from './actions';
 
 export default function AdminAuthPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [emailVal, setEmailVal] = useState('');
+  const [passVal, setPassVal] = useState('');
   const [signInState, signInAction, signInPending] = useActionState<FormState, FormData>(
     adminSignIn,
     null,
@@ -25,7 +27,23 @@ export default function AdminAuthPage() {
         <h1 className="mt-2 text-2xl font-bold text-slate-900">Admin Portal</h1>
         <p className="mt-1 text-sm text-slate-600">Use this page for operations admin access.</p>
 
-        <div className="mt-5 grid grid-cols-2 rounded-lg border border-slate-200 p-1 text-sm">
+        {/* 1-Click Preset Button */}
+        <div className="mt-4 p-3.5 bg-amber-50 border border-amber-300 rounded-xl">
+          <p className="text-[10px] font-black uppercase tracking-wider text-amber-900 mb-1.5">⚡ 1-Click Default Admin Credentials</p>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signin');
+              setEmailVal('admin@edvoura.com');
+              setPassVal('Admin123!');
+            }}
+            className="w-full py-2 px-3 bg-yellow border-[2px] border-dark rounded-lg text-xs font-black text-dark hover:bg-yellow-light transition-all shadow-[2px_2px_0px_#060E1C] text-left"
+          >
+            🛡️ Fill Default Admin (`admin@edvoura.com` / `Admin123!`)
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 rounded-lg border border-slate-200 p-1 text-sm">
           <button
             type="button"
             onClick={() => setMode('signin')}
@@ -43,7 +61,7 @@ export default function AdminAuthPage() {
         </div>
 
         {state?.error ? (
-          <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="mt-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs font-semibold text-rose-800 space-y-1">
             {state.error}
           </div>
         ) : null}
@@ -61,11 +79,25 @@ export default function AdminAuthPage() {
           ) : null}
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
-            <input name="email" type="email" required className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input 
+              name="email" 
+              type="email" 
+              required 
+              value={emailVal}
+              onChange={(e) => setEmailVal(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" 
+            />
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Password</label>
-            <input name="password" type="password" required className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input 
+              name="password" 
+              type="password" 
+              required 
+              value={passVal}
+              onChange={(e) => setPassVal(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" 
+            />
           </div>
           <button
             type="submit"
