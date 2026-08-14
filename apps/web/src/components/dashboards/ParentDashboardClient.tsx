@@ -19,6 +19,7 @@ import {
   Brain,
 } from 'lucide-react';
 
+import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
 import { Button } from '@/components/ui/button';
 import DashboardFeedWidget from '@/components/dashboards/DashboardFeedWidget';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
@@ -478,6 +479,13 @@ export default function ParentDashboardClient({
           )}
         </div>
       )}
+
+      <SecurityPassCard
+        fullName={parentName}
+        email="parent@edvoura.com"
+        userId="parent-user-default"
+        role="parent"
+      />
 
       <DashboardFeedWidget
         title="Parent Inbox Lanes"

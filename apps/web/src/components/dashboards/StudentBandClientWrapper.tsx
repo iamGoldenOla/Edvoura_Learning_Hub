@@ -10,6 +10,7 @@ import StudentLiveContentPanel from './StudentLiveContentPanel';
 import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
+import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
 
 const bandCopy = {
   '1-3': {
@@ -675,6 +676,13 @@ export default function StudentBandClientWrapper({
               )}
             </div>
           </Panel>
+
+          <SecurityPassCard
+            fullName={dashboard.profile.fullName || 'Student Explorer'}
+            email={dashboard.profile.email}
+            userId={dashboard.profile.userId}
+            role="student"
+          />
 
           <Panel title="Subscription" icon={Target} color="bg-purple-100" className="mt-auto">
             <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] space-y-4">

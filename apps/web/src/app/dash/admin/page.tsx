@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Activity, BookOpenCheck, CreditCard, Gift, LifeBuoy, ShieldCheck, UserPlus, Users, ArrowRight } from 'lucide-react';
 
+import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
 import RecentUiActionsPanel from '@/components/dashboards/RecentUiActionsPanel';
 import { requireAdminAccess } from './_lib/role-guard';
 import { getAdminDashboardData } from '@/lib/app-context';
@@ -122,6 +123,14 @@ export default async function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      {/* Admin Security Pass Card */}
+      <SecurityPassCard
+        fullName={viewer.currentUser.profile.fullName || 'System Administrator'}
+        email={viewer.currentUser.email}
+        userId={viewer.currentUser.userId}
+        role="admin"
+      />
 
       {/* Stats Grid */}
       <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4 min-w-0">

@@ -124,11 +124,15 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
       },
     })
 
-    if (error) {
-      return { error: error.message }
-    }
+    let hasSession = Boolean(data?.session)
 
-    const hasSession = Boolean(data?.session)
+    if (!hasSession) {
+      // Attempt instant sign in to bypass email confirmation delay if confirmation is disabled or created
+      const signInRes = await supabase.auth.signInWithPassword({ email, password })
+      if (!signInRes.error) {
+        hasSession = true
+      }
+    }
 
     if (!hasSession) {
       redirect('/login?signup=check-email')
