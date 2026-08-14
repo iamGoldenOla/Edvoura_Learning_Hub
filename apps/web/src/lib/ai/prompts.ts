@@ -140,11 +140,14 @@ Output only valid JSON with: title, passage, vocabulary[{word, meaning}], questi
 Curriculum system: ${curriculumSystem}.
 ${objectivesBlock}
 ${studentBlock}
+Generation Seed Nonce: ${Date.now()}_${Math.floor(Math.random() * 1000000)}
 
-CRITICAL REQUIREMENTS:
-- Generate exactly 20 diverse, unique questions pulled from deep subject knowledge. Do not repeat questions.
-- Divide the 20 questions across difficulty levels: roughly 7 easy, 7 medium, and 6 hard questions.
-- For multiple_choice questions, provide exactly 4 options.
+CRITICAL ANTI-REPETITION & VARIATION REQUIREMENTS:
+- Generate fresh, unique questions every time! DO NOT repeat previously generated questions or static textbook examples.
+- Generate 10 to 20 diverse, unique questions pulled from deep subject knowledge.
+- For mathematics/calculation topics: Use randomized numbers, varied variable names, and distinct real-world story scenarios.
+- Divide questions across difficulty levels: easy, medium, and hard.
+- For multiple_choice questions, provide exactly 4 distinct options.
 - For every question, provide the exact correct answer.
 - For every question, provide a detailed teaching explanation of why the answer is correct.
 - Emphasize multiple_choice, but you may mix in short_answer, true_false, or fill_in_blank.

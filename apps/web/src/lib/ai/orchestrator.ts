@@ -275,84 +275,104 @@ function buildEmergencyEducationalContent(params: {
   }
 
   if (topicLower.includes('subtraction') || topicLower.includes('math') || subjectLower.includes('math')) {
+    const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const makeChoices = (correct: number) => {
+      const set = new Set<number>([correct]);
+      while (set.size < 4) {
+        const offset = rand(-6, 8);
+        const val = correct + offset;
+        if (val >= 0 && val !== correct) set.add(val);
+      }
+      return Array.from(set).sort(() => Math.random() - 0.5).map(String);
+    };
+
+    const a1 = rand(15, 45), b1 = rand(4, a1 - 2), ans1 = a1 - b1;
+    const a2 = rand(40, 99), b2 = rand(12, a2 - 6), ans2 = a2 - b2;
+    const a3 = rand(60, 150), b3 = rand(15, a3 - 10), ans3 = a3 - b3;
+    const a4 = rand(22, 75), b4 = rand(6, a4 - 5), ans4 = a4 - b4;
+
+    const studentNames = ['Zuri', 'Kai', 'Amara', 'Titomi', 'Leo', 'Ethan', 'Maya', 'Kibo', 'Nia', 'Liam'];
+    const name1 = studentNames[rand(0, studentNames.length - 1)];
+    const name2 = studentNames[(rand(0, studentNames.length - 1) + 1) % studentNames.length];
+
     return {
-      title: `${subject} ${grade}: ${baseTopic} Master Quiz`,
-      instructions: 'Solve each subtraction question carefully. Show your working and select or state the correct answer.',
+      title: `${subject} ${grade}: ${baseTopic} Dynamic Practice Quiz`,
+      instructions: 'Solve each math problem carefully. Calculate your answer and choose or write the correct response.',
       questions: [
         {
-          questionText: 'What is the result of 15 - 7?',
+          questionText: `What is the result of ${a1} - ${b1}?`,
           questionType: 'multiple_choice' as const,
-          options: ['6', '8', '9', '10'],
-          correctAnswer: '8',
-          explanation: 'Subtract 7 from 15: 15 - 7 = 8.',
+          options: makeChoices(ans1),
+          correctAnswer: String(ans1),
+          explanation: `Subtract ${b1} from ${a1}: ${a1} - ${b1} = ${ans1}.`,
           difficulty: 'easy' as const,
         },
         {
-          questionText: 'In the equation 20 - 6 = 14, what is the starting number 20 called?',
+          questionText: `In the subtraction equation ${a2} - ${b2} = ${ans2}, what is the starting number ${a2} called?`,
           questionType: 'multiple_choice' as const,
           options: ['Minuend', 'Subtrahend', 'Difference', 'Product'],
           correctAnswer: 'Minuend',
-          explanation: 'In subtraction, the starting number from which another is subtracted is called the minuend.',
+          explanation: `In subtraction (${a2} - ${b2} = ${ans2}), the starting number (${a2}) is called the minuend.`,
           difficulty: 'easy' as const,
         },
         {
-          questionText: 'What is the difference between 50 and 18?',
+          questionText: `What is the difference between ${a3} and ${b3}?`,
           questionType: 'multiple_choice' as const,
-          options: ['30', '32', '34', '38'],
-          correctAnswer: '32',
-          explanation: '50 - 18 = 32.',
+          options: makeChoices(ans3),
+          correctAnswer: String(ans3),
+          explanation: `Subtract ${b3} from ${a3}: ${a3} - ${b3} = ${ans3}.`,
           difficulty: 'easy' as const,
+        },
+        {
+          questionText: `If ${name1} has ${a4} pencils and gives ${b4} pencils to ${name2}, how many pencils does ${name1} have remaining?`,
+          questionType: 'multiple_choice' as const,
+          options: makeChoices(ans4),
+          correctAnswer: String(ans4),
+          explanation: `${a4} - ${b4} = ${ans4} pencils remaining.`,
+          difficulty: 'medium' as const,
+        },
+        {
+          questionText: `Complete the missing number: ${a1 + 25} - ___ = ${a1 + 25 - b1}.`,
+          questionType: 'fill_in_blank' as const,
+          correctAnswer: String(b1),
+          explanation: `Subtract ${a1 + 25 - b1} from ${a1 + 25}: ${a1 + 25} - ${a1 + 25 - b1} = ${b1}.`,
+          difficulty: 'medium' as const,
         },
         {
           questionText: 'True or False: Subtraction is commutative, meaning a - b is always equal to b - a.',
           questionType: 'true_false' as const,
           correctAnswer: 'False',
-          explanation: 'Subtraction is not commutative. For example, 10 - 4 = 6, but 4 - 10 = -6.',
+          explanation: 'Subtraction is not commutative. Changing the order changes the result.',
           difficulty: 'medium' as const,
         },
         {
-          questionText: 'If Maya has 14 pencils and gives 5 pencils to her friend, how many pencils does Maya have left?',
-          questionType: 'multiple_choice' as const,
-          options: ['7', '8', '9', '10'],
-          correctAnswer: '9',
-          explanation: '14 - 5 = 9 pencils.',
-          difficulty: 'medium' as const,
-        },
-        {
-          questionText: 'Complete the missing number: 45 - ___ = 30.',
-          questionType: 'fill_in_blank' as const,
-          correctAnswer: '15',
-          explanation: 'Subtract 30 from 45: 45 - 30 = 15.',
-          difficulty: 'medium' as const,
-        },
-        {
-          questionText: 'What do we call the final result obtained after subtracting one number from another?',
+          questionText: 'What term describes the result obtained after subtracting one number from another?',
           questionType: 'short_answer' as const,
           correctAnswer: 'Difference',
-          explanation: 'The result of a subtraction problem is known as the difference.',
+          explanation: 'The answer to a subtraction problem is called the difference.',
           difficulty: 'medium' as const,
         },
         {
-          questionText: 'Solve: 100 - 43.',
+          questionText: `Solve: ${a3 + 12} - ${b3 + 7}.`,
           questionType: 'multiple_choice' as const,
-          options: ['53', '57', '63', '67'],
-          correctAnswer: '57',
-          explanation: '100 - 43 = 57.',
+          options: makeChoices((a3 + 12) - (b3 + 7)),
+          correctAnswer: String((a3 + 12) - (b3 + 7)),
+          explanation: `${a3 + 12} - ${b3 + 7} = ${(a3 + 12) - (b3 + 7)}.`,
           difficulty: 'hard' as const,
         },
         {
-          questionText: 'What is the value of any number n minus 0 (n - 0)?',
+          questionText: `What is the value of any number n minus 0 (n - 0)?`,
           questionType: 'short_answer' as const,
           correctAnswer: 'n',
           explanation: 'Subtracting zero from any number leaves the number unchanged.',
           difficulty: 'hard' as const,
         },
         {
-          questionText: 'Solve: 64 - 28.',
+          questionText: `Solve: ${a2 + 20} - ${b2 + 10}.`,
           questionType: 'multiple_choice' as const,
-          options: ['34', '36', '38', '40'],
-          correctAnswer: '36',
-          explanation: '64 - 28 = 36.',
+          options: makeChoices((a2 + 20) - (b2 + 10)),
+          correctAnswer: String((a2 + 20) - (b2 + 10)),
+          explanation: `${a2 + 20} - ${b2 + 10} = ${(a2 + 20) - (b2 + 10)}.`,
           difficulty: 'hard' as const,
         },
       ],
