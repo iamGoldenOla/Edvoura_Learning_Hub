@@ -1,8 +1,18 @@
 'use server'
 
+import { createClient as createAdminSupabaseClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { type FormState } from '../login/actions'
+
+function getAdminClient() {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!serviceKey || !url) return null
+  return createAdminSupabaseClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+}
 
 function generateGuaranteedUniqueCode(fullName: string, role = 'student'): string {
   const prefix = role === 'admin' ? 'ADM' : role === 'parent' ? 'PAR' : role === 'tutor' ? 'TUT' : 'EDV';
@@ -115,29 +125,56 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
     }
 
     const uniqueCode = generateGuaranteedUniqueCode(fullName, role)
+    const userMetadata = {
+      full_name: fullName,
+      role: role,
+      unique_code: uniqueCode,
+      learner_band: inferredLearnerBand,
+      selected_grade: Number.isFinite(parsedGrade) ? parsedGrade : null,
+      grade_level_code: gradeLevelCode,
+      parent_children_count: role === 'parent' ? childrenCount || null : null,
+      parent_child_name: role === 'parent' ? childName || null : null,
+      parent_child_grade: role === 'parent' && Number.isFinite(parsedChildGrade) ? parsedChildGrade : null,
+      parent_child_grade_level_code: role === 'parent' ? childGradeLevelCode : null,
+      parent_child_grade_band: role === 'parent' ? childGradeBand : null,
+      parent_children: role === 'parent' ? parentChildren : null,
+      parent_existing_child_emails: role === 'parent' ? parentExistingChildEmails : null,
+      tutor_type: role === 'tutor' ? tutorType || 'class_teacher' : null,
+      tutor_grade: role === 'tutor' ? tutorGrade || 'grade_1' : null,
+      tutor_subjects: role === 'tutor' ? tutorSubjects || 'Mathematics' : null,
+    }
 
-    const { data, error } = await supabase.auth.signUp({
+    const targetRedirect = redirectTo && redirectTo.startsWith('/') 
+      ? redirectTo 
+      : (role === 'parent' ? '/dash/parent' : role === 'tutor' ? '/dash/tutor' : '/dash/student')
+
+    const adminClient = getAdminClient()
+    if (adminClient) {
+      const { data: adminUserData, error: adminCreateErr } = await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: userMetadata,
+      })
+
+      if (!adminCreateErr && adminUserData?.user) {
+        await supabase.auth.signInWithPassword({ email, password })
+        return {
+          pendingVerification: true,
+          fullName,
+          email,
+          role,
+          uniqueCode,
+          redirectTo: targetRedirect,
+        }
+      }
+    }
+
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: {
-          full_name: fullName,
-          role: role,
-          unique_code: uniqueCode,
-          learner_band: inferredLearnerBand,
-          selected_grade: Number.isFinite(parsedGrade) ? parsedGrade : null,
-          grade_level_code: gradeLevelCode,
-          parent_children_count: role === 'parent' ? childrenCount || null : null,
-          parent_child_name: role === 'parent' ? childName || null : null,
-          parent_child_grade: role === 'parent' && Number.isFinite(parsedChildGrade) ? parsedChildGrade : null,
-          parent_child_grade_level_code: role === 'parent' ? childGradeLevelCode : null,
-          parent_child_grade_band: role === 'parent' ? childGradeBand : null,
-          parent_children: role === 'parent' ? parentChildren : null,
-          parent_existing_child_emails: role === 'parent' ? parentExistingChildEmails : null,
-          tutor_type: role === 'tutor' ? tutorType || 'class_teacher' : null,
-          tutor_grade: role === 'tutor' ? tutorGrade || 'grade_1' : null,
-          tutor_subjects: role === 'tutor' ? tutorSubjects || 'Mathematics' : null,
-        },
+        data: userMetadata,
       },
     })
 
@@ -151,7 +188,7 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
             email,
             role,
             uniqueCode,
-            redirectTo: redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dash',
+            redirectTo: targetRedirect,
           }
         }
       }
@@ -166,7 +203,7 @@ export async function signup(prevState: FormState, formData: FormData): Promise<
       email,
       role,
       uniqueCode,
-      redirectTo: redirectTo && redirectTo.startsWith('/') ? redirectTo : '/dash',
+      redirectTo: targetRedirect,
     }
   } catch (err: any) {
     if (err instanceof Error && err.message === 'NEXT_REDIRECT') {

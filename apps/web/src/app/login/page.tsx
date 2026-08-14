@@ -109,67 +109,16 @@ function LoginPageContent() {
           <p className="text-grey text-sm mb-8">Sign in to continue your learning journey.</p>
 
           {state?.error ? (
-            <div className="mb-6 p-4 bg-error/10 border border-error/20 text-error text-sm rounded-xl space-y-1">
-              <div className="font-semibold">{state.error}</div>
-              {state.error.toLowerCase().includes('invalid login credentials') && (
-                <p className="text-xs opacity-90 font-normal pt-1">
-                  If you just signed up, your account may be awaiting email confirmation. Please check your inbox/spam folder or disable &quot;Confirm email&quot; in Supabase Auth settings for instant logins.
-                </p>
-              )}
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl space-y-1">
+              <div>{state.error}</div>
             </div>
           ) : null}
 
           {oauthError ? (
-            <div className="mb-6 p-4 bg-error/10 border border-error/20 text-error text-sm rounded-xl">
+            <div className="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold rounded-xl">
               {oauthError}
             </div>
           ) : null}
-
-          {signupState === 'check-email' ? (
-            <div className="mb-6 rounded-xl border border-warning/30 bg-yellow/10 p-4 text-sm text-navy font-medium space-y-1">
-              <div className="font-bold">Account created successfully!</div>
-              <div className="text-xs text-grey">If email confirmation is enabled in your Supabase Auth project, check your inbox/spam to confirm before signing in.</div>
-            </div>
-          ) : null}
-
-          {/* Quick Demo Credentials Assistant */}
-          <div className="mb-6 rounded-2xl border-[2px] border-dark bg-amber-50 p-4 shadow-[4px_4px_0px_#060E1C]">
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/60 mb-2">⚡ Quick 1-Click Demo Accounts</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => { setEmailVal('admin@edvoura.com'); setPassVal('Admin123!'); }}
-                className="px-3 py-2 bg-purple-100 border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-purple-200 transition-all text-left shadow-[2px_2px_0px_#060E1C]"
-              >
-                <span className="block font-black">🛡️ Admin Portal</span>
-                <span className="text-[9px] font-bold text-dark/60">admin@edvoura.com</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEmailVal('parent@edvoura.com'); setPassVal('Parent123!'); }}
-                className="px-3 py-2 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-yellow-light transition-all text-left shadow-[2px_2px_0px_#060E1C]"
-              >
-                <span className="block font-black">👨‍👩‍👧 Parent Portal</span>
-                <span className="text-[9px] font-bold text-dark/60">parent@edvoura.com</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEmailVal('tutor@edvoura.com'); setPassVal('Tutor123!'); }}
-                className="px-3 py-2 bg-blue-100 border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-blue-200 transition-all text-left shadow-[2px_2px_0px_#060E1C]"
-              >
-                <span className="block font-black">👩‍🏫 Tutor Command</span>
-                <span className="text-[9px] font-bold text-dark/60">tutor@edvoura.com</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => { setEmailVal('student@edvoura.com'); setPassVal('Student123!'); }}
-                className="px-3 py-2 bg-emerald-100 border-[2px] border-dark rounded-xl text-xs font-black text-dark hover:bg-emerald-200 transition-all text-left shadow-[2px_2px_0px_#060E1C]"
-              >
-                <span className="block font-black">👨‍🎓 Student Overview</span>
-                <span className="text-[9px] font-bold text-dark/60">student@edvoura.com</span>
-              </button>
-            </div>
-          </div>
 
           <form action={formAction} className="space-y-5">
             <input type="hidden" name="next" value={next} />
