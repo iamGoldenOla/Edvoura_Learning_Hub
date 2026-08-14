@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Bell, LifeBuoy, MessageSquareWarning, ShieldAlert, UserRoundCheck } from 'lucide-react';
-
 import { createClient } from '@/utils/supabase/server';
+import { AdminNavHeader } from '@/components/dashboards/admin/AdminNavHeader';
 
 export default async function AdminSupportModerationPage() {
   const supabase = await createClient();
@@ -27,16 +27,10 @@ export default async function AdminSupportModerationPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-5 p-3 pb-24 sm:space-y-8 sm:p-6 lg:p-8">
-      <div className="border-[3px] border-dark rounded-[24px] bg-white shadow-[4px_4px_0px_#060E1C] overflow-hidden min-w-0 sm:border-[4px] sm:rounded-[28px] sm:shadow-[10px_10px_0px_#060E1C]">
-        <div className="p-5 sm:p-8 border-b-[4px] border-dark bg-sky-100">
-          <h1 className="text-[2rem] sm:text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
-            Support and Moderation
-          </h1>
-          <p className="mt-3 sm:mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Support tickets, moderation queue, and notification management across all dashboards.
-          </p>
-        </div>
-      </div>
+      <AdminNavHeader
+        title="Support and Moderation"
+        subtitle="Support tickets, moderation queue, and notification management across all dashboards."
+      />
 
       <div className="grid gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-blue-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">

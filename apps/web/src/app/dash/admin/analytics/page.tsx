@@ -3,11 +3,12 @@ import { Activity, BarChart3, ChartSpline, Users } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 import { getAdminDashboardData } from '@/lib/app-context';
 
+import { AdminNavHeader } from '@/components/dashboards/admin/AdminNavHeader';
+
 export default async function AdminAnalyticsPage() {
   const supabase = await createClient();
   const dashboard = await getAdminDashboardData();
 
-  // Basic real-time analytics
   const [{ data: averageProgressData }, { data: paidInvoices = [] }] = await Promise.all([
     supabase.from('progress_snapshots').select('average_score, attendance_rate, assignment_completion_rate').limit(100),
     supabase.schema('billing').from('invoices').select('amount_paid_minor').eq('status', 'paid'),
@@ -25,16 +26,10 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
-      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
-        <div className="p-8 border-b-[4px] border-dark bg-yellow">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
-            Reports and Analytics
-          </h1>
-          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Cross-platform visibility for academics, engagement, billing, and operations.
-          </p>
-        </div>
-      </div>
+      <AdminNavHeader
+        title="Reports and Analytics"
+        subtitle="Cross-platform visibility for academics, engagement, billing, and operations."
+      />
 
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-emerald-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">

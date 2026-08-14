@@ -13,6 +13,8 @@ type PendingTutor = {
   approvalStatus: string;
 };
 
+import { AdminNavHeader } from '@/components/dashboards/admin/AdminNavHeader';
+
 export default async function AdminTutorsApprovalsPage() {
   await requireAdminAccess();
   const supabase = await createClient();
@@ -50,16 +52,10 @@ export default async function AdminTutorsApprovalsPage() {
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 sm:space-y-10 p-4 sm:p-8 pb-24">
-      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
-        <div className="p-8 border-b-[4px] border-dark bg-sky-100">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight leading-[0.92] text-dark">
-            Tutors and Approvals
-          </h1>
-          <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Tutor approval workflow, quality assurance, and teaching compliance controls.
-          </p>
-        </div>
-      </div>
+      <AdminNavHeader
+        title="Tutors and Approvals"
+        subtitle="Tutor approval workflow, quality assurance, and teaching compliance controls."
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-emerald-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">
