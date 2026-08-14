@@ -19,10 +19,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       danger: 'bg-red-600 text-white hover:bg-red-700',
     };
 
+    const hasCustomBg = className.includes('bg-white') || className.includes('bg-yellow') || className.includes('bg-emerald') || className.includes('bg-off-white');
+    const hasCustomText = className.includes('text-dark') || className.includes('text-slate') || className.includes('text-black');
+
+    const variantStyle = (hasCustomBg || hasCustomText) && variant === 'primary' 
+      ? '' 
+      : variants[variant];
+
     return (
       <button
         ref={ref}
-        className={`${baseStyles} ${variants[variant]} ${className}`}
+        className={`${baseStyles} ${variantStyle} ${className}`}
         disabled={isLoading || props.disabled}
         {...props}
       >

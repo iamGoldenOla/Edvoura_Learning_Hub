@@ -149,15 +149,17 @@ export default function ParentDashboardClient({
               </p>
             </div>
             <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-4 lg:w-auto min-w-0">
-              <Link href="/dash/parent/messages">
-                <Button className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto whitespace-normal break-words">
-                  Message Tutor
-                </Button>
+              <Link
+                href="/dash/parent/messages"
+                className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-slate-950 font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3.5 h-auto text-center justify-center whitespace-normal break-words inline-flex items-center"
+              >
+                Message Tutor
               </Link>
-              <Link href="/dash/parent/children">
-                <Button className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto whitespace-normal break-words">
-                  Manage Children
-                </Button>
+              <Link
+                href="/dash/parent/children"
+                className="w-full sm:w-auto bg-white border-[2px] sm:border-[3px] border-dark text-slate-950 font-black rounded-xl shadow-[3px_3px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3.5 h-auto text-center justify-center whitespace-normal break-words inline-flex items-center"
+              >
+                Manage Children
               </Link>
             </div>
           </div>
@@ -416,7 +418,8 @@ export default function ParentDashboardClient({
               <h2 className="text-2xl font-black text-dark tracking-tight">Edvoura AI Weekly Insights</h2>
             </div>
             
-            <Button
+            <button
+              type="button"
               disabled={isGeneratingInsight}
               onClick={async () => {
                 setIsGeneratingInsight(true);
@@ -445,10 +448,10 @@ export default function ParentDashboardClient({
                   setIsGeneratingInsight(false);
                 }
               }}
-              className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-dark font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-2 h-auto whitespace-normal break-words"
+              className="w-full sm:w-auto bg-yellow border-[2px] sm:border-[3px] border-dark text-slate-950 font-black rounded-xl shadow-[3px_3px_0px_#060E1C] sm:shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 h-auto whitespace-normal break-words cursor-pointer"
             >
               {isGeneratingInsight ? 'Edvoura AI is analyzing...' : 'Generate AI Report'}
-            </Button>
+            </button>
           </div>
           
           {(insightData || insightError) && (
@@ -639,11 +642,12 @@ export default function ParentDashboardClient({
             <p className="text-sm font-bold text-dark/70 mb-6">
               Message tutors for lesson concerns, progress checks, and support follow-up.
             </p>
-            <Link href="/dash/parent/messages">
-              <Button className="bg-yellow border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto w-full flex justify-between items-center">
-                <span>Open Parent Messaging</span>
-                <ArrowRight className="h-5 w-5" />
-              </Button>
+            <Link
+              href="/dash/parent/messages"
+              className="bg-yellow border-[3px] border-dark text-slate-950 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto w-full flex justify-between items-center"
+            >
+              <span>Open Parent Messaging</span>
+              <ArrowRight className="h-5 w-5 text-slate-950" />
             </Link>
           </div>
         </div>
@@ -652,17 +656,18 @@ export default function ParentDashboardClient({
         <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
           <div className="p-6 border-b-[4px] border-dark bg-slate-100 flex items-center gap-3">
             <Settings className="h-6 w-6 text-dark" />
-            <h2 className="text-2xl font-black text-dark tracking-tight">Consent & Settings</h2>
+            <h2 className="text-2xl font-black text-dark tracking-tight">Consent &amp; Settings</h2>
           </div>
           <div className="p-6 sm:p-8">
             <p className="text-sm font-bold text-dark/70 mb-6">
               Keep account preferences, alerts, and child access controls up to date.
             </p>
-            <Link href="/dash/profile">
-              <Button className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto w-full flex justify-between items-center">
-                <span>Open Profile and Availability</span>
-                <ArrowRight className="h-5 w-5" />
-              </Button>
+            <Link
+              href="/dash/profile"
+              className="bg-white border-[3px] border-dark text-slate-950 font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 h-auto w-full flex justify-between items-center"
+            >
+              <span>Open Profile and Availability</span>
+              <ArrowRight className="h-5 w-5 text-slate-950" />
             </Link>
           </div>
         </div>
