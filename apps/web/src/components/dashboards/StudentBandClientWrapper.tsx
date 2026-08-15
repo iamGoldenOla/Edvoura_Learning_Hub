@@ -11,6 +11,7 @@ import type { BillingSummary, StudentDashboardData } from '@/lib/app-context';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
+import { CelebrationBanner } from '@/components/ui/CelebrationBanner';
 
 const bandCopy = {
   '1-3': {
@@ -156,6 +157,12 @@ export default function StudentBandClientWrapper({
 
     return (
       <div className="space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-700 w-full min-w-0">
+        {/* 🎂 AUTOMATED BIRTHDAY & WEDDING ANNIVERSARY CELEBRATION BANNER */}
+        <CelebrationBanner
+          userName={dashboard.profile.fullName?.split(' ')[0] || 'Explorer'}
+          eventType="birthday"
+        />
+
         <header className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 w-full min-w-0">
           <div className="text-center md:text-left min-w-0">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-heading font-black text-dark tracking-tight leading-none break-words">

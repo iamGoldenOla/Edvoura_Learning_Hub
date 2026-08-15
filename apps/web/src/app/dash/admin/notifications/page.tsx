@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Bell, Megaphone, Send } from 'lucide-react';
 
 import AdminBroadcastComposer from '@/components/dashboards/AdminBroadcastComposer';
+import { AdminCelebrationsHub } from '@/components/dashboards/admin/AdminCelebrationsHub';
 import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { createClient } from '@/utils/supabase/server';
 
@@ -98,6 +99,9 @@ export default async function AdminNotificationsPage() {
           </div>
         </div>
       </div>
+
+      {/* 🎂 AUTOMATED BIRTHDAY & WEDDING ANNIVERSARY CELEBRATION ENGINE */}
+      <AdminCelebrationsHub />
 
       <div className="border-[3px] border-dark rounded-[24px] bg-white shadow-[4px_4px_0px_#060E1C] overflow-hidden min-w-0 sm:border-[4px] sm:rounded-[28px] sm:shadow-[10px_10px_0px_#060E1C]">
         <div className="p-4 sm:p-6 border-b-[4px] border-dark bg-sky-100">
