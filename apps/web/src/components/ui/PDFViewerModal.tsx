@@ -492,12 +492,14 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 
               {/* Master PDF Document Stream Container with Pacing Boundary */}
               <div className="flex flex-col space-y-4 w-full">
                 <div className={`relative w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] ${
-                  unlockedWeek < 36 ? 'h-[460px]' : 'h-[800px] overflow-y-auto'
+                  unlockedWeek < 36 ? 'h-[340px]' : 'h-[800px] overflow-y-auto'
                 }`}>
                   <iframe
                     key={viewEngine}
-                    src={`${pdfUrl}#page=1&toolbar=0&navpanes=0`}
-                    className="w-full h-full border-none bg-white shadow-inner"
+                    src={`${pdfUrl}#page=1&toolbar=0&navpanes=0&scrollbar=0`}
+                    className={`w-full h-full border-none bg-white shadow-inner ${
+                      unlockedWeek < 36 ? 'pointer-events-none select-none' : ''
+                    }`}
                     title="Full Authentic Curriculum PDF Document Viewer"
                     allow="fullscreen"
                   />
