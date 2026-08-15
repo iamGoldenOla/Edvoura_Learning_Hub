@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Send, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { EdvouraWelcomeConfirmationCard } from './EdvouraWelcomeConfirmationCard';
 
 export default function ContactFormClient() {
   const [fullName, setFullName] = useState('');
@@ -10,7 +11,7 @@ export default function ContactFormClient() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [submittedData, setSubmittedData] = useState<{ name: string; email: string; topic: string } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +34,11 @@ export default function ContactFormClient() {
       // Fallback graceful insert check
     } finally {
       setIsSubmitting(false);
-      setSuccessMsg(`🎉 Thank you, ${fullName.split(' ')[0]}! Your message has been received. Our Edvoura team will reach out to ${email} within 24 hours.`);
+      setSubmittedData({
+        name: fullName.trim(),
+        email: email.trim().toLowerCase(),
+        topic: subject || 'General Inquiry',
+      });
       setFullName('');
       setEmail('');
       setSubject('');
@@ -43,22 +48,13 @@ export default function ContactFormClient() {
 
   return (
     <div className="w-full">
-      {successMsg ? (
-        <div className="p-8 rounded-3xl border-4 border-navy bg-emerald-100 text-navy font-bold shadow-[8px_8px_0px_#0A1628] space-y-4 animate-fade-up text-center sm:text-left">
-          <div className="flex items-center justify-center sm:justify-start gap-3">
-            <div className="w-12 h-12 rounded-2xl border-4 border-navy bg-yellow flex items-center justify-center shrink-0">
-              <CheckCircle2 className="w-7 h-7 text-navy" />
-            </div>
-            <h3 className="font-heading font-black text-2xl text-navy">Message Received!</h3>
-          </div>
-          <p className="text-base sm:text-lg leading-relaxed text-navy/90">{successMsg}</p>
-          <button
-            onClick={() => setSuccessMsg(null)}
-            className="px-6 py-3 bg-navy text-white font-heading font-black rounded-xl border-4 border-navy shadow-[4px_4px_0px_#F5C518] cursor-pointer hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-xs uppercase tracking-widest inline-flex items-center gap-2"
-          >
-            <Sparkles className="w-4 h-4 text-yellow" /> Send Another Inquiry
-          </button>
-        </div>
+      {submittedData ? (
+        <EdvouraWelcomeConfirmationCard
+          parentName={submittedData.name}
+          parentEmail={submittedData.email}
+          topic={submittedData.topic}
+          onReset={() => setSubmittedData(null)}
+        />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
