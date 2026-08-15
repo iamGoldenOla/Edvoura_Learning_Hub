@@ -490,28 +490,30 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 
               )}
 
               {/* Master PDF Document Stream Container with Pacing Boundary */}
-              <div className="relative min-h-[750px] w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] flex flex-col">
-                <iframe
-                  key={viewEngine}
-                  src={`${pdfUrl}#page=1&toolbar=0`}
-                  className={`w-full border-none bg-white shadow-inner ${
-                    unlockedWeek < 36 ? 'h-[750px]' : 'h-[1200px]'
-                  }`}
-                  title="Full Authentic Curriculum PDF Document Viewer"
-                  allow="fullscreen"
-                />
+              <div className="flex flex-col space-y-4 w-full">
+                <div className={`relative w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] ${
+                  unlockedWeek < 36 ? 'h-[460px]' : 'h-[800px] overflow-y-auto'
+                }`}>
+                  <iframe
+                    key={viewEngine}
+                    src={`${pdfUrl}#page=1&toolbar=0&navpanes=0`}
+                    className="w-full h-full border-none bg-white shadow-inner"
+                    title="Full Authentic Curriculum PDF Document Viewer"
+                    allow="fullscreen"
+                  />
+                </div>
 
-                {/* Impenetrable Pacing Lock Shield placed over PDF container when Pacing < 36 */}
+                {/* Impenetrable Pacing Lock Shield placed directly below clipped PDF iframe */}
                 {unlockedWeek < 36 && (
-                  <div className="p-8 sm:p-12 border-t-[4px] border-dark bg-slate-950 text-white shadow-2xl text-center space-y-4 my-0">
-                    <div className="inline-flex p-3 rounded-2xl bg-yellow text-dark border-[2px] border-dark font-black shadow-[3px_3px_0px_#FFF]">
-                      🔒 PACING LOCK SHIELD
+                  <div className="p-8 sm:p-10 border-[3px] border-dark bg-slate-950 text-white rounded-2xl shadow-[5px_5px_0px_#060E1C] text-center space-y-3">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-yellow text-dark border-[2px] border-dark text-xs font-black shadow-[2px_2px_0px_#FFF]">
+                      🔒 WEEK {unlockedWeek + 1} TO WEEK 36 PACING LOCK SHIELD
                     </div>
-                    <h3 className="text-2xl sm:text-3xl font-black text-yellow uppercase tracking-tight">
-                      🔒 WEEK {unlockedWeek + 1} TO WEEK 36 LOCKED BY TUTOR
+                    <h3 className="text-xl sm:text-2xl font-black text-yellow uppercase tracking-tight">
+                      🔒 CONTENT BEYOND WEEK {unlockedWeek} IS LOCKED BY YOUR TUTOR
                     </h3>
                     <p className="text-xs sm:text-sm font-bold text-slate-300 max-w-xl mx-auto leading-relaxed">
-                      Your tutor has locked the PDF document beyond Week {unlockedWeek}. Content for Week {unlockedWeek + 1} and subsequent terms will unlock automatically when your tutor advances the live teaching schedule!
+                      Your assigned tutor has locked the master PDF document beyond Week {unlockedWeek}. Content for Week {unlockedWeek + 1} and subsequent terms will unlock automatically when your tutor advances the live teaching schedule!
                     </p>
                     <div className="pt-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
                       Official Edvoura Curriculum Protection Protocol • Doc ID: EDV-PDF-PACING-GUARD
