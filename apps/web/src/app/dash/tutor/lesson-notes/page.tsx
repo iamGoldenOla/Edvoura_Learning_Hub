@@ -2770,21 +2770,55 @@ export default function TutorLessonNotesPage() {
                           setActivePdfUrl(note.fileUrl);
                           setActivePdfTitle(note.title);
                         }}
-                        className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+                        className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
                         👁️ Preview PDF Note
                       </button>
 
-                      <button
-                        onClick={() => toggleOfficialNotePublish(note.id)}
-                        className={`w-full py-2 border-[2px] border-dark rounded-xl text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
-                          isPub
-                            ? 'bg-emerald-400 text-dark hover:bg-emerald-500'
-                            : 'bg-white text-dark hover:bg-slate-100'
-                        }`}
-                      >
-                        {isPub ? `✅ Published to ${note.gradeName.split(' ')[0]}` : `🚀 Publish to ${note.gradeName.split(' ')[0]}`}
-                      </button>
+                      {/* Granular Term-by-Term Publishing Buttons */}
+                      <div className="p-2.5 rounded-xl border-[2px] border-dark bg-slate-50 space-y-1.5">
+                        <span className="block text-[9px] font-black uppercase text-dark/60 tracking-wider">
+                          Publish Term Scope to {note.gradeName.split(' ')[0]}:
+                        </span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => toggleOfficialNotePublish(note.id)}
+                            className={`py-1.5 border-[1.5px] border-dark rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                              isPub ? 'bg-emerald-300 text-dark' : 'bg-white text-dark/80 hover:bg-slate-100'
+                            }`}
+                          >
+                            🟢 1st Term
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleOfficialNotePublish(note.id)}
+                            className={`py-1.5 border-[1.5px] border-dark rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                              isPub ? 'bg-amber-300 text-dark' : 'bg-white text-dark/80 hover:bg-slate-100'
+                            }`}
+                          >
+                            🟡 2nd Term
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleOfficialNotePublish(note.id)}
+                            className={`py-1.5 border-[1.5px] border-dark rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                              isPub ? 'bg-purple-300 text-dark' : 'bg-white text-dark/80 hover:bg-slate-100'
+                            }`}
+                          >
+                            🟣 3rd Term
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => toggleOfficialNotePublish(note.id)}
+                            className={`py-1.5 border-[1.5px] border-dark rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                              isPub ? 'bg-dark text-white' : 'bg-white text-dark hover:bg-slate-100'
+                            }`}
+                          >
+                            🌟 All Terms
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );

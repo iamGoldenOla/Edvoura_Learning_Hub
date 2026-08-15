@@ -166,6 +166,7 @@ function getSubjectSpecificManuscript(title: string) {
 
 export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModalProps) {
   const [viewEngine, setViewEngine] = useState<'google' | 'native'>('google');
+  const [selectedTerm, setSelectedTerm] = useState<'all' | '1st' | '2nd' | '3rd'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -276,32 +277,45 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
             </div>
           </div>
 
-          {/* Subbar Controls */}
+          {/* Subbar Controls & Term Filter Bar */}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-dark/10">
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[10px] font-black uppercase text-dark/60 tracking-wider">Term Filter:</span>
               <button
                 type="button"
-                onClick={() => setViewEngine('google')}
-                className={`px-2.5 py-1 rounded-lg border-[1.5px] border-dark text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  viewEngine === 'google'
-                    ? 'bg-dark text-white shadow-[1.5px_1.5px_0px_#F5C518]'
-                    : 'bg-white text-dark shadow-[1.5px_1.5px_0px_#060E1C]'
+                onClick={() => setSelectedTerm('1st')}
+                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  selectedTerm === '1st' ? 'bg-emerald-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
                 }`}
               >
-                <BookOpen className="h-3 w-3 inline mr-1" />
-                Curriculum Manuscript Reader
+                🟢 1st Term (Wk 1-12)
               </button>
-
               <button
                 type="button"
-                onClick={() => setViewEngine('native')}
-                className={`px-2.5 py-1 rounded-lg border-[1.5px] border-dark text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  viewEngine === 'native'
-                    ? 'bg-dark text-white shadow-[1.5px_1.5px_0px_#F5C518]'
-                    : 'bg-white text-dark shadow-[1.5px_1.5px_0px_#060E1C]'
+                onClick={() => setSelectedTerm('2nd')}
+                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  selectedTerm === '2nd' ? 'bg-amber-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
                 }`}
               >
-                Raw Stream Engine
+                🟡 2nd Term (Wk 13-24)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTerm('3rd')}
+                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  selectedTerm === '3rd' ? 'bg-purple-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
+                }`}
+              >
+                🟣 3rd Term (Wk 25-36)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedTerm('all')}
+                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  selectedTerm === 'all' ? 'bg-dark text-white border-dark shadow-[1.5px_1.5px_0px_#F5C518]' : 'bg-white text-dark/70 border-dark/30'
+                }`}
+              >
+                🌟 All Terms
               </button>
             </div>
 
@@ -379,7 +393,12 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
                   <BookOpen className="h-5 w-5 text-indigo-600" /> Teaching Modules &amp; Full Unit Content
                 </h2>
 
-                {manuscript.modules.map((mod, idx) => (
+                {manuscript.modules.filter((_, idx) => {
+                  if (selectedTerm === '1st') return idx === 0 || idx === 1;
+                  if (selectedTerm === '2nd') return idx === 2;
+                  if (selectedTerm === '3rd') return idx === 3;
+                  return true;
+                }).map((mod, idx) => (
                   <div key={idx} className="p-6 rounded-2xl border-[3px] border-dark bg-off-white shadow-[4px_4px_0px_#060E1C] space-y-3">
                     <h3 className="text-lg font-black text-dark">{mod.unit}</h3>
                     <p className="text-xs sm:text-sm font-bold text-dark/80 leading-relaxed bg-white p-4 rounded-xl border border-dark/20">
