@@ -317,6 +317,27 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
               >
                 🌟 All Terms
               </button>
+
+              <div className="h-4 w-[1.5px] bg-dark/20 mx-1 hidden sm:block" />
+
+              <button
+                type="button"
+                onClick={() => setViewEngine('google')}
+                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  viewEngine === 'google' ? 'bg-indigo-600 text-white border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
+                }`}
+              >
+                📄 Full Original PDF File
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewEngine('native')}
+                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                  viewEngine === 'native' ? 'bg-amber-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
+                }`}
+              >
+                📖 Interactive Text Summary
+              </button>
             </div>
 
             {/* Audio Speech Controls */}
@@ -358,17 +379,9 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
           </div>
         </div>
 
-        {/* Reader View */}
-        <div className="flex-1 bg-slate-100 relative min-h-0 overflow-y-auto p-4 sm:p-8">
-          {pdfUrl && (pdfUrl.endsWith('.pdf') && pdfUrl.startsWith('http') && viewEngine === 'native') ? (
-            <iframe
-              key={viewEngine}
-              src={iframeSrc}
-              className="h-full w-full border-none rounded-xl bg-white shadow-inner"
-              title="PDF Document Viewer"
-              allow="fullscreen"
-            />
-          ) : (
+        {/* Reader View Engine */}
+        <div className="flex-1 bg-slate-100 relative min-h-0 overflow-y-auto p-2 sm:p-6">
+          {viewEngine === 'native' ? (
             <div id="interactive-document-reader" className="max-w-4xl mx-auto bg-white border-[3px] border-dark rounded-[24px] p-6 sm:p-10 shadow-[6px_6px_0px_#060E1C] space-y-8 animate-fade-up">
               
               {/* Document Banner */}
@@ -463,6 +476,14 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
                 <span className="bg-white border border-dark px-3 py-1 rounded-md shadow-sm">DOC ID: EDV-PDF-2026-FULLMANUSCRIPT</span>
               </div>
             </div>
+          ) : (
+            <iframe
+              key={viewEngine}
+              src={`${pdfUrl}#toolbar=1`}
+              className="h-full w-full border-none rounded-2xl bg-white shadow-inner min-h-[700px]"
+              title="Full Authentic Curriculum PDF Document Viewer"
+              allow="fullscreen"
+            />
           )}
         </div>
       </div>
