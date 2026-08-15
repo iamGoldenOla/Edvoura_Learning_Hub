@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Users, ShieldCheck, KeyRound, Download, Search, Filter, CheckCircle2, UserX, Eye, ArrowRightLeft, X } from 'lucide-react';
 import { reassignStudentTutor } from '@/app/dash/admin/actions';
+import { AdminLeadsHub } from '@/components/dashboards/admin/AdminLeadsHub';
 
 type UserRow = {
   id: string;
@@ -126,6 +127,9 @@ export function AdminUsersClient({
           </div>
         </div>
       </div>
+
+      {/* 📬 NATIVE SUPABASE CLIENT LEADS & INQUIRIES HUB */}
+      <AdminLeadsHub />
 
       {/* User Directory Table Container */}
       <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">

@@ -3,6 +3,7 @@ import Footer from '@/components/marketing/Footer';
 import { Mail, Phone, MapPin, Send, MessageSquare, Globe, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 import { siteContact } from '@/lib/site';
+import ContactFormClient from '@/components/marketing/ContactFormClient';
 
 export default function ContactPage() {
   return (
@@ -125,54 +126,7 @@ export default function ContactPage() {
                   <p className="text-navy/60 text-base sm:text-lg font-bold break-words">Fill out the form and our global team will be in touch shortly.</p>
                 </div>
 
-                <form className="space-y-6 sm:space-y-8 w-full">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                    <div>
-                      <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Full Name</label>
-                      <input
-                        type="text"
-                        placeholder="Sarah Jenkins"
-                        className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Email Address</label>
-                      <input
-                        type="email"
-                        placeholder="sarah@example.com"
-                        className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Subject</label>
-                    <select className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all appearance-none cursor-pointer text-ellipsis overflow-hidden">
-                      <option value="">Select a topic</option>
-                      <option value="general">Book Free Introductory Session</option>
-                      <option value="support">Academic Support Enquiry</option>
-                      <option value="billing">Global Payments / Billing</option>
-                      <option value="tutor">Become a Global Tutor</option>
-                      <option value="partnership">School Partnerships</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">Message</label>
-                    <textarea
-                      rows={5}
-                      placeholder="Tell us how we can help..."
-                      className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-3xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="group w-full bg-navy text-white font-heading font-black px-8 sm:px-16 py-4 sm:py-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#22C55E] sm:shadow-[10px_10px_0px_#22C55E] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#22C55E] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl sm:text-2xl flex items-center justify-center gap-4 break-words"
-                  >
-                    SEND MESSAGE <Send className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform shrink-0" />
-                  </button>
-                </form>
+                <ContactFormClient />
               </div>
             </div>
 
