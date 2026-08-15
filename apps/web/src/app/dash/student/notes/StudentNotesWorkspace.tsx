@@ -522,55 +522,38 @@ export default function StudentNotesWorkspace({
         </p>
       </section>
 
-      {/* Official Published Curriculum Lesson Notes */}
-      {visibleOfficialNotes.length > 0 ? (
-        <section className="rounded-[24px] border-[4px] border-dark bg-yellow/10 p-5 sm:p-6 shadow-[8px_8px_0px_#060E1C] space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-dark/10 pb-3">
-            <div className="flex items-center gap-3">
-              <BookOpen className="h-6 w-6 text-dark" />
-              <h2 className="text-xl font-black text-dark sm:text-2xl">Official {studentGradeName} Curriculum Lesson Notes</h2>
-            </div>
-            <span className="rounded-lg border-[1.5px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
-              {visibleOfficialNotes.length} Subjects Published
+      {/* Notes Pushed by Tutor */}
+      {aiLessonNotes.length > 0 ? (
+        <section className="rounded-[24px] border-[4px] border-dark bg-white p-5 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <BookOpen className="h-6 w-6 text-dark" />
+            <h2 className="text-xl font-black text-dark sm:text-2xl">Lesson Notes Pushed by Your Tutor</h2>
+            <span className="rounded-lg border-[1.5px] border-dark bg-green-100 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-green-900 shadow-[2px_2px_0px_#060E1C]">
+              📢 {aiLessonNotes.length} Published
             </span>
           </div>
-          <p className="text-sm font-semibold text-dark/70">
-            Official term-by-term lesson notes published by your tutors. Tap to open and read the complete PDF guide.
+          <p className="text-sm font-semibold text-dark/60 mb-4">
+            Lesson notes specifically assigned and pushed to your grade by your tutor. Tap to expand and study.
           </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 pt-2">
-            {visibleOfficialNotes.map((note) => (
-              <div
-                key={note.id}
-                className="border-[3px] border-dark rounded-[20px] bg-white p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col justify-between hover:translate-y-[-2px] transition-all"
-              >
-                <div>
-                  <div className="flex flex-wrap items-center gap-1.5 mb-3">
-                    <span className="inline-block px-2.5 py-1 bg-indigo-100 border-[2px] border-dark rounded-md text-[10px] font-black uppercase text-indigo-900 shadow-[2px_2px_0px_#060E1C]">
-                      {note.subjectName}
-                    </span>
-                    <span className="inline-block px-2 py-0.5 bg-amber-100 border border-dark rounded text-[9px] font-black text-amber-950">
-                      📖 Official Baseline
-                    </span>
-                  </div>
-                  <h3 className="text-sm sm:text-base font-extrabold text-dark mb-2 leading-[1.4] tracking-tight break-words" style={{ lineHeight: '1.4' }}>{note.title}</h3>
-                  <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-3">{note.description}</p>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setActivePdfUrl(note.fileUrl);
-                    setActivePdfTitle(note.title);
-                  }}
-                  className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  📖 Read Full Lesson Note PDF
-                </button>
-              </div>
+          <div className="space-y-4">
+            {aiLessonNotes.map((note) => (
+              <StudentLessonNoteView key={note.id} note={note} />
             ))}
           </div>
         </section>
-      ) : null}
+      ) : (
+        <section className="rounded-[24px] border-[4px] border-dashed border-dark/20 bg-white p-8 shadow-[6px_6px_0px_#060E1C] text-center space-y-3">
+          <div className="flex justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 border-[2px] border-dark flex items-center justify-center text-2xl">
+              📢
+            </div>
+          </div>
+          <h3 className="text-lg font-black text-dark">No Tutor Lesson Notes Pushed Yet</h3>
+          <p className="text-xs font-bold text-dark/60 max-w-md mx-auto">
+            Your dashboard will only display lesson notes when your assigned tutor pushes them specifically to your grade level ({studentGradeName}).
+          </p>
+        </section>
+      )}
 
       {/* Published lesson notes */}
       {aiLessonNotes.length > 0 ? (
