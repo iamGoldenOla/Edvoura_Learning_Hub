@@ -7,7 +7,7 @@ export async function sendDirectEmail({
   to,
   subject,
   html,
-  from = 'Edvoura Learning Hub <onboarding@resend.dev>',
+  from = 'Edvoura Learning Hub <support@edvouralearninghub.com>',
 }: {
   to: string;
   subject: string;
