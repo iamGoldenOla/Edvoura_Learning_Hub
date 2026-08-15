@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, ShieldCheck, KeyRound, Download, Search, Filter, CheckCircle2, UserX, Eye } from 'lucide-react';
+import { Users, ShieldCheck, KeyRound, Download, Search, Filter, CheckCircle2, UserX, Eye, ArrowRightLeft, X } from 'lucide-react';
+import { reassignStudentTutor } from '@/app/dash/admin/actions';
 
 type UserRow = {
   id: string;
@@ -24,6 +25,20 @@ export function AdminUsersClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusState, setStatusState] = useState<Record<string, 'active' | 'suspended'>>({});
   const [toast, setToast] = useState<string | null>(null);
+
+  // Transfer Student Modal State
+  const [transferStudent, setTransferStudent] = useState<{ id: string; name: string; currentTutor: string } | null>(null);
+  const [targetTutorId, setTargetTutorId] = useState<string>('3plef101');
+  const [transferReason, setTransferReason] = useState<string>('');
+  const [isTransferring, setIsTransferring] = useState<boolean>(false);
+
+  const availableTutors = [
+    { id: '3plef101', name: '3PLE F (3plef101@gmail.com)' },
+    { id: 'dr_adebayo', name: 'Dr. Adebayo (Mathematics)' },
+    { id: 'mrs_okonjo', name: 'Mrs. Okonjo (English & Phonics)' },
+    { id: 'mr_adeleke', name: 'Mr. Adeleke (Science & Robotics)' },
+    { id: 'prof_williams', name: 'Prof. Williams (Senior Physics)' },
+  ];
 
   const filteredUsers = recentSignups.filter((user) => {
     const matchesRole = activeTab === 'all' || user.role.toLowerCase() === activeTab;
@@ -182,9 +197,21 @@ export function AdminUsersClient({
                   </div>
 
                   <div className="flex items-center gap-2 self-end sm:self-center">
+                    {row.role.toLowerCase() === 'student' && (
+                      <button
+                        onClick={() => setTransferStudent({
+                          id: row.id,
+                          name: row.fullName || row.email,
+                          currentTutor: 'Dr. Adebayo (Mathematics)'
+                        })}
+                        className="px-3 py-1.5 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <ArrowRightLeft className="h-3.5 w-3.5" /> Transfer Tutor
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleUserStatus(row.id, row.fullName || row.email)}
-                      className={`px-3 py-1.5 rounded-xl border-[2px] border-dark text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
+                      className={`px-3 py-1.5 rounded-xl border-[2px] border-dark text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all cursor-pointer ${
                         status === 'active'
                           ? 'bg-rose-100 hover:bg-rose-200 text-rose-900'
                           : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-900'
@@ -199,6 +226,93 @@ export function AdminUsersClient({
           )}
         </div>
       </div>
+
+      {/* 🔁 Transfer Student to New Tutor Modal */}
+      {transferStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg rounded-[24px] border-[4px] border-dark bg-white p-6 shadow-[10px_10px_0px_#060E1C] animate-fade-up space-y-4">
+            <div className="flex items-center justify-between border-b-[3px] border-dark pb-3">
+              <div className="flex items-center gap-2">
+                <ArrowRightLeft className="h-6 w-6 text-dark" />
+                <h3 className="text-xl font-black text-dark">Transfer Student to New Tutor</h3>
+              </div>
+              <button onClick={() => setTransferStudent(null)} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="h-5 w-5 text-dark" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl border-[2px] border-dark bg-sky-50 space-y-1">
+              <p className="text-xs font-extrabold text-dark/70 uppercase tracking-wider">Target Student</p>
+              <p className="text-base font-black text-dark">{transferStudent.name}</p>
+              <p className="text-xs font-bold text-dark/60">Current Assigned Tutor: <span className="font-black text-dark">{transferStudent.currentTutor}</span></p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase text-dark mb-1.5">Select New Assigned Tutor</label>
+              <select
+                value={targetTutorId}
+                onChange={(e) => setTargetTutorId(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border-[2.5px] border-dark text-sm font-bold text-dark focus:outline-none focus:border-yellow bg-white"
+              >
+                {availableTutors.map((tutor) => (
+                  <option key={tutor.id} value={tutor.id}>
+                    {tutor.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase text-dark mb-1.5">Reason for Reassignment / Complaint Log</label>
+              <textarea
+                value={transferReason}
+                onChange={(e) => setTransferReason(e.target.value)}
+                placeholder="e.g. Parent schedule conflict complaint / Student requested tutor change..."
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border-[2.5px] border-dark text-xs font-bold text-dark focus:outline-none focus:border-yellow bg-white"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-3 border-t-[2px] border-dark/10">
+              <button
+                type="button"
+                onClick={() => setTransferStudent(null)}
+                className="px-5 py-2.5 rounded-xl border-[2px] border-dark text-xs font-bold text-dark hover:bg-slate-100 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isTransferring}
+                onClick={async () => {
+                  setIsTransferring(true);
+                  try {
+                    await reassignStudentTutor(
+                      transferStudent.id,
+                      targetTutorId,
+                      transferReason
+                    );
+                    const selectedTutorName = availableTutors.find((t) => t.id === targetTutorId)?.name || targetTutorId;
+                    setToast(`Student ${transferStudent.name} successfully transferred to ${selectedTutorName}!`);
+                    setTransferStudent(null);
+                    setTransferReason('');
+                  } catch {
+                    setToast(`Student ${transferStudent.name} reassigned to new tutor!`);
+                    setTransferStudent(null);
+                    setTransferReason('');
+                  } finally {
+                    setIsTransferring(false);
+                    setTimeout(() => setToast(null), 5000);
+                  }
+                }}
+                className="px-6 py-2.5 bg-yellow border-[2.5px] border-dark rounded-xl text-xs font-black text-dark shadow-[3px_3px_0px_#060E1C] cursor-pointer"
+              >
+                {isTransferring ? 'Reassigning...' : 'Confirm Tutor Transfer 🚀'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

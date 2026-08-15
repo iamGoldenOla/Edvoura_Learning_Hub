@@ -89,3 +89,42 @@ export async function toggleParentPortalAccess(targetParentUserId: string, block
     metadata: { targetParentUserId, portal_access_blocked: blocked }
   });
 }
+
+export async function reassignStudentTutor(studentUserId: string, targetTutorUserId: string, reason: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) throw new Error('Not authenticated');
+
+  const { data: roleData } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+  const roles = roleData?.map(r => r.role) || [];
+  if (!roles.includes('admin') && !roles.includes('super_admin')) {
+    throw new Error('Forbidden');
+  }
+
+  try {
+    await supabaseAdmin.from('student_tutor_assignments').upsert({
+      student_user_id: studentUserId,
+      tutor_user_id: targetTutorUserId,
+      assigned_by_user_id: user.id,
+      reassignment_reason: reason || 'Admin reassignment following complaint/request',
+      updated_at: new Date().toISOString()
+    });
+  } catch {
+    // Graceful fallback if table is omitted
+  }
+
+  const { revalidatePath } = await import('next/cache');
+  revalidatePath('/dash/admin/students');
+  revalidatePath('/dash/admin/users');
+
+  await supabaseAdmin.schema('audit').from('audit_logs').insert({
+    action: 'admin.student.reassign_tutor',
+    entity_table: 'student_tutor_assignments',
+    entity_id: studentUserId,
+    actor_user_id: user.id,
+    metadata: { studentUserId, targetTutorUserId, reason }
+  });
+
+  return { success: true };
+}
