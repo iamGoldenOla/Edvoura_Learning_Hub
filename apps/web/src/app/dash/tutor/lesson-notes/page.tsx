@@ -23,6 +23,8 @@ type LessonPlan = {
   safeguarding: string;
   reflection: string;
   status: 'Ready' | 'Draft';
+  targetScope?: 'all_class' | 'specific_student';
+  targetStudentName?: string;
 };
 
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
@@ -2348,6 +2350,8 @@ export default function TutorLessonNotesPage() {
   const [safeguarding, setSafeguarding] = useState('');
   const [reflection, setReflection] = useState('');
   const [feedback, setFeedback] = useState('');
+  const [targetScope, setTargetScope] = useState<'all_class' | 'specific_student'>('all_class');
+  const [targetStudentName, setTargetStudentName] = useState<string>('');
   const [explainerMode, setExplainerMode] = useState<'simple' | 'harder_examples' | 'checks_for_understanding' | 'revision_notes'>('simple');
   const [explainerPlanId, setExplainerPlanId] = useState<string | null>(basePlans[0]?.id ?? null);
   const [explainerResult, setExplainerResult] = useState<{
@@ -2441,6 +2445,8 @@ export default function TutorLessonNotesPage() {
       safeguarding: safeSafeguarding,
       reflection: safeReflection,
       status,
+      targetScope,
+      targetStudentName: targetScope === 'specific_student' ? targetStudentName.trim() : '',
     };
 
     if (editingPlanId) {
@@ -2562,6 +2568,8 @@ export default function TutorLessonNotesPage() {
     setHomework(item.homework);
     setSafeguarding(item.safeguarding);
     setReflection(item.reflection);
+    setTargetScope(item.targetScope || 'all_class');
+    setTargetStudentName(item.targetStudentName || '');
     setEditingPlanId(item.id);
     setShowForm(true);
     setFeedback(`Editing lesson note: ${item.topic}`);
@@ -2806,9 +2814,65 @@ export default function TutorLessonNotesPage() {
                         <input
                           value={className}
                           onChange={(event) => setClassName(event.target.value)}
-                          placeholder="Class name (e.g., JSS3 Mathematics)"
+                          placeholder="Class name (e.g., Grade 3 Mathematics)"
                           className="w-full rounded-xl border-[2px] sm:border-[3px] border-dark bg-white px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
+
+                        {/* 🎯 Target Recipient Scope Selector */}
+                        <div className="p-4 rounded-xl border-[2.5px] border-dark bg-amber-50 space-y-3">
+                          <label className="block text-xs font-black uppercase text-dark tracking-wider">
+                            🎯 Target Distribution Scope (Who receives this note?)
+                          </label>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setTargetScope('all_class')}
+                              className={`px-3.5 py-2 rounded-lg border-[2px] border-dark text-xs font-black transition-all cursor-pointer ${
+                                targetScope === 'all_class'
+                                  ? 'bg-amber-400 text-dark shadow-[2px_2px_0px_#000]'
+                                  : 'bg-white text-dark/70'
+                              }`}
+                            >
+                              📢 Entire Grade/Class
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setTargetScope('specific_student')}
+                              className={`px-3.5 py-2 rounded-lg border-[2px] border-dark text-xs font-black transition-all cursor-pointer ${
+                                targetScope === 'specific_student'
+                                  ? 'bg-purple-400 text-dark shadow-[2px_2px_0px_#000]'
+                                  : 'bg-white text-dark/70'
+                              }`}
+                            >
+                              🎯 Specific Student(s) (e.g. Titomi)
+                            </button>
+                          </div>
+
+                          {targetScope === 'specific_student' && (
+                            <div className="space-y-2 pt-2 border-t border-dark/20">
+                              <input
+                                type="text"
+                                value={targetStudentName}
+                                onChange={(e) => setTargetStudentName(e.target.value)}
+                                placeholder="Enter student name (e.g. Titomi)..."
+                                className="w-full px-3.5 py-2.5 rounded-lg border-[2px] border-dark text-xs font-bold text-dark bg-white focus:outline-none"
+                              />
+                              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold text-dark/80">
+                                <span>Quick Select Student:</span>
+                                {['Titomi (Grade 3)', 'Alex (Grade 3)', 'David (Grade 2)', 'Sophia (Grade 4)'].map((name) => (
+                                  <button
+                                    key={name}
+                                    type="button"
+                                    onClick={() => setTargetStudentName(name)}
+                                    className="px-2 py-0.5 bg-white border border-dark rounded hover:bg-yellow text-[10px] font-bold cursor-pointer"
+                                  >
+                                    + {name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <input
                           value={topic}
                           onChange={(event) => setTopic(event.target.value)}
@@ -2906,9 +2970,20 @@ export default function TutorLessonNotesPage() {
                   {plans.map((item) => (
                     <div key={item.id} className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-off-white p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
                       <div className="mb-4 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4">
-                        <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] sm:tracking-[0.12em] text-dark bg-white px-3 py-1.5 sm:py-1 rounded-md border-[2px] border-dark break-words max-w-full">
-                          {item.className} | {item.lessonDate} | {item.duration}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] sm:tracking-[0.12em] text-dark bg-white px-3 py-1.5 sm:py-1 rounded-md border-[2px] border-dark break-words max-w-full">
+                            {item.className} | {item.lessonDate} | {item.duration}
+                          </p>
+                          <span className={`px-2.5 py-1 text-[10px] font-black rounded-md border-[2px] border-dark ${
+                            item.targetScope === 'specific_student'
+                              ? 'bg-purple-200 text-purple-950'
+                              : 'bg-amber-200 text-amber-950'
+                          }`}>
+                            {item.targetScope === 'specific_student'
+                              ? `🎯 Target: ${item.targetStudentName || 'Specific Student'}`
+                              : '📢 Scope: Entire Class'}
+                          </span>
+                        </div>
                         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                           <Button className="flex-1 sm:flex-none h-10 sm:h-8 border-[2px] border-dark bg-white text-dark font-black text-xs hover:bg-slate-50 shadow-[2px_2px_0px_#060E1C] transition-all active:translate-y-[1px] active:translate-x-[1px] active:shadow-none" onClick={() => startEditPlan(item)}>
                             <Pencil className="mr-1 h-3.5 w-3.5" /> Edit

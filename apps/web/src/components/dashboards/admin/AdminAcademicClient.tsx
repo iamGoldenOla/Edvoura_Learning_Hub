@@ -82,10 +82,11 @@ export function AdminAcademicClient({
         <div className="rounded-[20px] sm:rounded-[28px] border-[3px] sm:border-[4px] border-dark bg-emerald-100 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] flex flex-col justify-between min-w-0">
           <div className="flex items-center gap-3">
             <Layers className="h-6 w-6 text-dark" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Grade Bands</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-dark/80">Individual Grades</p>
           </div>
           <div className="mt-6">
-            <p className="text-5xl font-black text-dark">{bandsCount}</p>
+            <p className="text-5xl font-black text-dark">12</p>
+            <p className="text-[10px] font-extrabold text-emerald-900 mt-1">🔒 Strictly Isolated (Grade 1 - 12)</p>
           </div>
         </div>
 
@@ -118,10 +119,10 @@ export function AdminAcademicClient({
           </div>
           <div className="p-6 sm:p-8 space-y-4 flex-1">
             <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-sm sm:text-base">
-              Subject and syllabus mapping by grade band (Primary 1-3, 4-6, JSS 1-3, SSS 1-3)
+              🔒 Individual Grade-Level Syllabus Mapping (Grade 1, Grade 2 ... Grade 12 strictly isolated)
             </div>
             <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-sm sm:text-base">
-              Lesson oversight: completion rate and live class attendance monitoring
+              🎯 Selective Student &amp; Class Lesson Distribution Oversight
             </div>
             <div className="rounded-2xl border-[3px] border-dark bg-off-white p-5 shadow-[4px_4px_0px_#060E1C] font-black text-dark text-sm sm:text-base">
               Interactive retention quiz and homework assignment compliance
@@ -154,7 +155,7 @@ export function AdminAcademicClient({
               onClick={() => setShowMapGradeModal(true)}
               className="bg-white border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-6 py-4 flex items-center justify-center text-center text-sm cursor-pointer"
             >
-              Map Grade Band Curriculum
+              Map Individual Grade Curriculum
             </button>
           </div>
         </div>
@@ -185,16 +186,24 @@ export function AdminAcademicClient({
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase text-dark mb-1">Target Grade Band</label>
+                <label className="block text-xs font-black uppercase text-dark mb-1">Target Individual Grade Level</label>
                 <select
                   value={gradeBand}
                   onChange={(e) => setGradeBand(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border-[2.5px] border-dark text-sm font-bold text-dark focus:outline-none focus:border-yellow bg-white"
                 >
-                  <option value="1-3">Primary 1-3 (Grade 1 to 3)</option>
-                  <option value="4-6">Primary 4-6 (Grade 4 to 6)</option>
-                  <option value="7-9">JSS 1-3 (Grade 7 to 9)</option>
-                  <option value="10-12">SSS 1-3 (Grade 10 to 12)</option>
+                  <option value="grade_1">Primary 1 (Grade 1)</option>
+                  <option value="grade_2">Primary 2 (Grade 2)</option>
+                  <option value="grade_3">Primary 3 (Grade 3)</option>
+                  <option value="grade_4">Primary 4 (Grade 4)</option>
+                  <option value="grade_5">Primary 5 (Grade 5)</option>
+                  <option value="grade_6">Primary 6 (Grade 6)</option>
+                  <option value="grade_7">JSS 1 (Grade 7 / Basic 7)</option>
+                  <option value="grade_8">JSS 2 (Grade 8 / Basic 8)</option>
+                  <option value="grade_9">JSS 3 (Grade 9 / Basic 9)</option>
+                  <option value="grade_10">SSS 1 (Grade 10 / Senior 1)</option>
+                  <option value="grade_11">SSS 2 (Grade 11 / Senior 2)</option>
+                  <option value="grade_12">SSS 3 (Grade 12 / Senior 3)</option>
                 </select>
               </div>
 
@@ -219,27 +228,43 @@ export function AdminAcademicClient({
         </div>
       )}
 
-      {/* Map Grade Band Modal */}
+      {/* Map Individual Grade Modal */}
       {showMapGradeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/80 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-[24px] border-[4px] border-dark bg-white p-6 shadow-[10px_10px_0px_#060E1C] animate-fade-up">
+          <div className="w-full max-w-lg rounded-[24px] border-[4px] border-dark bg-white p-6 shadow-[10px_10px_0px_#060E1C] animate-fade-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b-[3px] border-dark pb-3 mb-4">
-              <h3 className="text-xl font-black text-dark">Map Grade Band Curriculum</h3>
+              <h3 className="text-xl font-black text-dark">Map Individual Grade Curriculum</h3>
               <button onClick={() => setShowMapGradeModal(false)} className="p-1 hover:bg-slate-100 rounded-lg">
                 <X className="h-5 w-5 text-dark" />
               </button>
             </div>
 
             <p className="text-xs font-bold text-dark/70 mb-4">
-              Configure curriculum requirements and mandatory subjects across grade bands.
+              Configure curriculum requirements and syllabus topics for each isolated grade level independently.
             </p>
 
-            <div className="space-y-3">
-              {['Primary 1-3', 'Primary 4-6', 'JSS 1-3 (Basic 7-9)', 'SSS 1-3 (Grade 10-12)'].map((band) => (
-                <div key={band} className="p-3.5 rounded-xl border-[2px] border-dark bg-slate-50 flex items-center justify-between">
-                  <span className="font-black text-xs text-dark">{band}</span>
-                  <span className="px-2 py-0.5 bg-emerald-100 text-emerald-900 border border-dark rounded text-[10px] font-black">
-                    Mapped
+            <div className="space-y-2">
+              {[
+                { code: 'grade_1', name: 'Primary 1 (Grade 1)' },
+                { code: 'grade_2', name: 'Primary 2 (Grade 2)' },
+                { code: 'grade_3', name: 'Primary 3 (Grade 3)' },
+                { code: 'grade_4', name: 'Primary 4 (Grade 4)' },
+                { code: 'grade_5', name: 'Primary 5 (Grade 5)' },
+                { code: 'grade_6', name: 'Primary 6 (Grade 6)' },
+                { code: 'grade_7', name: 'JSS 1 (Grade 7)' },
+                { code: 'grade_8', name: 'JSS 2 (Grade 8)' },
+                { code: 'grade_9', name: 'JSS 3 (Grade 9)' },
+                { code: 'grade_10', name: 'SSS 1 (Grade 10)' },
+                { code: 'grade_11', name: 'SSS 2 (Grade 11)' },
+                { code: 'grade_12', name: 'SSS 3 (Grade 12)' },
+              ].map((g) => (
+                <div key={g.code} className="p-3 rounded-xl border-[2px] border-dark bg-slate-50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span className="font-black text-xs text-dark">{g.name}</span>
+                  </div>
+                  <span className="px-2.5 py-1 bg-emerald-100 text-emerald-950 border border-dark rounded-lg text-[10px] font-black">
+                    🔒 Isolated &amp; Mapped
                   </span>
                 </div>
               ))}
@@ -249,12 +274,12 @@ export function AdminAcademicClient({
               <button
                 onClick={() => {
                   setShowMapGradeModal(false);
-                  setToastMessage('Grade band curriculum mapping updated!');
+                  setToastMessage('Individual grade curriculum mapping updated & isolated!');
                   setTimeout(() => setToastMessage(null), 4000);
                 }}
                 className="px-6 py-2.5 bg-dark text-white border-[2.5px] border-dark rounded-xl text-xs font-black shadow-[3px_3px_0px_#060E1C]"
               >
-                Close & Apply
+                Close &amp; Apply
               </button>
             </div>
           </div>
