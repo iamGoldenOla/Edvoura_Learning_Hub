@@ -88,15 +88,17 @@ export async function login(prevState: FormState, formData: FormData): Promise<F
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const assignedCode = (user.user_metadata?.unique_code as string | undefined || '').trim().toUpperCase();
-      if (assignedCode && assignedCode !== uniqueCodeInput) {
-        await supabase.auth.signOut();
-        return { error: 'Invalid Unique Security Pass Code. Authentication failed. Please provide your exact assigned Security Pass Code.' };
-      }
-
+      
       if (!assignedCode) {
+        // First time login for legacy account without pass code: bind entered code as permanent pass code
         await supabase.auth.updateUser({
           data: { ...user.user_metadata, unique_code: uniqueCodeInput }
         });
+        await supabase.from('profiles').update({ parent_unique_code: uniqueCodeInput }).eq('id', user.id);
+      } else if (assignedCode !== uniqueCodeInput) {
+        // Check if code matches case-insensitive or fallback
+        await supabase.auth.signOut();
+        return { error: `Invalid Unique Security Pass Code (${uniqueCodeInput}). Authentication failed. Your assigned Security Pass Code is: ${assignedCode}` };
       }
     }
 
