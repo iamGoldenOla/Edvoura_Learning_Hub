@@ -2480,6 +2480,7 @@ export default function TutorLessonNotesPage() {
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
+  const [activePdfNoteId, setActivePdfNoteId] = useState<string>('');
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_12');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
@@ -2796,6 +2797,7 @@ export default function TutorLessonNotesPage() {
                         onClick={() => {
                           setActivePdfUrl(note.fileUrl);
                           setActivePdfTitle(note.title);
+                          setActivePdfNoteId(note.id);
                         }}
                         className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
@@ -3193,10 +3195,11 @@ export default function TutorLessonNotesPage() {
         onClose={() => {
           setActivePdfUrl(null);
           setActivePdfTitle('');
+          setActivePdfNoteId('');
         }}
         pdfUrl={activePdfUrl}
         title={activePdfTitle}
-        unlockedWeek={1}
+        unlockedWeek={unlockedNoteWeeks[activePdfNoteId] || 1}
       />
     </div>
   );

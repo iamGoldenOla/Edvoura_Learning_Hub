@@ -166,10 +166,18 @@ function getSubjectSpecificManuscript(title: string) {
 }
 
 export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 1 }: PDFViewerModalProps) {
-  const [viewEngine, setViewEngine] = useState<'google' | 'native'>('google');
+  const [viewEngine, setViewEngine] = useState<'google' | 'native'>(unlockedWeek < 36 ? 'native' : 'google');
   const [selectedTerm, setSelectedTerm] = useState<'all' | '1st' | '2nd' | '3rd'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (unlockedWeek < 36) {
+      setViewEngine('native');
+    } else {
+      setViewEngine('google');
+    }
+  }, [unlockedWeek, isOpen]);
 
   useEffect(() => {
     return () => {
@@ -469,13 +477,27 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 
               </div>
             </div>
           ) : (
-            <iframe
-              key={viewEngine}
-              src={`${pdfUrl}#toolbar=1`}
-              className="h-full w-full border-none rounded-2xl bg-white shadow-inner min-h-[700px]"
-              title="Full Authentic Curriculum PDF Document Viewer"
-              allow="fullscreen"
-            />
+            <div className="h-full flex flex-col space-y-2">
+              {unlockedWeek < 36 && (
+                <div className="p-3 rounded-xl border-[2px] border-dark bg-amber-200 text-amber-950 text-xs font-black flex items-center justify-between shadow-[2px_2px_0px_#000]">
+                  <span>🔒 WEEKLY PACING LOCK ACTIVE: Tutor set pacing to Week {unlockedWeek}. Switch to "Interactive Text Summary" for strict topic locking.</span>
+                  <button
+                    type="button"
+                    onClick={() => setViewEngine('native')}
+                    className="px-2.5 py-1 bg-dark text-white rounded-lg text-[10px] font-black uppercase hover:bg-slate-800 cursor-pointer"
+                  >
+                    Switch to Locked Reader
+                  </button>
+                </div>
+              )}
+              <iframe
+                key={viewEngine}
+                src={`${pdfUrl}#page=1&toolbar=0`}
+                className="flex-1 w-full border-none rounded-2xl bg-white shadow-inner min-h-[650px]"
+                title="Full Authentic Curriculum PDF Document Viewer"
+                allow="fullscreen"
+              />
+            </div>
           )}
         </div>
       </div>
