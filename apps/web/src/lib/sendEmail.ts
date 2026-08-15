@@ -17,13 +17,11 @@ export async function sendDirectEmail({
   const apiKey = process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY;
 
   if (!apiKey) {
-    console.log(`[EMAIL DISPATCH] No RESEND_API_KEY configured. Email payload generated for ${to}: "${subject}"`);
+    console.log(`[EMAIL DISPATCH] No RESEND_API_KEY configured in environment variables. Target: ${to}`);
     return {
       success: false,
       reason: 'MISSING_API_KEY',
-      to,
-      subject,
-      message: 'Email HTML generated successfully. To deliver directly to actual Gmail inboxes, add your RESEND_API_KEY to Vercel Environment Variables.',
+      errorMsg: 'RESEND_API_KEY is not set in Vercel Environment Variables. Please add RESEND_API_KEY in Vercel settings and trigger redeploy.',
     };
   }
 
@@ -45,8 +43,13 @@ export async function sendDirectEmail({
     const data = await res.json();
 
     if (!res.ok) {
-      console.error('[EMAIL DISPATCH ERROR]', data);
-      return { success: false, reason: 'API_ERROR', details: data };
+      console.error('[RESEND DISPATCH ERROR]', data);
+      return {
+        success: false,
+        reason: 'RESEND_API_ERROR',
+        status: res.status,
+        errorMsg: data.message || data.error || JSON.stringify(data),
+      };
     }
 
     return { success: true, id: data.id, to, subject };

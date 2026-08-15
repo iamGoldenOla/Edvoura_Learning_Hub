@@ -187,14 +187,14 @@ export async function dispatchParentWelcomeEmailAction({
   }
 
   return {
-    success: true,
+    success: emailResult.success,
     recipientEmail,
     subject,
     templateType,
     delivered: emailResult.success,
     message: emailResult.success
-      ? `✅ HTML Email (${templateType.toUpperCase()}) successfully delivered to ${recipientEmail}!`
-      : `⚠️ HTML Template generated for ${recipientEmail}! (Note: Supabase default mailer requires adding RESEND_API_KEY in Vercel to bypass Supabase's strict rate limits).`,
+      ? `✅ HTML Email (${templateType.toUpperCase()}) successfully delivered to ${recipientEmail}! Check your inbox.`
+      : `Resend API Response: ${emailResult.errorMsg || 'Failed to deliver email.'}`,
   };
 }
 
