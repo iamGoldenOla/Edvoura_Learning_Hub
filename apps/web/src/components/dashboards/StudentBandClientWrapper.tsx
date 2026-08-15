@@ -12,6 +12,7 @@ import { getFeedRulesForRole } from '@/lib/dashboard/feedRules';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
 import { CelebrationBanner } from '@/components/ui/CelebrationBanner';
+import { StudentSkillHeatmap } from '@/components/dashboards/student/StudentSkillHeatmap';
 
 const bandCopy = {
   '1-3': {
@@ -206,6 +207,9 @@ export default function StudentBandClientWrapper({
             </div>
           </div>
         </div>
+
+        {/* 🗺️ VISUAL TOPIC MASTERY HEATMAP & SKILL MATRIX */}
+        <StudentSkillHeatmap />
 
         {/* Quick Fun Links */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
