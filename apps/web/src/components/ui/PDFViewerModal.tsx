@@ -277,62 +277,22 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
             </div>
           </div>
 
-          {/* Subbar Controls & Term Filter Bar */}
+          {/* Subbar Controls */}
           <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-dark/10">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[10px] font-black uppercase text-dark/60 tracking-wider">Term Filter:</span>
-              <button
-                type="button"
-                onClick={() => setSelectedTerm('1st')}
-                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  selectedTerm === '1st' ? 'bg-emerald-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
-                }`}
-              >
-                🟢 1st Term (Wk 1-12)
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedTerm('2nd')}
-                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  selectedTerm === '2nd' ? 'bg-amber-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
-                }`}
-              >
-                🟡 2nd Term (Wk 13-24)
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedTerm('3rd')}
-                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  selectedTerm === '3rd' ? 'bg-purple-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
-                }`}
-              >
-                🟣 3rd Term (Wk 25-36)
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedTerm('all')}
-                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
-                  selectedTerm === 'all' ? 'bg-dark text-white border-dark shadow-[1.5px_1.5px_0px_#F5C518]' : 'bg-white text-dark/70 border-dark/30'
-                }`}
-              >
-                🌟 All Terms
-              </button>
-
-              <div className="h-4 w-[1.5px] bg-dark/20 mx-1 hidden sm:block" />
-
               <button
                 type="button"
                 onClick={() => setViewEngine('google')}
-                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg border-[1.5px] text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                   viewEngine === 'google' ? 'bg-indigo-600 text-white border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
                 }`}
               >
-                📄 Full Original PDF File
+                📄 Full Master PDF File Document
               </button>
               <button
                 type="button"
                 onClick={() => setViewEngine('native')}
-                className={`px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-lg border-[1.5px] text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                   viewEngine === 'native' ? 'bg-amber-400 text-dark border-dark shadow-[1.5px_1.5px_0px_#000]' : 'bg-white text-dark/70 border-dark/30'
                 }`}
               >

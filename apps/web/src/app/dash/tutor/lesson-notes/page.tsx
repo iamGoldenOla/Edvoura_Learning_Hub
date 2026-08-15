@@ -2776,76 +2776,23 @@ export default function TutorLessonNotesPage() {
                         👁️ Preview PDF Note
                       </button>
 
-                      {/* Granular Term-by-Term Scope & Master Publish Button */}
-                      {(() => {
-                        const currentTerm = selectedNoteTerms[note.id] || '1st';
-                        const termLabel = currentTerm === '1st' ? '1st Term' : currentTerm === '2nd' ? '2nd Term' : currentTerm === '3rd' ? '3rd Term' : 'All 3 Terms';
-                        return (
-                          <div className="space-y-2">
-                            <div className="p-2 rounded-xl border-[2px] border-dark bg-slate-50 space-y-1">
-                              <span className="block text-[9px] font-black uppercase text-dark/60 tracking-wider text-center">
-                                Select Term Scope:
-                              </span>
-                              <div className="grid grid-cols-4 gap-1">
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedNoteTerms(prev => ({ ...prev, [note.id]: '1st' }))}
-                                  className={`py-1 rounded-md border text-[9px] font-black uppercase transition-all cursor-pointer ${
-                                    currentTerm === '1st' ? 'bg-emerald-400 text-dark border-dark font-black shadow-[1px_1px_0px_#000]' : 'bg-white text-dark/60 border-dark/20'
-                                  }`}
-                                >
-                                  1st
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedNoteTerms(prev => ({ ...prev, [note.id]: '2nd' }))}
-                                  className={`py-1 rounded-md border text-[9px] font-black uppercase transition-all cursor-pointer ${
-                                    currentTerm === '2nd' ? 'bg-amber-400 text-dark border-dark font-black shadow-[1px_1px_0px_#000]' : 'bg-white text-dark/60 border-dark/20'
-                                  }`}
-                                >
-                                  2nd
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedNoteTerms(prev => ({ ...prev, [note.id]: '3rd' }))}
-                                  className={`py-1 rounded-md border text-[9px] font-black uppercase transition-all cursor-pointer ${
-                                    currentTerm === '3rd' ? 'bg-purple-400 text-dark border-dark shadow-[1px_1px_0px_#000]' : 'bg-white text-dark/60 border-dark/20'
-                                  }`}
-                                >
-                                  3rd
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedNoteTerms(prev => ({ ...prev, [note.id]: 'all' }))}
-                                  className={`py-1 rounded-md border text-[9px] font-black uppercase transition-all cursor-pointer ${
-                                    currentTerm === 'all' ? 'bg-dark text-white border-dark shadow-[1px_1px_0px_#F5C518]' : 'bg-white text-dark/60 border-dark/20'
-                                  }`}
-                                >
-                                  All
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* PROMINENT MASTER PUBLISH BUTTON TO STUDENT DASHBOARD */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                toggleOfficialNotePublish(note.id);
-                                setFeedback(`Note "${note.title}" (${termLabel}) has been ${isPub ? 'unpublished from' : 'published live to'} student dashboard!`);
-                              }}
-                              className={`w-full py-2.5 border-[2.5px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                                isPub
-                                  ? 'bg-emerald-400 hover:bg-emerald-500 text-dark'
-                                  : 'bg-emerald-300 hover:bg-emerald-400 text-dark'
-                              }`}
-                            >
-                              {isPub
-                                ? `✅ PUBLISHED TO STUDENT DASHBOARD (${termLabel})`
-                                : `🚀 PUBLISH TO STUDENT DASHBOARD (${termLabel})`}
-                            </button>
-                          </div>
-                        );
-                      })()}
+                      {/* Clean 1-Click Master Publish Button to Student Dashboard */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleOfficialNotePublish(note.id);
+                          setFeedback(`Note "${note.title}" has been ${isPub ? 'unpublished from' : 'published live to'} student dashboard!`);
+                        }}
+                        className={`w-full py-2.5 border-[2.5px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                          isPub
+                            ? 'bg-emerald-400 hover:bg-emerald-500 text-dark'
+                            : 'bg-emerald-300 hover:bg-emerald-400 text-dark'
+                        }`}
+                      >
+                        {isPub
+                          ? `✅ PUBLISHED TO STUDENT DASHBOARD`
+                          : `🚀 PUBLISH TO STUDENT DASHBOARD`}
+                      </button>
                     </div>
                   </div>
                 );
