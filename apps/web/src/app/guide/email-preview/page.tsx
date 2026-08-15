@@ -1,5 +1,6 @@
 import { generateParentWelcomeEmailHtml, generateParentFollowUp1Html, generateParentFollowUp2Html } from '@/lib/emailTemplates';
 import Link from 'next/link';
+import { EmailDispatcherButton } from '@/components/marketing/EmailDispatcherButton';
 
 export default async function PublicEmailPreviewPage(props: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -73,10 +74,13 @@ export default async function PublicEmailPreviewPage(props: {
           </div>
         </div>
 
+        {/* Email Dispatcher Control */}
+        <EmailDispatcherButton defaultEmail="jediark4poesy@gmail.com" templateType={template as 'welcome' | 'followup1' | 'followup2'} />
+
         {/* Device Switcher */}
         <div className="flex items-center justify-between text-xs text-slate-400">
           <div>
-            Recipient: <strong className="text-white">sarah.jenkins@example.com</strong>
+            Viewing Template: <strong className="text-white uppercase">{template}</strong>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] uppercase font-semibold">Simulate Viewport:</span>
