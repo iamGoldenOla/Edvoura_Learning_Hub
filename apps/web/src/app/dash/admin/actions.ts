@@ -165,20 +165,25 @@ export async function dispatchParentWelcomeEmailAction({
     // Graceful fallback
   }
 
-  // 2. Dispatch email via Supabase Auth Admin Invite / Magic link mailer API
-  try {
-    await supabaseAdmin.auth.admin.inviteUserByEmail(recipientEmail.toLowerCase().trim(), {
-      data: {
-        parent_name: parentName,
-        email_subject: subject,
-        email_template_type: templateType,
-      },
-    });
-  } catch (e) {
-    // If user already exists, trigger password recovery magic link email dispatch
+  // 2. Dispatch direct HTML email via sendDirectEmail
+  const { sendDirectEmail } = await import('@/lib/sendEmail');
+  const emailResult = await sendDirectEmail({
+    to: recipientEmail.toLowerCase().trim(),
+    subject,
+    html: htmlBody,
+  });
+
+  // 3. Fallback trigger via Supabase Auth Admin Invite
+  if (!emailResult.success) {
     try {
-      await supabaseAdmin.auth.resetPasswordForEmail(recipientEmail.toLowerCase().trim());
-    } catch (err) {}
+      await supabaseAdmin.auth.admin.inviteUserByEmail(recipientEmail.toLowerCase().trim(), {
+        data: { parent_name: parentName, email_subject: subject },
+      });
+    } catch (e) {
+      try {
+        await supabaseAdmin.auth.resetPasswordForEmail(recipientEmail.toLowerCase().trim());
+      } catch (err) {}
+    }
   }
 
   return {
@@ -186,7 +191,10 @@ export async function dispatchParentWelcomeEmailAction({
     recipientEmail,
     subject,
     templateType,
-    message: `🎉 Branded HTML Email (${templateType.toUpperCase()}) successfully dispatched to ${recipientEmail}! Check your inbox.`,
+    delivered: emailResult.success,
+    message: emailResult.success
+      ? `✅ HTML Email (${templateType.toUpperCase()}) successfully delivered to ${recipientEmail}!`
+      : `⚠️ HTML Template generated for ${recipientEmail}! (Note: Supabase default mailer requires adding RESEND_API_KEY in Vercel to bypass Supabase's strict rate limits).`,
   };
 }
 
