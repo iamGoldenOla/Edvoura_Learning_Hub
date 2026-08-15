@@ -8,6 +8,7 @@ interface PDFViewerModalProps {
   onClose: () => void;
   pdfUrl: string | null | undefined;
   title: string;
+  unlockedWeek?: number;
 }
 
 function getSubjectSpecificManuscript(title: string) {
@@ -164,7 +165,7 @@ function getSubjectSpecificManuscript(title: string) {
   };
 }
 
-export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModalProps) {
+export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 1 }: PDFViewerModalProps) {
   const [viewEngine, setViewEngine] = useState<'google' | 'native'>('google');
   const [selectedTerm, setSelectedTerm] = useState<'all' | '1st' | '2nd' | '3rd'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -344,12 +345,17 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
           {viewEngine === 'native' ? (
             <div id="interactive-document-reader" className="max-w-4xl mx-auto bg-white border-[3px] border-dark rounded-[24px] p-6 sm:p-10 shadow-[6px_6px_0px_#060E1C] space-y-8 animate-fade-up">
               
-              {/* Document Banner */}
+              {/* Document Banner with Pacing Lock Indicator */}
               <div className="p-6 rounded-2xl border-[3px] border-dark bg-gradient-to-r from-amber-100 via-yellow/40 to-sky-100 shadow-[3px_3px_0px_#060E1C] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-dark text-white rounded-full text-[10px] font-black uppercase tracking-widest mb-1">
-                    <Award className="h-3 w-3 text-yellow" /> Official Edvoura Curriculum Note
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="inline-flex items-center gap-1 px-3 py-0.5 bg-dark text-white rounded-full text-[10px] font-black uppercase tracking-widest">
+                      <Award className="h-3 w-3 text-yellow" /> Official Edvoura Curriculum Note
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-purple-200 text-purple-950 border border-dark rounded-full text-[10px] font-black uppercase">
+                      🔒 Pacing Lock: Unlocked Up To Week {unlockedWeek}
+                    </span>
+                  </div>
                   <h1 className="text-2xl sm:text-3xl font-black text-dark tracking-tight leading-tight">{title}</h1>
                   <p className="text-xs font-bold text-dark/70 mt-1">
                     Verified Term-by-Term Manuscript &amp; Comprehensive Lesson Plan • Aligned with WAEC, IGCSE &amp; NERDC Standards
@@ -360,35 +366,61 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title }: PDFViewerModa
                 </div>
               </div>
 
-              {/* Teaching Modules Loop */}
+              {/* Teaching Modules Loop with Weekly Lock Overlay */}
               <div className="space-y-6">
                 <h2 className="text-xl font-black text-dark uppercase tracking-tight flex items-center gap-2 border-b-[2px] border-dark/10 pb-2">
-                  <BookOpen className="h-5 w-5 text-indigo-600" /> Teaching Modules &amp; Full Unit Content
+                  <BookOpen className="h-5 w-5 text-indigo-600" /> Teaching Modules &amp; Weekly Content
                 </h2>
 
-                {manuscript.modules.filter((_, idx) => {
-                  if (selectedTerm === '1st') return idx === 0 || idx === 1;
-                  if (selectedTerm === '2nd') return idx === 2;
-                  if (selectedTerm === '3rd') return idx === 3;
-                  return true;
-                }).map((mod, idx) => (
-                  <div key={idx} className="p-6 rounded-2xl border-[3px] border-dark bg-off-white shadow-[4px_4px_0px_#060E1C] space-y-3">
-                    <h3 className="text-lg font-black text-dark">{mod.unit}</h3>
-                    <p className="text-xs sm:text-sm font-bold text-dark/80 leading-relaxed bg-white p-4 rounded-xl border border-dark/20">
-                      {mod.content}
-                    </p>
-                    {mod.keyPoints && mod.keyPoints.length > 0 && (
-                      <div className="p-3.5 rounded-xl bg-amber-50 border border-dark/30 space-y-1">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-amber-900">💡 Key Concept Takeaways:</span>
-                        <ul className="list-disc pl-5 text-xs font-bold text-dark/80 space-y-1">
-                          {mod.keyPoints.map((kp, kidx) => (
-                            <li key={kidx}>{kp}</li>
-                          ))}
-                        </ul>
+                {manuscript.modules.map((mod, idx) => {
+                  const moduleWeekRequirement = (idx + 1) * 3; // Module 1 = Wk 1-3, Module 2 = Wk 4-6, etc.
+                  const isLockedByPacing = unlockedWeek < moduleWeekRequirement && idx > 0;
+
+                  if (isLockedByPacing) {
+                    return (
+                      <div key={idx} className="p-6 rounded-2xl border-[3px] border-dark bg-slate-100 opacity-85 shadow-[3px_3px_0px_#060E1C] space-y-3 relative overflow-hidden">
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-lg font-black text-dark/50">{mod.unit}</h3>
+                          <span className="px-3 py-1 bg-amber-200 border-[1.5px] border-dark rounded-lg text-[10px] font-black uppercase text-amber-950 flex items-center gap-1 shadow-[1px_1px_0px_#000]">
+                            🔒 Locked by Tutor (Unlocks Week {moduleWeekRequirement})
+                          </span>
+                        </div>
+                        <div className="p-6 rounded-xl border border-dashed border-dark/30 bg-white/70 text-center space-y-2">
+                          <p className="text-xs font-black uppercase tracking-wider text-dark/60">
+                            🔒 Topic Locked for Pacing Mastery
+                          </p>
+                          <p className="text-xs font-bold text-dark/60 max-w-md mx-auto">
+                            Your tutor has locked this chapter until Week {moduleWeekRequirement} in live classes. Focus on mastering Week {unlockedWeek} notes and assignments first!
+                          </p>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+                    );
+                  }
+
+                  return (
+                    <div key={idx} className="p-6 rounded-2xl border-[3px] border-dark bg-off-white shadow-[4px_4px_0px_#060E1C] space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-lg font-black text-dark">{mod.unit}</h3>
+                        <span className="px-2.5 py-0.5 bg-emerald-200 border border-dark rounded-md text-[9px] font-black uppercase text-emerald-950">
+                          🔓 Unlocked for Study
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-bold text-dark/80 leading-relaxed bg-white p-4 rounded-xl border border-dark/20">
+                        {mod.content}
+                      </p>
+                      {mod.keyPoints && mod.keyPoints.length > 0 && (
+                        <div className="p-3.5 rounded-xl bg-amber-50 border border-dark/30 space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-amber-900">💡 Key Concept Takeaways:</span>
+                          <ul className="list-disc pl-5 text-xs font-bold text-dark/80 space-y-1">
+                            {mod.keyPoints.map((kp, kidx) => (
+                              <li key={kidx}>{kp}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Worked Examples */}

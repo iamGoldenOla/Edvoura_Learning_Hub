@@ -2495,6 +2495,7 @@ export default function TutorLessonNotesPage() {
     'ss2_math', 'ss2_english', 'ss2_physics', 'ss2_chemistry', 'ss2_biology', 'ss2_further_math', 'ss2_agric', 'ss2_geography', 'ss2_economics', 'ss2_government', 'ss2_accounting', 'ss2_commerce', 'ss2_marketing', 'ss2_literature', 'ss2_history', 'ss2_crs', 'ss2_citizenship', 'ss2_digital_tech', 'ss2_hardware_repair', 'ss2_solar', 'ss2_technical_drawing', 'ss2_visual_arts', 'ss2_food_nutrition', 'ss2_catering', 'ss2_beauty', 'ss2_fashion', 'ss2_horticulture', 'ss2_livestock',
     'ss3_math', 'ss3_english', 'ss3_physics', 'ss3_chemistry', 'ss3_biology', 'ss3_further_math', 'ss3_agric', 'ss3_geography', 'ss3_economics', 'ss3_accounting', 'ss3_commerce', 'ss3_marketing', 'ss3_literature', 'ss3_history', 'ss3_crs', 'ss3_citizenship', 'ss3_digital_tech', 'ss3_hardware_repair', 'ss3_solar', 'ss3_technical_drawing', 'ss3_visual_arts', 'ss3_food_nutrition', 'ss3_catering', 'ss3_beauty', 'ss3_fashion', 'ss3_horticulture', 'ss3_livestock',
   ]);
+  const [unlockedNoteWeeks, setUnlockedNoteWeeks] = useState<Record<string, number>>({});
   const [selectedNoteTerms, setSelectedNoteTerms] = useState<Record<string, '1st' | '2nd' | '3rd' | 'all'>>({});
 
   const [tutorType, setTutorType] = useState<'class_teacher' | 'subject_teacher' | 'both' | 'all'>('all');
@@ -2766,6 +2767,31 @@ export default function TutorLessonNotesPage() {
                     </div>
 
                     <div className="space-y-2 pt-3 border-t-[2px] border-dark/10">
+                      {/* Weekly Access Pacing Lock Selector */}
+                      <div className="p-2.5 rounded-xl border-[2px] border-dark bg-slate-50 space-y-1">
+                        <label className="block text-[9px] font-black uppercase text-dark/70 tracking-wider">
+                          🔒 Weekly Curriculum Pacing Control:
+                        </label>
+                        <select
+                          value={unlockedNoteWeeks[note.id] || 1}
+                          onChange={(e) => {
+                            const w = Number(e.target.value);
+                            setUnlockedNoteWeeks((prev) => ({ ...prev, [note.id]: w }));
+                            setFeedback(`Pacing lock updated for "${note.title}": Unlocked up to Week ${w}.`);
+                          }}
+                          className="w-full py-1.5 px-2 bg-white border-[1.5px] border-dark rounded-lg text-[10px] font-black text-dark outline-none cursor-pointer"
+                        >
+                          <option value={1}>Week 1 Only (Current Active Lesson)</option>
+                          <option value={2}>Up to Week 2 (Lesson 1 & 2)</option>
+                          <option value={3}>Up to Week 3 (Lessons 1-3)</option>
+                          <option value={4}>Up to Week 4 (Lessons 1-4)</option>
+                          <option value={6}>Up to Week 6 (Mid-Term Scope)</option>
+                          <option value={12}>Up to Week 12 (1st Term Complete)</option>
+                          <option value={24}>Up to Week 24 (2nd Term Complete)</option>
+                          <option value={36}>🌟 Unlock All 36 Weeks (Full Year)</option>
+                        </select>
+                      </div>
+
                       <button
                         onClick={() => {
                           setActivePdfUrl(note.fileUrl);
@@ -2773,7 +2799,7 @@ export default function TutorLessonNotesPage() {
                         }}
                         className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        👁️ Preview PDF Note
+                        👁️ Preview PDF Note (Week {unlockedNoteWeeks[note.id] || 1} Unlocked)
                       </button>
 
                       {/* Clean 1-Click Master Publish Button to Student Dashboard */}
@@ -2781,7 +2807,7 @@ export default function TutorLessonNotesPage() {
                         type="button"
                         onClick={() => {
                           toggleOfficialNotePublish(note.id);
-                          setFeedback(`Note "${note.title}" has been ${isPub ? 'unpublished from' : 'published live to'} student dashboard!`);
+                          setFeedback(`Note "${note.title}" has been ${isPub ? 'unpublished from' : `published live up to Week ${unlockedNoteWeeks[note.id] || 1} on`} student dashboard!`);
                         }}
                         className={`w-full py-2.5 border-[2.5px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                           isPub
@@ -2790,8 +2816,8 @@ export default function TutorLessonNotesPage() {
                         }`}
                       >
                         {isPub
-                          ? `✅ PUBLISHED TO STUDENT DASHBOARD`
-                          : `🚀 PUBLISH TO STUDENT DASHBOARD`}
+                          ? `✅ PUBLISHED TO STUDENT (Wk 1-${unlockedNoteWeeks[note.id] || 1})`
+                          : `🚀 PUBLISH TO STUDENT (Wk 1-${unlockedNoteWeeks[note.id] || 1})`}
                       </button>
                     </div>
                   </div>
@@ -3170,6 +3196,7 @@ export default function TutorLessonNotesPage() {
         }}
         pdfUrl={activePdfUrl}
         title={activePdfTitle}
+        unlockedWeek={1}
       />
     </div>
   );
