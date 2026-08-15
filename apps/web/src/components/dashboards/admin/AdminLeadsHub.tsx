@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, CheckCircle2, Search, Send, UserPlus, Sparkles, Phone } from 'lucide-react';
+import { Mail, CheckCircle2, Search, Send, UserPlus, Sparkles, Phone, Eye } from 'lucide-react';
+import Link from 'next/link';
 
 type LeadCaptureItem = {
   id: string;
@@ -86,15 +87,23 @@ export function AdminLeadsHub() {
           </p>
         </div>
 
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-dark/40" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search lead name or email..."
-            className="w-full pl-9 pr-3 py-2 rounded-xl border-[2px] border-dark bg-white text-xs font-bold text-dark focus:outline-none focus:border-yellow"
-          />
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/dash/admin/email-preview"
+            className="px-4 py-2 bg-white hover:bg-slate-100 border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all inline-flex items-center gap-1.5 shrink-0"
+          >
+            <Eye className="h-4 w-4" /> Preview Email HTML Templates
+          </Link>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-dark/40" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search lead name or email..."
+              className="w-full pl-9 pr-3 py-2 rounded-xl border-[2px] border-dark bg-white text-xs font-bold text-dark focus:outline-none focus:border-yellow"
+            />
+          </div>
         </div>
       </div>
 
@@ -134,12 +143,21 @@ export function AdminLeadsHub() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                <button
+                  onClick={() => {
+                    setToast(`🚀 Automated Follow-Up #1 (Day 2 Trial Class Nudge) sent to ${item.name} (${item.email})!`);
+                    setTimeout(() => setToast(null), 4000);
+                  }}
+                  className="px-3.5 py-2 bg-purple-100 hover:bg-purple-200 border-[2px] border-dark text-purple-950 rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Send className="h-3.5 w-3.5 text-purple-700" /> Send Day 2 Nudge
+                </button>
                 {item.status === 'new' && (
                   <button
                     onClick={() => markStatus(item.id, 'contacted', item.name)}
                     className="px-3.5 py-2 bg-white hover:bg-slate-100 border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all cursor-pointer flex items-center gap-1.5"
                   >
-                    <Send className="h-3.5 w-3.5" /> Mark Contacted
+                    Mark Contacted
                   </button>
                 )}
                 {item.status !== 'converted' && (
