@@ -89,7 +89,8 @@ export function AdminLeadsHub() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Link
-            href="/dash/admin/email-preview"
+            href="/guide/email-preview"
+            target="_blank"
             className="px-4 py-2 bg-white hover:bg-slate-100 border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all inline-flex items-center gap-1.5 shrink-0"
           >
             <Eye className="h-4 w-4" /> Preview Email HTML Templates

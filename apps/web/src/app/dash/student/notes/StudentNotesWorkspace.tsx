@@ -545,9 +545,14 @@ export default function StudentNotesWorkspace({
                 className="border-[3px] border-dark rounded-[20px] bg-white p-5 shadow-[4px_4px_0px_#060E1C] flex flex-col justify-between hover:translate-y-[-2px] transition-all"
               >
                 <div>
-                  <span className="inline-block px-2.5 py-1 bg-indigo-100 border-[2px] border-dark rounded-md text-[10px] font-black uppercase text-indigo-900 shadow-[2px_2px_0px_#060E1C] mb-3">
-                    {note.subjectName}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                    <span className="inline-block px-2.5 py-1 bg-indigo-100 border-[2px] border-dark rounded-md text-[10px] font-black uppercase text-indigo-900 shadow-[2px_2px_0px_#060E1C]">
+                      {note.subjectName}
+                    </span>
+                    <span className="inline-block px-2 py-0.5 bg-amber-100 border border-dark rounded text-[9px] font-black text-amber-950">
+                      📖 Official Baseline
+                    </span>
+                  </div>
                   <h3 className="text-sm sm:text-base font-extrabold text-dark mb-2 leading-[1.4] tracking-tight break-words" style={{ lineHeight: '1.4' }}>{note.title}</h3>
                   <p className="text-xs font-bold text-dark/60 mb-4 line-clamp-3">{note.description}</p>
                 </div>
@@ -557,7 +562,7 @@ export default function StudentNotesWorkspace({
                     setActivePdfUrl(note.fileUrl);
                     setActivePdfTitle(note.title);
                   }}
-                  className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2"
+                  className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   📖 Read Full Lesson Note PDF
                 </button>
