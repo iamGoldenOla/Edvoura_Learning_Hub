@@ -117,7 +117,7 @@ export function generateParentWelcomeEmailHtml({
               </table>
 
               <p style="font-size: 13px; line-height: 1.5; color: #64748B; margin-top: 24px; text-align: center;">
-                Need immediate help? Contact our academic desk at <strong>+234 810 123 4567</strong>.
+                Need immediate help? Contact our academic desk at <strong>07010158258</strong>.
               </p>
             </td>
           </tr>
@@ -126,7 +126,7 @@ export function generateParentWelcomeEmailHtml({
           <tr>
             <td style="background-color: #F8FAFC; padding: 20px 32px; text-align: center; border-top: 1px solid #E2E8F0; font-size: 12px; color: #64748B;">
               &copy; ${new Date().getFullYear()} Edvoura Learning Hub • All Rights Reserved.<br>
-              Lagos, Nigeria • London, UK • Toronto, Canada
+              Lagos, Nigeria
             </td>
           </tr>
 

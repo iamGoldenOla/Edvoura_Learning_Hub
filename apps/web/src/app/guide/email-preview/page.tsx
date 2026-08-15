@@ -37,11 +37,11 @@ export default async function PublicEmailPreviewPage(props: {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-700 pb-4">
           <div>
             <span className="px-2.5 py-0.5 bg-yellow-400 text-slate-950 font-extrabold rounded text-[10px] uppercase tracking-wider">
-              INBOX EMAIL INSPECTOR
+              EMAIL DISPATCH CENTER
             </span>
-            <h1 className="text-xl sm:text-2xl font-bold text-white mt-1">Edvoura Parent HTML Email Delivery</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white mt-1">Edvoura Parent Email Center</h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              Exact HTML message delivered directly to parent Gmail, Outlook, and Apple Mail inboxes.
+              Preview parent email notifications and test instant dispatch to any inbox address.
             </p>
           </div>
 

@@ -96,7 +96,7 @@ export function EdvouraWelcomeConfirmationCard({
       <div className="pt-4 border-t-[3px] border-navy/20 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-black text-navy/70">
           <Phone className="h-4 w-4 text-emerald-600" />
-          <span>Need instant assistance? Call or WhatsApp us: <strong>+234 810 123 4567</strong></span>
+          <span>Need instant assistance? Call or WhatsApp us: <strong>07010158258</strong></span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
