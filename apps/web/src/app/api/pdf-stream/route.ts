@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import fs from 'fs';
-import path from 'path';
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,15 +11,18 @@ export async function GET(req: NextRequest) {
       return new NextResponse('Missing pdfUrl parameter', { status: 400 });
     }
 
-    // Resolve local file path inside public directory
-    const cleanPath = relativePdfUrl.startsWith('/') ? relativePdfUrl.slice(1) : relativePdfUrl;
-    const filePath = path.join(process.cwd(), 'public', cleanPath);
+    // Fetch PDF via HTTP stream so Vercel does not bundle 500MB static files into serverless function zip
+    const fullPdfUrl = relativePdfUrl.startsWith('http')
+      ? relativePdfUrl
+      : new URL(relativePdfUrl, req.url).toString();
 
-    if (!fs.existsSync(filePath)) {
+    const pdfRes = await fetch(fullPdfUrl);
+    if (!pdfRes.ok) {
       return new NextResponse('PDF File Not Found', { status: 404 });
     }
 
-    const originalBuffer = fs.readFileSync(filePath);
+    const originalArrayBuffer = await pdfRes.arrayBuffer();
+    const originalBuffer = Buffer.from(originalArrayBuffer);
 
     // If All Weeks (36) are unlocked, stream original full PDF directly
     if (unlockedWeek >= 36) {
