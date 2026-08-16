@@ -469,57 +469,35 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col space-y-3 overflow-y-auto">
+            <div className="h-full flex flex-col space-y-2 min-h-0">
               {unlockedWeek < 36 ? (
-                <div className="p-3.5 rounded-xl border-[2px] border-dark bg-amber-300 text-amber-950 text-xs font-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-[3px_3px_0px_#000]">
+                <div className="p-2.5 rounded-xl border-[2px] border-dark bg-amber-300 text-amber-950 text-xs font-black flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-[2px_2px_0px_#000] shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="p-1 bg-dark text-yellow rounded-md shrink-0">🔒</span>
-                    <span>CURRICULUM PACING LOCK ACTIVE: Unlocked Up To Week {unlockedWeek} (Pages 1-{unlockedWeek * 7}). Week {unlockedWeek + 1}+ content is locked below.</span>
+                    <span>CURRICULUM PACING ACTIVE: Unlocked Up To Week {unlockedWeek} (Pages 1-{unlockedWeek * 6}). Week {unlockedWeek + 1}+ content locked by tutor.</span>
                   </div>
-                  <span className="px-2.5 py-1 bg-dark text-white rounded-lg text-[10px] uppercase font-black shrink-0">
+                  <span className="px-2.5 py-0.5 bg-dark text-white rounded-md text-[10px] uppercase font-black shrink-0">
                     Pacing: Wk 1-{unlockedWeek}
                   </span>
                 </div>
               ) : (
-                <div className="p-3 rounded-xl border-[2px] border-dark bg-emerald-200 text-emerald-950 text-xs font-black flex items-center justify-between shadow-[2px_2px_0px_#000]">
+                <div className="p-2.5 rounded-xl border-[2px] border-dark bg-emerald-200 text-emerald-950 text-xs font-black flex items-center justify-between shadow-[2px_2px_0px_#000] shrink-0">
                   <span>🌟 FULL CURRICULUM UNLOCKED: All 36 Weeks (1st, 2nd &amp; 3rd Terms) unlocked for complete study!</span>
-                  <span className="px-2.5 py-1 bg-emerald-950 text-white rounded-lg text-[10px] uppercase font-black">
-                    All 36 Weeks Live
+                  <span className="px-2.5 py-0.5 bg-emerald-950 text-white rounded-md text-[10px] uppercase font-black">
+                    All 36 Weeks Unlocked
                   </span>
                 </div>
               )}
 
-              {/* Master PDF Document Stream Container with Pacing Boundary */}
-              <div className="flex flex-col space-y-4 w-full">
-                <div className={`relative w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] ${
-                  unlockedWeek < 36 ? 'h-[640px]' : 'h-[850px] overflow-y-auto'
-                }`}>
-                  <iframe
-                    key={viewEngine}
-                    src={`${pdfUrl}#page=1&toolbar=0&navpanes=0`}
-                    className="w-full h-full border-none bg-white shadow-inner"
-                    title="Full Authentic Curriculum PDF Document Viewer"
-                    allow="fullscreen"
-                  />
-                </div>
-
-                {/* Impenetrable Pacing Lock Shield placed directly below Week 1 PDF content */}
-                {unlockedWeek < 36 && (
-                  <div className="p-8 sm:p-10 border-[3px] border-dark bg-slate-950 text-white rounded-2xl shadow-[5px_5px_0px_#060E1C] text-center space-y-3">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-yellow text-dark border-[2px] border-dark text-xs font-black shadow-[2px_2px_0px_#FFF]">
-                      🔒 WEEK {unlockedWeek + 1} TO WEEK 36 PACING LOCK SHIELD
-                    </div>
-                    <h3 className="text-xl sm:text-2xl font-black text-yellow uppercase tracking-tight">
-                      🔒 CONTENT BEYOND WEEK {unlockedWeek} IS LOCKED BY YOUR TUTOR
-                    </h3>
-                    <p className="text-xs sm:text-sm font-bold text-slate-300 max-w-xl mx-auto leading-relaxed">
-                      Your assigned tutor has locked the master PDF document beyond Week {unlockedWeek}. Content for Week {unlockedWeek + 1} and subsequent terms will unlock automatically when your tutor advances the live teaching schedule!
-                    </p>
-                    <div className="pt-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                      Official Edvoura Curriculum Protection Protocol • Doc ID: EDV-PDF-PACING-GUARD
-                    </div>
-                  </div>
-                )}
+              {/* Master PDF Document Stream Container */}
+              <div className="flex-1 min-h-0 w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] flex flex-col relative">
+                <iframe
+                  key={viewEngine}
+                  src={`${pdfUrl}#page=1&toolbar=1`}
+                  className="w-full h-full border-none bg-white shadow-inner flex-1 min-h-[550px]"
+                  title="Full Authentic Curriculum PDF Document Viewer"
+                  allow="fullscreen"
+                />
               </div>
             </div>
           )}
