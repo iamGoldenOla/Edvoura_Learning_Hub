@@ -28,6 +28,7 @@ type LessonPlan = {
 };
 
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
+import { PublishTargetModal } from '@/components/tutor/PublishTargetModal';
 
 export type OfficialCurriculumNote = {
   id: string;
@@ -2481,6 +2482,7 @@ export default function TutorLessonNotesPage() {
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
   const [activePdfNoteId, setActivePdfNoteId] = useState<string>('');
+  const [targetPublishNote, setTargetPublishNote] = useState<{ id: string; title: string; gradeLevel: string } | null>(null);
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_12');
   const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
     'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
@@ -2793,33 +2795,38 @@ export default function TutorLessonNotesPage() {
                         </select>
                       </div>
 
+                      {/* Redesigned Premium Action Buttons */}
                       <button
+                        type="button"
                         onClick={() => {
                           setActivePdfUrl(note.fileUrl);
                           setActivePdfTitle(note.title);
                           setActivePdfNoteId(note.id);
                         }}
-                        className="w-full py-2.5 bg-yellow text-dark border-[2px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        className="w-full py-2.5 bg-yellow hover:bg-yellow-400 text-dark border-[2.5px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer"
                       >
-                        👁️ Preview PDF Note (Week {unlockedNoteWeeks[note.id] || 1} Unlocked)
+                        <span>👁️ Preview Note</span>
+                        <span className="px-2 py-0.5 bg-dark text-yellow rounded-md text-[9px] font-black uppercase">
+                          Wk 1-{unlockedNoteWeeks[note.id] || 1}
+                        </span>
                       </button>
 
-                      {/* Clean 1-Click Master Publish Button to Student Dashboard */}
                       <button
                         type="button"
                         onClick={() => {
-                          toggleOfficialNotePublish(note.id);
-                          setFeedback(`Note "${note.title}" has been ${isPub ? 'unpublished from' : `published live up to Week ${unlockedNoteWeeks[note.id] || 1} on`} student dashboard!`);
+                          setTargetPublishNote({
+                            id: note.id,
+                            title: note.title,
+                            gradeLevel: note.gradeName || 'Primary 1',
+                          });
                         }}
-                        className={`w-full py-2.5 border-[2.5px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                        className={`w-full py-2.5 border-[2.5px] border-dark rounded-xl text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2 ${
                           isPub
                             ? 'bg-emerald-400 hover:bg-emerald-500 text-dark'
-                            : 'bg-emerald-300 hover:bg-emerald-400 text-dark'
+                            : 'bg-indigo-500 hover:bg-indigo-600 text-white'
                         }`}
                       >
-                        {isPub
-                          ? `✅ PUBLISHED TO STUDENT (Wk 1-${unlockedNoteWeeks[note.id] || 1})`
-                          : `🚀 PUBLISH TO STUDENT (Wk 1-${unlockedNoteWeeks[note.id] || 1})`}
+                        <span>{isPub ? '✅ Published Live to Class' : '🚀 Publish Note to Class'}</span>
                       </button>
                     </div>
                   </div>
@@ -3202,6 +3209,27 @@ export default function TutorLessonNotesPage() {
         unlockedWeek={unlockedNoteWeeks[activePdfNoteId] || 1}
         subjectId={activePdfNoteId}
       />
+
+      {targetPublishNote && (
+        <PublishTargetModal
+          isOpen={targetPublishNote !== null}
+          onClose={() => setTargetPublishNote(null)}
+          noteTitle={targetPublishNote.title}
+          gradeLevel={targetPublishNote.gradeLevel}
+          unlockedWeek={unlockedNoteWeeks[targetPublishNote.id] || 1}
+          isAlreadyPublished={publishedOfficialNoteIds.includes(targetPublishNote.id)}
+          onConfirmPublish={(selectedClass, _students, notifyParents) => {
+            const isPub = publishedOfficialNoteIds.includes(targetPublishNote.id);
+            toggleOfficialNotePublish(targetPublishNote.id);
+            const w = unlockedNoteWeeks[targetPublishNote.id] || 1;
+            setFeedback(
+              `🎉 Note "${targetPublishNote.title}" successfully ${
+                isPub ? 'unpublished from' : `published live to ${selectedClass} with Week 1-${w} pacing unlocked`
+              }! ${notifyParents ? 'Parent notifications dispatched.' : ''}`
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
