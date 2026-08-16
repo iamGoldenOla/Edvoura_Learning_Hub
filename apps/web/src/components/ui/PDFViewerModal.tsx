@@ -492,8 +492,8 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 
               {/* Master PDF Document Stream Container */}
               <div className="flex-1 min-h-0 w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] flex flex-col relative">
                 <iframe
-                  key={viewEngine}
-                  src={`${pdfUrl}#page=1&toolbar=1`}
+                  key={`${pdfUrl}-${unlockedWeek}`}
+                  src={`/api/pdf-stream?pdfUrl=${encodeURIComponent(pdfUrl)}&unlockedWeek=${unlockedWeek}#page=1&toolbar=1`}
                   className="w-full h-full border-none bg-white shadow-inner flex-1 min-h-[550px]"
                   title="Full Authentic Curriculum PDF Document Viewer"
                   allow="fullscreen"
