@@ -3200,6 +3200,7 @@ export default function TutorLessonNotesPage() {
         pdfUrl={activePdfUrl}
         title={activePdfTitle}
         unlockedWeek={unlockedNoteWeeks[activePdfNoteId] || 1}
+        subjectId={activePdfNoteId}
       />
     </div>
   );

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { getEndPageForSubjectWeek } from '@/lib/curriculumPageMap';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const relativePdfUrl = searchParams.get('pdfUrl');
     const unlockedWeek = Number(searchParams.get('unlockedWeek') || '1');
+    const subjectId = searchParams.get('subjectId');
 
     if (!relativePdfUrl) {
       return new NextResponse('Missing pdfUrl parameter', { status: 400 });
@@ -39,8 +41,8 @@ export async function GET(req: NextRequest) {
     const pdfDoc = await PDFDocument.load(originalBuffer);
     const totalPages = pdfDoc.getPageCount();
 
-    // Calculate allowed page slice for unlocked week (e.g. Week 1 = 6 pages, Week 2 = 12 pages)
-    const allowedPageCount = Math.min(unlockedWeek * 6, totalPages);
+    // Calculate exact allowed page boundary for unlocked week using curriculumPageMap
+    const allowedPageCount = getEndPageForSubjectWeek(subjectId, unlockedWeek, totalPages);
 
     // Create new sliced PDF document
     const slicedDoc = await PDFDocument.create();

@@ -9,6 +9,7 @@ interface PDFViewerModalProps {
   pdfUrl: string | null | undefined;
   title: string;
   unlockedWeek?: number;
+  subjectId?: string;
 }
 
 function getSubjectSpecificManuscript(title: string) {
@@ -165,7 +166,7 @@ function getSubjectSpecificManuscript(title: string) {
   };
 }
 
-export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 1 }: PDFViewerModalProps) {
+export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 1, subjectId = '' }: PDFViewerModalProps) {
   const [viewEngine, setViewEngine] = useState<'google' | 'native'>('google');
   const [selectedTerm, setSelectedTerm] = useState<'all' | '1st' | '2nd' | '3rd'>('all');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -492,8 +493,8 @@ export function PDFViewerModal({ isOpen, onClose, pdfUrl, title, unlockedWeek = 
               {/* Master PDF Document Stream Container */}
               <div className="flex-1 min-h-0 w-full rounded-2xl border-[3px] border-dark bg-white overflow-hidden shadow-[5px_5px_0px_#060E1C] flex flex-col relative">
                 <iframe
-                  key={`${pdfUrl}-${unlockedWeek}`}
-                  src={`/api/pdf-stream?pdfUrl=${encodeURIComponent(pdfUrl)}&unlockedWeek=${unlockedWeek}#page=1&toolbar=1`}
+                  key={`${pdfUrl}-${unlockedWeek}-${subjectId}`}
+                  src={`/api/pdf-stream?pdfUrl=${encodeURIComponent(pdfUrl)}&unlockedWeek=${unlockedWeek}&subjectId=${encodeURIComponent(subjectId)}#page=1&toolbar=1`}
                   className="w-full h-full border-none bg-white shadow-inner flex-1 min-h-[550px]"
                   title="Full Authentic Curriculum PDF Document Viewer"
                   allow="fullscreen"
