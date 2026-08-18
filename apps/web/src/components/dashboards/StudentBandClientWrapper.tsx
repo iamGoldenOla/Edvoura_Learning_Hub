@@ -161,7 +161,8 @@ export default function StudentBandClientWrapper({
         {/* 🎂 AUTOMATED BIRTHDAY & WEDDING ANNIVERSARY CELEBRATION BANNER */}
         <CelebrationBanner
           userName={dashboard.profile.fullName?.split(' ')[0] || 'Explorer'}
-          eventType="birthday"
+          userRole="student"
+          dateOfBirth={dashboard.profile.dateOfBirth}
         />
 
         <header className="bg-white border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-[6px_6px_0px_#060E1C] sm:shadow-[12px_12px_0px_#060E1C] flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 w-full min-w-0">
@@ -386,6 +387,13 @@ export default function StudentBandClientWrapper({
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-6 sm:space-y-8 pb-14 sm:pb-14">
+      {/* 🎂 AUTOMATED BIRTHDAY & WEDDING ANNIVERSARY CELEBRATION BANNER */}
+      <CelebrationBanner
+        userName={dashboard.profile.fullName?.split(' ')[0] || 'Student'}
+        userRole="student"
+        dateOfBirth={dashboard.profile.dateOfBirth}
+      />
+
       <div className="border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[28px] bg-white shadow-[6px_6px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-4 sm:p-5 md:p-8 border-b-[3px] sm:border-b-[4px] border-dark bg-yellow/20">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60 mb-2">{copy.label}</p>

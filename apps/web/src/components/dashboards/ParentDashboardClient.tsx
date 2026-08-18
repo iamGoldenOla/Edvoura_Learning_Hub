@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
+import { CelebrationBanner } from '@/components/ui/CelebrationBanner';
 import { BankTransferPaymentCard } from '@/components/dashboards/BankTransferPaymentCard';
 import { ParentReportCardModal } from '@/components/dashboards/parent/ParentReportCardModal';
 import { Button } from '@/components/ui/button';
@@ -132,7 +133,12 @@ export default function ParentDashboardClient({
 
   return (
     <div className="mx-auto w-full min-w-0 max-w-[1680px] space-y-8 p-4 pb-24 sm:space-y-10 sm:p-8">
-      
+      {/* 🎂 AUTOMATED BIRTHDAY & WEDDING ANNIVERSARY CELEBRATION BANNER */}
+      <CelebrationBanner
+        userName={parentName.split(' ')[0] || 'Parent'}
+        userRole="parent"
+      />
+
       {/* Header Section */}
       <section className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <div className="p-5 sm:p-8 md:p-12 border-b-[4px] border-dark bg-blue-100">

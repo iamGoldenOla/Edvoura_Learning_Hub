@@ -43,6 +43,7 @@ export type StudentDashboardData = {
     fullName: string | null;
     email: string;
     avatarPath: string | null;
+    dateOfBirth?: string | null;
     gradeLevelCode: string;
     gradeLevelName: string;
     gradeBandCode: GradeBandCode;
@@ -284,7 +285,7 @@ async function getDirectStudentDashboardFromSupabase(
   await syncCurrentUserMembership(supabase);
 
   const [{ data: profile }, { data: studentProfile }] = await Promise.all([
-    supabase.from('profiles').select('id, email, full_name, avatar_path').eq('id', sessionUser.id).single(),
+    supabase.from('profiles').select('id, email, full_name, avatar_path, date_of_birth').eq('id', sessionUser.id).single(),
     supabase
       .from('student_profiles')
       .select('grade_level_id, learner_band_id, school_name, academic_goal_notes, personal_meet_url, personal_meet_host_url')
@@ -448,6 +449,32 @@ async function getDirectStudentDashboardFromSupabase(
     })
   );
 
+  // Fetch published AI & pushed lesson notes (e.g. Basic Science)
+  const { data: publishedLessonNotes = [] } = await supabase
+    .from('ai_generated_content')
+    .select('id, title, subject, topic, grade, created_at')
+    .in('task_type', ['GENERATE_LESSON_NOTE', 'GENERATE_LESSON', 'GENERATE_FINANCIAL_LITERACY', 'GENERATE_COMMUNICATION_SKILL', 'LESSON_NOTE_PUSHED'])
+    .eq('status', 'PUBLISHED')
+    .order('created_at', { ascending: false })
+    .limit(6);
+
+  const formattedPushedLessonNotes = (publishedLessonNotes ?? []).map((note) => ({
+    id: note.id,
+    title: note.title || `${note.subject || 'Basic Science'}: ${note.topic || 'Pushed Resource'}`,
+    description: `Pushed Lesson Note for ${note.subject ?? 'Basic Science'} (${note.grade ?? 'Grade 3'})`,
+    className: note.subject ?? 'Basic Science',
+    createdAt: note.created_at,
+    files: [
+      {
+        id: `note_file_${note.id}`,
+        fileName: `${note.subject || 'Basic_Science'}_Lesson_Note.pdf`,
+        downloadUrl: `/dash/student/notes`,
+      },
+    ],
+  }));
+
+  const allSharedResources = [...sharedResourcesWithUrls, ...formattedPushedLessonNotes];
+
   const normalizedGrades = gradesData ?? [];
   const normalizedLessons = lessonsData ?? [];
   const normalizedLiveLessonRows = (liveLessonRows ?? []) as StudentLiveLessonRow[];
@@ -530,6 +557,7 @@ async function getDirectStudentDashboardFromSupabase(
       fullName: profile?.full_name ?? null,
       email: profile?.email ?? sessionUser.email ?? 'student@edvouralearninghub.com',
       avatarPath: profile?.avatar_path ?? null,
+      dateOfBirth: profile?.date_of_birth ?? (sessionUser.user_metadata as any)?.date_of_birth ?? null,
       gradeLevelCode: gradeLevel?.code ?? 'grade_7',
       gradeLevelName: gradeLevel?.display_name ?? 'Grade level pending',
       gradeBandCode: (gradeBand?.code as GradeBandCode | undefined) ?? 'grades_7_12',
@@ -604,7 +632,7 @@ async function getDirectStudentDashboardFromSupabase(
       masteryNotes: item.mastery_notes,
       snapshotDate: item.snapshot_date,
     })),
-    sharedResources: sharedResourcesWithUrls,
+    sharedResources: allSharedResources,
   };
 }
 

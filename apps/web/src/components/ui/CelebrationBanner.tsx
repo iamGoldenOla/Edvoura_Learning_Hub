@@ -3,24 +3,124 @@
 import { useState, useEffect } from 'react';
 import { Cake, Heart, Sparkles, X } from 'lucide-react';
 
+interface CelebrationBannerProps {
+  userName: string;
+  userRole?: 'student' | 'parent' | 'tutor';
+  dateOfBirth?: string | null;
+  weddingAnniversary?: string | null;
+  eventType?: 'birthday' | 'anniversary';
+}
+
+function parseMonthAndDay(dateStr?: string | null): { month: number; day: number } | null {
+  if (!dateStr) return null;
+  try {
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) {
+      return { month: d.getMonth() + 1, day: d.getDate() };
+    }
+    // Handle MM-DD or YYYY-MM-DD
+    const parts = dateStr.split(/[-/]/);
+    if (parts.length >= 2) {
+      const month = parseInt(parts[parts.length === 3 ? 1 : 0], 10);
+      const day = parseInt(parts[parts.length === 3 ? 2 : 1], 10);
+      if (!isNaN(month) && !isNaN(day)) return { month, day };
+    }
+  } catch {
+    // Ignore invalid date format
+  }
+  return null;
+}
+
 export function CelebrationBanner({
   userName,
-  eventType = 'birthday',
-}: {
-  userName: string;
-  eventType?: 'birthday' | 'anniversary';
-}) {
-  const [visible, setVisible] = useState(true);
+  userRole = 'student',
+  dateOfBirth,
+  weddingAnniversary,
+  eventType: overrideEventType,
+}: CelebrationBannerProps) {
+  const [visible, setVisible] = useState(false);
   const [showConfetti, setShowConfetti] = useState(true);
+  const [activeEvent, setActiveEvent] = useState<'birthday' | 'anniversary'>('birthday');
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowConfetti(false), 8000);
-    return () => clearTimeout(timer);
-  }, []);
+    // Check local date
+    const today = new Date();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
+    const todayKey = `${today.getFullYear()}-${currentMonth}-${currentDay}`;
+    const dismissKey = `edvoura_dismissed_celebration_${userName.toLowerCase().trim()}_${todayKey}`;
+
+    // 1. Check if user dismissed today
+    if (typeof window !== 'undefined') {
+      const isDismissed = localStorage.getItem(dismissKey);
+      if (isDismissed === 'true') {
+        setVisible(false);
+        return;
+      }
+
+      // Check query param override for preview testing (e.g. ?test_celebration=birthday)
+      const urlParams = new URLSearchParams(window.location.search);
+      const testParam = urlParams.get('test_celebration');
+      if (testParam === 'birthday' || testParam === 'anniversary') {
+        setActiveEvent(testParam);
+        setVisible(true);
+        return;
+      }
+    }
+
+    // 2. Automatic Date Identification Logic
+    if (overrideEventType) {
+      setActiveEvent(overrideEventType);
+    }
+
+    let isMatch = false;
+
+    // Check birthday
+    if (dateOfBirth) {
+      const parsedDob = parseMonthAndDay(dateOfBirth);
+      if (parsedDob && parsedDob.month === currentMonth && parsedDob.day === currentDay) {
+        isMatch = true;
+        setActiveEvent('birthday');
+      }
+    }
+
+    // Check wedding anniversary (Parents & Tutors)
+    if (!isMatch && weddingAnniversary && (userRole === 'parent' || userRole === 'tutor')) {
+      const parsedAnniv = parseMonthAndDay(weddingAnniversary);
+      if (parsedAnniv && parsedAnniv.month === currentMonth && parsedAnniv.day === currentDay) {
+        isMatch = true;
+        setActiveEvent('anniversary');
+      }
+    }
+
+    // ONLY show if today matches user's birthday/anniversary date!
+    if (isMatch) {
+      setVisible(true);
+    } else {
+      setVisible(false);
+    }
+  }, [dateOfBirth, weddingAnniversary, userName, userRole, overrideEventType]);
+
+  useEffect(() => {
+    if (visible) {
+      const timer = setTimeout(() => setShowConfetti(false), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
+  const handleDismiss = () => {
+    setVisible(false);
+    if (typeof window !== 'undefined') {
+      const today = new Date();
+      const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+      const dismissKey = `edvoura_dismissed_celebration_${userName.toLowerCase().trim()}_${todayKey}`;
+      localStorage.setItem(dismissKey, 'true');
+    }
+  };
 
   if (!visible) return null;
 
-  const isBirthday = eventType === 'birthday';
+  const isBirthday = activeEvent === 'birthday';
 
   return (
     <div className="relative overflow-hidden rounded-[24px] border-[4px] border-dark bg-gradient-to-r from-amber-300 via-rose-300 to-purple-300 p-5 sm:p-6 shadow-[6px_6px_0px_#060E1C] animate-fade-up">
@@ -60,11 +160,11 @@ export function CelebrationBanner({
 
         <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
           <button
-            onClick={() => setVisible(false)}
-            className="p-2 hover:bg-white/50 rounded-xl transition-all cursor-pointer text-dark/70"
+            onClick={handleDismiss}
+            className="p-2.5 bg-white/80 hover:bg-white border-[2px] border-dark rounded-xl transition-all cursor-pointer text-dark font-black text-xs flex items-center gap-1 shadow-[2px_2px_0px_#060E1C]"
             title="Dismiss Celebration Banner"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" /> Dismiss
           </button>
         </div>
       </div>

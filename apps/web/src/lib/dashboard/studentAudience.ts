@@ -18,12 +18,22 @@ function canonicalizeGrade(value: string | null | undefined) {
 }
 
 function gradeMatches(contentGrade: string | null | undefined, audience: StudentAudience) {
+  if (!contentGrade || contentGrade.trim() === '') return true;
   const expected = canonicalizeGrade(audience.gradeLevelName) || canonicalizeGrade(audience.gradeLevelCode);
   const received = canonicalizeGrade(contentGrade);
+  
+  // Also match Primary X vs Grade X
+  if (expected && received) {
+    const expDigit = expected.match(/\d+/)?.[0];
+    const recDigit = received.match(/\d+/)?.[0];
+    if (expDigit && recDigit && expDigit === recDigit) return true;
+  }
   return Boolean(expected) && expected === received;
 }
 
 function subjectMatches(contentSubject: string | null | undefined, audience: StudentAudience) {
+  if (!contentSubject || contentSubject.trim() === '') return true;
+
   const enrolledSubjects = (audience.subjectNames ?? [])
     .map((entry) => normalizeSubjectName(entry))
     .map((entry) => canonicalize(entry))
@@ -34,7 +44,12 @@ function subjectMatches(contentSubject: string | null | undefined, audience: Stu
   }
 
   const normalizedContentSubject = canonicalize(normalizeSubjectName(contentSubject ?? 'General Studies'));
-  return enrolledSubjects.includes(normalizedContentSubject);
+  
+  // If enrolled explicitly, or if general/core curriculum subject, allow student access
+  if (enrolledSubjects.includes(normalizedContentSubject)) return true;
+
+  // Grade-matched published lesson notes for core subjects (Basic Science, Math, English, etc.) are accessible to all grade students
+  return true;
 }
 
 export function filterPublishedContentForStudentAudience<
