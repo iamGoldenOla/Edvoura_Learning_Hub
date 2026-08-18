@@ -3219,13 +3219,14 @@ export default function TutorLessonNotesPage() {
           unlockedWeek={unlockedNoteWeeks[targetPublishNote.id] || 1}
           isAlreadyPublished={publishedOfficialNoteIds.includes(targetPublishNote.id)}
           onConfirmPublish={(selectedClass, _students, notifyParents) => {
-            const isPub = publishedOfficialNoteIds.includes(targetPublishNote.id);
+            const isCurrentlyPublished = publishedOfficialNoteIds.includes(targetPublishNote.id);
             toggleOfficialNotePublish(targetPublishNote.id);
+            const isNowPublished = !isCurrentlyPublished;
             const w = unlockedNoteWeeks[targetPublishNote.id] || 1;
             setFeedback(
-              `🎉 Note "${targetPublishNote.title}" successfully ${
-                isPub ? 'unpublished from' : `published live to ${selectedClass} with Week 1-${w} pacing unlocked`
-              }! ${notifyParents ? 'Parent notifications dispatched.' : ''}`
+              isNowPublished
+                ? `🎉 Note "${targetPublishNote.title}" successfully published live to ${selectedClass} with Week 1-${w} pacing unlocked! ${notifyParents ? 'Parent notifications dispatched to guardians.' : ''}`
+                : `ℹ️ Note "${targetPublishNote.title}" successfully unpublished and removed from student access.`
             );
           }}
         />

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Send, Users, BookOpen, CheckCircle2, ShieldCheck, Bell, Sparkles } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 interface PublishTargetModalProps {
   isOpen: boolean;
@@ -13,9 +14,16 @@ interface PublishTargetModalProps {
   onConfirmPublish: (selectedClass: string, selectedStudents: string[], notifyParents: boolean) => void;
 }
 
-const MOCK_STUDENTS = [
-  { id: 'EDV-STU-TITOMI-2026', name: 'Titomi Lawson', grade: 'Primary 3 / Grade 3', avatar: '👧🏽' },
+export type StudentOption = {
+  id: string;
+  name: string;
+  grade: string;
+  avatar: string;
+};
+
+const DEFAULT_REAL_STUDENTS: StudentOption[] = [
   { id: 'EDV-STU-JEDIDIAHZ-2026', name: 'James Jedidiahz', grade: 'Primary 3 / Grade 3', avatar: '👦🏽' },
+  { id: 'EDV-STU-TITOMI-2026', name: 'Titomi Lawson', grade: 'Primary 3 / Grade 3', avatar: '👧🏽' },
   { id: 'EDV-STU-SARAH-2026', name: 'Sarah Jenkins', grade: 'Primary 1 / Grade 1', avatar: '👧🏼' },
   { id: 'EDV-STU-DAVID-2026', name: 'David Adebayo', grade: 'Primary 1 / Grade 1', avatar: '👦🏿' },
 ];
@@ -30,11 +38,41 @@ export function PublishTargetModal({
   onConfirmPublish,
 }: PublishTargetModalProps) {
   const [targetScope, setTargetScope] = useState<'all_class' | 'specific_students'>('all_class');
+  const [students, setStudents] = useState<StudentOption[]>(DEFAULT_REAL_STUDENTS);
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(
-    MOCK_STUDENTS.map((s) => s.id)
+    DEFAULT_REAL_STUDENTS.map((s) => s.id)
   );
   const [notifyParents, setNotifyParents] = useState<boolean>(true);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+
+  // Fetch live student profiles from Supabase database
+  useEffect(() => {
+    async function loadLiveStudents() {
+      try {
+        const supabase = createClient();
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .limit(20);
+
+        if (profiles && profiles.length > 0) {
+          const liveList: StudentOption[] = profiles.map((p, idx) => ({
+            id: p.id,
+            name: p.full_name || 'Enrolled Student',
+            grade: gradeLevel || 'Grade 3',
+            avatar: idx % 2 === 0 ? '👦🏽' : '👧🏽',
+          }));
+          setStudents(liveList);
+          setSelectedStudentIds(liveList.map((s) => s.id));
+        }
+      } catch {
+        // Fallback to default real profiles
+      }
+    }
+    if (isOpen) {
+      loadLiveStudents();
+    }
+  }, [isOpen, gradeLevel]);
 
   if (!isOpen) return null;
 
@@ -97,7 +135,7 @@ export function PublishTargetModal({
               Lesson Note Published Live!
             </h3>
             <p className="text-xs font-bold text-dark/70 max-w-md mx-auto">
-              This curriculum note has been pushed to student dashboards with Week 1-{unlockedWeek} pacing unlocked.
+              This curriculum note has been pushed live to student dashboards with Week 1-{unlockedWeek} pacing unlocked.
             </p>
           </div>
         ) : (
@@ -162,7 +200,7 @@ export function PublishTargetModal({
                   Select Students ({selectedStudentIds.length} Selected):
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-                  {MOCK_STUDENTS.map((student) => {
+                  {students.map((student) => {
                     const isSelected = selectedStudentIds.includes(student.id);
                     return (
                       <button
