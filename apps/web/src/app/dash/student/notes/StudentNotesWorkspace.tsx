@@ -174,7 +174,7 @@ function AudioNotePlayer({ textToRead, title }: { textToRead: string; title: str
   );
 }
 
-function StudentLessonNoteView({ note }: { note: AILessonNote }) {
+function StudentLessonNoteView({ note, onOpenPdf, studentGradeCode }: { note: AILessonNote; onOpenPdf?: (pdfUrl: string, title: string) => void; studentGradeCode?: string }) {
   const [expanded, setExpanded] = useState(false);
   const content = note.content;
   const explanation = typeof content.explanation === 'string' ? content.explanation : '';
@@ -186,6 +186,13 @@ function StudentLessonNoteView({ note }: { note: AILessonNote }) {
   const realWorldExamples = Array.isArray(content.real_world_examples) ? content.real_world_examples : [];
   const practiceQuestions = Array.isArray(content.practice_questions) ? content.practice_questions : [];
   const learningChecks = Array.isArray(content.learning_checks) ? content.learning_checks : [];
+
+
+  const officialFileUrl =
+    (typeof content.official_file_url === 'string' && content.official_file_url) ||
+    (typeof content.pdf_url === 'string' && content.pdf_url) ||
+    (typeof content.fileUrl === 'string' && content.fileUrl) ||
+    (note.title.toLowerCase().includes('basic science') ? '/curriculum/primary_3/PRIMARY 3 BASIC SCIENCE LESSON NOTES.pdf' : null);
 
   const fullTextToRead = useMemo(() => {
     return [
@@ -485,20 +492,7 @@ export default function StudentNotesWorkspace({
 
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
-  const [publishedOfficialIds, setPublishedOfficialIds] = useState<string[]>([
-    'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
-    'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
-    'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
-    'p4_basic_science', 'p4_digital_literacy', 'p4_mathematics', 'p4_english', 'p4_french', 'p4_history', 'p4_arts', 'p4_prevocational', 'p4_social', 'p4_phe', 'p4_crs', 'p4_irs',
-    'p5_basic_science', 'p5_digital_literacy', 'p5_mathematics', 'p5_english', 'p5_french', 'p5_history', 'p5_arts', 'p5_prevocational', 'p5_social', 'p5_phe', 'p5_crs', 'p5_irs',
-    'p6_basic_science', 'p6_digital_literacy', 'p6_mathematics', 'p6_english', 'p6_french', 'p6_history', 'p6_arts', 'p6_prevocational', 'p6_social', 'p6_phe', 'p6_crs', 'p6_irs',
-    'jss1_math', 'jss1_english', 'jss1_science', 'jss1_business', 'jss1_digital_tech', 'jss1_computer_repair', 'jss1_solar', 'jss1_french', 'jss1_history', 'jss1_arts', 'jss1_social', 'jss1_phe', 'jss1_crs', 'jss1_irs', 'jss1_beauty', 'jss1_fashion', 'jss1_horticulture', 'jss1_livestock',
-    'jss2_math', 'jss2_english', 'jss2_science', 'jss2_business', 'jss2_digital_tech', 'jss2_hardware_repair', 'jss2_solar', 'jss2_french', 'jss2_history', 'jss2_arts', 'jss2_social', 'jss2_phe', 'jss2_crs', 'jss2_irs', 'jss2_beauty', 'jss2_fashion', 'jss2_horticulture', 'jss2_livestock',
-    'jss3_math', 'jss3_english', 'jss3_science', 'jss3_business', 'jss3_digital_tech', 'jss3_hardware_repair', 'jss3_solar', 'jss3_french', 'jss3_history', 'jss3_arts', 'jss3_social', 'jss3_phe', 'jss3_crs', 'jss3_irs', 'jss3_beauty', 'jss3_fashion', 'jss3_horticulture', 'jss3_livestock',
-    'ss1_math', 'ss1_english', 'ss1_physics', 'ss1_chemistry', 'ss1_biology', 'ss1_further_math', 'ss1_agric', 'ss1_geography', 'ss1_economics', 'ss1_government', 'ss1_accounting', 'ss1_commerce', 'ss1_marketing', 'ss1_literature', 'ss1_history', 'ss1_crs', 'ss1_citizenship', 'ss1_digital_tech', 'ss1_hardware_repair', 'ss1_solar', 'ss1_technical_drawing', 'ss1_visual_arts', 'ss1_food_nutrition', 'ss1_catering', 'ss1_beauty', 'ss1_fashion', 'ss1_horticulture', 'ss1_livestock',
-    'ss2_math', 'ss2_english', 'ss2_physics', 'ss2_chemistry', 'ss2_biology', 'ss2_further_math', 'ss2_agric', 'ss2_geography', 'ss2_economics', 'ss2_government', 'ss2_accounting', 'ss2_commerce', 'ss2_marketing', 'ss2_literature', 'ss2_history', 'ss2_crs', 'ss2_citizenship', 'ss2_digital_tech', 'ss2_hardware_repair', 'ss2_solar', 'ss2_technical_drawing', 'ss2_visual_arts', 'ss2_food_nutrition', 'ss2_catering', 'ss2_beauty', 'ss2_fashion', 'ss2_horticulture', 'ss2_livestock',
-    'ss3_math', 'ss3_english', 'ss3_physics', 'ss3_chemistry', 'ss3_biology', 'ss3_further_math', 'ss3_agric', 'ss3_geography', 'ss3_economics', 'ss3_accounting', 'ss3_commerce', 'ss3_marketing', 'ss3_literature', 'ss3_history', 'ss3_crs', 'ss3_citizenship', 'ss3_digital_tech', 'ss3_hardware_repair', 'ss3_solar', 'ss3_technical_drawing', 'ss3_visual_arts', 'ss3_food_nutrition', 'ss3_catering', 'ss3_beauty', 'ss3_fashion', 'ss3_horticulture', 'ss3_livestock',
-  ]);
+  const [publishedOfficialIds, setPublishedOfficialIds] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -537,7 +531,7 @@ export default function StudentNotesWorkspace({
           </p>
           <div className="space-y-4">
             {aiLessonNotes.map((note) => (
-              <StudentLessonNoteView key={note.id} note={note} />
+              <StudentLessonNoteView key={note.id} note={note} studentGradeCode={studentGradeCode} onOpenPdf={(url, title) => { setActivePdfUrl(url); setActivePdfTitle(title); }} />
             ))}
           </div>
         </section>

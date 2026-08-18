@@ -3,7 +3,6 @@ import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import StudentNotesWorkspace from './StudentNotesWorkspace';
 import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
-import { OFFICIAL_CURRICULUM_DATABASE, PRIMARY_3_OFFICIAL_NOTES, OfficialCurriculumNote } from '@/lib/curriculumNotes';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -78,41 +77,11 @@ export default async function NotesPage() {
     createdAt: note.created_at,
   }));
 
-  // Master Official Curriculum Notes for the student's grade (e.g. Primary 3 Basic Science, Math, English, etc.)
-  const gradeCode = dashboard.profile.gradeLevelCode || 'grade_3';
-  const officialNotesForGrade = OFFICIAL_CURRICULUM_DATABASE[gradeCode] ?? PRIMARY_3_OFFICIAL_NOTES;
-
-  const officialFormattedNotes: NoteItem[] = officialNotesForGrade.map((note: OfficialCurriculumNote) => ({
-    id: note.id,
-    title: note.title,
-    subject: note.subjectName,
-    topic: note.title,
-    grade: note.gradeName,
-    content: {
-      lesson_summary: note.description,
-      explanation: note.description,
-      key_points: [
-        `Complete term-by-term curriculum study note for ${note.subjectName}.`,
-        `Covering core learning objectives, key vocabulary, and practice concepts.`,
-      ],
-      official_file_url: note.fileUrl,
-      file_name: note.fileName,
-    },
-    createdAt: new Date().toISOString(),
-  }));
-
-  // Merge and deduplicate by title
-  const notesMap = new Map<string, NoteItem>();
-  officialFormattedNotes.forEach((n: NoteItem) => notesMap.set(n.title.toLowerCase().trim(), n));
-  dbLessonNotes.forEach((n: NoteItem) => notesMap.set(n.title.toLowerCase().trim(), n));
-
-  const aiLessonNotes = Array.from(notesMap.values());
-
   return (
     <StudentNotesWorkspace
       resources={resources}
       revisionList={revisionList}
-      aiLessonNotes={aiLessonNotes}
+      aiLessonNotes={dbLessonNotes}
       studentGradeCode={dashboard.profile.gradeLevelCode || 'grade_1'}
       studentGradeName={dashboard.profile.gradeLevelName || 'Grade 1'}
     />
