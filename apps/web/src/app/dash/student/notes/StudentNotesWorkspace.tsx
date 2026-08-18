@@ -192,7 +192,7 @@ function StudentLessonNoteView({ note, onOpenPdf, studentGradeCode }: { note: AI
     (typeof content.official_file_url === 'string' && content.official_file_url) ||
     (typeof content.pdf_url === 'string' && content.pdf_url) ||
     (typeof content.fileUrl === 'string' && content.fileUrl) ||
-    (note.title.toLowerCase().includes('basic science') ? '/curriculum/primary_3/PRIMARY 3 BASIC SCIENCE LESSON NOTES.pdf' : null);
+    '/curriculum/primary_3/PRIMARY 3 BASIC SCIENCE LESSON NOTES.pdf';
 
   const fullTextToRead = useMemo(() => {
     return [
@@ -230,7 +230,20 @@ function StudentLessonNoteView({ note, onOpenPdf, studentGradeCode }: { note: AI
             <p className="mt-1 text-sm font-semibold text-dark/60 line-clamp-2">{lessonSummary}</p>
           ) : null}
         </div>
-        <ChevronDown className={`h-5 w-5 mt-1 text-dark/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenPdf?.(officialFileUrl, note.title);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C] hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer"
+          >
+            <BookOpen className="h-4 w-4 text-dark" />
+            <span>📖 Read PDF</span>
+          </button>
+          <ChevronDown className={`h-5 w-5 mt-1 text-dark/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+        </div>
       </button>
 
       {/* Audio Reader */}
