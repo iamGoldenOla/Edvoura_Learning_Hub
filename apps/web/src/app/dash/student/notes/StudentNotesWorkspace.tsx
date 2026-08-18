@@ -555,27 +555,6 @@ export default function StudentNotesWorkspace({
         </section>
       )}
 
-      {/* Published lesson notes */}
-      {aiLessonNotes.length > 0 ? (
-        <section className="rounded-[24px] border-[4px] border-dark bg-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <BookOpen className="h-6 w-6 text-dark" />
-            <h2 className="text-xl font-black text-dark sm:text-2xl">Lesson Notes</h2>
-            <span className="rounded-lg border-[1.5px] border-dark bg-green-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-green-900">
-              {aiLessonNotes.length} Available
-            </span>
-          </div>
-          <p className="text-sm font-semibold text-dark/60 mb-4">
-            Published lesson notes reviewed and approved by your tutor. Tap to expand and study.
-          </p>
-          <div className="space-y-4">
-            {aiLessonNotes.map((note) => (
-              <StudentLessonNoteView key={note.id} note={note} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="rounded-[24px] border-[4px] border-dark bg-off-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6 xl:col-span-2">
           <h2 className="text-xl font-black text-dark sm:text-2xl">Tutor Notes and Study Guides</h2>
