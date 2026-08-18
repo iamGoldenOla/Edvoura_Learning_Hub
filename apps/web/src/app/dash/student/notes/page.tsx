@@ -3,7 +3,7 @@ import { getStudentDashboardData, requireAppViewer } from '@/lib/app-context';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import StudentNotesWorkspace from './StudentNotesWorkspace';
 import { filterPublishedContentForStudentAudience } from '@/lib/dashboard/studentAudience';
-import { OFFICIAL_CURRICULUM_DATABASE, PRIMARY_3_OFFICIAL_NOTES } from '@/app/dash/tutor/lesson-notes/page';
+import { OFFICIAL_CURRICULUM_DATABASE, PRIMARY_3_OFFICIAL_NOTES, OfficialCurriculumNote } from '@/lib/curriculumNotes';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -58,7 +58,17 @@ export default async function NotesPage() {
     subjectNames: dashboard.enrollments.map((entry) => entry.subjectName),
   });
 
-  const dbLessonNotes = filteredNotes.map((note) => ({
+  type NoteItem = {
+    id: string;
+    title: string;
+    subject: string;
+    topic: string;
+    grade: string;
+    content: Record<string, unknown>;
+    createdAt: string;
+  };
+
+  const dbLessonNotes: NoteItem[] = filteredNotes.map((note) => ({
     id: note.id,
     title: note.title ?? `${note.subject}: ${note.topic}`,
     subject: note.subject ?? 'General',
@@ -72,7 +82,7 @@ export default async function NotesPage() {
   const gradeCode = dashboard.profile.gradeLevelCode || 'grade_3';
   const officialNotesForGrade = OFFICIAL_CURRICULUM_DATABASE[gradeCode] ?? PRIMARY_3_OFFICIAL_NOTES;
 
-  const officialFormattedNotes = officialNotesForGrade.map((note) => ({
+  const officialFormattedNotes: NoteItem[] = officialNotesForGrade.map((note: OfficialCurriculumNote) => ({
     id: note.id,
     title: note.title,
     subject: note.subjectName,
@@ -92,9 +102,9 @@ export default async function NotesPage() {
   }));
 
   // Merge and deduplicate by title
-  const notesMap = new Map<string, typeof dbLessonNotes[0]>();
-  officialFormattedNotes.forEach((n) => notesMap.set(n.title.toLowerCase().trim(), n));
-  dbLessonNotes.forEach((n) => notesMap.set(n.title.toLowerCase().trim(), n));
+  const notesMap = new Map<string, NoteItem>();
+  officialFormattedNotes.forEach((n: NoteItem) => notesMap.set(n.title.toLowerCase().trim(), n));
+  dbLessonNotes.forEach((n: NoteItem) => notesMap.set(n.title.toLowerCase().trim(), n));
 
   const aiLessonNotes = Array.from(notesMap.values());
 
