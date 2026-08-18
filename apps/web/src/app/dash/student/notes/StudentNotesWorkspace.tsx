@@ -192,7 +192,11 @@ function StudentLessonNoteView({ note, onOpenPdf, studentGradeCode }: { note: AI
     (typeof content.official_file_url === 'string' && content.official_file_url) ||
     (typeof content.pdf_url === 'string' && content.pdf_url) ||
     (typeof content.fileUrl === 'string' && content.fileUrl) ||
-    '/curriculum/primary_3/PRIMARY 3 BASIC SCIENCE LESSON NOTES.pdf';
+    (note.id.startsWith('official_pub_') || note.id.startsWith('p3_') || note.id.startsWith('p1_') || note.id.startsWith('p2_') || note.id.startsWith('p4_') || note.id.startsWith('p5_') || note.id.startsWith('p6_')
+      ? (OFFICIAL_CURRICULUM_DATABASE[studentGradeCode || 'grade_3'] || PRIMARY_3_OFFICIAL_NOTES).find(
+          (n) => n.id === note.id || n.id === note.id.replace('official_pub_', '')
+        )?.fileUrl || null
+      : null);
 
   const fullTextToRead = useMemo(() => {
     return [
@@ -231,17 +235,19 @@ function StudentLessonNoteView({ note, onOpenPdf, studentGradeCode }: { note: AI
           ) : null}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenPdf?.(officialFileUrl, note.title);
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C] hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer"
-          >
-            <BookOpen className="h-4 w-4 text-dark" />
-            <span>📖 Read PDF</span>
-          </button>
+          {officialFileUrl && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenPdf?.(officialFileUrl, note.title);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C] hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer"
+            >
+              <BookOpen className="h-4 w-4 text-dark" />
+              <span>📖 Read PDF</span>
+            </button>
+          )}
           <ChevronDown className={`h-5 w-5 mt-1 text-dark/40 transition-transform ${expanded ? 'rotate-180' : ''}`} />
         </div>
       </button>
