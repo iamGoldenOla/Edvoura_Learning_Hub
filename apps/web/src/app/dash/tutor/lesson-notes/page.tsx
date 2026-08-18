@@ -193,7 +193,7 @@ export default function TutorLessonNotesPage() {
 
   const toggleOfficialNotePublish = async (noteId: string) => {
     const isCurrentlyPub = publishedOfficialNoteIds.includes(noteId);
-    const nextStatus = isCurrentlyPub ? 'DRAFT' : 'PUBLISHED';
+    const willBePublished = !isCurrentlyPub;
 
     setPublishedOfficialNoteIds((prev) => {
       const next = prev.includes(noteId) ? prev.filter((id) => id !== noteId) : [...prev, noteId];
@@ -203,32 +203,19 @@ export default function TutorLessonNotesPage() {
       return next;
     });
 
-    // Persist live to Supabase database so all students across devices see it!
+    // Call server API route with admin privileges to guarantee DB persistence
     try {
-      const supabase = createClient();
-      const allNotes = OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES;
-      const targetNote = allNotes.find((n) => n.id === noteId);
-
-      if (targetNote) {
-        await supabase.from('ai_generated_content').upsert({
-          id: `official_pub_${targetNote.id}`,
-          task_type: 'GENERATE_LESSON_NOTE',
-          title: targetNote.title,
-          subject: targetNote.subjectName,
-          topic: targetNote.title,
-          grade: targetNote.gradeCode || selectedGradeFilter || 'grade_3',
-          status: nextStatus,
-          content_json: {
-            lesson_summary: targetNote.description,
-            explanation: targetNote.description,
-            official_file_url: targetNote.fileUrl,
-            file_name: targetNote.fileName,
-          },
-          updated_at: new Date().toISOString(),
-        });
-      }
+      await fetch('/api/tutor/publish-note', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          noteId,
+          isPublished: willBePublished,
+          gradeFilter: selectedGradeFilter,
+        }),
+      });
     } catch (err) {
-      console.error('Failed to sync published note state to Supabase:', err);
+      console.error('Failed to sync published note state to Supabase API:', err);
     }
   };
 
