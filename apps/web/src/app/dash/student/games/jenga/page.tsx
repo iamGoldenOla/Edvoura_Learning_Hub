@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import GameLayout from '@/components/games/GameLayout';
 import { Layers, RefreshCw, BookOpen, AlertTriangle, CheckCircle2, Share2, Check, Trophy, Sparkles } from 'lucide-react';
+import { getQuestionByTierAndGrade } from '@/lib/games/dynamicQuestionEngine';
 
 const ACCENT_COLOR = '#d97706'; // Warm Amber/Wood color
 
@@ -240,26 +241,18 @@ export default function JengaGame() {
     playJengaSFX('pull');
     setSelectedBlockId(blockId);
 
-    // Pick NO-REPEAT trivia question based on grade or generate dynamic question
-    const bank = JENGA_TRIVIA[gradeTier];
-    let availableIndices = bank.map((_, i) => i).filter(i => !usedQuestionIndices.includes(i));
-    
-    let rawQ;
-    if (availableIndices.length > 0) {
-      const pickedIdx = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-      setUsedQuestionIndices(prev => [...prev, pickedIdx]);
-      rawQ = bank[pickedIdx];
-    } else {
-      // Dynamic fallback AI generator
-      rawQ = generateDynamicMathQuestion(gradeTier);
-    }
+    const targetBand = gradeTier === 'g12' ? '1-3' : gradeTier === 'g36' ? '4-6' : '7-12';
+    const tier = layer > 10 ? 'hard' : layer > 5 ? 'medium' : 'easy';
+    const rawQ = getQuestionByTierAndGrade(tier, targetBand);
 
-    // Always shuffle question options so answer positions are randomized!
-    const shuffledQ = shuffleQuestionOptions(rawQ);
-    setActiveQuestion(shuffledQ);
+    setActiveQuestion({
+      q: rawQ.q,
+      options: rawQ.options,
+      a: rawQ.a
+    });
     setSelectedOptionIdx(null);
     setAnswerStatus('idle');
-    speakVoice(`Block pulled! Answer the question: ${shuffledQ.q}`);
+    speakVoice(`Block pulled! Answer the question: ${rawQ.q}`);
   };
 
   const handleAnswerSubmit = (optionIdx: number) => {

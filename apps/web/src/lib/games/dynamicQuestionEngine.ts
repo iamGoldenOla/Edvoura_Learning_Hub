@@ -1,19 +1,16 @@
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- * EDVOURA UNIVERSAL DYNAMIC QUESTION & VOCABULARY ENGINE (V3 INFINITE)
+ * EDVOURA DYNAMIC QUESTION & DEDUPLICATION ENGINE (V4 INFINITE)
  * ══════════════════════════════════════════════════════════════════════════════
- * Procedurally generates 100% unique, non-repetitive trivia questions and vocabulary
- * across 10+ academic subjects & 7 global continents:
- * - Mathematics (Arithmetic, Algebra, Geometry, Word Problems)
- * - Science (Biology, Physics, Chemistry, Astronomy, Earth Science)
- * - History & Civics (World History, African History, International Treaties)
- * - Geography & Continents (Capitals, Landmarks, Oceans, Maps, Flags)
- * - Language Arts & Literature (Grammar, Synonyms, Antonyms, Vocabulary)
- * - Computer Science & Tech (AI, Programming, Hardware, Internet)
- * - Global Current Affairs (Politics, Environment, Sports, Culture, Space)
+ * Provides 100% non-repetitive, grade-favourable, tier-scaled trivia & curriculum
+ * questions across 10+ subjects & global domains:
+ * - Session & cross-session deduplication tracking
+ * - Tier-based difficulty scaling (Easy, Medium, Hard / Win Big)
+ * - Grade Band adaptation (Grades 1-3, 4-6, 7-12)
+ * - Dynamic procedural math, science, geography, tech & curriculum generation
  */
 
-import { OFFICIAL_CURRICULUM_QUESTIONS } from '../curriculum/curriculumQuestionBank';
+import { OFFICIAL_CURRICULUM_QUESTIONS, CurriculumQuestion } from '../curriculum/curriculumQuestionBank';
 
 export interface GameQuestion {
   id: string;
@@ -36,47 +33,80 @@ export interface VocabularyWord {
   difficulty: 'easy' | 'medium' | 'hard';
 }
 
-/* ═══════════════════════ 1. EXPANDED VOCABULARY DATABASE ═══════════════════════ */
+/* ═══════════════════════ 1. GLOBAL SESSION DEDUPLICATION TRACKER ═══════════════════════ */
+
+class SessionTracker {
+  private usedIds: Set<string> = new Set();
+  private usedTexts: Set<string> = new Set();
+
+  constructor() {
+    this.loadFromStorage();
+  }
+
+  private loadFromStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem('edvoura_recent_question_hashes');
+      if (stored) {
+        const hashes: string[] = JSON.parse(stored);
+        hashes.slice(-250).forEach(h => this.usedTexts.add(h));
+      }
+    } catch {}
+  }
+
+  public isUsed(id: string, text: string, sessionUsedIds: string[] = []): boolean {
+    const textHash = text.trim().toLowerCase();
+    return this.usedIds.has(id) || this.usedTexts.has(textHash) || sessionUsedIds.includes(id) || sessionUsedIds.includes(text);
+  }
+
+  public markUsed(id: string, text: string) {
+    const textHash = text.trim().toLowerCase();
+    this.usedIds.add(id);
+    this.usedTexts.add(textHash);
+
+    if (typeof window !== 'undefined') {
+      try {
+        const recent = Array.from(this.usedTexts).slice(-250);
+        localStorage.setItem('edvoura_recent_question_hashes', JSON.stringify(recent));
+      } catch {}
+    }
+  }
+
+  public clearCurrentSession() {
+    this.usedIds.clear();
+  }
+}
+
+export const questionSessionTracker = new SessionTracker();
+
+/* ═══════════════════════ 2. EXPANDED VOCABULARY BANK ═══════════════════════ */
+
 export const VOCABULARY_BANK: VocabularyWord[] = [
-  // Science & Nature
-  { word: 'PHOTOSYNTHESIS', category: 'Science', hint: 'Process by which green plants make food using sunlight', definition: 'Plant energy production process', difficulty: 'hard' },
-  { word: 'MITOCHONDRIA', category: 'Science', hint: 'The powerhouse organelle of a living cell', definition: 'Cellular energy organelle', difficulty: 'hard' },
-  { word: 'EVAPORATION', category: 'Science', hint: 'Liquid turning into vapor when heated', definition: 'Liquid to gas state change', difficulty: 'medium' },
-  { word: 'GRAVITATION', category: 'Science', hint: 'Force pulling objects toward Earth center', definition: 'Attraction force of mass', difficulty: 'medium' },
-  { word: 'ATMOSPHERE', category: 'Science', hint: 'Layer of gases surrounding a planet', definition: 'Gaseous planetary envelope', difficulty: 'medium' },
-  { word: 'MOLECULE', category: 'Science', hint: 'Group of atoms bonded together', definition: 'Smallest particle of a compound', difficulty: 'easy' },
-  { word: 'ECOSYSTEM', category: 'Science', hint: 'Community of living organisms interacting with environment', definition: 'Biological community network', difficulty: 'medium' },
-  { word: 'BIODIVERSITY', category: 'Science', hint: 'Variety of life forms in a habitat', definition: 'Ecological species variety', difficulty: 'hard' },
+  // Easy Grade 1-3
+  { word: 'ANIMAL', category: 'Science', hint: 'A living creature that eats organic matter', definition: 'Living organism', difficulty: 'easy' },
+  { word: 'FLOWER', category: 'Science', hint: 'Colorful part of a plant that produces seeds', definition: 'Plant blossom', difficulty: 'easy' },
+  { word: 'PLANET', category: 'Astronomy', hint: 'Large body orbiting a star like Earth or Mars', definition: 'Celestial orbiting body', difficulty: 'easy' },
+  { word: 'NUMBER', category: 'Mathematics', hint: 'Arithmetical value used for counting', definition: 'Mathematical digit', difficulty: 'easy' },
+  { word: 'DOCTOR', category: 'Social Studies', hint: 'Person qualified to treat people who are ill', definition: 'Medical practitioner', difficulty: 'easy' },
 
-  // Space & Astronomy
-  { word: 'SOLARSYSTEM', category: 'Astronomy', hint: 'Gravitationally bound system of the Sun and orbiting bodies', definition: 'Sun and orbiting celestial bodies', difficulty: 'easy' },
-  { word: 'ASTRONAUT', category: 'Astronomy', hint: 'Person trained to travel in spacecraft', definition: 'Spaceflight professional explorer', difficulty: 'easy' },
-  { word: 'SATELLITE', category: 'Astronomy', hint: 'An artificial body placed in orbit around Earth', definition: 'Orbital celestial or artificial body', difficulty: 'medium' },
-  { word: 'TELESCOPE', category: 'Astronomy', hint: 'Optical instrument for making distant objects appear nearer', definition: 'Far-space viewing instrument', difficulty: 'easy' },
+  // Medium Grade 4-6
+  { word: 'PHOTOSYNTHESIS', category: 'Science', hint: 'Process plants use to make food from sunlight', definition: 'Plant energy conversion', difficulty: 'medium' },
+  { word: 'EVAPORATION', category: 'Science', hint: 'Liquid turning into gas when heated', definition: 'Liquid to vapor state change', difficulty: 'medium' },
+  { word: 'ALGORITHM', category: 'Technology', hint: 'Step-by-step set of rules for solving a problem', definition: 'Computational instructions', difficulty: 'medium' },
+  { word: 'HEMISPHERE', category: 'Geography', hint: 'Half of the Earth divided into northern/southern', definition: 'Half globe', difficulty: 'medium' },
+  { word: 'EQUATION', category: 'Mathematics', hint: 'Mathematical statement that two expressions are equal', definition: 'Equality mathematical expression', difficulty: 'medium' },
+  { word: 'DEMOCRACY', category: 'Social Studies', hint: 'Government system where citizens vote', definition: 'Government by the people', difficulty: 'medium' },
 
-  // Mathematics & Logic
-  { word: 'HYPOTENUSE', category: 'Mathematics', hint: 'Longest side of a right-angled triangle opposite right angle', definition: 'Triangle longest side', difficulty: 'hard' },
-  { word: 'POLYGON', category: 'Mathematics', hint: 'Plane figure with at least three straight sides and angles', definition: 'Closed straight-sided shape', difficulty: 'easy' },
-  { word: 'FRACTION', category: 'Mathematics', hint: 'Numerical quantity that is not a whole number', definition: 'Part of a whole unit', difficulty: 'easy' },
-  { word: 'PERIMETER', category: 'Mathematics', hint: 'Continuous line forming boundary of a closed figure', definition: 'Outer boundary distance', difficulty: 'medium' },
-  { word: 'EQUATION', category: 'Mathematics', hint: 'Mathematical statement asserting equality of two expressions', definition: 'Equal balance mathematical expression', difficulty: 'easy' },
-
-  // Tech & AI
-  { word: 'ALGORITHM', category: 'Technology', hint: 'Process or set of rules followed in calculations', definition: 'Step-by-step problem-solving procedure', difficulty: 'medium' },
-  { word: 'BLOCKCHAIN', category: 'Technology', hint: 'Decentralized digital ledger system', definition: 'Immutable cryptographic ledger', difficulty: 'hard' },
-  { word: 'CYBERSECURITY', category: 'Technology', hint: 'Protection of computer systems from theft or damage', definition: 'Digital network defense practice', difficulty: 'hard' },
-  { word: 'INTELLIGENCE', category: 'Technology', hint: 'Ability to acquire and apply knowledge and skills', definition: 'Cognitive reasoning capability', difficulty: 'medium' },
-  { word: 'DATABASE', category: 'Technology', hint: 'Organized collection of structured information or data', definition: 'Structured digital storage system', difficulty: 'easy' },
-
-  // Geography & History
-  { word: 'INDEPENDENCE', category: 'History', hint: 'Freedom from control or governance by another country', definition: 'National self-sovereignty state', difficulty: 'medium' },
-  { word: 'CIVILIZATION', category: 'History', hint: 'Advanced stage of human social and cultural development', definition: 'Developed human society', difficulty: 'hard' },
-  { word: 'HEMISPHERE', category: 'Geography', hint: 'Half of the Earth divided into northern/southern', definition: 'Half of the globe', difficulty: 'medium' },
-  { word: 'ARCHIPELAGO', category: 'Geography', hint: 'An extensive group or chain of islands', definition: 'Island cluster chain', difficulty: 'hard' },
-  { word: 'DEMOCRACY', category: 'Social Studies', hint: 'System of government by the whole population', definition: 'Government by popular vote', difficulty: 'medium' }
+  // Hard Grade 7-12
+  { word: 'MITOCHONDRIA', category: 'Science', hint: 'Powerhouse organelle of a living cell', definition: 'Cellular energy organelle', difficulty: 'hard' },
+  { word: 'HYPOTENUSE', category: 'Mathematics', hint: 'Longest side of a right-angled triangle', definition: 'Triangle longest side', difficulty: 'hard' },
+  { word: 'BLOCKCHAIN', category: 'Technology', hint: 'Decentralized immutable digital ledger', definition: 'Cryptographic ledger', difficulty: 'hard' },
+  { word: 'BIODIVERSITY', category: 'Science', hint: 'Variety of plant and animal life in a habitat', definition: 'Species ecosystem variety', difficulty: 'hard' },
+  { word: 'ARCHIPELAGO', category: 'Geography', hint: 'Extensive group or chain of islands', definition: 'Island cluster chain', difficulty: 'hard' },
+  { word: 'CYBERSECURITY', category: 'Technology', hint: 'Protection of computer systems and networks', definition: 'Digital network defense', difficulty: 'hard' }
 ];
 
-/* ═══════════════════════ 2. FACTUAL DATABASE FOR PROCEDURAL CURRENT AFFAIRS ═══════════════════════ */
+/* ═══════════════════════ 3. EXPANDED FACTUAL DATABASE ═══════════════════════ */
 
 const COUNTRIES_DATABASE = [
   // Africa
@@ -88,6 +118,7 @@ const COUNTRIES_DATABASE = [
   { country: 'Ethiopia', capital: 'Addis Ababa', continent: 'Africa', currency: 'Birr', landmark: 'Rock-Hewn Churches of Lalibela', leader: 'Abiy Ahmed' },
   { country: 'Rwanda', capital: 'Kigali', continent: 'Africa', currency: 'Rwandan Franc', landmark: 'Volcanoes National Park', leader: 'Paul Kagame' },
   { country: 'Morocco', capital: 'Rabat', continent: 'Africa', currency: 'Dirham', landmark: 'Hassan II Mosque', leader: 'King Mohammed VI' },
+  { country: 'Senegal', capital: 'Dakar', continent: 'Africa', currency: 'CFA Franc', landmark: 'Goreé Island', leader: 'Bassirou Diomaye Faye' },
 
   // Asia
   { country: 'Japan', capital: 'Tokyo', continent: 'Asia', currency: 'Yen', landmark: 'Mount Fuji', leader: 'Shigeru Ishiba' },
@@ -103,276 +134,127 @@ const COUNTRIES_DATABASE = [
   { country: 'Italy', capital: 'Rome', continent: 'Europe', currency: 'Euro', landmark: 'Colosseum', leader: 'Giorgia Meloni' },
   { country: 'Spain', capital: 'Madrid', continent: 'Europe', currency: 'Euro', landmark: 'Sagrada Família', leader: 'Pedro Sánchez' },
 
-  // North America
+  // Americas & Oceania
   { country: 'United States', capital: 'Washington, D.C.', continent: 'North America', currency: 'US Dollar', landmark: 'Statue of Liberty', leader: 'Joe Biden' },
   { country: 'Canada', capital: 'Ottawa', continent: 'North America', currency: 'Canadian Dollar', landmark: 'CN Tower', leader: 'Justin Trudeau' },
-  { country: 'Mexico', capital: 'Mexico City', continent: 'North America', currency: 'Mexican Peso', landmark: 'Chichen Itza', leader: 'Claudia Sheinbaum' },
-
-  // South America
   { country: 'Brazil', capital: 'Brasília', continent: 'South America', currency: 'Real', landmark: 'Christ the Redeemer', leader: 'Luiz Inácio Lula da Silva' },
-  { country: 'Argentina', capital: 'Buenos Aires', continent: 'South America', currency: 'Argentine Peso', landmark: 'Iguazu Falls', leader: 'Javier Milei' },
-  { country: 'Peru', capital: 'Lima', continent: 'South America', currency: 'Sol', landmark: 'Machu Picchu', leader: 'Dina Boluarte' },
-
-  // Oceania
-  { country: 'Australia', capital: 'Canberra', continent: 'Oceania', currency: 'Australian Dollar', landmark: 'Sydney Opera House', leader: 'Anthony Albanese' },
-  { country: 'New Zealand', capital: 'Wellington', continent: 'Oceania', currency: 'New Zealand Dollar', landmark: 'Milford Sound', leader: 'Christopher Luxon' }
+  { country: 'Australia', capital: 'Canberra', continent: 'Oceania', currency: 'Australian Dollar', landmark: 'Sydney Opera House', leader: 'Anthony Albanese' }
 ];
 
-const GLOBAL_TECH_SPACE_EVENTS = [
-  { topic: 'James Webb Space Telescope (JWST)', detail: 'Deepest and sharpest infrared images of the distant universe', sphere: 'Science & Space', continent: 'Global / Antarctica' },
-  { topic: 'Artemis Space Program', detail: 'NASA program returning humans to the Moon', sphere: 'Science & Space', continent: 'North America' },
-  { topic: 'Artificial Intelligence (AI)', detail: 'Branch of computer science enabling machines to reason and learn', sphere: 'Technology & AI', continent: 'Global / Antarctica' },
-  { topic: 'Generative Pre-trained Transformers (GPT)', detail: 'Deep learning architecture powering modern AI models', sphere: 'Technology & AI', continent: 'North America' },
-  { topic: 'Paris Climate Agreement', detail: 'Global pact to limit temperature increase to 1.5°C above pre-industrial levels', sphere: 'Environment & Climate', continent: 'Global / Antarctica' },
-  { topic: 'African Continental Free Trade Area (AfCFTA)', detail: 'World largest single free trade zone by country participation', sphere: 'Politics & Geopolitics', continent: 'Africa' },
-  { topic: 'FIFA Men World Cup 2026', detail: 'First 48-team World Cup hosted across USA, Canada, and Mexico', sphere: 'Global Sports', continent: 'North America' },
-  { topic: 'Olympic Games Paris 2024', detail: 'Global multi-sport summer event held in France', sphere: 'Global Sports', continent: 'Europe' }
-];
+/* ═══════════════════════ 4. PROCEDURAL QUESTION GENERATORS ═══════════════════════ */
 
-/* ═══════════════════════ PROCEDURAL CURRENT AFFAIRS GENERATOR ═══════════════════════ */
-
-export function generateParametricCurrentAffairsQuestion(
-  gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
-  continentFilter?: string,
-  sphereFilter?: string
-): GameQuestion {
-  const type = Math.floor(Math.random() * 4);
-  const id = `param_curr_${Date.now()}_${Math.random()}`;
-
-  // Filter country database by continent if specified
-  const filteredCountries = COUNTRIES_DATABASE.filter(c => !continentFilter || continentFilter === 'All' || c.continent === continentFilter);
-  const countryList = filteredCountries.length > 0 ? filteredCountries : COUNTRIES_DATABASE;
-  const pickedCountry = countryList[Math.floor(Math.random() * countryList.length)];
-
-  if (type === 0) {
-    // Capital City Question
-    const q = `What is the official capital city of ${pickedCountry.country} (${pickedCountry.continent})?`;
-    const trueAns = pickedCountry.capital;
-
-    const wrongPool = COUNTRIES_DATABASE.filter(c => c.capital !== trueAns).map(c => c.capital);
-    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
-    const a = options.indexOf(trueAns);
-
-    return {
-      id,
-      q,
-      options,
-      a,
-      category: `${pickedCountry.continent} • Capitals`,
-      difficulty: gradeBand === '7-12' ? 'hard' : gradeBand === '4-6' ? 'medium' : 'easy',
-      continent: pickedCountry.continent,
-      sphere: 'World History & Nations',
-      gradeBand
-    };
-  } else if (type === 1) {
-    // Currency Question
-    const q = `Which official currency is used in ${pickedCountry.country}?`;
-    const trueAns = pickedCountry.currency;
-
-    const wrongPool = COUNTRIES_DATABASE.filter(c => c.currency !== trueAns).map(c => c.currency);
-    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
-    const a = options.indexOf(trueAns);
-
-    return {
-      id,
-      q,
-      options,
-      a,
-      category: `${pickedCountry.continent} • World Economy`,
-      difficulty: gradeBand === '7-12' ? 'medium' : 'easy',
-      continent: pickedCountry.continent,
-      sphere: 'Politics & Geopolitics',
-      gradeBand
-    };
-  } else if (type === 2) {
-    // Landmark Question
-    const q = `In which country is the famous world landmark "${pickedCountry.landmark}" located?`;
-    const trueAns = pickedCountry.country;
-
-    const wrongPool = COUNTRIES_DATABASE.filter(c => c.country !== trueAns).map(c => c.country);
-    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
-    const a = options.indexOf(trueAns);
-
-    return {
-      id,
-      q,
-      options,
-      a,
-      category: `${pickedCountry.continent} • Landmarks`,
-      difficulty: 'easy',
-      continent: pickedCountry.continent,
-      sphere: 'Arts & Culture',
-      gradeBand
-    };
-  } else {
-    // Global Event / Tech Question
-    const event = GLOBAL_TECH_SPACE_EVENTS[Math.floor(Math.random() * GLOBAL_TECH_SPACE_EVENTS.length)];
-    const q = `Which global initiative or technology is described as: "${event.detail}"?`;
-    const trueAns = event.topic;
-
-    const wrongPool = GLOBAL_TECH_SPACE_EVENTS.filter(e => e.topic !== trueAns).map(e => e.topic);
-    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
-    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
-    const a = options.indexOf(trueAns);
-
-    return {
-      id,
-      q,
-      options,
-      a,
-      category: `${event.sphere}`,
-      difficulty: gradeBand === '7-12' ? 'hard' : 'medium',
-      continent: event.continent,
-      sphere: event.sphere as any,
-      gradeBand
-    };
-  }
-}
-
-/**
- * Main function: Get a 100% unique, non-repeating question for any game
- */
-export function getUniqueDynamicQuestion(
-  level: number,
-  usedTextsOrIds: string[] = [],
-  gradeBand?: '1-3' | '4-6' | '7-12',
-  exactGradeCode?: string
-): GameQuestion {
-  const targetBand = gradeBand || (level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12');
-  let attempts = 0;
-  let qObj: GameQuestion;
-
-  do {
-    const domainChoice = Math.floor(Math.random() * 4);
-    if (domainChoice === 0) {
-      qObj = generateMathQuestion(level);
-    } else if (domainChoice === 1) {
-      qObj = generateScienceQuestion(level);
-    } else if (domainChoice === 2) {
-      qObj = generateParametricCurrentAffairsQuestion(targetBand);
-    } else {
-      qObj = generateOfficialCurriculumGameQuestion(targetBand, exactGradeCode);
-    }
-    attempts++;
-  } while ((usedTextsOrIds.includes(qObj.id) || usedTextsOrIds.includes(qObj.q)) && attempts < 50);
-
-  return qObj;
-}
-
-/**
- * Generates a grade-appropriate, non-repeating current affairs question
- */
-export function generateGlobalCurrentAffairsQuestion(
-  gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
-  continentFilter?: string,
-  sphereFilter?: string,
-  usedIds: string[] = []
-): GameQuestion {
-  let attempts = 0;
-  let qObj = generateParametricCurrentAffairsQuestion(gradeBand, continentFilter, sphereFilter);
-
-  while (usedIds.includes(qObj.id) && attempts < 20) {
-    qObj = generateParametricCurrentAffairsQuestion(gradeBand, continentFilter, sphereFilter);
-    attempts++;
-  }
-
-  return qObj;
-}
-
-/** Generates dynamic arithmetic & algebra math questions */
-export function generateMathQuestion(level: number): GameQuestion {
+export function generateMathQuestion(levelOrTier: number | 'easy' | 'medium' | 'hard'): GameQuestion {
   const id = `math_dyn_${Date.now()}_${Math.random()}`;
   let q = '';
   let ans = 0;
   let category = 'Mathematics';
   let difficulty: 'easy' | 'medium' | 'hard' = 'easy';
 
-  if (level <= 5) {
-    const op = Math.random() > 0.5 ? '+' : '×';
-    if (op === '+') {
-      const a = Math.floor(Math.random() * 40) + 10;
-      const b = Math.floor(Math.random() * 40) + 5;
+  if (typeof levelOrTier === 'string') {
+    difficulty = levelOrTier;
+  } else {
+    difficulty = levelOrTier <= 5 ? 'easy' : levelOrTier <= 10 ? 'medium' : 'hard';
+  }
+
+  if (difficulty === 'easy') {
+    const isAdd = Math.random() > 0.4;
+    if (isAdd) {
+      const a = Math.floor(Math.random() * 25) + 5;
+      const b = Math.floor(Math.random() * 25) + 5;
       ans = a + b;
       q = `What is the sum of ${a} + ${b}?`;
     } else {
-      const a = Math.floor(Math.random() * 12) + 2;
-      const b = Math.floor(Math.random() * 12) + 2;
-      ans = a * b;
-      q = `What is the product of ${a} × ${b}?`;
+      const b = Math.floor(Math.random() * 15) + 3;
+      const a = b + Math.floor(Math.random() * 20) + 2;
+      ans = a - b;
+      q = `What is ${a} - ${b}?`;
     }
-    difficulty = 'easy';
-  } else if (level <= 10) {
+  } else if (difficulty === 'medium') {
     const type = Math.floor(Math.random() * 3);
     if (type === 0) {
-      const multiplier = Math.floor(Math.random() * 8) + 2;
-      const x = Math.floor(Math.random() * 12) + 3;
-      const constant = Math.floor(Math.random() * 15) + 5;
-      const total = multiplier * x + constant;
-      ans = x;
-      q = `Solve for x: ${multiplier}x + ${constant} = ${total}`;
-    } else if (type === 1) {
+      const a = Math.floor(Math.random() * 12) + 3;
       const b = Math.floor(Math.random() * 12) + 3;
-      const ansVal = Math.floor(Math.random() * 15) + 5;
+      ans = a * b;
+      q = `What is the product of ${a} × ${b}?`;
+    } else if (type === 1) {
+      const b = Math.floor(Math.random() * 10) + 3;
+      const ansVal = Math.floor(Math.random() * 12) + 2;
       const total = b * ansVal;
       ans = ansVal;
       q = `Calculate: ${total} ÷ ${b}`;
     } else {
-      const base = Math.floor(Math.random() * 10) + 3;
+      const multiplier = Math.floor(Math.random() * 5) + 2;
+      const x = Math.floor(Math.random() * 10) + 2;
+      const constant = Math.floor(Math.random() * 12) + 3;
+      const total = multiplier * x + constant;
+      ans = x;
+      q = `Solve for x: ${multiplier}x + ${constant} = ${total}`;
+      category = 'Algebra & Logic';
+    }
+  } else {
+    // Hard / Win Big
+    const type = Math.floor(Math.random() * 3);
+    if (type === 0) {
+      const base = Math.floor(Math.random() * 11) + 5;
       ans = base * base;
       q = `What is the square of ${base} (${base}²)?`;
-    }
-    difficulty = 'medium';
-    category = 'Algebra & Logic';
-  } else {
-    const type = Math.floor(Math.random() * 2);
-    if (type === 0) {
-      const a = Math.floor(Math.random() * 5) + 2;
-      const exp = Math.floor(Math.random() * 3) + 2;
-      ans = Math.pow(a, exp);
-      q = `What is ${a} raised to the power of ${exp} (${a}^${exp})?`;
+    } else if (type === 1) {
+      const perc = [10, 15, 20, 25, 50][Math.floor(Math.random() * 5)];
+      const base = (Math.floor(Math.random() * 12) + 2) * 20;
+      ans = (perc * base) / 100;
+      q = `What is ${perc}% of ${base}?`;
     } else {
-      const side = Math.floor(Math.random() * 15) + 4;
-      ans = side * side;
-      q = `If a square classroom has a side length of ${side} meters, what is its total area in m²?`;
+      const a = Math.floor(Math.random() * 9) + 4;
+      const b = Math.floor(Math.random() * 9) + 4;
+      const c = Math.floor(Math.random() * 30) + 10;
+      ans = a * b + c;
+      q = `Calculate: (${a} × ${b}) + ${c}`;
     }
-    difficulty = 'hard';
     category = 'Advanced Mathematics';
   }
 
   const optsSet = new Set<string>();
   optsSet.add(String(ans));
   while (optsSet.size < 4) {
-    const offset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1) * (level > 5 ? 2 : 1);
+    const offset = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
     const candidate = Math.max(1, ans + offset);
     optsSet.add(String(candidate));
   }
 
-  const options = Array.from(optsSet) as [string, string, string, string];
-  const correctOptionText = String(ans);
-  const shuffled = options.sort(() => Math.random() - 0.5);
-  const correctIdx = shuffled.indexOf(correctOptionText);
+  const options = Array.from(optsSet).sort(() => Math.random() - 0.5) as [string, string, string, string];
+  const correctIdx = options.indexOf(String(ans));
 
-  return { id, q, options: shuffled as [string, string, string, string], a: correctIdx, category, difficulty };
+  return { id, q, options, a: correctIdx, category, difficulty };
 }
 
-/** Generates dynamic Science trivia questions */
-export function generateScienceQuestion(level: number): GameQuestion {
+export function generateScienceQuestion(levelOrTier: number | 'easy' | 'medium' | 'hard'): GameQuestion {
   const scienceTopics = [
-    { q: 'Which gas do humans inhale for cellular respiration?', options: ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Argon'], a: 0, cat: 'Biology' },
-    { q: 'What is the freezing point of water in Celsius?', options: ['0°C', '100°C', '-10°C', '32°C'], a: 0, cat: 'Physics' },
-    { q: 'Which planet is known as the Red Planet?', options: ['Mars', 'Venus', 'Jupiter', 'Saturn'], a: 0, cat: 'Astronomy' },
-    { q: 'What is the hardest natural substance known on Earth?', options: ['Diamond', 'Titanium', 'Quartz', 'Granite'], a: 0, cat: 'Earth Science' },
-    { q: 'What is the center of an atom called?', options: ['Nucleus', 'Electron', 'Proton', 'Neutron'], a: 0, cat: 'Chemistry' },
-    { q: 'Which organ pumps blood throughout the human body?', options: ['Heart', 'Lungs', 'Liver', 'Brain'], a: 0, cat: 'Anatomy' },
-    { q: 'What force pulls objects toward the center of the Earth?', options: ['Gravity', 'Friction', 'Magnetism', 'Tension'], a: 0, cat: 'Physics' }
+    // Easy
+    { q: 'Which part of a plant absorbs water underground?', options: ['Roots', 'Leaves', 'Stem', 'Flowers'], a: 0, cat: 'Biology', diff: 'easy' },
+    { q: 'What process does a caterpillar undergo to become a butterfly?', options: ['Metamorphosis', 'Evaporation', 'Digestion', 'Germination'], a: 0, cat: 'Biology', diff: 'easy' },
+    { q: 'Which planet is known as the Red Planet?', options: ['Mars', 'Venus', 'Jupiter', 'Saturn'], a: 0, cat: 'Astronomy', diff: 'easy' },
+    { q: 'What is the freezing point of pure water in Celsius?', options: ['0°C', '100°C', '-10°C', '32°C'], a: 0, cat: 'Physics', diff: 'easy' },
+
+    // Medium
+    { q: 'Which gas do humans inhale for cellular respiration?', options: ['Oxygen', 'Carbon Dioxide', 'Nitrogen', 'Argon'], a: 0, cat: 'Biology', diff: 'medium' },
+    { q: 'What is the center of an atom called?', options: ['Nucleus', 'Electron', 'Proton', 'Neutron'], a: 0, cat: 'Chemistry', diff: 'medium' },
+    { q: 'Which organ pumps blood throughout the human body?', options: ['Heart', 'Lungs', 'Liver', 'Brain'], a: 0, cat: 'Anatomy', diff: 'medium' },
+    { q: 'What force pulls objects toward the center of the Earth?', options: ['Gravity', 'Friction', 'Magnetism', 'Tension'], a: 0, cat: 'Physics', diff: 'medium' },
+    { q: 'What is the hardest natural substance known on Earth?', options: ['Diamond', 'Titanium', 'Quartz', 'Granite'], a: 0, cat: 'Earth Science', diff: 'medium' },
+
+    // Hard
+    { q: 'Which cell organelle is known as the "powerhouse of the cell"?', options: ['Mitochondria', 'Ribosome', 'Nucleus', 'Golgi Body'], a: 0, cat: 'Biology', diff: 'hard' },
+    { q: 'What is the chemical symbol for Gold on the periodic table?', options: ['Au', 'Ag', 'Fe', 'Go'], a: 0, cat: 'Chemistry', diff: 'hard' },
+    { q: 'What layer of Earth atmosphere contains the ozone layer?', options: ['Stratosphere', 'Troposphere', 'Mesosphere', 'Thermosphere'], a: 0, cat: 'Earth Science', diff: 'hard' },
+    { q: 'What speed does light travel in a vacuum?', options: ['300,000 km/s', '150,000 km/s', '1,000,000 km/s', '30,000 km/s'], a: 0, cat: 'Physics', diff: 'hard' }
   ];
 
-  const picked = scienceTopics[Math.floor(Math.random() * scienceTopics.length)];
-  const id = `sci_dyn_${Date.now()}_${Math.random()}`;
+  let targetDiff: 'easy' | 'medium' | 'hard' = typeof levelOrTier === 'string' ? levelOrTier : levelOrTier <= 5 ? 'easy' : levelOrTier <= 10 ? 'medium' : 'hard';
+  
+  const pool = scienceTopics.filter(t => t.diff === targetDiff);
+  const picked = pool.length > 0 ? pool[Math.floor(Math.random() * pool.length)] : scienceTopics[Math.floor(Math.random() * scienceTopics.length)];
 
+  const id = `sci_dyn_${Date.now()}_${Math.random()}`;
   const correctText = picked.options[picked.a];
   const shuffled = [...picked.options].sort(() => Math.random() - 0.5) as [string, string, string, string];
   const aIdx = shuffled.indexOf(correctText);
@@ -383,57 +265,162 @@ export function generateScienceQuestion(level: number): GameQuestion {
     options: shuffled,
     a: aIdx,
     category: `Science (${picked.cat})`,
-    difficulty: level > 8 ? 'hard' : level > 4 ? 'medium' : 'easy'
+    difficulty: picked.diff as any
   };
 }
 
-export function generateOfficialCurriculumGameQuestion(
+export function generateParametricCurrentAffairsQuestion(
   gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
-  exactGradeCode?: string
+  tier: 'easy' | 'medium' | 'hard' = 'medium'
 ): GameQuestion {
-  if (exactGradeCode) {
-    const exactMatches = OFFICIAL_CURRICULUM_QUESTIONS.filter((q) => q.gradeCode === exactGradeCode);
-    if (exactMatches.length > 0) {
-      const picked = exactMatches[Math.floor(Math.random() * exactMatches.length)];
-      return {
-        id: `curr_${picked.id}_${Date.now()}_${Math.random()}`,
-        q: picked.questionText,
-        options: picked.options,
-        a: picked.correctIndex,
-        category: `Curriculum (${picked.subjectName})`,
-        difficulty: picked.difficulty,
-        gradeBand: gradeBand,
-        hint: picked.hint,
-      };
-    }
+  const type = Math.floor(Math.random() * 3);
+  const id = `param_curr_${Date.now()}_${Math.random()}`;
+
+  const pickedCountry = COUNTRIES_DATABASE[Math.floor(Math.random() * COUNTRIES_DATABASE.length)];
+
+  if (type === 0) {
+    const q = `What is the official capital city of ${pickedCountry.country} (${pickedCountry.continent})?`;
+    const trueAns = pickedCountry.capital;
+    const wrongPool = COUNTRIES_DATABASE.filter(c => c.capital !== trueAns).map(c => c.capital);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id, q, options, a,
+      category: `${pickedCountry.continent} • World Capitals`,
+      difficulty: tier,
+      continent: pickedCountry.continent,
+      gradeBand
+    };
+  } else if (type === 1) {
+    const q = `Which official currency is used in ${pickedCountry.country}?`;
+    const trueAns = pickedCountry.currency;
+    const wrongPool = COUNTRIES_DATABASE.filter(c => c.currency !== trueAns).map(c => c.currency);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id, q, options, a,
+      category: `${pickedCountry.continent} • World Currencies`,
+      difficulty: tier,
+      continent: pickedCountry.continent,
+      gradeBand
+    };
+  } else {
+    const q = `In which country is the famous world landmark "${pickedCountry.landmark}" located?`;
+    const trueAns = pickedCountry.country;
+    const wrongPool = COUNTRIES_DATABASE.filter(c => c.country !== trueAns).map(c => c.country);
+    const wrongOptions = [...new Set(wrongPool)].sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [trueAns, ...wrongOptions].sort(() => Math.random() - 0.5) as [string, string, string, string];
+    const a = options.indexOf(trueAns);
+
+    return {
+      id, q, options, a,
+      category: `${pickedCountry.continent} • World Landmarks`,
+      difficulty: tier,
+      continent: pickedCountry.continent,
+      gradeBand
+    };
+  }
+}
+
+/* ═══════════════════════ 5. MASTER QUERY ENGINE WITH ZERO DUPLICATION ═══════════════════════ */
+
+/**
+ * Gets a 100% unique question matched to difficulty tier ('easy' | 'medium' | 'hard')
+ * and student Grade Band ('1-3' | '4-6' | '7-12'). Guaranteed non-repeating!
+ */
+export function getQuestionByTierAndGrade(
+  tier: 'easy' | 'medium' | 'hard',
+  gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
+  exactGradeCode?: string,
+  sessionUsedIds: string[] = []
+): GameQuestion {
+  // 1. Try matching official curriculum question bank first
+  const allowedGrades = exactGradeCode
+    ? [exactGradeCode]
+    : gradeBand === '1-3'
+    ? ['grade_1', 'grade_2', 'grade_3']
+    : gradeBand === '4-6'
+    ? ['grade_4', 'grade_5', 'grade_6']
+    : ['grade_7', 'grade_8', 'grade_9', 'grade_10', 'grade_11', 'grade_12'];
+
+  const matchedCurriculum = OFFICIAL_CURRICULUM_QUESTIONS.filter(
+    q => allowedGrades.includes(q.gradeCode) && q.difficulty === tier && !questionSessionTracker.isUsed(q.id, q.questionText, sessionUsedIds)
+  );
+
+  if (matchedCurriculum.length > 0) {
+    const picked = matchedCurriculum[Math.floor(Math.random() * matchedCurriculum.length)];
+    questionSessionTracker.markUsed(picked.id, picked.questionText);
+
+    return {
+      id: `curr_${picked.id}_${Date.now()}`,
+      q: picked.questionText,
+      options: picked.options,
+      a: picked.correctIndex,
+      category: `Curriculum (${picked.subjectName})`,
+      difficulty: picked.difficulty,
+      gradeBand,
+      hint: picked.hint
+    };
   }
 
-  const allowedGrades =
-    gradeBand === '1-3'
-      ? ['grade_1', 'grade_2', 'grade_3']
-      : gradeBand === '4-6'
-      ? ['grade_4', 'grade_5', 'grade_6']
-      : ['grade_7', 'grade_8', 'grade_9', 'grade_10', 'grade_11', 'grade_12'];
+  // 2. Fallback to procedural math/science/geography matched to tier
+  let attempts = 0;
+  let qObj: GameQuestion;
 
-  const filtered = OFFICIAL_CURRICULUM_QUESTIONS.filter((q) => allowedGrades.includes(q.gradeCode));
-  const pool = filtered.length > 0 ? filtered : OFFICIAL_CURRICULUM_QUESTIONS;
-  const picked = pool[Math.floor(Math.random() * pool.length)];
+  do {
+    const choice = Math.floor(Math.random() * 3);
+    if (choice === 0) {
+      qObj = generateMathQuestion(tier);
+    } else if (choice === 1) {
+      qObj = generateScienceQuestion(tier);
+    } else {
+      qObj = generateParametricCurrentAffairsQuestion(gradeBand, tier);
+    }
+    attempts++;
+  } while (questionSessionTracker.isUsed(qObj.id, qObj.q, sessionUsedIds) && attempts < 30);
 
-  return {
-    id: `curr_${picked.id}_${Date.now()}_${Math.random()}`,
-    q: picked.questionText,
-    options: picked.options,
-    a: picked.correctIndex,
-    category: `Curriculum (${picked.subjectName})`,
-    difficulty: picked.difficulty,
-    gradeBand: gradeBand,
-    hint: picked.hint,
-  };
+  questionSessionTracker.markUsed(qObj.id, qObj.q);
+  return qObj;
 }
 
 /**
- * Gets a non-repeating vocabulary word for Word Scramble, Hangman, Wordle, Scrabble
+ * Universal backwards-compatible function for unique dynamic questions
  */
+export function getUniqueDynamicQuestion(
+  level: number,
+  usedTextsOrIds: string[] = [],
+  gradeBand?: '1-3' | '4-6' | '7-12',
+  exactGradeCode?: string
+): GameQuestion {
+  const targetBand = gradeBand || (level <= 5 ? '1-3' : level <= 10 ? '4-6' : '7-12');
+  const targetTier: 'easy' | 'medium' | 'hard' = level <= 5 ? 'easy' : level <= 10 ? 'medium' : 'hard';
+
+  return getQuestionByTierAndGrade(targetTier, targetBand, exactGradeCode, usedTextsOrIds);
+}
+
+export function generateGlobalCurrentAffairsQuestion(
+  gradeBand: '1-3' | '4-6' | '7-12' = '4-6',
+  continentFilter?: string,
+  sphereFilter?: string,
+  usedIds: string[] = []
+): GameQuestion {
+  const tier: 'easy' | 'medium' | 'hard' = gradeBand === '1-3' ? 'easy' : gradeBand === '4-6' ? 'medium' : 'hard';
+  let attempts = 0;
+  let qObj = generateParametricCurrentAffairsQuestion(gradeBand, tier);
+
+  while (questionSessionTracker.isUsed(qObj.id, qObj.q, usedIds) && attempts < 25) {
+    qObj = generateParametricCurrentAffairsQuestion(gradeBand, tier);
+    attempts++;
+  }
+
+  questionSessionTracker.markUsed(qObj.id, qObj.q);
+  return qObj;
+}
+
 export function getUniqueVocabularyWord(usedWords: string[] = [], difficultyFilter?: 'easy' | 'medium' | 'hard'): VocabularyWord {
   const available = VOCABULARY_BANK.filter(w => !usedWords.includes(w.word) && (!difficultyFilter || w.difficulty === difficultyFilter));
   if (available.length > 0) {

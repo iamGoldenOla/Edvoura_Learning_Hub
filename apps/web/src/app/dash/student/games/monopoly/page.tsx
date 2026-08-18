@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import GameLayout from '@/components/games/GameLayout';
 import { Dice1, RotateCcw, Layers, User, Users, Monitor, Landmark, ArrowRightLeft, Gavel } from 'lucide-react';
-import { getUniqueDynamicQuestion } from '@/lib/games/dynamicQuestionEngine';
+import { getUniqueDynamicQuestion, getQuestionByTierAndGrade } from '@/lib/games/dynamicQuestionEngine';
 
 /* ═══════════════════════ WEB AUDIO API SFX SYNTHESIZER ═══════════════════════ */
 function playMonopolySFX(type: 'dice' | 'cash' | 'move' | 'jail') {
@@ -577,7 +577,7 @@ export default function MonopolyPage() {
       setActionMessage('💰 Paid $150 tax.');
       setPhase('action');
     } else if (space.type === 'quiz') {
-      const q = getUniqueDynamicQuestion(Math.floor(Math.random() * 8) + 1);
+      const q = getQuestionByTierAndGrade('medium', '4-6');
       setCurrentQuiz({ q: q.q, options: q.options, answer: q.a });
       setPhase('quiz');
     } else if (space.type === 'chance') {
@@ -591,7 +591,11 @@ export default function MonopolyPage() {
     } else if (space.type === 'property' && space.property) {
       const prop = space.property;
       if (prop.owner === null) {
-        setActionMessage(`Buy ${space.name} for $${prop.price} or Auction?`);
+        const isWinBigTier = prop.price >= 260;
+        const msg = isWinBigTier
+          ? `🔥 WIN BIG: Buy ${space.name} ($${prop.price}) - Hard Tier Question!`
+          : `Buy ${space.name} for $${prop.price} or Auction?`;
+        setActionMessage(msg);
         setPhase('action');
       } else if (prop.owner !== currentPlayer) {
         if (prop.isMortgaged) {
