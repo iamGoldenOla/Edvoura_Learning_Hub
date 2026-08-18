@@ -475,6 +475,39 @@ export default function TutorLessonNotesPage() {
               </select>
             </div>
 
+            {/* Mobile-First Pushed Notes Status Indicator Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="p-4 rounded-2xl border-[2.5px] border-dark bg-emerald-400 text-dark shadow-[3.5px_3.5px_0px_#060E1C] flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-dark/80 block">🚀 Published Live to Class</span>
+                  <span className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
+                    {publishedOfficialNoteIds.length} Note{publishedOfficialNoteIds.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+                <span className="text-3xl shrink-0">✅</span>
+              </div>
+
+              <div className="p-4 rounded-2xl border-[2.5px] border-dark bg-slate-100 text-dark shadow-[3.5px_3.5px_0px_#060E1C] flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-dark/60 block">🔒 Draft / Unpushed</span>
+                  <span className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
+                    {Math.max(0, (OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES).length - publishedOfficialNoteIds.length)} Note{((OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES).length - publishedOfficialNoteIds.length) === 1 ? '' : 's'}
+                  </span>
+                </div>
+                <span className="text-3xl shrink-0">📝</span>
+              </div>
+
+              <div className="p-4 rounded-2xl border-[2.5px] border-dark bg-yellow text-dark shadow-[3.5px_3.5px_0px_#060E1C] flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-dark/80 block">📚 Total Grade Subjects</span>
+                  <span className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
+                    {(OFFICIAL_CURRICULUM_DATABASE[selectedGradeFilter] ?? PRIMARY_1_OFFICIAL_NOTES).length} Master Notes
+                  </span>
+                </div>
+                <span className="text-3xl shrink-0">📖</span>
+              </div>
+            </div>
+
             {/* Intellectual Authorization Banner */}
             {tutorType !== 'all' && (
               <div className="p-4 rounded-xl border-[3px] border-dark bg-white shadow-[3px_3px_0px_#060E1C] flex items-center gap-3">

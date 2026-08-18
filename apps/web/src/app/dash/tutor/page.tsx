@@ -45,7 +45,7 @@ export default async function TutorDashboard() {
   const viewer = await requireAppViewer();
   const dashboard = await getTutorDashboardData();
   const supabase = await createClient();
-  const [{ data: notifications = [] }, { count: pendingReviewCount }] = await Promise.all([
+  const [{ data: notifications = [] }, { count: pendingReviewCount }, { count: publishedNotesCount }] = await Promise.all([
     supabase
       .from('notifications')
       .select('data')
@@ -57,6 +57,10 @@ export default async function TutorDashboard() {
       .select('*', { count: 'exact', head: true })
       .eq('generated_by_user_id', viewer.currentUser.userId)
       .eq('status', 'PENDING_REVIEW'),
+    supabase
+      .from('ai_generated_content')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'PUBLISHED'),
   ]);
   const tutorNotificationFeedCounts = buildFeedCountMapFromNotificationData(notifications ?? [], 'workflow_alerts');
   const tutorFeedLanes = getFeedRulesForRole('tutor').map((rule) => ({
@@ -109,7 +113,7 @@ export default async function TutorDashboard() {
         {/* Quick AI Action Toolbar */}
         <div className="p-4 sm:p-6 bg-slate-50 border-b-[3px] border-dark">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/50 mb-3">⚡ Quick AI Studio Launchers</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             <Link href="/dash/tutor/builder?tool=resources&preset=story">
               <div className="rounded-2xl border-[3px] border-dark bg-amber-100 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
                 <span className="text-2xl group-hover:scale-110 transition-transform">📖</span>
@@ -128,8 +132,17 @@ export default async function TutorDashboard() {
                 </div>
               </div>
             </Link>
+            <Link href="/dash/tutor/lesson-notes">
+              <div className="rounded-2xl border-[3px] border-dark bg-emerald-300 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
+                <span className="text-2xl group-hover:scale-110 transition-transform">🚀</span>
+                <div>
+                  <h4 className="font-black text-dark text-sm leading-tight">Pushed Notes ({publishedNotesCount ?? 1})</h4>
+                  <p className="text-[10px] font-bold text-dark/80">Live for Students</p>
+                </div>
+              </div>
+            </Link>
             <Link href="/dash/tutor/builder?tool=resources&preset=note">
-              <div className="rounded-2xl border-[3px] border-dark bg-emerald-100 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
+              <div className="rounded-2xl border-[3px] border-dark bg-cyan-100 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
                 <span className="text-2xl group-hover:scale-110 transition-transform">📝</span>
                 <div>
                   <h4 className="font-black text-dark text-sm leading-tight">Lesson Notes</h4>
@@ -142,7 +155,7 @@ export default async function TutorDashboard() {
                 <span className="text-2xl group-hover:scale-110 transition-transform">🐝</span>
                 <div>
                   <h4 className="font-black text-dark text-sm leading-tight">Spelling Bee</h4>
-                  <p className="text-[10px] font-bold text-dark/60">Audio Pronunciations</p>
+                  <p className="text-[10px] font-bold text-dark/60">Audio Speech</p>
                 </div>
               </div>
             </Link>
