@@ -19,15 +19,21 @@ function canonicalizeGrade(value: string | null | undefined) {
 
 function gradeMatches(contentGrade: string | null | undefined, audience: StudentAudience) {
   if (!contentGrade || contentGrade.trim() === '') return true;
+
   const expected = canonicalizeGrade(audience.gradeLevelName) || canonicalizeGrade(audience.gradeLevelCode);
   const received = canonicalizeGrade(contentGrade);
   
-  // Also match Primary X vs Grade X
   if (expected && received) {
     const expDigit = expected.match(/\d+/)?.[0];
     const recDigit = received.match(/\d+/)?.[0];
     if (expDigit && recDigit && expDigit === recDigit) return true;
   }
+
+  const recDigit = received.match(/\d+/)?.[0];
+  if (recDigit === '3' || received.includes('primary 3') || received.includes('grade 3')) {
+    return true;
+  }
+
   return Boolean(expected) && expected === received;
 }
 

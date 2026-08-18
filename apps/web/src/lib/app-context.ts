@@ -148,16 +148,23 @@ const buildFallbackStudentDashboard = (
     typeof sessionUser?.user_metadata?.full_name === 'string' ? sessionUser.user_metadata.full_name : null;
   const email = sessionUser?.email ?? 'student@edvouralearninghub.com';
 
+  const userMetaGrade =
+    typeof sessionUser?.user_metadata?.grade_level_code === 'string'
+      ? sessionUser.user_metadata.grade_level_code
+      : typeof sessionUser?.user_metadata?.grade === 'string'
+        ? sessionUser.user_metadata.grade
+        : 'grade_3';
+
   return {
     profile: {
       userId: sessionUser?.id ?? 'local-student',
       fullName,
       email,
       avatarPath: null,
-      gradeLevelCode: 'grade_7',
-      gradeLevelName: 'Grade level pending',
-      gradeBandCode: 'grades_7_12',
-      gradeBandName: 'Senior Years',
+      gradeLevelCode: userMetaGrade,
+      gradeLevelName: userMetaGrade === 'grade_3' ? 'Primary 3 (Grade 3)' : 'Primary 3 / Grade 3',
+      gradeBandCode: 'grades_1_3',
+      gradeBandName: 'Primary / Early Years',
       schoolName: null,
       academicGoalNotes: null,
       personalMeetUrl: null,

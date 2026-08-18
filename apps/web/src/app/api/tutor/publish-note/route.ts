@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
-import { OFFICIAL_CURRICULUM_DATABASE, PRIMARY_1_OFFICIAL_NOTES } from '@/lib/curriculumNotes';
+import { OFFICIAL_CURRICULUM_DATABASE, OfficialCurriculumNote } from '@/lib/curriculumNotes';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,11 +11,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing noteId parameter' }, { status: 400 });
     }
 
-    const selectedGrade = gradeFilter || 'grade_3';
-    const allNotes = OFFICIAL_CURRICULUM_DATABASE[selectedGrade] ?? PRIMARY_1_OFFICIAL_NOTES;
-    const targetNote = allNotes.find((n) => n.id === noteId);
+    const status = isPublished !== false ? 'PUBLISHED' : 'DRAFT';
 
-    const status = isPublished ? 'PUBLISHED' : 'DRAFT';
+    // Search ALL grades in OFFICIAL_CURRICULUM_DATABASE for noteId
+    let targetNote: OfficialCurriculumNote | undefined;
+    for (const [, notesList] of Object.entries(OFFICIAL_CURRICULUM_DATABASE)) {
+      const match = notesList.find((n) => n.id === noteId);
+      if (match) {
+        targetNote = match;
+        break;
+      }
+    }
 
     if (targetNote) {
       const payload = {
@@ -24,7 +30,7 @@ export async function POST(req: NextRequest) {
         title: targetNote.title,
         subject: targetNote.subjectName,
         topic: targetNote.title,
-        grade: targetNote.gradeCode || selectedGrade || 'grade_3',
+        grade: targetNote.gradeCode || gradeFilter || 'grade_3',
         status: status,
         content_json: {
           lesson_summary: targetNote.description,
@@ -53,7 +59,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, status, note: payload });
     }
 
-    // Also handle custom lesson plans created by tutors
+    // Also handle custom lesson plans or existing rows
     const { data: customNote } = await supabaseAdmin
       .from('ai_generated_content')
       .select('*')
@@ -76,7 +82,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, status });
     }
 
-    return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    return NextResponse.json({ error: 'Note not found in curriculum database' }, { status: 404 });
   } catch (err) {
     console.error('[PUBLISH NOTE API ERROR]', err);
     return NextResponse.json(
