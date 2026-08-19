@@ -14,13 +14,46 @@ export async function GET(
     const decodedRegion = decodeURIComponent(region).toUpperCase();
     const decodedGrade = decodeURIComponent(grade);
 
-    // Normalize grade to internal grade band ('1-3', '4-6', '7-9', '10-12')
-    let gradeBand = '7-9';
-    if (decodedGrade.includes('1') || decodedGrade.includes('2') || decodedGrade.includes('3')) {
+    // Parse exact individual grade level and broad grade band
+    const lowerGrade = decodedGrade.toLowerCase().replace(/[^w]/g, '');
+    let specificGrade = 'Grade 3';
+    let gradeBand = '1-3';
+
+    if (lowerGrade.includes('1') && !lowerGrade.includes('10') && !lowerGrade.includes('11') && !lowerGrade.includes('12') && !lowerGrade.includes('13')) {
+      specificGrade = 'Grade 1';
       gradeBand = '1-3';
-    } else if (decodedGrade.includes('4') || decodedGrade.includes('5') || decodedGrade.includes('6')) {
+    } else if (lowerGrade.includes('2')) {
+      specificGrade = 'Grade 2';
+      gradeBand = '1-3';
+    } else if (lowerGrade.includes('3')) {
+      specificGrade = 'Grade 3';
+      gradeBand = '1-3';
+    } else if (lowerGrade.includes('4')) {
+      specificGrade = 'Grade 4';
       gradeBand = '4-6';
-    } else if (decodedGrade.includes('10') || decodedGrade.includes('11') || decodedGrade.includes('12') || decodedGrade.includes('ss1') || decodedGrade.includes('ss2') || decodedGrade.includes('ss3')) {
+    } else if (lowerGrade.includes('5')) {
+      specificGrade = 'Grade 5';
+      gradeBand = '4-6';
+    } else if (lowerGrade.includes('6')) {
+      specificGrade = 'Grade 6';
+      gradeBand = '4-6';
+    } else if (lowerGrade.includes('7') || lowerGrade.includes('jss1')) {
+      specificGrade = 'Grade 7 / JSS 1';
+      gradeBand = '7-9';
+    } else if (lowerGrade.includes('8') || lowerGrade.includes('jss2')) {
+      specificGrade = 'Grade 8 / JSS 2';
+      gradeBand = '7-9';
+    } else if (lowerGrade.includes('9') || lowerGrade.includes('jss3')) {
+      specificGrade = 'Grade 9 / JSS 3';
+      gradeBand = '7-9';
+    } else if (lowerGrade.includes('10') || lowerGrade.includes('ss1')) {
+      specificGrade = 'Grade 10 / SS 1';
+      gradeBand = '10-12';
+    } else if (lowerGrade.includes('11') || lowerGrade.includes('ss2')) {
+      specificGrade = 'Grade 11 / SS 2';
+      gradeBand = '10-12';
+    } else if (lowerGrade.includes('12') || lowerGrade.includes('ss3')) {
+      specificGrade = 'Grade 12 / SS 3';
       gradeBand = '10-12';
     }
 
@@ -42,7 +75,7 @@ export async function GET(
     // 2. Query approved questions where curriculum_region matches region OR 'GLOBAL'
     let query = supabaseAdmin
       .from('question_bank')
-      .select('id, subject, grade_band, curriculum_region, topic, subtopic, question_text, question_type, options, correct_answer, explanation, difficulty, shown_count')
+      .select('id, subject, grade_band, specific_grade, curriculum_region, topic, subtopic, question_text, question_type, options, correct_answer, explanation, difficulty, shown_count')
       .eq('status', 'approved')
       .eq('grade_band', gradeBand)
       .or(`curriculum_region.eq.${decodedRegion},curriculum_region.eq.GLOBAL`)
@@ -122,6 +155,7 @@ export async function GET(
       success: true,
       region: decodedRegion,
       gradeBand,
+      specificGrade,
       subject: decodedSubject,
       count: selectedQuestions.length,
       questions: selectedQuestions.map((q) => ({

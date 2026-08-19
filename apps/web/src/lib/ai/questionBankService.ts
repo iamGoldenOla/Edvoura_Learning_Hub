@@ -17,6 +17,7 @@ export interface QuestionInput {
   curriculum_region: string;
   subject: string;
   grade_band: string;
+  specific_grade?: string;
   is_current_affairs?: boolean;
   expires_at?: string | null;
 }
@@ -28,6 +29,7 @@ export interface GenerationJobParams {
   regional_grade_label?: string;
   topic: string;
   requested_count: number;
+  specific_grade?: string;
   difficulty?: string;
 }
 
@@ -235,6 +237,7 @@ export async function ingestGeneratedQuestions(questions: QuestionInput[]): Prom
     const questionPayload = {
       subject: q.subject,
       grade_band: q.grade_band,
+      specific_grade: q.specific_grade || 'Grade 3',
       curriculum_region: q.curriculum_region,
       topic: q.topic,
       subtopic: q.subtopic || '',

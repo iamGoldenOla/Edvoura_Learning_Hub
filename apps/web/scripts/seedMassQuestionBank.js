@@ -42,6 +42,7 @@ const massQuestions = [
   {
     subject: 'Mathematics',
     grade_band: '1-3',
+    specific_grade: 'Grade 3',
     curriculum_region: 'NG',
     topic: 'Place Values & Expanded Notation',
     question_text: 'In the number 458, what is the place value of the digit 5?',
@@ -86,6 +87,7 @@ const massQuestions = [
   {
     subject: 'Mathematics',
     grade_band: '1-3',
+    specific_grade: 'Grade 3',
     curriculum_region: 'US',
     topic: 'Fractions & Visual Representations',
     question_text: 'What fraction of a pizza is remaining if 3 out of 8 equal slices have been eaten?',
@@ -116,6 +118,7 @@ const massQuestions = [
   {
     subject: 'English / Language Arts',
     grade_band: '1-3',
+    specific_grade: 'Grade 3',
     curriculum_region: 'UK',
     topic: 'Spelling & Punctuation Conventions',
     question_text: 'Which sentence uses British English spelling and correct punctuation?',
@@ -137,6 +140,7 @@ const massQuestions = [
   {
     subject: 'Mathematics',
     grade_band: '1-3',
+    specific_grade: 'Grade 3',
     curriculum_region: 'IN',
     topic: 'Indian Currency & Mental Math',
     question_text: 'Rohan spends ₹45 on a notebook and ₹35 on a pen. How much total change should he receive from a ₹100 note?',
@@ -153,6 +157,7 @@ const massQuestions = [
   {
     subject: 'Mathematics',
     grade_band: '1-3',
+    specific_grade: 'Grade 3',
     curriculum_region: 'GLOBAL',
     topic: 'Basic Multiplication & Arrays',
     question_text: 'What is 6 multiplied by 7?',
