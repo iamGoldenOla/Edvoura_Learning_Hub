@@ -1,59 +1,31 @@
-const CACHE_NAME = 'edvoura-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/manifest.json',
-  '/dash/student',
-  '/dash/student/notes',
-  '/dash/student/quiz',
-  '/dash/student/games'
-];
+const CACHE_NAME = 'edvoura-offline-quiz-v1';
+const OFFLINE_QUIZ_API = '/api/question-bank';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
+  console.log('[SW] Service Worker Installing...');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
+  console.log('[SW] Service Worker Activated.');
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseClone = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(() => {
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
+  if (event.request.url.includes('/api/question-bank/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.status === 200) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
           }
-          if (event.request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('/dash/student/notes');
-          }
-        });
-      })
-  );
+          return response;
+        })
+        .catch(() => {
+          console.log('[SW] Offline detected. Serving cached quiz batch from SW Cache...');
+          return caches.match(event.request);
+        })
+    );
+  }
 });

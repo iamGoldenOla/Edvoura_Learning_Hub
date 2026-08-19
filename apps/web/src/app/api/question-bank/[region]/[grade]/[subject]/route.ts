@@ -70,9 +70,34 @@ export async function GET(
       }
     }
 
-    // Shuffle and pick top N
+    // Section H: Adaptive Difficulty Algorithm Pass
+    let targetDifficulty = 'medium';
+    if (studentId && questions.length > 0) {
+      const sampleTopic = questions[0].topic;
+      const { data: masteryRec } = await supabaseAdmin
+        .from('topic_mastery')
+        .select('mastery_score')
+        .eq('student_id', studentId)
+        .eq('topic', sampleTopic)
+        .maybeSingle();
+
+      const score = masteryRec ? Number(masteryRec.mastery_score || 0) : 60;
+      if (score < 50) {
+        targetDifficulty = 'easy';
+      } else if (score >= 80) {
+        targetDifficulty = 'hard';
+      } else {
+        targetDifficulty = 'medium';
+      }
+    }
+
+    // Adaptive weighting pass: Prioritize questions matching targetDifficulty
     const selectedQuestions = questions
-      .sort(() => 0.5 - Math.random())
+      .sort((a, b) => {
+        if (a.difficulty === targetDifficulty && b.difficulty !== targetDifficulty) return -1;
+        if (a.difficulty !== targetDifficulty && b.difficulty === targetDifficulty) return 1;
+        return 0.5 - Math.random();
+      })
       .slice(0, limitParam);
 
     // 3. Immediately log delivered questions into student_question_history & increment shown_count
