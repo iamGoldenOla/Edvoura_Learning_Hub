@@ -541,7 +541,7 @@ export default function StudentNotesWorkspace({
       const hasPdf =
         (typeof note.content.official_file_url === 'string' && note.content.official_file_url) ||
         (typeof note.content.pdf_url === 'string' && note.content.pdf_url) ||
-        note.id.startsWith('official_pub_') || note.id.startsWith('p3_') || note.id.startsWith('p1_') || note.id.startsWith('p2_');
+        note.id.startsWith('official_pub_') || note.id.startsWith('p') || note.id.startsWith('jss') || note.id.startsWith('ss');
 
       const isQuiz = titleLower.includes('quiz') || Array.isArray(note.content.quiz_data) || Array.isArray(note.content.questions);
       const isStory = titleLower.includes('lion') || titleLower.includes('story') || titleLower.includes('fable') || Boolean(note.content.story_content);
@@ -595,7 +595,7 @@ export default function StudentNotesWorkspace({
               id: 'pdf_master',
               label: '📚 Master PDF Notes',
               icon: '📄',
-              count: aiLessonNotes.filter(n => n.id.startsWith('official_pub_') || n.id.startsWith('p3_') || n.content.official_file_url).length
+              count: aiLessonNotes.filter(n => n.id.startsWith('official_pub_') || n.id.startsWith('p') || n.id.startsWith('jss') || n.id.startsWith('ss') || n.content.official_file_url).length
             },
             {
               id: 'quizzes',
