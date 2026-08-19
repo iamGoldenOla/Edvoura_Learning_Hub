@@ -257,19 +257,33 @@ export async function deleteAssignment(assignmentId: string) {
   return { success: true };
 }
 
-export async function deleteQuiz(quizId: string) {
+export async function deleteQuiz(quizId: string, title?: string) {
   const { error } = await supabaseAdmin
     .from('quizzes')
     .delete()
     .eq('id', quizId);
 
   if (error) throw new Error(error.message);
-  
+
+  // Purge from ai_generated_content table so it is removed from student dashboards
+  await supabaseAdmin
+    .from('ai_generated_content')
+    .delete()
+    .or(`id.eq.${quizId},id.eq.official_pub_${quizId}`);
+
+  if (title) {
+    await supabaseAdmin
+      .from('ai_generated_content')
+      .delete()
+      .ilike('title', `%${title}%`);
+  }
+
   revalidatePath('/dash/tutor/builder');
+  revalidatePath('/dash/student/notes');
   return { success: true };
 }
 
-export async function deleteResource(eventId: string) {
+export async function deleteResource(eventId: string, title?: string) {
   // First find if there's a backing assignment
   const { data: event } = await supabaseAdmin
     .from('learning_activity_events')
@@ -282,6 +296,11 @@ export async function deleteResource(eventId: string) {
       .from('assignments')
       .update({ status: 'archived' })
       .eq('id', event.assignment_id);
+
+    await supabaseAdmin
+      .from('ai_generated_content')
+      .delete()
+      .eq('id', event.assignment_id);
   }
 
   const { error } = await supabaseAdmin
@@ -290,8 +309,22 @@ export async function deleteResource(eventId: string) {
     .eq('id', eventId);
 
   if (error) throw new Error(error.message);
-  
+
+  // Purge from ai_generated_content table so it is removed from student dashboards
+  await supabaseAdmin
+    .from('ai_generated_content')
+    .delete()
+    .eq('id', eventId);
+
+  if (title) {
+    await supabaseAdmin
+      .from('ai_generated_content')
+      .delete()
+      .ilike('title', `%${title}%`);
+  }
+
   revalidatePath('/dash/tutor/builder');
+  revalidatePath('/dash/student/notes');
   return { success: true };
 }
 

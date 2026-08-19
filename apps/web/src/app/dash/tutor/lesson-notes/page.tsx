@@ -249,7 +249,10 @@ export default function TutorLessonNotesPage() {
     setFeedback(`Editing lesson note: ${item.topic}`);
   };
 
-  const deletePlan = (planId: string) => {
+  const deletePlan = async (planId: string, title?: string) => {
+    const targetPlan = plans.find((item) => item.id === planId);
+    const targetTitle = title || targetPlan?.topic || targetPlan?.className;
+
     setPlans((current) => current.filter((item) => item.id !== planId));
     if (editingPlanId === planId) {
       setEditingPlanId(null);
@@ -259,7 +262,18 @@ export default function TutorLessonNotesPage() {
       setExplainerPlanId(plans.find((item) => item.id !== planId)?.id ?? null);
       setExplainerResult(null);
     }
-    setFeedback('Lesson note deleted.');
+
+    try {
+      await fetch('/api/tutor/delete-content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contentId: planId, title: targetTitle }),
+      });
+      setFeedback('Lesson note deleted permanently across all student dashboards.');
+    } catch (e) {
+      console.error('Failed to purge deleted content from database:', e);
+      setFeedback('Lesson note deleted locally.');
+    }
   };
 
   const selectedExplainerPlan =
