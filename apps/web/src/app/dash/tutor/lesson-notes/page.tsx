@@ -124,20 +124,7 @@ export default function TutorLessonNotesPage() {
   const [activePdfNoteId, setActivePdfNoteId] = useState<string>('');
   const [targetPublishNote, setTargetPublishNote] = useState<{ id: string; title: string; gradeLevel: string } | null>(null);
   const [selectedGradeFilter, setSelectedGradeFilter] = useState<string>('grade_12');
-  const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([
-    'p1_basic_science', 'p1_mathematics', 'p1_english', 'p1_history', 'p1_arts', 'p1_social', 'p1_phe', 'p1_crs', 'p1_irs',
-    'p2_basic_science', 'p2_mathematics', 'p2_english', 'p2_history', 'p2_arts', 'p2_social', 'p2_phe', 'p2_crs', 'p2_irs',
-    'p3_basic_science', 'p3_mathematics', 'p3_english', 'p3_history', 'p3_arts', 'p3_social', 'p3_phe', 'p3_crs', 'p3_irs',
-    'p4_basic_science', 'p4_digital_literacy', 'p4_mathematics', 'p4_english', 'p4_french', 'p4_history', 'p4_arts', 'p4_prevocational', 'p4_social', 'p4_phe', 'p4_crs', 'p4_irs',
-    'p5_basic_science', 'p5_digital_literacy', 'p5_mathematics', 'p5_english', 'p5_french', 'p5_history', 'p5_arts', 'p5_prevocational', 'p5_social', 'p5_phe', 'p5_crs', 'p5_irs',
-    'p6_basic_science', 'p6_digital_literacy', 'p6_mathematics', 'p6_english', 'p6_french', 'p6_history', 'p6_arts', 'p6_prevocational', 'p6_social', 'p6_phe', 'p6_crs', 'p6_irs',
-    'jss1_math', 'jss1_english', 'jss1_science', 'jss1_business', 'jss1_digital_tech', 'jss1_computer_repair', 'jss1_solar', 'jss1_french', 'jss1_history', 'jss1_arts', 'jss1_social', 'jss1_phe', 'jss1_crs', 'jss1_irs', 'jss1_beauty', 'jss1_fashion', 'jss1_horticulture', 'jss1_livestock',
-    'jss2_math', 'jss2_english', 'jss2_science', 'jss2_business', 'jss2_digital_tech', 'jss2_hardware_repair', 'jss2_solar', 'jss2_french', 'jss2_history', 'jss2_arts', 'jss2_social', 'jss2_phe', 'jss2_crs', 'jss2_irs', 'jss2_beauty', 'jss2_fashion', 'jss2_horticulture', 'jss2_livestock',
-    'jss3_math', 'jss3_english', 'jss3_science', 'jss3_business', 'jss3_digital_tech', 'jss3_hardware_repair', 'jss3_solar', 'jss3_french', 'jss3_history', 'jss3_arts', 'jss3_social', 'jss3_phe', 'jss3_crs', 'jss3_irs', 'jss3_beauty', 'jss3_fashion', 'jss3_horticulture', 'jss3_livestock',
-    'ss1_math', 'ss1_english', 'ss1_physics', 'ss1_chemistry', 'ss1_biology', 'ss1_further_math', 'ss1_agric', 'ss1_geography', 'ss1_economics', 'ss1_government', 'ss1_accounting', 'ss1_commerce', 'ss1_marketing', 'ss1_literature', 'ss1_history', 'ss1_crs', 'ss1_citizenship', 'ss1_digital_tech', 'ss1_hardware_repair', 'ss1_solar', 'ss1_technical_drawing', 'ss1_visual_arts', 'ss1_food_nutrition', 'ss1_catering', 'ss1_beauty', 'ss1_fashion', 'ss1_horticulture', 'ss1_livestock',
-    'ss2_math', 'ss2_english', 'ss2_physics', 'ss2_chemistry', 'ss2_biology', 'ss2_further_math', 'ss2_agric', 'ss2_geography', 'ss2_economics', 'ss2_government', 'ss2_accounting', 'ss2_commerce', 'ss2_marketing', 'ss2_literature', 'ss2_history', 'ss2_crs', 'ss2_citizenship', 'ss2_digital_tech', 'ss2_hardware_repair', 'ss2_solar', 'ss2_technical_drawing', 'ss2_visual_arts', 'ss2_food_nutrition', 'ss2_catering', 'ss2_beauty', 'ss2_fashion', 'ss2_horticulture', 'ss2_livestock',
-    'ss3_math', 'ss3_english', 'ss3_physics', 'ss3_chemistry', 'ss3_biology', 'ss3_further_math', 'ss3_agric', 'ss3_geography', 'ss3_economics', 'ss3_accounting', 'ss3_commerce', 'ss3_marketing', 'ss3_literature', 'ss3_history', 'ss3_crs', 'ss3_citizenship', 'ss3_digital_tech', 'ss3_hardware_repair', 'ss3_solar', 'ss3_technical_drawing', 'ss3_visual_arts', 'ss3_food_nutrition', 'ss3_catering', 'ss3_beauty', 'ss3_fashion', 'ss3_horticulture', 'ss3_livestock',
-  ]);
+  const [publishedOfficialNoteIds, setPublishedOfficialNoteIds] = useState<string[]>([]);
   const [unlockedNoteWeeks, setUnlockedNoteWeeks] = useState<Record<string, number>>({});
   const [selectedNoteTerms, setSelectedNoteTerms] = useState<Record<string, '1st' | '2nd' | '3rd' | 'all'>>({});
 
@@ -145,8 +132,6 @@ export default function TutorLessonNotesPage() {
   const [tutorGrade, setTutorGrade] = useState<string>('grade_12');
   const [tutorSubjects, setTutorSubjects] = useState<string[]>([]);
   const [tutorSubjectsRaw, setTutorSubjectsRaw] = useState<string>('');
-
-  // Fetch tutor authorization metadata from Supabase Auth
 
   // Fetch tutor authorization metadata from Supabase Auth
   useEffect(() => {
@@ -180,15 +165,39 @@ export default function TutorLessonNotesPage() {
     fetchTutorRoleMeta();
   }, []);
 
-  // Load published official notes from localStorage
+  // Sync published notes state from Supabase database & localStorage on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('edvoura_published_curriculum_notes');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setPublishedOfficialNoteIds(parsed);
+    async function loadPublishedNotesFromDb() {
+      const localIds: string[] = [];
+      try {
+        const saved = localStorage.getItem('edvoura_published_curriculum_notes');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) localIds.push(...parsed);
+        }
+      } catch (e) {}
+
+      try {
+        const supabase = createClient();
+        const { data: pubRows } = await supabase
+          .from('ai_generated_content')
+          .select('id')
+          .eq('status', 'PUBLISHED');
+
+        if (pubRows && pubRows.length > 0) {
+          const dbIds = pubRows.map((r) => r.id.replace('official_pub_', ''));
+          setPublishedOfficialNoteIds([...new Set([...localIds, ...dbIds])]);
+          return;
+        }
+      } catch (e) {
+        console.error('Error syncing published notes from Supabase:', e);
       }
-    } catch (e) {}
+
+      if (localIds.length > 0) {
+        setPublishedOfficialNoteIds(localIds);
+      }
+    }
+    loadPublishedNotesFromDb();
   }, []);
 
   const toggleOfficialNotePublish = async (noteId: string) => {

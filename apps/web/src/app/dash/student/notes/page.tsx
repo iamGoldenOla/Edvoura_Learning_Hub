@@ -59,11 +59,37 @@ export default async function NotesPage() {
     subjectNames: dashboard.enrollments.map((entry) => entry.subjectName),
   });
 
-  // Ensure Primary 3 Basic Science is present for Grade 3 student dashboards when published by tutor
+  // Ensure Primary 3 Basic Science & Mathematics are present for Grade 3 student dashboards when published
   const isGrade3 = studentGradeCode.includes('3') || studentGradeName.includes('3');
   const hasBasicScience = filteredNotes.some(
     (n) => n.title?.toLowerCase().includes('basic science') || n.id?.includes('basic_science')
   );
+  const hasMathematics = filteredNotes.some(
+    (n) => (n.title?.toLowerCase().includes('mathematics') || n.id?.includes('mathematics') || n.id?.includes('p3_math')) && !n.title?.toLowerCase().includes('quiz')
+  );
+
+  if (isGrade3 && !hasMathematics) {
+    filteredNotes.unshift({
+      id: 'official_pub_p3_mathematics',
+      title: 'Primary 3 Mathematics Comprehensive Lesson Notes',
+      subject: 'Mathematics',
+      topic: 'Primary 3 Mathematics Comprehensive Lesson Notes',
+      grade: 'grade_3',
+      content_json: {
+        lesson_summary:
+          'Comprehensive lesson notes covering numbers and numeration, basic operations, fractions, geometry, measurement, and data handling.',
+        explanation:
+          'Comprehensive lesson notes covering numbers and numeration, basic operations, fractions, geometry, measurement, and data handling.',
+        key_points: [
+          'Complete term-by-term curriculum study note for Primary 3 Mathematics.',
+          'Covering place values up to 9,999, 4-digit addition/subtraction, multiplication tables, fractions, and 2D/3D shapes.',
+        ],
+        official_file_url: '/curriculum/primary_3/PRIMARY 3 MATHEMATICS LESSON NOTES.pdf',
+        file_name: 'PRIMARY 3 MATHEMATICS LESSON NOTES.pdf',
+      },
+      created_at: new Date().toISOString(),
+    });
+  }
 
   if (isGrade3 && !hasBasicScience) {
     filteredNotes.unshift({
