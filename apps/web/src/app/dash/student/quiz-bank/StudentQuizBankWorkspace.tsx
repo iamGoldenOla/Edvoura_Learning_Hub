@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import WeakTopicsWidget from './WeakTopicsWidget';
+import ChildComplianceSignupModal from './ChildComplianceSignupModal';
 import {
   Sparkles,
   CheckCircle,
@@ -133,12 +135,24 @@ export default function StudentQuizBankWorkspace({
     }
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     let calculatedScore = 0;
     questions.forEach((q, idx) => {
-      if (selectedAnswers[idx]?.trim() === q.correctAnswer.trim()) {
+      const isCorrect = selectedAnswers[idx]?.trim() === q.correctAnswer.trim();
+      if (isCorrect) {
         calculatedScore += 1;
       }
+      // Section D: Update topic_mastery in background on-write
+      fetch('/api/student/topic-mastery/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          subject: selectedSubject,
+          topic: q.topic,
+          isCorrect,
+        }),
+      }).catch((e) => console.error('Topic mastery update error:', e));
     });
     setScore(calculatedScore);
     setSubmitted(true);
@@ -181,6 +195,18 @@ export default function StudentQuizBankWorkspace({
           </select>
         </div>
       </section>
+
+      {/* Section D: Weak Topics & Mastery Surfacing Widget */}
+      <WeakTopicsWidget
+        studentId={studentId}
+        onSelectTopicForPractice={(subj, top) => {
+          setSelectedSubject(subj);
+          fetchQuestions();
+        }}
+      />
+
+      {/* Section A: Minors' Data Compliance Check Modal / Banner */}
+      <ChildComplianceSignupModal studentId={studentId} />
 
       {/* Subject Filter Pills */}
       <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl border-[3px] border-dark bg-slate-50 shadow-[4px_4px_0px_#060E1C]">
