@@ -56,6 +56,13 @@ export default function StudentQuizBankWorkspace({
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
 
+  // Section B Inline Flag Modal State
+  const [showFlagModal, setShowFlagModal] = useState(false);
+  const [flagReason, setFlagReason] = useState('unclear');
+  const [flagNotes, setFlagNotes] = useState('');
+  const [isSubmittingFlag, setIsSubmittingFlag] = useState(false);
+  const [flagFeedback, setFlagFeedback] = useState('');
+
   const fetchQuestions = async () => {
     setLoading(true);
     setSubmitted(false);
@@ -91,6 +98,39 @@ export default function StudentQuizBankWorkspace({
   const handleSelectOption = (option: string) => {
     if (submitted) return;
     setSelectedAnswers((prev) => ({ ...prev, [currentIndex]: option }));
+  };
+
+  const handleSendFlag = async () => {
+    if (!currentQ) return;
+    setIsSubmittingFlag(true);
+    try {
+      const res = await fetch('/api/question-bank/flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionId: currentQ.id,
+          flaggedBy: studentId,
+          flagReason,
+          notes: flagNotes,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (data.autoPulled) {
+          setFlagFeedback(`🚩 Question received ${data.openFlagCount} flags and was automatically pulled from student rotation for educator review.`);
+        } else {
+          setFlagFeedback('🚩 Thank you! Question reported to educators for review.');
+        }
+        setShowFlagModal(false);
+        setFlagNotes('');
+      } else {
+        setFlagFeedback('Failed to flag question.');
+      }
+    } catch (e) {
+      setFlagFeedback('Error sending flag report.');
+    } finally {
+      setIsSubmittingFlag(false);
+    }
   };
 
   const handleSubmitQuiz = () => {
@@ -177,18 +217,37 @@ export default function StudentQuizBankWorkspace({
       ) : questions.length > 0 ? (
         <div className="rounded-[24px] border-[4px] border-dark bg-white p-6 sm:p-8 shadow-[8px_8px_0px_#060E1C] space-y-6">
           {/* Progress Header */}
-          <div className="flex items-center justify-between border-b-[3px] border-dark/10 pb-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b-[3px] border-dark/10 pb-4">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black uppercase text-dark">
                 Question {currentIndex + 1} of {questions.length}
               </span>
-              <span className="text-xs font-bold text-dark/60">Topic: {currentQ.topic}</span>
+              <span className="text-xs font-bold text-dark/60 truncate max-w-[200px] sm:max-w-none">Topic: {currentQ.topic}</span>
             </div>
 
-            <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 bg-purple-100 border border-dark rounded-lg text-dark">
-              {currentQ.curriculumRegion} Curriculum
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 bg-purple-100 border border-dark rounded-lg text-dark">
+                {currentQ.curriculumRegion} Curriculum
+              </span>
+
+              {/* Inline Flag Question Button */}
+              <button
+                type="button"
+                onClick={() => setShowFlagModal(true)}
+                className="inline-flex items-center gap-1 px-2.5 py-1 bg-rose-100 border border-dark rounded-lg text-xs font-black text-rose-900 shadow-[1px_1px_0px_#060E1C] hover:bg-rose-200 cursor-pointer transition-all"
+                title="Report error, wrong answer, or ambiguous question"
+              >
+                <span>🚩 Flag Question</span>
+              </button>
+            </div>
           </div>
+
+          {flagFeedback ? (
+            <div className="p-3 rounded-xl border-[2px] border-dark bg-amber-100 text-dark text-xs font-bold flex items-center justify-between">
+              <span>{flagFeedback}</span>
+              <button type="button" onClick={() => setFlagFeedback('')} className="text-dark/60 font-black">✕</button>
+            </div>
+          ) : null}
 
           {/* Question Text */}
           <div className="space-y-4">
@@ -289,6 +348,67 @@ export default function StudentQuizBankWorkspace({
               <p className="text-xs font-bold text-dark/70">
                 {score === questions.length ? '🌟 Perfect score! Outstanding mastery of your region curriculum!' : 'Great effort! Review the explanations above and start another drill!'}
               </p>
+            </div>
+          ) : null}
+        
+          {/* Inline Flag Modal */}
+          {showFlagModal ? (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/60 p-4 backdrop-blur-xs">
+              <div className="w-full max-w-md rounded-2xl border-[4px] border-dark bg-white p-6 shadow-[8px_8px_0px_#060E1C] space-y-4">
+                <div className="flex items-center justify-between border-b border-dark/10 pb-3">
+                  <h3 className="text-lg font-black text-dark">🚩 Flag This Question</h3>
+                  <button type="button" onClick={() => setShowFlagModal(false)} className="text-dark/60 font-black">✕</button>
+                </div>
+
+                <p className="text-xs font-bold text-dark/70">
+                  Report wrong answer keys, unclear wording, outdated content, or formatting issues to educators.
+                </p>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-dark/60">Reason for Flagging:</label>
+                    <select
+                      value={flagReason}
+                      onChange={(e) => setFlagReason(e.target.value)}
+                      className="w-full mt-1 p-2.5 rounded-xl border-[2px] border-dark text-xs font-bold bg-white outline-none"
+                    >
+                      <option value="wrong_answer">❌ Wrong Answer Key</option>
+                      <option value="unclear">❓ Unclear / Ambiguous Wording</option>
+                      <option value="outdated">📅 Outdated Current Affairs / Content</option>
+                      <option value="inappropriate">⚠️ Inappropriate Content</option>
+                      <option value="other">📝 Other Issue</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-dark/60">Additional Notes (Optional):</label>
+                    <textarea
+                      placeholder="Describe what is wrong with this question..."
+                      value={flagNotes}
+                      onChange={(e) => setFlagNotes(e.target.value)}
+                      className="w-full mt-1 p-2.5 rounded-xl border-[2px] border-dark text-xs font-semibold bg-white h-20 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowFlagModal(false)}
+                    className="flex-1 py-2.5 border-[2px] border-dark rounded-xl text-xs font-black uppercase bg-gray-100 hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isSubmittingFlag}
+                    onClick={handleSendFlag}
+                    className="flex-1 py-2.5 border-[2px] border-dark rounded-xl text-xs font-black uppercase bg-rose-300 hover:bg-rose-400 text-rose-950 shadow-[2px_2px_0px_#060E1C]"
+                  >
+                    {isSubmittingFlag ? 'Submitting...' : 'Submit Flag'}
+                  </button>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>
