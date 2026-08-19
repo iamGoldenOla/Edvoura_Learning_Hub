@@ -512,19 +512,48 @@ export default function StudentNotesWorkspace({
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
   const [publishedOfficialIds, setPublishedOfficialIds] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState<'all' | 'pdf_master' | 'quizzes' | 'stories' | 'guides'>('all');
+  const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('edvoura_published_curriculum_notes');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setPublishedOfficialIds(parsed);
+  const availableSubjects = useMemo(() => {
+    const subjects = new Set<string>();
+    aiLessonNotes.forEach((note) => {
+      if (note.subject) subjects.add(note.subject.trim());
+    });
+    return Array.from(subjects);
+  }, [aiLessonNotes]);
+
+  const filteredNotes = useMemo(() => {
+    return aiLessonNotes.filter((note) => {
+      const titleLower = note.title.toLowerCase();
+      const subjectLower = note.subject.toLowerCase();
+      const qLower = searchQuery.toLowerCase().trim();
+
+      if (qLower && !titleLower.includes(qLower) && !subjectLower.includes(qLower)) {
+        return false;
       }
-    } catch (e) {}
-  }, []);
 
-  const allOfficialNotes = OFFICIAL_CURRICULUM_DATABASE[studentGradeCode] ?? PRIMARY_1_OFFICIAL_NOTES;
-  const visibleOfficialNotes = allOfficialNotes.filter(n => publishedOfficialIds.includes(n.id));
+      if (selectedSubjectFilter !== 'all' && subjectLower !== selectedSubjectFilter.toLowerCase()) {
+        return false;
+      }
+
+      const hasPdf =
+        (typeof note.content.official_file_url === 'string' && note.content.official_file_url) ||
+        (typeof note.content.pdf_url === 'string' && note.content.pdf_url) ||
+        note.id.startsWith('official_pub_') || note.id.startsWith('p3_') || note.id.startsWith('p1_') || note.id.startsWith('p2_');
+
+      const isQuiz = titleLower.includes('quiz') || Array.isArray(note.content.quiz_data) || Array.isArray(note.content.questions);
+      const isStory = titleLower.includes('lion') || titleLower.includes('story') || titleLower.includes('fable') || Boolean(note.content.story_content);
+
+      if (activeCategory === 'pdf_master') return Boolean(hasPdf);
+      if (activeCategory === 'quizzes') return isQuiz;
+      if (activeCategory === 'stories') return isStory;
+      if (activeCategory === 'guides') return !hasPdf && !isQuiz && !isStory;
+
+      return true;
+    });
+  }, [aiLessonNotes, activeCategory, selectedSubjectFilter, searchQuery]);
 
   return (
     <div className="w-full max-w-[1320px] space-y-6 sm:space-y-8">
@@ -535,38 +564,146 @@ export default function StudentNotesWorkspace({
         </p>
       </section>
 
-      {/* Notes Pushed by Tutor */}
-      {aiLessonNotes.length > 0 ? (
-        <section className="rounded-[24px] border-[4px] border-dark bg-white p-5 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6">
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <BookOpen className="h-6 w-6 text-dark" />
-            <h2 className="text-xl font-black text-dark sm:text-2xl">Lesson Notes Pushed by Your Tutor</h2>
-            <span className="rounded-lg border-[1.5px] border-dark bg-green-100 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-green-900 shadow-[2px_2px_0px_#060E1C]">
-              📢 {aiLessonNotes.length} Published
+      {/* Segmented Kid-Friendly Lesson Notes Viewport */}
+      <section className="rounded-[24px] border-[4px] border-dark bg-white p-5 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-7 space-y-6">
+        {/* Header & Live Count Badge */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-[3px] border-dark/10 pb-5">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow border-[2px] border-dark rounded-lg text-[10px] font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C]">
+              📚 Segmented Study Hub · Grade {studentGradeName}
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-dark tracking-tight">
+              Pushed Lesson Notes &amp; Resources
+            </h2>
+            <p className="text-xs sm:text-sm font-semibold text-dark/70">
+              Easily explore your official curriculum PDF notes, interactive quizzes, and story guides.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="px-3.5 py-1.5 rounded-xl border-[2.5px] border-dark bg-emerald-300 text-xs font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C]">
+              🚀 {aiLessonNotes.length} Live Note{aiLessonNotes.length === 1 ? '' : 's'}
             </span>
           </div>
-          <p className="text-sm font-semibold text-dark/60 mb-4">
-            Lesson notes specifically assigned and pushed to your grade by your tutor. Tap to expand and study.
-          </p>
-          <div className="space-y-4">
-            {aiLessonNotes.map((note) => (
-              <StudentLessonNoteView key={note.id} note={note} studentGradeCode={studentGradeCode} onOpenPdf={(url, title) => { setActivePdfUrl(url); setActivePdfTitle(title); }} />
+        </div>
+
+        {/* 1. Category Segment Pills (Tabs) */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {[
+            { id: 'all', label: '🌟 All Notes', icon: '✨', count: aiLessonNotes.length },
+            {
+              id: 'pdf_master',
+              label: '📚 Master PDF Notes',
+              icon: '📄',
+              count: aiLessonNotes.filter(n => n.id.startsWith('official_pub_') || n.id.startsWith('p3_') || n.content.official_file_url).length
+            },
+            {
+              id: 'quizzes',
+              label: '🎯 Quizzes & Practice',
+              icon: '🎯',
+              count: aiLessonNotes.filter(n => n.title.toLowerCase().includes('quiz') || n.content.quiz_data || n.content.questions).length
+            },
+            {
+              id: 'stories',
+              label: '📜 Fables & Stories',
+              icon: '📖',
+              count: aiLessonNotes.filter(n => n.title.toLowerCase().includes('lion') || n.title.toLowerCase().includes('story') || n.content.story_content).length
+            },
+          ].map((tab) => {
+            const isActive = activeCategory === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveCategory(tab.id as any)}
+                className={`px-3.5 py-2 rounded-xl border-[2.5px] border-dark text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isActive
+                    ? 'bg-yellow text-dark shadow-[3px_3px_0px_#060E1C] scale-105'
+                    : 'bg-slate-100 hover:bg-slate-200 text-dark/70 shadow-[2px_2px_0px_#060E1C]'
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span className={`px-1.5 py-0.5 rounded-md border border-dark text-[9px] font-black ${isActive ? 'bg-dark text-yellow' : 'bg-white text-dark'}`}>
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 2. Subject Quick Filter Pills & Search Box */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-2xl border-[2px] border-dark bg-slate-50">
+          <div className="flex flex-wrap items-center gap-2 overflow-x-auto">
+            <span className="text-[10px] font-black uppercase text-dark/60 shrink-0">Filter Subject:</span>
+            <button
+              type="button"
+              onClick={() => setSelectedSubjectFilter('all')}
+              className={`px-3 py-1 rounded-lg border border-dark text-[11px] font-black uppercase transition-all cursor-pointer ${
+                selectedSubjectFilter === 'all' ? 'bg-dark text-white' : 'bg-white text-dark hover:bg-gray-100'
+              }`}
+            >
+              All Subjects
+            </button>
+            {availableSubjects.map((subj) => {
+              const isSelected = selectedSubjectFilter.toLowerCase() === subj.toLowerCase();
+              return (
+                <button
+                  key={subj}
+                  type="button"
+                  onClick={() => setSelectedSubjectFilter(subj)}
+                  className={`px-3 py-1 rounded-lg border border-dark text-[11px] font-black uppercase transition-all cursor-pointer ${
+                    isSelected ? 'bg-dark text-white' : 'bg-white text-dark hover:bg-gray-100'
+                  }`}
+                >
+                  {subj}
+                </button>
+              );
+            })}
+          </div>
+
+          <input
+            type="text"
+            placeholder="🔍 Search notes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="px-3 py-1.5 rounded-xl border-[2px] border-dark bg-white text-xs font-bold text-dark outline-none focus:border-yellow shrink-0 w-full sm:w-48"
+          />
+        </div>
+
+        {/* 3. Segmented Responsive Grid Layout (2 Columns to avoid endless vertical scroll) */}
+        {filteredNotes.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            {filteredNotes.map((note) => (
+              <StudentLessonNoteView
+                key={note.id}
+                note={note}
+                studentGradeCode={studentGradeCode}
+                onOpenPdf={(url, title) => {
+                  setActivePdfUrl(url);
+                  setActivePdfTitle(title);
+                }}
+              />
             ))}
           </div>
-        </section>
-      ) : (
-        <section className="rounded-[24px] border-[4px] border-dashed border-dark/20 bg-white p-8 shadow-[6px_6px_0px_#060E1C] text-center space-y-3">
-          <div className="flex justify-center">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 border-[2px] border-dark flex items-center justify-center text-2xl">
-              📢
-            </div>
+        ) : (
+          <div className="py-12 text-center border-[3px] border-dashed border-dark/20 rounded-2xl bg-slate-50 space-y-3">
+            <div className="text-3xl">🔍</div>
+            <h3 className="text-base font-black text-dark">No Notes Match Your Active Filter</h3>
+            <p className="text-xs font-bold text-dark/60">Try selecting "🌟 All Notes" or clear your search term.</p>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory('all');
+                setSelectedSubjectFilter('all');
+                setSearchQuery('');
+              }}
+              className="px-4 py-2 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black uppercase text-dark shadow-[2px_2px_0px_#060E1C]"
+            >
+              Reset Filters
+            </button>
           </div>
-          <h3 className="text-lg font-black text-dark">No Tutor Lesson Notes Pushed Yet</h3>
-          <p className="text-xs font-bold text-dark/60 max-w-md mx-auto">
-            Your dashboard will only display lesson notes when your assigned tutor pushes them specifically to your grade level ({studentGradeName}).
-          </p>
-        </section>
-      )}
+        )}
+      </section>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="rounded-[24px] border-[4px] border-dark bg-off-white p-4 shadow-[8px_8px_0px_#060E1C] sm:rounded-[28px] sm:p-6 xl:col-span-2">
