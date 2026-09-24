@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/utils/supabase/admin';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://edvouralearninghub.com';
 
-  const defaultRoutes: MetadataRoute.Sitemap = [
+  const coreMarketingRoutes: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -12,10 +12,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
-      url: `${baseUrl}/dash/student/quiz-bank`,
+      url: `${baseUrl}/services`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/pricing`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
       priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/signup`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/login`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
     },
   ];
 
@@ -29,14 +59,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         url: `${baseUrl}/practice/${page.slug.replace('practice-', '').replace(/-/g, '/')}`,
         lastModified: new Date(page.last_regenerated_at || Date.now()),
         changeFrequency: 'weekly',
-        priority: 0.7,
+        priority: 0.8,
       }));
 
-      return [...defaultRoutes, ...dynamicRoutes];
+      return [...coreMarketingRoutes, ...dynamicRoutes];
     }
   } catch (e) {
     console.error('[SITEMAP GENERATION ERROR]', e);
   }
 
-  return defaultRoutes;
+  return coreMarketingRoutes;
 }

@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Plus,
   BookOpen,
+  CheckSquare,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ import { createClient } from '@/utils/supabase/server';
 const tutorSections = [
   { href: '/dash/tutor/schedule', title: "Today's Classes", description: 'Schedule and manage live sessions.', icon: CalendarClock, color: 'text-dark bg-yellow' },
   { href: '/dash/tutor/roster', title: 'Students', description: 'Student list and performance.', icon: Users, color: 'text-dark bg-blue-200' },
+  { href: '/dash/tutor/attendance', title: 'Attendance Register', description: 'Mark and review learner presence.', icon: CheckSquare, color: 'text-dark bg-emerald-300' },
   { href: '/dash/tutor/lesson-notes', title: 'Lesson Notes', description: 'Prepare notes and plans.', icon: NotebookPen, color: 'text-dark bg-pink-200' },
   { href: '/dash/tutor/builder', title: 'Assignments', description: 'Create and manage assignments.', icon: FileText, color: 'text-dark bg-emerald-200' },
   { href: '/dash/tutor/grading', title: 'Grading Queue', description: 'Grade submissions.', icon: ClipboardCheck, color: 'text-dark bg-rose-200' },

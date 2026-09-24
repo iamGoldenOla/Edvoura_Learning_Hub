@@ -21,31 +21,95 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edvouralearninghub.com";
+
 export const metadata: Metadata = {
-  title: "Edvoura | Premium K-12 Online Tutoring Hub — Nigeria",
-  description:
-    "Edvoura connects K-12 students across Nigeria with expert tutors for live sessions via Google Meet. Interactive quizzes, assignments, progress tracking, and parent dashboards — all in one platform. Learn. Grow. Excel.",
-  icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
-    apple: "/favicon.svg",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "Edvoura Learning Hub | K-12 Online Tutoring & AI Question Engine",
+    template: "%s | Edvoura Learning Hub",
   },
+  description:
+    "Edvoura is the premier global K-12 online tutoring hub & AI question bank. Connect with expert tutors for live lessons, practice WAEC, JAMB, GCSE & US Common Core quizzes, explore open-licensed storybooks, and track learning mastery.",
   keywords: [
     "online tutoring Nigeria",
-    "K-12 learning platform",
-    "WAEC preparation",
-    "JAMB preparation",
-    "Nigerian tutors online",
+    "K-12 learning hub",
+    "WAEC past questions practice",
+    "JAMB CBT practice online",
+    "GCSE online tutoring",
+    "US Common Core math",
+    "AI quiz generator for students",
+    "African storybooks for children",
+    "EYFS nursery preschool learning",
+    "expert live tutors",
     "Edvoura",
   ],
-  openGraph: {
-    title: "Edvoura Learning Hub — Learn. Grow. Excel.",
-    description:
-      "Nigeria's premier K-12 online tutoring platform. Expert tutors, live sessions, interactive learning tools.",
-    url: "https://edvouralearninghub.com",
-    siteName: "Edvoura Learning Hub",
-    type: "website",
+  authors: [{ name: "Edvoura Learning Hub", url: baseUrl }],
+  creator: "Edvoura Learning Hub",
+  publisher: "Edvoura",
+  alternates: {
+    canonical: baseUrl,
   },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.svg",
+  },
+  openGraph: {
+    title: "Edvoura Learning Hub | K-12 Online Tutoring & AI Question Engine",
+    description:
+      "Master any subject with 1-on-1 expert tutors, 300,000+ past questions, open-licensed storybooks, and curriculum-aligned practice for Grades 1–12.",
+    url: baseUrl,
+    siteName: "Edvoura Learning Hub",
+    locale: "en_NG",
+    type: "website",
+    images: [
+      {
+        url: "/images/og-card.png",
+        width: 1200,
+        height: 630,
+        alt: "Edvoura Learning Hub — Learn. Grow. Excel.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Edvoura Learning Hub | K-12 Online Tutoring & AI Question Engine",
+    description:
+      "Master any subject with 1-on-1 expert tutors, 300,000+ past questions, open-licensed storybooks, and curriculum-aligned practice.",
+    creator: "@edvoura",
+    images: ["/images/og-card.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "EducationalOrganization",
+  name: "Edvoura Learning Hub",
+  url: baseUrl,
+  logo: `${baseUrl}/icon.svg`,
+  description:
+    "Premier global K-12 online tutoring platform, AI question bank, and storybook library.",
+  sameAs: [
+    "https://twitter.com/edvoura",
+    "https://facebook.com/edvoura",
+    "https://instagram.com/edvoura",
+  ],
 };
 
 export default function RootLayout({
@@ -63,6 +127,10 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#F5C518" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col antialiased">
         {children}
