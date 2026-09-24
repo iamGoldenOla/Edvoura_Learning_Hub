@@ -26,11 +26,11 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edvouralearninghub.c
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Edvoura Learning Hub | K-12 Online Tutoring & AI Question Engine",
+    default: "Edvoura Learning Hub | K-12 Online Tutoring & Learning Platform",
     template: "%s | Edvoura Learning Hub",
   },
   description:
-    "Edvoura is the premier global K-12 online tutoring hub & AI question bank. Connect with expert tutors for live lessons, practice WAEC, JAMB, GCSE & US Common Core quizzes, explore open-licensed storybooks, and track learning mastery.",
+    "Edvoura is the premier global K-12 online tutoring hub. Connect with expert tutors for live lessons, practice WAEC, JAMB, GCSE & US Common Core quizzes, explore open-licensed storybooks, and track learning mastery.",
   keywords: [
     "online tutoring Nigeria",
     "K-12 learning hub",
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     apple: "/apple-icon.svg",
   },
   openGraph: {
-    title: "Edvoura Learning Hub | K-12 Online Tutoring & AI Question Engine",
+    title: "Edvoura Learning Hub | K-12 Online Tutoring & Learning Platform",
     description:
       "Master any subject with 1-on-1 expert tutors, 300,000+ past questions, open-licensed storybooks, and curriculum-aligned practice for Grades 1–12.",
     url: baseUrl,
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Edvoura Learning Hub | K-12 Online Tutoring & AI Question Engine",
+    title: "Edvoura Learning Hub | K-12 Online Tutoring & Learning Platform",
     description:
       "Master any subject with 1-on-1 expert tutors, 300,000+ past questions, open-licensed storybooks, and curriculum-aligned practice.",
     creator: "@edvoura",
@@ -104,7 +104,7 @@ const jsonLd = {
   url: baseUrl,
   logo: `${baseUrl}/icon.svg`,
   description:
-    "Premier global K-12 online tutoring platform, AI question bank, and storybook library.",
+    "Premier global K-12 online tutoring platform, learning practice hub, and storybook library.",
   sameAs: [
     "https://twitter.com/edvoura",
     "https://facebook.com/edvoura",
