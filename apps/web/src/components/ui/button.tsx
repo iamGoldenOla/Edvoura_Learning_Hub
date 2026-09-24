@@ -4,6 +4,7 @@ type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  size?: 'sm' | 'md' | 'lg' | 'default' | string;
   isLoading?: boolean;
 }
 
