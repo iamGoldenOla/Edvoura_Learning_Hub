@@ -3,12 +3,13 @@
 import { useActionState, useState } from 'react';
 import { adminSignIn, adminSignUp, type FormState } from '@/app/addy/auth/actions';
 import { UniqueCodeVerificationGate } from '@/components/ui/UniqueCodeVerificationGate';
-import { Shield, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { Shield, Lock, ArrowRight, Sparkles, KeyRound } from 'lucide-react';
 
 export default function EddyAuthPage() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [emailVal, setEmailVal] = useState('');
   const [passVal, setPassVal] = useState('');
+  const [uniqueCodeVal, setUniqueCodeVal] = useState('');
   const [signInState, signInAction, signInPending] = useActionState<FormState, FormData>(
     adminSignIn,
     null,
@@ -117,6 +118,30 @@ export default function EddyAuthPage() {
               placeholder="••••••••••••"
               className="mt-1.5 w-full rounded-xl border-[2px] border-dark px-4 py-3 text-xs font-bold text-dark focus:outline-none shadow-[2px_2px_0px_#000]"
             />
+          </div>
+
+          {/* Unique Security Pass Code Field */}
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-black uppercase text-dark flex items-center gap-1">
+                <KeyRound className="h-3.5 w-3.5 text-yellow-600" /> Unique Security Pass Code
+              </label>
+              <span className="text-[10px] font-bold text-dark/50">Required</span>
+            </div>
+            <input
+              name="uniqueCode"
+              type="text"
+              required
+              value={uniqueCodeVal}
+              onChange={(e) => setUniqueCodeVal(e.target.value.toUpperCase())}
+              placeholder="ADM-ADMIN-20260814-1234 or your assigned code"
+              className="mt-1.5 w-full rounded-xl border-[2px] border-dark px-4 py-3 text-xs font-mono font-bold text-dark uppercase focus:outline-none shadow-[2px_2px_0px_#000] bg-yellow-50/50"
+            />
+            <p className="mt-1 text-[10px] font-bold text-dark/60">
+              {mode === 'signin'
+                ? 'Enter your assigned security pass code (e.g. ADM-...). If logging in for the first time, any code entered will be bound.'
+                : 'Leave blank to generate automatically on registration.'}
+            </p>
           </div>
 
           <button
