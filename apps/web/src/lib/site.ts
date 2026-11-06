@@ -1,14 +1,17 @@
 export const siteContact = {
   email: {
+    primary: 'edvouralearninghub@gmail.com',
     info: 'info@edvouralearninghub.com',
+    enquiries: 'enquiries@edvouralearninghub.com',
     support: 'support@edvouralearninghub.com',
-    careers: 'careers@edvouralearninghub.com',
+    careers: 'career@edvouralearninghub.com',
+    executive: 'a.olujobi@edvouralearninghub.com',
   },
   phone: {
-    support: '07007000354',
-    whatsapp: '07010158258',
-    whatsappIntl: '2347010158258',
+    support: '+234 905 336 3384',
+    whatsapp: '+234 905 336 3384',
+    whatsappIntl: '2349053363384',
   },
-  address: 'Ogun State, Nigeria',
+  address: 'Ogun State, Nigeria • London • Global',
   domain: 'www.edvouralearninghub.com',
 };
