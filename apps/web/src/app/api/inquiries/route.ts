@@ -2,10 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/utils/supabase/admin';
 import { sendDirectEmail } from '@/lib/sendEmail';
 
+// Quick heuristic check to filter automated spam submissions
+function isBotSubmission(fullName: string, message: string, honeypot?: string): boolean {
+  if (honeypot && honeypot.trim().length > 0) return true;
+
+  // 1. Gibberish random case strings in name (e.g. sjARKNEJAfnugLuWeRIG, UFKUrjzxVlQqXvWlrwrwk)
+  const hasRandomMixedCase = /[a-z]{2,}[A-Z]{2,}[a-z]{2,}[A-Z]{2,}/.test(fullName);
+  if (hasRandomMixedCase) return true;
+
+  // 2. Message consisting only of random digits with no actual text words (e.g. '9628898844', '2417936894')
+  const isOnlyDigits = /^\d{7,}$/.test(message.trim());
+  if (isOnlyDigits) return true;
+
+  // 3. Name is abnormally long single block of characters with no spaces
+  if (fullName.length > 25 && !fullName.includes(' ')) return true;
+
+  return false;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { fullName, email, phone, country, subject, message } = body;
+    const { fullName, email, phone, country, subject, message, website } = body;
 
     if (!email || !fullName) {
       return NextResponse.json({ error: 'Name and email are required.' }, { status: 400 });
@@ -18,7 +36,17 @@ export async function POST(req: NextRequest) {
     const cleanPhone = phone ? String(phone).trim() : null;
     const cleanCountry = country ? String(country).trim() : null;
 
-    // 1. Store lead in Supabase via service role
+    // Check for spam bot submissions
+    if (isBotSubmission(cleanName, cleanMessage, website)) {
+      console.warn(`[SPAM BLOCKED] Rejected bot inquiry from: ${cleanName} <${cleanEmail}>`);
+      // Return 200 OK so bots think it was received, but DO NOT dispatch email alerts or pollute your inbox!
+      return NextResponse.json({
+        success: true,
+        message: 'Inquiry received.',
+      });
+    }
+
+    // 1. Store legitimate lead in Supabase via service role
     const { data: lead, error: dbError } = await supabaseAdmin
       .from('lead_captures')
       .insert({

@@ -10,6 +10,7 @@ export default function ContactFormClient() {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState('');
+  const [websiteHoneypot, setWebsiteHoneypot] = useState(''); // Invisible honeypot trap for bots
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ name: string; email: string; topic: string } | null>(null);
 
@@ -30,6 +31,7 @@ export default function ContactFormClient() {
           phone: phone.trim() || null,
           subject: subject || 'General Inquiry',
           message: message.trim(),
+          website: websiteHoneypot, // If filled by a bot, the API rejects it silently
         }),
       });
     } catch (err) {
@@ -46,6 +48,7 @@ export default function ContactFormClient() {
       setPhone('');
       setSubject('');
       setMessage('');
+      setWebsiteHoneypot('');
     }
   };
 
@@ -60,6 +63,20 @@ export default function ContactFormClient() {
         />
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 w-full">
+          {/* Honeypot field (hidden from human eyes; bots fill it automatically and get trapped) */}
+          <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
+            <label htmlFor="form_website_hp">Leave this empty</label>
+            <input
+              id="form_website_hp"
+              type="text"
+              name="website"
+              value={websiteHoneypot}
+              onChange={(e) => setWebsiteHoneypot(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             <div>
               <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">
