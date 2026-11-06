@@ -2,76 +2,78 @@ import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
-import { CheckCircle2, Star, ChevronRight, HelpCircle, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Star, ChevronRight, HelpCircle, ArrowRight, ShieldCheck, Globe2 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Affordable Online Tutoring Plans & Pricing',
+  title: 'Affordable Online Tutoring Plans & Pricing ($20/session)',
   description:
-    'Transparent, budget-friendly K-12 tutoring plans starting from $7/hr. Flexible monthly packages for primary and secondary students with verified expert tutors.',
+    'Transparent, premium K-12 tutoring plans starting from $20/session ($240/mo). Verified certified tutors for Cambridge, IB, US Common Core, and WAEC curricula worldwide.',
   openGraph: {
     title: 'Affordable Online Tutoring Plans & Pricing | Edvoura Learning Hub',
     description:
-      'Transparent, budget-friendly K-12 tutoring plans starting from $7/hr. Flexible monthly packages for primary and secondary students.',
+      'Transparent, premium K-12 tutoring plans starting from $20/session. Flexible monthly packages for international families.',
   },
 };
 
 const plans = [
   {
     name: 'Starter',
-    hourly: '$7',
-    price: '$84',
+    hourly: '$20',
+    price: '$240',
     period: '/month',
-    desc: 'Perfect for trying out live tutoring with 12 sessions per month.',
+    desc: 'Perfect for foundational mastery with 12 personalized 1-on-1 sessions per month.',
     sessions: '12 sessions per month',
     features: [
-      '12 live sessions per month',
-      '1 core subject',
-      'Basic progress reports',
-      'Assignment submission',
-      'Email support',
+      '12 live 1-on-1 sessions per month',
+      '1 core subject of choice',
+      'Interactive EDVOURA Whiteboard & Seat-Work',
+      'Comprehensive progress reports',
+      'Curriculum homework assistance',
+      'Email & parent portal support',
     ],
-    excluded: ['Session recordings', 'Exam prep modules', 'Parent dashboard', 'Interactive games'],
+    excluded: ['Session video recordings', 'Exam prep intensive modules', 'Multi-subject switching'],
     popular: false,
     color: 'bg-white',
     buttonCode: 'bg-white border-4 border-navy text-navy hover:bg-yellow shadow-[4px_4px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_#0A1628]'
   },
   {
     name: 'Growth',
-    hourly: '$10',
-    price: '$160',
+    hourly: '$25',
+    price: '$400',
     period: '/month',
-    desc: 'Our most popular plan with 16 sessions per month.',
+    desc: 'Our most popular plan: 16 sessions per month for multi-subject acceleration.',
     sessions: '16 sessions per month',
     features: [
-      '16 live sessions per month',
-      'Up to 3 subjects',
-      'Full progress analytics',
-      'Quiz & assignment access',
-      'Session recordings (30-day)',
-      'Interactive learning games',
-      'Parent dashboard access',
+      '16 live 1-on-1 sessions per month',
+      'Up to 3 core subjects (Math, Science, English)',
+      'Interactive EDVOURA Whiteboard & Seat-Work',
+      'Full learning analytics & milestone tracking',
+      'Unlimited quiz & 300,000+ past question bank access',
+      'HD session recordings (30-day replay)',
+      'Interactive educational games & storybook library',
+      'Dedicated parent dashboard monitoring',
     ],
-    excluded: ['Exam prep modules', 'Dedicated tutor'],
+    excluded: ['Dedicated primary mentor coordinator'],
     popular: true,
     color: 'bg-navy',
     buttonCode: 'bg-yellow border-4 border-navy text-navy hover:bg-yellow-light shadow-[6px_6px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_#0A1628]'
   },
   {
-    name: 'Premium',
-    hourly: '$12',
-    price: '$240',
+    name: 'Elite Immersion',
+    hourly: '$30',
+    price: '$600',
     period: '/month',
-    desc: 'The complete learning solution with 20 sessions per month.',
+    desc: 'The complete academic immersion: 20 sessions per month with dedicated tutor coordination.',
     sessions: '20 sessions per month',
     features: [
-      '20 live sessions per month',
-      'Unlimited subjects',
-      'Dedicated primary tutor',
-      'Comprehensive exam prep',
-      'Unlimited session recordings',
-      'Priority tutor matching',
-      'Direct WhatsApp parent support',
-      'Weekly progress calls',
+      '20 live 1-on-1 sessions per month',
+      'Unlimited subjects & flexible scheduling',
+      'Dedicated elite tutor & academic coordinator',
+      'Comprehensive exam prep (IGCSE, IB, SAT, WAEC, 11+)',
+      'Permanent session video archives for revision',
+      'Priority tutor matching & reschedule flexibility',
+      'Direct WhatsApp parent concierge support',
+      'Bi-weekly academic evaluation & strategy calls',
     ],
     excluded: [],
     popular: false,
@@ -81,6 +83,14 @@ const plans = [
 ];
 
 const faqs = [
+  {
+    q: 'Why did Edvoura choose $20 to $30 per session?',
+    a: 'We believe premium education requires paying certified, thoroughly vetted educators top-market rates while keeping costs 50% to 70% lower than traditional in-person tutoring in London, New York, Tokyo, or Shanghai ($50–$90/hr).',
+  },
+  {
+    q: 'Can international parents outside Nigeria pay in USD, GBP, or EUR?',
+    a: 'Yes! We support global multi-currency payments via Stripe (Visa, Mastercard, American Express), as well as Paystack and Flutterwave for African and diaspora corridors.',
+  },
   {
     q: 'Can I change my plan later?',
     a: 'Yes! You can upgrade, downgrade, or pause your subscription at any time from your parent dashboard. Changes take effect on your next billing cycle.',
@@ -97,10 +107,6 @@ const faqs = [
     q: 'Is there a free trial?',
     a: 'Yes! Every new family receives 1 free trial session with a matched tutor to experience the Edvoura platform before selecting a plan.',
   },
-  {
-    q: 'What payment methods do you accept?',
-    a: 'We accept all major debit and credit cards (Visa, Mastercard, Verve), bank transfers via Paystack, Flutterwave, and international payments via Stripe.',
-  },
 ];
 
 export default function PricingPage() {
@@ -113,13 +119,13 @@ export default function PricingPage() {
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="inline-block px-4 py-1.5 bg-yellow border-2 border-navy rounded-full text-navy font-bold text-xs uppercase tracking-wider mb-4 shadow-[2px_2px_0px_#0A1628]">
-              Transparent Pricing
+              Transparent Global Pricing
             </span>
             <h1 className="font-syne font-extrabold text-4xl sm:text-5xl text-navy mb-4 tracking-tight">
-              Invest in your child&apos;s future with confidence
+              Invest in your child&apos;s future with elite 1-on-1 tutoring
             </h1>
             <p className="text-navy/70 text-lg sm:text-xl font-medium">
-              Simple, transparent pricing. No hidden fees. Cancel or pause anytime.
+              World-class educators for Cambridge, IB, US Common Core, and WAEC. Starting at $20/session.
             </p>
           </div>
 
@@ -160,7 +166,7 @@ export default function PricingPage() {
                         : 'bg-navy/5 border-navy/10 text-navy'
                     }`}
                   >
-                    {plan.hourly} / session
+                    {plan.hourly} / session (1-on-1)
                   </span>
                 </div>
 
@@ -209,7 +215,7 @@ export default function PricingPage() {
           <div className="bg-yellow border-4 border-navy rounded-3xl p-8 mb-20 shadow-[8px_8px_0px_#0A1628] flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-5">
               <div className="w-14 h-14 bg-white border-3 border-navy rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#0A1628]">
-                <Star className="w-7 h-7 text-navy fill-navy" />
+                <ShieldCheck className="w-7 h-7 text-navy" />
               </div>
               <div>
                 <h3 className="font-syne font-bold text-xl text-navy">
@@ -235,7 +241,7 @@ export default function PricingPage() {
                 Frequently Asked Questions
               </h2>
               <p className="text-navy/70 text-sm mt-2">
-                Have questions about pricing? Here are answers to common questions.
+                Have questions about pricing and international scheduling? Here are answers to common questions.
               </p>
             </div>
 

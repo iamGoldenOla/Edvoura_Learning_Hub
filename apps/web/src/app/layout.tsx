@@ -26,25 +26,26 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edvouralearninghub.c
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Edvoura Learning Hub | K-12 Online Tutoring for Global & Diaspora Families",
+    default: "Edvoura Learning Hub | Global K-12 Online Tutoring & Academic Mastery",
     template: "%s | Edvoura Learning Hub",
   },
   description:
-    "Edvoura is the premier global online tutoring hub trusted by parents in the UK, US, Canada, and Nigeria. Connect with certified 1-on-1 tutors starting from $7/hr across British National Curriculum (GCSE), US Common Core, and Nigerian WAEC/JAMB standards.",
+    "Edvoura is the premier global online tutoring platform trusted by international and diaspora families across the UK, US, Canada, China, Japan, Russia, UAE, and Nigeria. Connect with certified 1-on-1 tutors starting from $20/hr across Cambridge IGCSE, IB, US Common Core, and WAEC curricula.",
   keywords: [
-    // Diaspora Specific (GEO/AEO)
+    // Global & Diaspora Corridors (GEO / AEO)
+    "online tutoring international students",
+    "English online tutor Japan Tokyo expat",
+    "K-12 online tutoring China Shanghai Beijing",
+    "Cambridge IGCSE online tutoring Russia",
     "Nigerian diaspora online tutoring UK",
-    "online tutor for African kids abroad",
-    "affordable GCSE tutor UK for diaspora",
     "US Common Core math tutor Canada US",
-    "African storybooks for children abroad",
-    "11-plus exam preparation diaspora",
-    "WAEC past questions practice online",
-    "JAMB CBT practice online",
-    "online tutoring Nigeria and UK",
+    "International Baccalaureate IB online tutor",
+    "Singapore math Olympiad problem solving",
+    "WAEC JAMB past questions practice online",
     "certified virtual tutors Grades 1-12",
     "EYFS nursery preschool early years online",
     "Edvoura Learning Hub",
+    "EdTech global tutoring platform",
   ],
   authors: [{ name: "Edvoura Learning Hub", url: baseUrl }],
   creator: "Edvoura Learning Hub",
@@ -62,12 +63,12 @@ export const metadata: Metadata = {
     apple: "/apple-icon.svg",
   },
   openGraph: {
-    title: "Edvoura Learning Hub | K-12 Online Tutoring for Global & Diaspora Families",
+    title: "Edvoura Learning Hub | Global K-12 Online Tutoring & Academic Mastery",
     description:
-      "Connect with certified 1-on-1 tutors starting from $7/hr. British Curriculum (GCSE), US Common Core, and Nigerian WAEC/JAMB mastery tailored for families in the UK, US, Canada & Nigeria.",
+      "Elite 1-on-1 tutoring starting at $20/hr. Certified educators for Cambridge IGCSE, IB, US Common Core, and WAEC across UK, US, Canada, China, Japan, Russia & Nigeria.",
     url: baseUrl,
     siteName: "Edvoura Learning Hub",
-    locale: "en_GB",
+    locale: "en_US",
     type: "website",
     images: [
       {
@@ -80,11 +81,16 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Edvoura Learning Hub | K-12 Online Tutoring for Global & Diaspora Families",
+    title: "Edvoura Learning Hub | Global K-12 Online Tutoring & Academic Mastery",
     description:
-      "Certified 1-on-1 tutoring starting at $7/hr. Supporting UK, US, Canadian, and Nigerian curricula with interactive whiteboards and 300,000+ practice questions.",
+      "Elite 1-on-1 tutoring starting at $20/hr. Supporting UK, US, Canadian, Asian, and African curricula with interactive whiteboards and 300,000+ practice questions.",
     creator: "@edvoura",
     images: ["/og-card.svg"],
+  },
+  other: {
+    // LinkedIn & Professional Web Previews
+    "linkedin:owner": "https://www.linkedin.com/company/edvoura",
+    "og:see_also": "https://www.linkedin.com/company/edvoura",
   },
   robots: {
     index: true,
@@ -110,28 +116,37 @@ const jsonLdGraph = {
       url: baseUrl,
       logo: `${baseUrl}/icon.svg`,
       description:
-        "Premier global online tutoring platform providing 1-on-1 live lessons, curriculum mastery, and open storybooks for K-12 students worldwide.",
+        "Premier global online tutoring and learning platform providing 1-on-1 live lessons, international curriculum mastery, and digital classroom tools for K-12 students worldwide.",
       foundingDate: "2024",
       areaServed: [
         { "@type": "Country", name: "United Kingdom" },
         { "@type": "Country", name: "United States" },
         { "@type": "Country", name: "Canada" },
+        { "@type": "Country", name: "China" },
+        { "@type": "Country", name: "Japan" },
+        { "@type": "Country", name: "Russia" },
         { "@type": "Country", name: "Nigeria" },
         { "@type": "Country", name: "United Arab Emirates" },
         { "@type": "Country", name: "Australia" },
+        { "@type": "Country", name: "Singapore" },
+        { "@type": "Country", name: "Germany" },
+        { "@type": "Country", name: "France" },
         { "@type": "Country", name: "Ghana" },
       ],
       knowsAbout: [
+        "Cambridge Assessment International Education (CIE / IGCSE)",
+        "International Baccalaureate (IB PYP, MYP & DP)",
         "British National Curriculum (Key Stages 1-4 & GCSE)",
         "US Common Core State Standards (K-12)",
-        "West African Senior School Certificate Examination (WAEC)",
-        "Joint Admissions and Matriculation Board (JAMB/UTME)",
+        "West African Examinations Council (WAEC & NECO)",
+        "Singapore Mathematics & Global Olympiad Problem Solving",
         "Early Years Foundation Stage (EYFS)",
-        "African Storybooks & Multilingual Literacy",
+        "Multilingual Literacy & Open Storybooks",
         "STEM Education and Mental Mathematics",
       ],
-      priceRange: "$7 - $12 per hour",
+      priceRange: "$20 - $30 per hour",
       sameAs: [
+        "https://www.linkedin.com/company/edvoura",
         "https://twitter.com/edvoura",
         "https://facebook.com/edvoura",
         "https://instagram.com/edvoura",
@@ -143,26 +158,26 @@ const jsonLdGraph = {
       mainEntity: [
         {
           "@type": "Question",
-          name: "Can diaspora parents in the UK, US, and Canada use Edvoura for their children?",
+          name: "Can international families in China, Japan, Russia, the UK, and the US use Edvoura?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes. Edvoura is specifically optimized for diaspora and international families. Tutors are available 24/7 across UK (GMT/BST), US/Canada (EST, CST, PST), and European time zones, providing culturally grounded, curriculum-aligned 1-on-1 tutoring.",
+            text: "Yes. Edvoura is built for international, expat, and diaspora families worldwide. Our certified bilingual and English-medium tutors accommodate time zones across Asia (JST, CST), Europe/UK (MSK, GMT/BST), North America (EST, CST, PST), and Africa (WAT).",
           },
         },
         {
           "@type": "Question",
-          name: "Which curricula does Edvoura support?",
+          name: "Which international curricula does Edvoura support?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Edvoura supports the British National Curriculum (Key Stage 1–4, 11-plus, and GCSE), US Common Core (Grades 1–12), Nigerian National Curriculum (NERDC, WAEC, NECO, JAMB/UTME), and Indian CBSE/ICSE standards.",
+            text: "Edvoura supports Cambridge IGCSE, International Baccalaureate (IB), British National Curriculum (Key Stages 1-4 & GCSE), US Common Core (Grades 1-12), Singapore Math, and West African WAEC/JAMB standards.",
           },
         },
         {
           "@type": "Question",
-          name: "How much does online tutoring cost on Edvoura compared to local UK or US tutors?",
+          name: "How much does online tutoring cost on Edvoura?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "While local private tutoring in the UK or US typically costs $40 to $80 per hour (£35 to £65/hr), Edvoura packages start from just $7 to $12 per session—saving diaspora parents over 70% while providing certified 1-on-1 educators and interactive digital whiteboards.",
+            text: "Edvoura tutoring plans start at $20 per session ($240/month for 12 sessions). This provides top-tier certified educators and interactive digital whiteboards at 50% to 70% below local tutoring rates in Tokyo, London, New York, or Shanghai.",
           },
         },
         {
