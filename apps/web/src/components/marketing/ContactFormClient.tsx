@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Send, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
-import { createClient } from '@/utils/supabase/client';
 import { EdvouraWelcomeConfirmationCard } from './EdvouraWelcomeConfirmationCard';
 
 export default function ContactFormClient() {
@@ -10,6 +9,7 @@ export default function ContactFormClient() {
   const [email, setEmail] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedData, setSubmittedData] = useState<{ name: string; email: string; topic: string } | null>(null);
 
@@ -18,20 +18,22 @@ export default function ContactFormClient() {
     if (!email.trim() || !fullName.trim()) return;
 
     setIsSubmitting(true);
-    const supabase = createClient();
 
     try {
-      // 1. Save lead directly into Supabase database
-      await supabase.from('lead_captures').insert({
-        full_name: fullName.trim(),
-        email: email.trim().toLowerCase(),
-        subject_topic: subject || 'General Inquiry',
-        message_body: message.trim(),
-        created_at: new Date().toISOString(),
-        status: 'new'
+      // Post to our unified inquiries API endpoint (triggers lead capture + instant client & admin emails)
+      await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          phone: phone.trim() || null,
+          subject: subject || 'General Inquiry',
+          message: message.trim(),
+        }),
       });
-    } catch {
-      // Fallback graceful insert check
+    } catch (err) {
+      console.error('[CONTACT FORM SUBMISSION]', err);
     } finally {
       setIsSubmitting(false);
       setSubmittedData({
@@ -41,6 +43,7 @@ export default function ContactFormClient() {
       });
       setFullName('');
       setEmail('');
+      setPhone('');
       setSubject('');
       setMessage('');
     }
@@ -86,52 +89,74 @@ export default function ContactFormClient() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">
-              Subject Topic
-            </label>
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all appearance-none cursor-pointer text-ellipsis overflow-hidden"
-            >
-              <option value="">Select a topic</option>
-              <option value="Book Free Session">Book Free Introductory Session</option>
-              <option value="Academic Support Enquiry">Academic Support Enquiry</option>
-              <option value="Global Payments & Billing">Global Payments / Billing</option>
-              <option value="Become a Global Tutor">Become a Global Tutor</option>
-              <option value="School Partnerships">School Partnerships</option>
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            <div>
+              <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">
+                Phone / WhatsApp (Optional Backup)
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 555 019 2831 or +44 20 7946 0912"
+                className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">
+                Inquiry Topic / Grade
+              </label>
+              <select
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
+              >
+                <option value="">Select a topic or curriculum</option>
+                <option value="Book Free 1-on-1 Trial Session">Book Free 1-on-1 Trial Session</option>
+                <option value="British Curriculum & GCSE Tutoring">British Curriculum & GCSE Tutoring</option>
+                <option value="US Common Core (Grades 1-12)">US Common Core (Grades 1-12)</option>
+                <option value="Cambridge IGCSE & IB Mastery">Cambridge IGCSE & IB Mastery</option>
+                <option value="WAEC, NECO & JAMB Exam Prep">WAEC, NECO & JAMB Exam Prep</option>
+                <option value="Early Years / EYFS Preschool Program">Early Years / EYFS Preschool Program</option>
+                <option value="Tutor Application & Onboarding">Tutor Application & Onboarding</option>
+                <option value="Corporate / School Partnership">Corporate / School Partnership</option>
+                <option value="Other Inquiries">Other Inquiries</option>
+              </select>
+            </div>
           </div>
 
           <div>
             <label className="block text-xs sm:text-sm font-black text-navy uppercase tracking-widest mb-2 sm:mb-3">
-              Message / Inquiry Details
+              Your Message or Student Needs
             </label>
             <textarea
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell us how we can help your child or family..."
-              className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-3xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all resize-none"
+              placeholder="Tell us about your child's grade, learning goals, or preferred lesson schedule..."
+              className="w-full px-4 sm:px-6 py-4 sm:py-5 rounded-2xl border-4 border-navy bg-white text-navy text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="group w-full bg-navy text-white font-heading font-black px-8 sm:px-16 py-4 sm:py-6 rounded-2xl border-4 border-navy shadow-[6px_6px_0px_#22C55E] sm:shadow-[10px_10px_0px_#22C55E] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#22C55E] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-xl sm:text-2xl flex items-center justify-center gap-4 cursor-pointer"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-6 h-6 animate-spin text-yellow" /> SUBMITTING...
-              </>
-            ) : (
-              <>
-                SEND MESSAGE <Send className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform shrink-0" />
-              </>
-            )}
-          </button>
+          <div className="text-center md:text-left">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-3 bg-navy text-white border-4 border-navy font-heading font-black px-8 sm:px-12 py-4 sm:py-5 rounded-2xl shadow-[6px_6px_0px_#F5C518] hover:translate-x-1 hover:translate-y-1 hover:shadow-[3px_3px_0px_#F5C518] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all text-lg sm:text-xl disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  Sending Inquiry...
+                </>
+              ) : (
+                <>
+                  Submit Inquiry <Send className="w-5 h-5 text-yellow" />
+                </>
+              )}
+            </button>
+          </div>
         </form>
       )}
     </div>

@@ -4,6 +4,7 @@ import { Activity, BookOpenCheck, CreditCard, Gift, LifeBuoy, ShieldCheck, UserP
 import { SecurityPassCard } from '@/components/ui/SecurityPassCard';
 import { AdminCommandCenterClient } from '@/components/dashboards/admin/AdminCommandCenterClient';
 import RecentUiActionsPanel from '@/components/dashboards/RecentUiActionsPanel';
+import { AdminLeadManagementTable } from '@/components/dashboards/admin/AdminLeadManagementTable';
 import { requireAdminAccess } from './_lib/role-guard';
 import { getAdminDashboardData } from '@/lib/app-context';
 
@@ -259,6 +260,8 @@ export default async function AdminDashboard() {
           </div>
         </div>
       )}
+
+      <AdminLeadManagementTable />
 
       <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
         <RecentUiActionsPanel
