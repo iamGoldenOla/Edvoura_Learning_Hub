@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
@@ -6,6 +7,17 @@ import {
   Video, Brain, ClipboardList, Users, BarChart, BookOpen, BookOpenText, Shield, Headphones,
   ArrowRight, CheckCircle2, Monitor, Star
 } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'K-12 Online Tutoring Services & Exam Preparation',
+  description:
+    'Comprehensive tutoring services for primary and secondary students: live 1-on-1 sessions, WAEC/JAMB exam prep, interactive whiteboard classrooms, and open storybooks.',
+  openGraph: {
+    title: 'K-12 Online Tutoring Services & Exam Preparation | Edvoura Learning Hub',
+    description:
+      'Live 1-on-1 tutoring, WAEC/JAMB exam prep, interactive whiteboard classrooms, and open storybooks for Grades 1–12.',
+  },
+};
 
 export default function ServicesPage() {
   return (

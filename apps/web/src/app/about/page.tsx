@@ -1,8 +1,20 @@
+import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import { Target, Heart, Globe, Shield, Users, BookOpen, Award, ArrowRight, Star } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+
+export const metadata: Metadata = {
+  title: 'About Edvoura | Transforming Education Across Continents',
+  description:
+    'Edvoura Learning Hub connects learners with elite educators, combining curriculum-aligned live tutoring with pedagogical interactive tools for Grades 1–12.',
+  openGraph: {
+    title: 'About Edvoura | Transforming Education Across Continents',
+    description:
+      'Learn about Edvoura mission to make world-class K-12 education accessible to every child.',
+  },
+};
 
 export default function AboutPage() {
   return (

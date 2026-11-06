@@ -69,7 +69,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/og-card.png",
+        url: "/og-card.svg",
         width: 1200,
         height: 630,
         alt: "Edvoura Learning Hub — Learn. Grow. Excel.",
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
     description:
       "Master any subject with 1-on-1 expert tutors, 300,000+ past questions, open-licensed storybooks, and curriculum-aligned practice.",
     creator: "@edvoura",
-    images: ["/images/og-card.png"],
+    images: ["/og-card.svg"],
   },
   robots: {
     index: true,

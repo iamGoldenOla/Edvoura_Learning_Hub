@@ -1,9 +1,21 @@
+import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
 import { Mail, Phone, MapPin, Send, MessageSquare, Globe, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 import { siteContact } from '@/lib/site';
 import ContactFormClient from '@/components/marketing/ContactFormClient';
+
+export const metadata: Metadata = {
+  title: 'Contact Us | Support & Tutor Inquiries',
+  description:
+    'Get in touch with the Edvoura team. Inquire about student enrollment, tutor applications, partnership opportunities, or technical support.',
+  openGraph: {
+    title: 'Contact Us | Edvoura Learning Hub',
+    description:
+      'Contact our support team or learn how to join as a certified tutor on Edvoura.',
+  },
+};
 
 export default function ContactPage() {
   return (
