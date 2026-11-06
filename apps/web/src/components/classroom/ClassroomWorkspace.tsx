@@ -5,7 +5,9 @@ import { createClient } from '@/utils/supabase/client';
 import { Video, BookOpen, Presentation, FileText, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
+import { StudentDeskManager } from './StudentDeskManager';
 import { PDFAnnotator } from './PDFAnnotator';
+import { Users } from 'lucide-react';
 
 interface ClassroomWorkspaceProps {
   lessonId: string;
@@ -13,7 +15,7 @@ interface ClassroomWorkspaceProps {
   userName: string;
 }
 
-type ActiveTab = 'whiteboard' | 'pdf' | 'info';
+type ActiveTab = 'whiteboard' | 'seatwork' | 'pdf' | 'info';
 
 interface ClassResource {
   id: string;
@@ -179,7 +181,17 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               activeTab === 'whiteboard' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
             }`}
           >
-            <Presentation className="h-4 w-4 mr-1.5" /> Shared Whiteboard
+            <Presentation className="h-4 w-4 mr-1.5" /> Shared Board
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => setActiveTab('seatwork')}
+            className={`border-[2px] border-dark rounded-xl font-bold shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all text-xs ${
+              activeTab === 'seatwork' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
+            }`}
+          >
+            <Users className="h-4 w-4 mr-1.5" /> {role === 'tutor' ? 'Student Desks & Mark Work' : 'My Seat-Work Desk'}
           </Button>
 
           <Button
@@ -207,7 +219,11 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         {/* Workspace Display */}
         <div className="flex-1 min-h-0">
           {activeTab === 'whiteboard' && (
-            <CollaborativeWhiteboard lessonId={lessonId} role={role} />
+            <CollaborativeWhiteboard lessonId={lessonId} role={role} userName={userName} />
+          )}
+
+          {activeTab === 'seatwork' && (
+            <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
           )}
 
           {activeTab === 'pdf' && selectedPdfUrl && (
