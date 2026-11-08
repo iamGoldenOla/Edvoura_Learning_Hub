@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowRight, Clock, Star, BookOpen, Search } from 'lucide-react';
 import Image from 'next/image';
 import BlogSidebar from '@/components/marketing/BlogSidebar';
+import NewsletterSubscription from '@/components/marketing/NewsletterSubscription';
 
 // TODO: Replace with Supabase query → blog_posts
 const blogPosts = [
@@ -143,21 +144,15 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Newsletter (Brutalist) */}
-      <section className="bg-error py-24 border-b-8 border-navy relative overflow-hidden">
-        <div className="marketing-container relative z-10 max-w-4xl text-center">
-           <h2 className="font-heading font-black text-white text-4xl md:text-6xl mb-8 drop-shadow-[4px_4px_0px_#0A1628]">Stay in the Loop</h2>
-           <p className="text-white text-xl font-bold mb-10">Get the latest academic insights and platform updates delivered to your inbox.</p>
-           <div className="flex flex-col sm:flex-row gap-4 items-stretch justify-center">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="bg-white border-4 border-navy rounded-xl px-6 py-4 font-bold text-navy shadow-[6px_6px_0px_#0A1628] focus:outline-none"
-              />
-              <button className="bg-yellow text-navy border-4 border-navy font-heading font-black px-10 py-4 rounded-xl shadow-[6px_6px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] transition-all">
-                 Subscribe
-              </button>
-           </div>
+      {/* Newsletter (Interactive Brutalist) */}
+      <section className="bg-sand py-20 border-b-8 border-navy relative overflow-hidden">
+        <div className="marketing-container relative z-10 max-w-4xl">
+          <NewsletterSubscription
+            variant="card"
+            source="Blog Newsletter Section"
+            title="Stay in the Loop with the Edvoura Dispatch"
+            subtitle="Get the latest international pedagogy research, exam breakdowns, and educational updates delivered weekly."
+          />
         </div>
       </section>
 

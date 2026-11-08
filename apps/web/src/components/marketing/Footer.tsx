@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 
 import { siteContact } from '@/lib/site';
+import NewsletterSubscription from './NewsletterSubscription';
 
 const platformLinks = [
   { label: 'Home', href: '/' },
@@ -131,7 +132,12 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-navy-light/30 pt-8 md:flex-row">
+        {/* Global Newsletter Subscription */}
+        <div className="mt-12">
+          <NewsletterSubscription variant="footer" source="Global Footer" />
+        </div>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-navy-light/30 pt-8 md:flex-row">
           <p className="text-xs text-grey">© {new Date().getFullYear()} Edvoura Learning Hub. All rights reserved.</p>
           <div className="flex items-center gap-4 text-xs text-grey">
             <Link href="/credits" className="hover:text-yellow transition-colors">

@@ -14,8 +14,12 @@ const navLinks = [
   { label: 'Services', href: '/services' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Blog', href: '/blog' },
-  { label: 'Careers', href: '/careers' },
   { label: 'Contact', href: '/contact' },
+];
+
+const blogSubmenu = [
+  { label: 'Blog & Academic Insights', href: '/blog', desc: 'Pedagogy, exam prep guides & learning science' },
+  { label: 'Careers & Teach With Us', href: '/careers', desc: 'Join our elite top 3% tutor network ($25–$45/hr)' },
 ];
 
 const portalLinks = [
@@ -37,6 +41,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [blogOpen, setBlogOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showPromo, setShowPromo] = useState(false);
 
@@ -89,6 +94,8 @@ export default function Navbar() {
       if (event.key === 'Escape') {
         setMobileOpen(false);
         setSignInOpen(false);
+        setServicesOpen(false);
+        setBlogOpen(false);
       }
     };
 
@@ -194,6 +201,67 @@ export default function Navbar() {
                                   key={sub.href}
                                   href={sub.href}
                                   onClick={() => setServicesOpen(false)}
+                                  className="group flex flex-col rounded-xl p-2.5 transition-colors hover:bg-white/10"
+                                >
+                                  <span className="text-xs font-black uppercase tracking-wider text-white group-hover:text-yellow transition-colors">
+                                    {sub.label}
+                                  </span>
+                                  <span className="text-[10px] text-white/60 font-medium">
+                                    {sub.desc}
+                                  </span>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (link.label === 'Blog') {
+                  return (
+                    <div
+                      key={link.href}
+                      className="relative flex items-center"
+                      onMouseEnter={() => setBlogOpen(true)}
+                      onMouseLeave={() => setBlogOpen(false)}
+                    >
+                      <Link
+                        href="/blog"
+                        onClick={() => setBlogOpen(false)}
+                        className="flex items-center text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs py-1"
+                      >
+                        {link.label}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setBlogOpen((v) => !v);
+                        }}
+                        aria-label="Toggle Blog & Careers menu"
+                        className="ml-1 p-0.5 text-white/70 hover:text-yellow transition-colors"
+                      >
+                        <svg
+                          className={`h-3 w-3 transition-transform duration-200 ${blogOpen ? 'rotate-180 text-yellow' : ''}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {blogOpen && (
+                        <div className="absolute left-0 top-full z-30 pt-2">
+                          <div className="w-72 rounded-2xl border-2 border-white/20 bg-navy p-3 shadow-[8px_8px_0px_#000] animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="flex flex-col gap-1">
+                              {blogSubmenu.map((sub) => (
+                                <Link
+                                  key={sub.href}
+                                  href={sub.href}
+                                  onClick={() => setBlogOpen(false)}
                                   className="group flex flex-col rounded-xl p-2.5 transition-colors hover:bg-white/10"
                                 >
                                   <span className="text-xs font-black uppercase tracking-wider text-white group-hover:text-yellow transition-colors">
@@ -396,6 +464,24 @@ export default function Navbar() {
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
                           ⚙️ STEM MechLab™
+                        </Link>
+                      </div>
+                    )}
+                    {link.label === 'Blog' && (
+                      <div className="ml-4 flex flex-col gap-1.5 border-l-2 border-yellow/40 pl-3">
+                        <Link
+                          href="/blog"
+                          onClick={() => setMobileOpen(false)}
+                          className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
+                        >
+                          📰 Blog &amp; Academic Insights
+                        </Link>
+                        <Link
+                          href="/careers"
+                          onClick={() => setMobileOpen(false)}
+                          className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
+                        >
+                          💼 Careers &amp; Teach With Us
                         </Link>
                       </div>
                     )}
