@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
+import CrystalMirrorHero from '@/components/marketing/CrystalMirrorHero';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -24,31 +25,8 @@ export default function ServicesPage() {
     <div className="flex flex-col min-h-screen bg-off-white selection:bg-yellow selection:text-navy font-body">
       <Navbar />
 
-      {/* Hero (Parallax + Brutalist) */}
-      <section 
-        className="relative overflow-hidden border-b-8 border-navy bg-cover bg-center pb-16 pt-[104px] sm:pb-20 sm:pt-[120px] md:pb-28 md:pt-[150px] z-10"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop")' }}
-      >
-        <div className="absolute inset-0 bg-navy/85 backdrop-blur-sm" />
-        
-        <div className="marketing-container relative z-10 py-6 text-center">
-          <div className="inline-block max-w-full bg-yellow border-4 border-navy text-navy font-heading font-black px-4 py-2 text-base sm:px-6 rounded-xl mb-6 sm:mb-8 shadow-[4px_4px_0px_#0A1628] rotate-[-2deg] transition-transform hover:rotate-0">
-            OUR SERVICES
-          </div>
-          <h1 className="font-heading font-black text-white max-w-4xl mx-auto break-words leading-[1.06] mb-6 sm:mb-8 drop-shadow-[2px_2px_0px_#0A1628] sm:drop-shadow-[4px_4px_0px_#0A1628]" style={{ fontSize: 'clamp(2rem, 11vw, 5rem)' }}>
-            A Complete Learning Ecosystem Built to Win
-          </h1>
-          <p className="text-white text-base sm:text-xl max-w-3xl mx-auto font-bold bg-navy/50 backdrop-blur-md p-4 sm:p-6 rounded-2xl border-4 border-navy shadow-[4px_4px_0px_#F5C518] sm:shadow-[6px_6px_0px_#F5C518] transform rotate-1">
-            From live tutoring to exam preparation, Edvoura brings everything under one roof - designed for students, parents, and educators.
-          </p>
-          
-          <div className="mt-12 flex justify-center">
-            <Link href="/signup" className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-success text-white border-4 border-navy font-heading font-black px-6 sm:px-12 py-4 sm:py-5 rounded-xl transition-all shadow-[6px_6px_0px_#0A1628] sm:shadow-[8px_8px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_#0A1628] active:translate-x-2 active:translate-y-2 active:shadow-none text-base sm:text-2xl transform hover:scale-105">
-              Start Learning <ArrowRight className="w-6 h-6" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Crystal Mirror Hero Section (Experiment) */}
+      <CrystalMirrorHero />
 
       {/* Core Services */}
       <section className="bg-white py-24 md:py-32 border-b-8 border-navy">
