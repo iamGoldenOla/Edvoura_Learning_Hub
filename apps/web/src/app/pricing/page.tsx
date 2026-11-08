@@ -1,86 +1,20 @@
 import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
+import InteractivePricingCards from '@/components/pricing/InteractivePricingCards';
 import Footer from '@/components/marketing/Footer';
 import Link from 'next/link';
 import { CheckCircle2, Star, ChevronRight, HelpCircle, ArrowRight, ShieldCheck, Globe2 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Affordable Online Tutoring Plans & Pricing ($20/session)',
+  title: 'Affordable Online Tutoring Plans & Pricing ($20/session, $25/hr, $30/hr) | Edvoura',
   description:
-    'Transparent, premium K-12 tutoring plans starting from $20/session ($240/mo). Verified certified tutors for Cambridge, IB, US Common Core, and WAEC curricula worldwide.',
+    'Transparent, accessible 1-on-1 tutoring starting at $20/session with live multi-currency converter (USD, GBP, NGN, EUR, CAD). Certified tutors for Cambridge, IB, US Common Core, and WAEC.',
   openGraph: {
     title: 'Affordable Online Tutoring Plans & Pricing | Edvoura Learning Hub',
     description:
       'Transparent, premium K-12 tutoring plans starting from $20/session. Flexible monthly packages for international families.',
   },
 };
-
-const plans = [
-  {
-    name: 'Starter',
-    hourly: '$20',
-    price: '$240',
-    period: '/month',
-    desc: 'Perfect for foundational mastery with 12 personalized 1-on-1 sessions per month.',
-    sessions: '12 sessions per month',
-    features: [
-      '12 live 1-on-1 sessions per month',
-      '1 core subject of choice',
-      'Interactive EDVOURA Whiteboard & Seat-Work',
-      'Comprehensive progress reports',
-      'Curriculum homework assistance',
-      'Email & parent portal support',
-    ],
-    excluded: ['Session video recordings', 'Exam prep intensive modules', 'Multi-subject switching'],
-    popular: false,
-    color: 'bg-white',
-    buttonCode: 'bg-white border-4 border-navy text-navy hover:bg-yellow shadow-[4px_4px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_#0A1628]'
-  },
-  {
-    name: 'Growth',
-    hourly: '$25',
-    price: '$400',
-    period: '/month',
-    desc: 'Our most popular plan: 16 sessions per month for multi-subject acceleration.',
-    sessions: '16 sessions per month',
-    features: [
-      '16 live 1-on-1 sessions per month',
-      'Up to 3 core subjects (Math, Science, English)',
-      'Interactive EDVOURA Whiteboard & Seat-Work',
-      'Full learning analytics & milestone tracking',
-      'Unlimited quiz & 300,000+ past question bank access',
-      'HD session recordings (30-day replay)',
-      'Interactive educational games & storybook library',
-      'Dedicated parent dashboard monitoring',
-    ],
-    excluded: ['Dedicated primary mentor coordinator'],
-    popular: true,
-    color: 'bg-navy',
-    buttonCode: 'bg-yellow border-4 border-navy text-navy hover:bg-yellow-light shadow-[6px_6px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_#0A1628]'
-  },
-  {
-    name: 'Elite Immersion',
-    hourly: '$30',
-    price: '$600',
-    period: '/month',
-    desc: 'The complete academic immersion: 20 sessions per month with dedicated tutor coordination.',
-    sessions: '20 sessions per month',
-    features: [
-      '20 live 1-on-1 sessions per month',
-      'Unlimited subjects & flexible scheduling',
-      'Dedicated elite tutor & academic coordinator',
-      'Comprehensive exam prep (IGCSE, IB, SAT, WAEC, 11+)',
-      'Permanent session video archives for revision',
-      'Priority tutor matching & reschedule flexibility',
-      'Direct WhatsApp parent concierge support',
-      'Bi-weekly academic evaluation & strategy calls',
-    ],
-    excluded: [],
-    popular: false,
-    color: 'bg-white',
-    buttonCode: 'bg-white border-4 border-navy text-navy hover:bg-yellow shadow-[4px_4px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_#0A1628]'
-  },
-];
 
 const faqs = [
   {
@@ -133,86 +67,9 @@ export default function PricingPage() {
             </p>
           </div>
 
-          {/* Pricing Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-8 items-start mb-20">
-            {plans.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative rounded-3xl border-4 border-navy ${plan.color} ${
-                  plan.popular
-                    ? 'p-8 text-white shadow-[12px_12px_0px_#0A1628] scale-105 z-10'
-                    : 'p-6 text-navy shadow-[8px_8px_0px_#0A1628]'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-yellow border-2 border-navy text-navy font-bold text-xs uppercase tracking-wider px-4 py-1.5 rounded-full shadow-[2px_2px_0px_#0A1628] flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 fill-navy" /> Most Popular
-                  </div>
-                )}
-
-                <h3 className="font-syne font-bold text-2xl mb-1">{plan.name}</h3>
-                <p className={`text-sm mb-6 ${plan.popular ? 'text-white/70' : 'text-navy/60'}`}>
-                  {plan.desc}
-                </p>
-
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="font-syne font-extrabold text-4xl">{plan.price}</span>
-                  <span className={`text-sm ${plan.popular ? 'text-white/70' : 'text-navy/60'}`}>
-                    {plan.period}
-                  </span>
-                </div>
-
-                <div className="mb-6">
-                  <span
-                    className={`inline-block text-xs font-bold px-2.5 py-1 rounded-md border ${
-                      plan.popular
-                        ? 'bg-white/10 border-white/20 text-yellow'
-                        : 'bg-navy/5 border-navy/10 text-navy'
-                    }`}
-                  >
-                    {plan.hourly} / session (1-on-1)
-                  </span>
-                </div>
-
-                <Link
-                  href="/signup"
-                  className={`block w-full text-center py-3.5 px-4 rounded-xl font-syne font-bold text-sm tracking-wide transition-all ${plan.buttonCode}`}
-                >
-                  Get Started
-                </Link>
-
-                <div className="mt-8 pt-8 border-t border-navy/10 space-y-3">
-                  <p className={`text-xs font-bold uppercase tracking-wider mb-4 ${plan.popular ? 'text-white/50' : 'text-navy/40'}`}>
-                    Included in this plan
-                  </p>
-                  {plan.features.map((feat) => (
-                    <div key={feat} className="flex items-start gap-3 text-sm">
-                      <CheckCircle2
-                        className={`w-5 h-5 shrink-0 ${
-                          plan.popular ? 'text-yellow' : 'text-green-600'
-                        }`}
-                      />
-                      <span className={plan.popular ? 'text-white/90' : 'text-navy/80'}>
-                        {feat}
-                      </span>
-                    </div>
-                  ))}
-                  {plan.excluded.map((feat) => (
-                    <div
-                      key={feat}
-                      className={`flex items-start gap-3 text-sm opacity-40 ${
-                        plan.popular ? 'text-white' : 'text-navy'
-                      }`}
-                    >
-                      <div className="w-5 h-5 shrink-0 flex items-center justify-center font-bold">
-                        &times;
-                      </div>
-                      <span className="line-through">{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+          {/* Interactive Pricing Cards with Live Currency Converter */}
+          <div className="mb-20">
+            <InteractivePricingCards />
           </div>
 
           {/* Guarantee Banner */}
