@@ -15,17 +15,17 @@ interface SparkleItem {
 }
 
 const STATIC_SPARKLES: SparkleItem[] = [
-  { id: 1, top: '12%', left: '10%', size: 16, delay: '0s', duration: '3.0s', color: '#0A1628' },
+  { id: 1, top: '12%', left: '10%', size: 16, delay: '0s', duration: '3.0s', color: '#060E1C' },
   { id: 2, top: '20%', left: '88%', size: 24, delay: '0.7s', duration: '3.6s', color: '#F5C518' },
-  { id: 3, top: '32%', left: '24%', size: 14, delay: '1.3s', duration: '2.8s', color: '#0284C7' },
-  { id: 4, top: '45%', left: '6%', size: 18, delay: '2.0s', duration: '4.0s', color: '#0A1628' },
+  { id: 3, top: '32%', left: '24%', size: 14, delay: '1.3s', duration: '2.8s', color: '#64748B' },
+  { id: 4, top: '45%', left: '6%', size: 18, delay: '2.0s', duration: '4.0s', color: '#060E1C' },
   { id: 5, top: '15%', left: '65%', size: 22, delay: '0.4s', duration: '3.4s', color: '#F5C518' },
-  { id: 6, top: '62%', left: '94%', size: 16, delay: '1.6s', duration: '3.1s', color: '#0284C7' },
-  { id: 7, top: '75%', left: '18%', size: 20, delay: '2.4s', duration: '4.2s', color: '#0A1628' },
+  { id: 6, top: '62%', left: '94%', size: 16, delay: '1.6s', duration: '3.1s', color: '#64748B' },
+  { id: 7, top: '75%', left: '18%', size: 20, delay: '2.4s', duration: '4.2s', color: '#060E1C' },
   { id: 8, top: '80%', left: '76%', size: 14, delay: '1.0s', duration: '2.9s', color: '#F5C518' },
-  { id: 9, top: '38%', left: '92%', size: 18, delay: '0.6s', duration: '3.5s', color: '#0A1628' },
+  { id: 9, top: '38%', left: '92%', size: 18, delay: '0.6s', duration: '3.5s', color: '#060E1C' },
   { id: 10, top: '10%', left: '38%', size: 14, delay: '1.8s', duration: '2.7s', color: '#F5C518' },
-  { id: 11, top: '85%', left: '46%', size: 16, delay: '2.6s', duration: '3.8s', color: '#0284C7' },
+  { id: 11, top: '85%', left: '46%', size: 16, delay: '2.6s', duration: '3.8s', color: '#64748B' },
   { id: 12, top: '56%', left: '3%', size: 20, delay: '1.1s', duration: '3.5s', color: '#F5C518' },
 ];
 
@@ -87,7 +87,7 @@ export default function CrystalMirrorHero() {
       onMouseMove={handleMouseMove}
       className="relative overflow-hidden border-b-[6px] border-dark pb-20 pt-[105px] sm:pb-28 sm:pt-[125px] md:pb-36 md:pt-[150px] z-10 selection:bg-yellow selection:text-dark"
       style={{
-        background: 'linear-gradient(135deg, #F8FAFC 0%, #EEF4FB 30%, #E2EDF9 65%, #DCE8F7 100%)',
+        background: 'linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 25%, #F1F5F9 50%, #FFFFFF 75%, #F8FAFC 100%)',
       }}
     >
       {/* --- INLINE STYLES FOR SPECULAR MIRROR SWEEP & GLITTER --- */}
@@ -114,13 +114,13 @@ export default function CrystalMirrorHero() {
 
         @keyframes crystalSparkle {
           0%, 100% {
-            opacity: 0.2;
+            opacity: 0.15;
             transform: scale(0.6) rotate(0deg);
           }
           50% {
             opacity: 1;
             transform: scale(1.35) rotate(90deg);
-            filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.9)) drop-shadow(0 0 20px rgba(255, 255, 255, 1));
+            filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.9)) drop-shadow(0 0 18px rgba(255, 255, 255, 1));
           }
         }
 
@@ -133,24 +133,24 @@ export default function CrystalMirrorHero() {
         }
       `}</style>
 
-      {/* 1. Crystal Mirror Glass Specular Glow */}
+      {/* 1. Pure Crystal Mirror Specular Glaze */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-80 transition-opacity duration-300"
+        className="pointer-events-none absolute inset-0 opacity-90 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(circle 600px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 0.9) 0%, rgba(226, 237, 249, 0.4) 40%, transparent 70%)`,
+          background: `radial-gradient(circle 600px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 1) 0%, rgba(241, 245, 249, 0.5) 45%, transparent 75%)`,
         }}
       />
 
-      {/* 2. Prismatic Mirror Bevel Sheen */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_75%_60%_at_50%_0%,rgba(255,255,255,0.85),transparent_70%)]" />
+      {/* 2. Prismatic Mirror Bevel Highlights */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(255,255,255,0.95),transparent_70%)]" />
 
-      {/* 3. Sweeping Silver-White Light Beam (Mirror Reflection) */}
+      {/* 3. Sweeping Silver-Platinum Mirror Light Beam */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
           className="animate-mirror-sweep absolute -top-1/2 -left-1/2 h-[200%] w-[55%] pointer-events-none"
           style={{
             background:
-              'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.1) 36%, rgba(255,255,255,0.75) 50%, rgba(245,197,24,0.4) 52%, rgba(255,255,255,0.3) 60%, transparent 75%)',
+              'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.2) 36%, rgba(255,255,255,0.85) 50%, rgba(245,197,24,0.45) 52%, rgba(255,255,255,0.4) 60%, transparent 75%)',
           }}
         />
       </div>
@@ -173,7 +173,7 @@ export default function CrystalMirrorHero() {
             <svg
               viewBox="0 0 24 24"
               fill={sparkle.color}
-              className="w-full h-full drop-shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+              className="w-full h-full drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]"
             >
               <path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" />
             </svg>
@@ -181,13 +181,13 @@ export default function CrystalMirrorHero() {
         ))}
       </div>
 
-      {/* 5. Crystal Edge Chrome Borders */}
+      {/* 5. Crystal Edge Silver Bevel Lines */}
       <div className="pointer-events-none absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-white via-yellow/70 to-transparent" />
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-dark/20 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
 
-      {/* 6. Foreground Content (High-Clarity Crystal Platter) */}
+      {/* 6. Foreground Content (Pure Crystal Clarity Platter) */}
       <div className="marketing-container relative z-10 py-4 text-center">
-        {/* Badge with Sparkle */}
+        {/* Crystal Pill Badge */}
         <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border-2 border-dark bg-yellow shadow-[4px_4px_0px_#060E1C] mb-6 sm:mb-8 text-dark font-black text-xs sm:text-sm tracking-wider uppercase transform -rotate-1 hover:rotate-0 transition-transform">
           <Sparkles className="w-4 h-4 text-dark animate-spin" style={{ animationDuration: '6s' }} />
           <span>CRYSTAL MIRROR OF LEARNING</span>
@@ -196,19 +196,19 @@ export default function CrystalMirrorHero() {
 
         {/* Hero Title */}
         <h1
-          className="font-heading font-black text-dark max-w-5xl mx-auto break-words leading-[1.04] mb-6 sm:mb-8 drop-shadow-[2px_2px_0px_rgba(255,255,255,0.8)]"
+          className="font-heading font-black text-dark max-w-5xl mx-auto break-words leading-[1.04] mb-6 sm:mb-8 drop-shadow-[2px_2px_0px_rgba(255,255,255,1)]"
           style={{ fontSize: 'clamp(2.2rem, 9vw, 4.8rem)' }}
         >
           See Your Future in the{' '}
-          <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-dark via-navy-light to-dark underline decoration-yellow decoration-wavy decoration-4">
+          <span className="relative inline-block text-dark underline decoration-yellow decoration-wavy decoration-4">
             Edvoura Mirror
           </span>
         </h1>
 
-        {/* --- THE MIRROR FRAME (Reflecting the Learner) --- */}
-        <div className="max-w-3xl mx-auto relative rounded-[32px] p-6 sm:p-9 backdrop-blur-xl bg-white/75 border-[3px] border-dark shadow-[10px_10px_0px_#060E1C,inset_0_2px_4px_rgba(255,255,255,1)] mb-10 overflow-hidden">
-          {/* Subtle Silver Specular Rim */}
-          <div className="pointer-events-none absolute -top-28 -left-28 w-56 h-56 rounded-full bg-white/60 blur-3xl" />
+        {/* --- THE MIRROR FRAME (Pure Crystal Glass) --- */}
+        <div className="max-w-3xl mx-auto relative rounded-[32px] p-6 sm:p-9 backdrop-blur-2xl bg-white/90 border-[3px] border-dark shadow-[10px_10px_0px_#060E1C,inset_0_2px_6px_rgba(255,255,255,1)] mb-10 overflow-hidden">
+          {/* Internal Specular Highlight */}
+          <div className="pointer-events-none absolute -top-28 -left-28 w-56 h-56 rounded-full bg-white blur-3xl" />
           <div className="pointer-events-none absolute -bottom-28 -right-28 w-56 h-56 rounded-full bg-yellow/20 blur-3xl" />
 
           {/* Optional Live Camera Mirror Stream */}
@@ -230,16 +230,16 @@ export default function CrystalMirrorHero() {
               </div>
             </div>
           ) : (
-            /* Elegant Ethereal Mirror Reflection Silhouette */
-            <div className="relative mb-6 mx-auto w-full max-w-sm h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-dark/20 bg-gradient-to-b from-white/90 via-[#EEF4FB] to-[#DCE8F7] flex flex-col items-center justify-center shadow-inner">
+            /* Pristine Silver Mirror Reflection Silhouette */
+            <div className="relative mb-6 mx-auto w-full max-w-sm h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-dark/15 bg-gradient-to-b from-white via-slate-50 to-slate-200/70 flex flex-col items-center justify-center shadow-inner">
               {/* Ethereal Silhouette of a Learner looking in mirror */}
-              <div className="relative flex flex-col items-center opacity-40 hover:opacity-60 transition-opacity">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dark bg-yellow/60 shadow-[2px_2px_0px_#060E1C] flex items-center justify-center">
+              <div className="relative flex flex-col items-center opacity-45 hover:opacity-70 transition-opacity">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dark bg-yellow shadow-[2px_2px_0px_#060E1C] flex items-center justify-center">
                   <Star className="w-7 h-7 text-dark animate-pulse" />
                 </div>
-                <div className="w-24 sm:w-28 h-10 bg-dark/20 rounded-t-full mt-2 border-t-2 border-dark/30" />
+                <div className="w-24 sm:w-28 h-10 bg-dark/15 rounded-t-full mt-2 border-t-2 border-dark/25" />
               </div>
-              <p className="mt-2 text-xs font-black uppercase tracking-widest text-dark/60">
+              <p className="mt-2 text-xs font-black uppercase tracking-widest text-dark/70">
                 &ldquo;When you look into Edvoura, you see who you can become.&rdquo;
               </p>
             </div>
@@ -278,7 +278,7 @@ export default function CrystalMirrorHero() {
           {/* Micro Feature Pills Floating on Glass */}
           <div className="mt-6 pt-5 border-t-2 border-dark/15 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border-2 border-dark shadow-[2px_2px_0px_#060E1C]">
-              <Video className="w-4 h-4 text-info shrink-0" />
+              <Video className="w-4 h-4 text-dark shrink-0" />
               <span className="text-[11px] sm:text-xs font-black text-dark truncate">1-on-1 Tutoring</span>
             </div>
             <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border-2 border-dark shadow-[2px_2px_0px_#060E1C]">
