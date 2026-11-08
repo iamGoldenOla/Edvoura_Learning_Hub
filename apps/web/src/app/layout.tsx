@@ -177,7 +177,7 @@ const jsonLdGraph = {
           name: "How much does online tutoring cost on Edvoura?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Edvoura tutoring plans start at $20 per session ($240/month for 12 sessions). This provides top-tier certified educators and interactive digital whiteboards at 50% to 70% below local tutoring rates in Tokyo, London, New York, or Shanghai.",
+            text: "Edvoura tutoring plans start at $20 per session for 1-on-1 tutoring ($25/hr for Growth, $30/hr for Elite Exam Prep). This provides top-tier certified educators and interactive digital whiteboards with transparent per-session pricing at 50% to 70% below local tutoring rates in Tokyo, London, New York, or Shanghai.",
           },
         },
         {
