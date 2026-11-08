@@ -19,13 +19,13 @@ import {
 import { MANIMGX_PRESETS, MathScenePreset } from '@/lib/math-engine/manimgxPresets';
 import MathAnimationCanvas from './MathAnimationCanvas';
 
-const CATEGORIES = ['All', 'Geometry', 'Trigonometry', 'Calculus', 'Algebra', 'Linear Algebra', 'Physics'] as const;
+const CATEGORIES = ['All', 'Elementary (Grades 1-6)', 'Geometry', 'Trigonometry', 'Calculus', 'Algebra', 'Linear Algebra', 'Physics'] as const;
 
 export default function MathStudioExplorer() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [activePresetId, setActivePresetId] = useState<string>(MANIMGX_PRESETS[0].id);
-  const [activeTab, setActiveTab] = useState<'controls' | 'code' | 'theory'>('controls');
+  const [activeTab, setActiveTab] = useState<'controls' | 'theory'>('controls');
   const [copiedCode, setCopiedCode] = useState(false);
 
   // Active scene
@@ -41,6 +41,14 @@ export default function MathStudioExplorer() {
     });
     return init;
   });
+
+  const handleCategorySelect = (cat: string) => {
+    setSelectedCategory(cat);
+    const matching = MANIMGX_PRESETS.filter((p) => cat === 'All' || p.category === cat);
+    if (matching.length > 0) {
+      handleSelectPreset(matching[0]);
+    }
+  };
 
   const handleSelectPreset = (preset: MathScenePreset) => {
     setActivePresetId(preset.id);
@@ -87,7 +95,7 @@ export default function MathStudioExplorer() {
             <button
               key={cat}
               type="button"
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => handleCategorySelect(cat)}
               className={`rounded-xl border-[2px] border-dark px-3.5 py-1.5 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                 selectedCategory === cat
                   ? 'bg-yellow text-dark shadow-[3px_3px_0px_#060E1C]'
@@ -168,33 +176,24 @@ export default function MathStudioExplorer() {
         <div className="lg:col-span-4 space-y-6">
           {/* Tabs: Controls vs Code vs Theory */}
           <div className="rounded-3xl border-[3.5px] border-dark bg-white shadow-[8px_8px_0px_#060E1C] overflow-hidden">
-            <div className="grid grid-cols-3 border-b-[3px] border-dark bg-off-white text-center">
+            <div className="grid grid-cols-2 border-b-[3px] border-dark bg-off-white text-center">
               <button
                 type="button"
                 onClick={() => setActiveTab('controls')}
-                className={`py-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeTab === 'controls' ? 'bg-yellow text-dark border-r-[2px] border-dark' : 'text-dark/60 hover:text-dark border-r-[2px] border-dark/20'
+                className={`py-3.5 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                  activeTab === 'controls' ? 'bg-yellow text-dark border-r-[2px] border-dark shadow-inner font-black' : 'text-dark/60 hover:text-dark border-r-[2px] border-dark/20'
                 }`}
               >
-                <Sliders className="h-3.5 w-3.5" /> Parameters
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('code')}
-                className={`py-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeTab === 'code' ? 'bg-yellow text-dark border-r-[2px] border-dark' : 'text-dark/60 hover:text-dark border-r-[2px] border-dark/20'
-                }`}
-              >
-                <Code2 className="h-3.5 w-3.5" /> Code
+                <Sliders className="h-4 w-4" /> Interactive Controls
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('theory')}
-                className={`py-3 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                  activeTab === 'theory' ? 'bg-yellow text-dark' : 'text-dark/60 hover:text-dark'
+                className={`py-3.5 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                  activeTab === 'theory' ? 'bg-yellow text-dark shadow-inner font-black' : 'text-dark/60 hover:text-dark'
                 }`}
               >
-                <BookOpen className="h-3.5 w-3.5" /> Theory
+                <BookOpen className="h-4 w-4" /> How It Works
               </button>
             </div>
 
@@ -231,30 +230,7 @@ export default function MathStudioExplorer() {
                 </div>
               )}
 
-              {/* Tab 2: ManimGX Python Code */}
-              {activeTab === 'code' && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-dark/50">
-                      Python 3.13 Animation Script
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleCopyCode}
-                      className="rounded-lg border-[2px] border-dark bg-white px-2.5 py-1 text-[10px] font-black uppercase text-dark flex items-center gap-1 cursor-pointer hover:bg-yellow transition-colors"
-                    >
-                      {copiedCode ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                      <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  </div>
-                  <pre className="rounded-xl border-[2px] border-dark bg-dark text-emerald-400 p-4 text-[11px] font-mono leading-relaxed overflow-x-auto max-h-[300px]">
-                    {activePreset.manimgxCode}
-                  </pre>
-                  <p className="text-[11px] font-semibold text-dark/60 leading-tight">
-                    💡 Run directly in Python to generate high-resolution video renders of these mathematical proofs.
-                  </p>
-                </div>
-              )}
+
 
               {/* Tab 3: Pedagogical Explanation */}
               {activeTab === 'theory' && (

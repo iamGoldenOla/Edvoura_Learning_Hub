@@ -11,8 +11,8 @@ export interface MathSceneParameter {
 export interface MathScenePreset {
   id: string;
   title: string;
-  category: 'Geometry' | 'Trigonometry' | 'Calculus' | 'Algebra' | 'Linear Algebra' | 'Physics';
-  difficulty: 'Elementary' | 'Junior Secondary' | 'Senior Secondary' | 'Advanced (A-Level / JAMB)';
+  category: 'Elementary (Grades 1-6)' | 'Geometry' | 'Trigonometry' | 'Calculus' | 'Algebra' | 'Linear Algebra' | 'Physics';
+  difficulty: 'Grade 1-3' | 'Grade 4-6' | 'Elementary' | 'Junior Secondary' | 'Senior Secondary' | 'Advanced (A-Level / JAMB)';
   summary: string;
   formula: string;
   explanation: string[];
@@ -28,6 +28,491 @@ export interface MathScenePreset {
 }
 
 export const MANIMGX_PRESETS: MathScenePreset[] = [
+  // ===== ELEMENTARY (GRADES 1 TO 6) PRESETS =====
+  {
+    id: 'fraction-pizza',
+    title: 'Visual Fraction Pizza & Slices (Grades 2–5)',
+    category: 'Elementary (Grades 1-6)',
+    difficulty: 'Grade 1-3',
+    summary: 'See how a whole pizza is sliced into equal parts. Slide the numbers to discover how fractions, decimals, and percentages work!',
+    formula: '\\frac{\\text{Numerator (Slices Eaten)}}{\\text{Denominator (Total Slices)}}',
+    explanation: [
+      'The Denominator (bottom number) is how many equal slices the whole pizza is cut into.',
+      'The Numerator (top number) tells us how many slices are selected or eaten.',
+      'When the numerator equals the denominator (e.g. 4/4), you have the entire pizza (1 whole)!',
+      'Try setting slices to 4, then selected to 2: notice that 2/4 is the exact same as 1/2 (half a pizza)!'
+    ],
+    parameters: [
+      { id: 'denominator', name: 'Total Slices (Denominator)', min: 2, max: 12, step: 1, default: 4, unit: 'slices' },
+      { id: 'numerator', name: 'Slices Eaten (Numerator)', min: 1, max: 12, step: 1, default: 3, unit: 'slices' },
+    ],
+    manimgxCode: `# Edvoura MathMotion - Fraction Pizza Visualizer`,
+    drawScene: (ctx, width, height, t, params) => {
+      const centerX = width * 0.45;
+      const centerY = height * 0.5;
+      const radius = Math.min(width, height) * 0.32;
+      const denom = Math.max(2, Math.min(12, Math.round(params.denominator ?? 4)));
+      const num = Math.max(1, Math.min(denom, Math.round(params.numerator ?? 3)));
+      const sliceAngle = (Math.PI * 2) / denom;
+
+      // Crust shadow
+      ctx.fillStyle = '#E2E8F0';
+      ctx.beginPath();
+      ctx.arc(centerX + 6, centerY + 6, radius + 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Crust
+      ctx.fillStyle = '#D97706';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius + 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Cheese base
+      ctx.fillStyle = '#FEF3C7';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw each slice
+      for (let i = 0; i < denom; i++) {
+        const startAngle = i * sliceAngle - Math.PI / 2;
+        const endAngle = startAngle + sliceAngle;
+        const isSelected = i < num;
+
+        ctx.save();
+        if (isSelected) {
+          const midAngle = startAngle + sliceAngle / 2;
+          const pullDist = 14 + Math.sin(t * Math.PI * 2) * 4;
+          ctx.translate(Math.cos(midAngle) * pullDist, Math.sin(midAngle) * pullDist);
+          ctx.fillStyle = '#F59E0B';
+        } else {
+          ctx.fillStyle = '#FDE68A';
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#B45309';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Pepperoni on slice
+        const midAngle = startAngle + sliceAngle / 2;
+        const pepDist = radius * 0.6;
+        const pepX = centerX + Math.cos(midAngle) * pepDist;
+        const pepY = centerY + Math.sin(midAngle) * pepDist;
+        ctx.fillStyle = isSelected ? '#DC2626' : '#991B1B';
+        ctx.beginPath();
+        ctx.arc(pepX, pepY, radius * 0.09, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#7F1D1D';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Info Card on the right
+      const cardX = width * 0.82;
+      ctx.fillStyle = '#060E1C';
+      ctx.font = 'bold 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${num} / ${denom}`, cardX, centerY - 35);
+
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillStyle = '#D97706';
+      ctx.fillText(`Numerator: ${num} (Selected)`, cardX, centerY + 12);
+      ctx.fillStyle = '#475569';
+      ctx.fillText(`Denominator: ${denom} (Total)`, cardX, centerY + 36);
+
+      const percent = Math.round((num / denom) * 100);
+      ctx.fillStyle = '#059669';
+      ctx.font = 'bold 22px sans-serif';
+      ctx.fillText(`${percent}% of Pizza`, cardX, centerY + 75);
+    },
+  },
+
+  {
+    id: 'multiplication-grid',
+    title: 'Visual Multiplication Array (Grades 2–5)',
+    category: 'Elementary (Grades 1-6)',
+    difficulty: 'Grade 1-3',
+    summary: 'Multiplication is repeated addition! Watch rows and columns multiply into a visual array of glowing stars.',
+    formula: '\\text{Rows} \\times \\text{Columns} = \\text{Total Stars}',
+    explanation: [
+      'Each row has the exact same number of stars as every other row.',
+      'Instead of counting 1 by 1, you can multiply: Rows × Columns.',
+      'Try setting Rows to 3 and Columns to 4: 4 + 4 + 4 = 12 stars!',
+      'Multiplication is commutative: 3 × 4 gives the exact same total as 4 × 3.'
+    ],
+    parameters: [
+      { id: 'rows', name: 'Number of Rows', min: 1, max: 10, step: 1, default: 4, unit: 'rows' },
+      { id: 'cols', name: 'Stars per Row (Columns)', min: 1, max: 10, step: 1, default: 5, unit: 'cols' },
+    ],
+    manimgxCode: `# Edvoura MathMotion - Multiplication Array Visualizer`,
+    drawScene: (ctx, width, height, t, params) => {
+      const rows = Math.max(1, Math.min(10, Math.round(params.rows ?? 4)));
+      const cols = Math.max(1, Math.min(10, Math.round(params.cols ?? 5)));
+      const total = rows * cols;
+      const startX = width * 0.10;
+      const startY = height * 0.22;
+      const cellWidth = Math.min((width * 0.52) / cols, (height * 0.65) / rows, 48);
+
+      ctx.fillStyle = '#060E1C';
+      ctx.font = '900 24px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${rows} rows of ${cols} stars = ${total} total`, startX, height * 0.12);
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const cx = startX + c * cellWidth + cellWidth / 2;
+          const cy = startY + r * cellWidth + cellWidth / 2;
+          const radius = cellWidth * 0.38;
+
+          ctx.fillStyle = '#F5C518';
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#060E1C';
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          ctx.fillStyle = '#060E1C';
+          ctx.font = 'bold 11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${r * cols + c + 1}`, cx, cy);
+        }
+      }
+
+      const cardX = width * 0.82;
+      ctx.textAlign = 'center';
+      ctx.font = '900 36px sans-serif';
+      ctx.fillStyle = '#060E1C';
+      ctx.fillText(`${rows} × ${cols} = ${total}`, cardX, height * 0.38);
+
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillStyle = '#475569';
+      const repeated = Array(rows).fill(cols).join(' + ');
+      ctx.fillText('Repeated Addition:', cardX, height * 0.52);
+      ctx.fillStyle = '#0284C7';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.fillText(`${repeated} = ${total}`, cardX, height * 0.60);
+    },
+  },
+
+  {
+    id: 'number-line-frog',
+    title: 'Number Line & Frog Jumps (Grades 1–3)',
+    category: 'Elementary (Grades 1-6)',
+    difficulty: 'Grade 1-3',
+    summary: 'Help the frog jump across the number line! Master addition, skip-counting, and times tables visually.',
+    formula: '\\text{Jumps} \\times \\text{Jump Size} = \\text{Landing Spot}',
+    explanation: [
+      'The number line starts at 0 and counts up to 20.',
+      'Each green arc represents one jump of equal length.',
+      'Skip counting by 2s gives even numbers: 2, 4, 6, 8, 10...',
+      'Skip counting by 5s teaches how to read clock minutes: 5, 10, 15, 20...'
+    ],
+    parameters: [
+      { id: 'jumpSize', name: 'Jump Size (Distance)', min: 1, max: 5, step: 1, default: 3, unit: 'units' },
+      { id: 'jumpCount', name: 'Number of Jumps', min: 1, max: 6, step: 1, default: 4, unit: 'jumps' },
+    ],
+    manimgxCode: `# Edvoura MathMotion - Number Line Frog Jumps`,
+    drawScene: (ctx, width, height, t, params) => {
+      const jumpSize = Math.max(1, Math.min(5, Math.round(params.jumpSize ?? 3)));
+      const jumpCount = Math.max(1, Math.min(6, Math.round(params.jumpCount ?? 4)));
+      const total = jumpSize * jumpCount;
+      const maxMark = 20;
+      const lineY = height * 0.65;
+      const startX = width * 0.08;
+      const endX = width * 0.92;
+      const stepPx = (endX - startX) / maxMark;
+
+      // Main line
+      ctx.strokeStyle = '#060E1C';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(startX - 15, lineY);
+      ctx.lineTo(endX + 15, lineY);
+      ctx.stroke();
+
+      // Arrow
+      ctx.fillStyle = '#060E1C';
+      ctx.beginPath();
+      ctx.moveTo(endX + 22, lineY);
+      ctx.lineTo(endX + 10, lineY - 8);
+      ctx.lineTo(endX + 10, lineY + 8);
+      ctx.fill();
+
+      // Tick marks
+      for (let i = 0; i <= maxMark; i++) {
+        const x = startX + i * stepPx;
+        const isJumpTarget = i > 0 && i <= total && i % jumpSize === 0;
+
+        ctx.strokeStyle = isJumpTarget ? '#059669' : '#94A3B8';
+        ctx.lineWidth = isJumpTarget ? 3 : 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, lineY - (isJumpTarget ? 14 : 8));
+        ctx.lineTo(x, lineY + (isJumpTarget ? 14 : 8));
+        ctx.stroke();
+
+        ctx.fillStyle = isJumpTarget ? '#059669' : '#475569';
+        ctx.font = isJumpTarget ? 'bold 15px sans-serif' : '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${i}`, x, lineY + 28);
+      }
+
+      // Parabolic Arcs
+      for (let j = 0; j < jumpCount; j++) {
+        const fromX = startX + (j * jumpSize) * stepPx;
+        const toX = startX + ((j + 1) * jumpSize) * stepPx;
+        const midX = (fromX + toX) / 2;
+        const arcHeight = Math.min(100, jumpSize * 24);
+
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(fromX, lineY);
+        ctx.quadraticCurveTo(midX, lineY - arcHeight, toX, lineY);
+        ctx.stroke();
+
+        ctx.fillStyle = '#047857';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`+${jumpSize}`, midX, lineY - arcHeight - 6);
+      }
+
+      // Animated Frog
+      const currentJump = (t * jumpCount) % jumpCount;
+      const curJIdx = Math.floor(currentJump);
+      const curProg = currentJump - curJIdx;
+      const fromX = startX + (curJIdx * jumpSize) * stepPx;
+      const toX = startX + ((curJIdx + 1) * jumpSize) * stepPx;
+      const curX = fromX + (toX - fromX) * curProg;
+      const arcH = Math.min(100, jumpSize * 24);
+      const curY = lineY - Math.sin(curProg * Math.PI) * arcH - 12;
+
+      ctx.font = '26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🐸', curX, curY);
+
+      // Top Banner
+      ctx.fillStyle = '#060E1C';
+      ctx.font = '900 24px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${jumpCount} jumps of ${jumpSize} = Frog lands at ${total}!`, width * 0.5, height * 0.18);
+    },
+  },
+
+  {
+    id: 'clock-time',
+    title: 'Telling Time on an Analog Clock (Grades 1–4)',
+    category: 'Elementary (Grades 1-6)',
+    difficulty: 'Grade 1-3',
+    summary: 'Turn the red hour hand and blue minute hand to master reading analog clocks and telling time.',
+    formula: '\\text{Angle} = 30^\\circ \\times \\text{Hour} - 5.5^\\circ \\times \\text{Minute}',
+    explanation: [
+      'The short red hand points to the HOUR (1 to 12).',
+      'The long blue hand counts the MINUTES around the 60 ticks.',
+      'When the minute hand is at 12, it is o\'clock (e.g. 3:00).',
+      'When at 3, it is Quarter Past (:15). At 6, Half Past (:30). At 9, Quarter To (:45).'
+    ],
+    parameters: [
+      { id: 'hour', name: 'Hour Hand (Short Red)', min: 1, max: 12, step: 1, default: 3, unit: 'hr' },
+      { id: 'minute', name: 'Minute Hand (Long Blue)', min: 0, max: 55, step: 5, default: 15, unit: 'min' },
+    ],
+    manimgxCode: `# Edvoura MathMotion - Analog Clock Time`,
+    drawScene: (ctx, width, height, t, params) => {
+      const centerX = width * 0.42;
+      const centerY = height * 0.5;
+      const radius = Math.min(width, height) * 0.34;
+      const hour = Math.max(1, Math.min(12, Math.round(params.hour ?? 3)));
+      const minute = Math.max(0, Math.min(55, Math.round(params.minute ?? 15)));
+
+      ctx.fillStyle = '#E2E8F0';
+      ctx.beginPath();
+      ctx.arc(centerX + 6, centerY + 6, radius + 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#060E1C';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius + 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#060E1C';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      for (let n = 1; n <= 12; n++) {
+        const ang = (n * Math.PI) / 6 - Math.PI / 2;
+        const numR = radius * 0.82;
+        const nx = centerX + Math.cos(ang) * numR;
+        const ny = centerY + Math.sin(ang) * numR;
+        ctx.fillText(`${n}`, nx, ny);
+      }
+
+      for (let m = 0; m < 60; m++) {
+        const ang = (m * Math.PI) / 30 - Math.PI / 2;
+        const is5 = m % 5 === 0;
+        const r1 = radius * (is5 ? 0.91 : 0.95);
+        const r2 = radius * 0.98;
+        ctx.strokeStyle = is5 ? '#060E1C' : '#94A3B8';
+        ctx.lineWidth = is5 ? 2.5 : 1;
+        ctx.beginPath();
+        ctx.moveTo(centerX + Math.cos(ang) * r1, centerY + Math.sin(ang) * r1);
+        ctx.lineTo(centerX + Math.cos(ang) * r2, centerY + Math.sin(ang) * r2);
+        ctx.stroke();
+      }
+
+      const minAngle = (minute * Math.PI) / 30 - Math.PI / 2;
+      const hrAngle = ((hour % 12) + minute / 60) * (Math.PI / 6) - Math.PI / 2;
+
+      // Hour Hand (Red)
+      ctx.strokeStyle = '#DC2626';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(centerX + Math.cos(hrAngle) * radius * 0.52, centerY + Math.sin(hrAngle) * radius * 0.52);
+      ctx.stroke();
+
+      // Minute Hand (Blue)
+      ctx.strokeStyle = '#0284C7';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.lineTo(centerX + Math.cos(minAngle) * radius * 0.76, centerY + Math.sin(minAngle) * radius * 0.76);
+      ctx.stroke();
+
+      // Pivot
+      ctx.fillStyle = '#060E1C';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Digital display
+      const cardX = width * 0.82;
+      ctx.fillStyle = '#060E1C';
+      ctx.font = '900 42px monospace';
+      ctx.textAlign = 'center';
+      const mmStr = minute < 10 ? `0${minute}` : `${minute}`;
+      const hhStr = hour < 10 ? `0${hour}` : `${hour}`;
+      ctx.fillText(`${hhStr}:${mmStr}`, cardX, centerY - 30);
+
+      let verbal = '';
+      if (minute === 0) verbal = `${hour} o'clock`;
+      else if (minute === 15) verbal = `Quarter past ${hour}`;
+      else if (minute === 30) verbal = `Half past ${hour}`;
+      else if (minute === 45) verbal = `Quarter to ${(hour % 12) + 1}`;
+      else if (minute < 30) verbal = `${minute} mins past ${hour}`;
+      else verbal = `${60 - minute} mins to ${(hour % 12) + 1}`;
+
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillStyle = '#D97706';
+      ctx.fillText(verbal, cardX, centerY + 25);
+
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.fillText('🔴 Red = Hour Hand', cardX, centerY + 65);
+      ctx.fillText('🔵 Blue = Minute Hand', cardX, centerY + 88);
+    },
+  },
+
+  {
+    id: 'perimeter-area',
+    title: 'Perimeter vs. Area Explorer (Grades 3–6)',
+    category: 'Elementary (Grades 1-6)',
+    difficulty: 'Grade 4-6',
+    summary: 'Never confuse Perimeter and Area again! Count the square tiles inside (Area) vs the fence around the outside (Perimeter).',
+    formula: '\\text{Area} = w \\times h, \\quad \\text{Perimeter} = 2(w + h)',
+    explanation: [
+      'AREA is the inside space covered by square unit tiles (m²).',
+      'PERIMETER is the total distance around the outside edge (like building a fence).',
+      'Area multiplies width × height, while perimeter adds up all 4 sides.',
+      'Notice: two shapes can have the same area but different perimeters!'
+    ],
+    parameters: [
+      { id: 'width', name: 'Width (meters)', min: 2, max: 8, step: 1, default: 5, unit: 'm' },
+      { id: 'height', name: 'Height (meters)', min: 2, max: 6, step: 1, default: 3, unit: 'm' },
+    ],
+    manimgxCode: `# Edvoura MathMotion - Perimeter and Area Explorer`,
+    drawScene: (ctx, width, height, t, params) => {
+      const w = Math.max(2, Math.min(8, Math.round(params.width ?? 5)));
+      const h = Math.max(2, Math.min(6, Math.round(params.height ?? 3)));
+      const area = w * h;
+      const perimeter = 2 * (w + h);
+      const cellSize = Math.min((width * 0.5) / w, (height * 0.55) / h, 54);
+      const startX = width * 0.12;
+      const startY = height * 0.28;
+
+      ctx.fillStyle = '#060E1C';
+      ctx.font = '900 24px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Shape: ${w}m wide × ${h}m tall`, startX, height * 0.15);
+
+      for (let r = 0; r < h; r++) {
+        for (let c = 0; c < w; c++) {
+          const tx = startX + c * cellSize;
+          const ty = startY + r * cellSize;
+          ctx.fillStyle = '#FEF08A';
+          ctx.fillRect(tx, ty, cellSize, cellSize);
+          ctx.strokeStyle = '#CA8A04';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(tx, ty, cellSize, cellSize);
+
+          ctx.fillStyle = '#854D0E';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${r * w + c + 1}`, tx + cellSize / 2, ty + cellSize / 2);
+        }
+      }
+
+      ctx.strokeStyle = '#DC2626';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(startX, startY, w * cellSize, h * cellSize);
+
+      ctx.fillStyle = '#DC2626';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Width = ${w}m`, startX + (w * cellSize) / 2, startY - 12);
+      ctx.fillText(`Width = ${w}m`, startX + (w * cellSize) / 2, startY + h * cellSize + 24);
+      ctx.fillText(`${h}m`, startX - 20, startY + (h * cellSize) / 2);
+      ctx.fillText(`${h}m`, startX + w * cellSize + 25, startY + (h * cellSize) / 2);
+
+      const cardX = width * 0.82;
+      ctx.textAlign = 'center';
+
+      ctx.fillStyle = '#CA8A04';
+      ctx.font = '900 16px sans-serif';
+      ctx.fillText('🟨 AREA (Inside Tiles)', cardX, height * 0.35);
+      ctx.fillStyle = '#060E1C';
+      ctx.font = '900 32px sans-serif';
+      ctx.fillText(`${area} m²`, cardX, height * 0.44);
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.fillText(`${w} × ${h} = ${area} tiles`, cardX, height * 0.51);
+
+      ctx.fillStyle = '#DC2626';
+      ctx.font = '900 16px sans-serif';
+      ctx.fillText('🔴 PERIMETER (Outer Fence)', cardX, height * 0.64);
+      ctx.fillStyle = '#060E1C';
+      ctx.font = '900 32px sans-serif';
+      ctx.fillText(`${perimeter} m`, cardX, height * 0.73);
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = '#64748B';
+      ctx.fillText(`${w}+${h}+${w}+${h} = ${perimeter}m`, cardX, height * 0.80);
+    },
+  },
+
   // 1. UNIT CIRCLE & TRIGONOMETRIC WAVES
   {
     id: 'unit-circle',
