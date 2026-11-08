@@ -28,6 +28,7 @@ const servicesSubmenu = [
   { label: 'All Tutoring Services', href: '/services', desc: '1-on-1 personalized global tutoring' },
   { label: 'Curriculum Skill Roadmap', href: '/roadmap', desc: '1,860+ UK & Common Core skills' },
   { label: 'Illustrated Vocabulary Atlas', href: '/vocabulary', desc: '7,298 illustrated words with UK/US audio' },
+  { label: 'Math Animation Studio', href: '/math-studio', desc: '60FPS ManimGX math animation generator' },
 ];
 
 export default function Navbar() {
@@ -380,6 +381,13 @@ export default function Navbar() {
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
                           📖 Vocabulary Atlas (7,298 Words)
+                        </Link>
+                        <Link
+                          href="/math-studio"
+                          onClick={() => setMobileOpen(false)}
+                          className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
+                        >
+                          📐 Math Animation Studio (ManimGX)
                         </Link>
                       </div>
                     )}

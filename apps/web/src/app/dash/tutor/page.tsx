@@ -18,6 +18,7 @@ import {
   CheckSquare,
   Compass,
   Sparkles,
+  Calculator,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ const tutorSections = [
   { href: '/dash/tutor/messages', title: 'Messages', description: 'Direct chat with parents.', icon: MessageCircle, color: 'text-dark bg-purple-200' },
   { href: '/roadmap', title: 'Skill Roadmap', description: '1,860+ K-12 micro-topics & diagnostic questions.', icon: Compass, color: 'text-dark bg-amber-200' },
   { href: '/vocabulary', title: 'Vocabulary Atlas', description: '7,290+ illustrated words & audio pronunciation.', icon: Sparkles, color: 'text-dark bg-cyan-200' },
+  { href: '/math-studio', title: 'Math Animation Studio', description: '60FPS visual calculus, geometry, and physics models.', icon: Calculator, color: 'text-dark bg-emerald-200' },
 ];
 
 const formatDuration = (startIso: string, endIso: string) => {
