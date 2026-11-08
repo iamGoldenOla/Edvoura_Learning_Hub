@@ -153,16 +153,26 @@ export default function Navbar() {
                   return (
                     <div
                       key={link.href}
-                      className="relative"
+                      className="relative flex items-center"
                       onMouseEnter={() => setServicesOpen(true)}
                       onMouseLeave={() => setServicesOpen(false)}
                     >
-                      <button
-                        type="button"
-                        onClick={() => setServicesOpen((v) => !v)}
-                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs"
+                      <Link
+                        href="/services"
+                        onClick={() => setServicesOpen(false)}
+                        className="flex items-center text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs py-1"
                       >
                         {link.label}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setServicesOpen((v) => !v);
+                        }}
+                        aria-label="Toggle Services menu"
+                        className="ml-1 p-0.5 text-white/70 hover:text-yellow transition-colors"
+                      >
                         <svg
                           className={`h-3 w-3 transition-transform duration-200 ${servicesOpen ? 'rotate-180 text-yellow' : ''}`}
                           fill="none"
