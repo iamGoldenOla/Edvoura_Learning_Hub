@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Video, Brain, Compass, BookOpen, Star } from 'lucide-react';
+import { ArrowRight, Sparkles, Video, Brain, Compass, BookOpen, Camera, CameraOff, Star } from 'lucide-react';
 
 interface SparkleItem {
   id: number;
@@ -15,22 +15,26 @@ interface SparkleItem {
 }
 
 const STATIC_SPARKLES: SparkleItem[] = [
-  { id: 1, top: '15%', left: '12%', size: 16, delay: '0s', duration: '3.2s', color: '#FFFFFF' },
-  { id: 2, top: '22%', left: '85%', size: 22, delay: '0.8s', duration: '3.8s', color: '#FFD84D' },
-  { id: 3, top: '35%', left: '28%', size: 14, delay: '1.4s', duration: '2.9s', color: '#A5F3FC' },
-  { id: 4, top: '48%', left: '8%', size: 18, delay: '2.1s', duration: '4.1s', color: '#FFFFFF' },
-  { id: 5, top: '18%', left: '68%', size: 24, delay: '0.3s', duration: '3.5s', color: '#FDE047' },
-  { id: 6, top: '65%', left: '92%', size: 16, delay: '1.7s', duration: '3.1s', color: '#FFFFFF' },
-  { id: 7, top: '78%', left: '22%', size: 20, delay: '2.5s', duration: '4.3s', color: '#BAE6FD' },
-  { id: 8, top: '82%', left: '74%', size: 14, delay: '1.1s', duration: '3.0s', color: '#FFFFFF' },
-  { id: 9, top: '40%', left: '94%', size: 18, delay: '0.5s', duration: '3.7s', color: '#FDE047' },
-  { id: 10, top: '12%', left: '42%', size: 12, delay: '1.9s', duration: '2.8s', color: '#FFFFFF' },
-  { id: 11, top: '88%', left: '48%', size: 16, delay: '2.8s', duration: '3.9s', color: '#A5F3FC' },
-  { id: 12, top: '60%', left: '4%', size: 20, delay: '1.2s', duration: '3.6s', color: '#FFFFFF' },
+  { id: 1, top: '12%', left: '10%', size: 16, delay: '0s', duration: '3.0s', color: '#0A1628' },
+  { id: 2, top: '20%', left: '88%', size: 24, delay: '0.7s', duration: '3.6s', color: '#F5C518' },
+  { id: 3, top: '32%', left: '24%', size: 14, delay: '1.3s', duration: '2.8s', color: '#0284C7' },
+  { id: 4, top: '45%', left: '6%', size: 18, delay: '2.0s', duration: '4.0s', color: '#0A1628' },
+  { id: 5, top: '15%', left: '65%', size: 22, delay: '0.4s', duration: '3.4s', color: '#F5C518' },
+  { id: 6, top: '62%', left: '94%', size: 16, delay: '1.6s', duration: '3.1s', color: '#0284C7' },
+  { id: 7, top: '75%', left: '18%', size: 20, delay: '2.4s', duration: '4.2s', color: '#0A1628' },
+  { id: 8, top: '80%', left: '76%', size: 14, delay: '1.0s', duration: '2.9s', color: '#F5C518' },
+  { id: 9, top: '38%', left: '92%', size: 18, delay: '0.6s', duration: '3.5s', color: '#0A1628' },
+  { id: 10, top: '10%', left: '38%', size: 14, delay: '1.8s', duration: '2.7s', color: '#F5C518' },
+  { id: 11, top: '85%', left: '46%', size: 16, delay: '2.6s', duration: '3.8s', color: '#0284C7' },
+  { id: 12, top: '56%', left: '3%', size: 20, delay: '1.1s', duration: '3.5s', color: '#F5C518' },
 ];
 
 export default function CrystalMirrorHero() {
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -41,113 +45,122 @@ export default function CrystalMirrorHero() {
     setMousePos({ x: Math.round(x), y: Math.round(y) });
   };
 
+  const toggleCameraMirror = async () => {
+    if (cameraActive) {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+      setCameraActive(false);
+      return;
+    }
+
+    try {
+      setCameraError(null);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setCameraActive(true);
+    } catch {
+      setCameraError('Please allow camera permission to see your live reflection.');
+      setTimeout(() => setCameraError(null), 4000);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
   return (
     <section
       ref={heroRef}
       onMouseMove={handleMouseMove}
-      className="relative overflow-hidden border-b-[6px] border-dark pb-20 pt-[110px] sm:pb-24 sm:pt-[130px] md:pb-32 md:pt-[160px] z-10 selection:bg-yellow selection:text-dark"
+      className="relative overflow-hidden border-b-[6px] border-dark pb-20 pt-[105px] sm:pb-28 sm:pt-[125px] md:pb-36 md:pt-[150px] z-10 selection:bg-yellow selection:text-dark"
       style={{
-        backgroundImage: 'url("https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center 30%',
+        background: 'linear-gradient(135deg, #F8FAFC 0%, #EEF4FB 30%, #E2EDF9 65%, #DCE8F7 100%)',
       }}
     >
-      {/* --- INLINE STYLES FOR CRYSTAL MIRROR SHEEN & GLITTER --- */}
+      {/* --- INLINE STYLES FOR SPECULAR MIRROR SWEEP & GLITTER --- */}
       <style jsx>{`
-        @keyframes mirrorSweep {
+        @keyframes silverMirrorSweep {
           0% {
-            transform: translateX(-150%) skewX(-25deg);
+            transform: translateX(-160%) skewX(-25deg);
             opacity: 0;
           }
           15% {
-            opacity: 0.85;
+            opacity: 0.95;
           }
           50% {
             opacity: 1;
           }
           85% {
-            opacity: 0.85;
+            opacity: 0.95;
           }
           100% {
-            transform: translateX(250%) skewX(-25deg);
+            transform: translateX(260%) skewX(-25deg);
             opacity: 0;
           }
         }
 
-        @keyframes crystalTwinkle {
+        @keyframes crystalSparkle {
           0%, 100% {
-            opacity: 0.15;
+            opacity: 0.2;
             transform: scale(0.6) rotate(0deg);
           }
           50% {
             opacity: 1;
-            transform: scale(1.3) rotate(90deg);
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 18px rgba(245, 197, 24, 0.7));
-          }
-        }
-
-        @keyframes borderPulse {
-          0%, 100% {
-            border-color: rgba(255, 255, 255, 0.35);
-          }
-          50% {
-            border-color: rgba(245, 197, 24, 0.75);
-          }
-        }
-
-        @keyframes floatingPill {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-4px);
+            transform: scale(1.35) rotate(90deg);
+            filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.9)) drop-shadow(0 0 20px rgba(255, 255, 255, 1));
           }
         }
 
         .animate-mirror-sweep {
-          animation: mirrorSweep 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          animation: silverMirrorSweep 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         }
 
-        .animate-twinkle {
-          animation: crystalTwinkle infinite ease-in-out;
-        }
-
-        .animate-floating {
-          animation: floatingPill 4s ease-in-out infinite;
+        .animate-crystal-sparkle {
+          animation: crystalSparkle infinite ease-in-out;
         }
       `}</style>
 
-      {/* 1. Deep Crystal Obsidian Mirror Substrate */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#060E1C]/92 via-[#0A1628]/85 to-[#060E1C]/95 backdrop-blur-[3px]" />
-
-      {/* 2. Interactive Cursor Specular Mirror Glare */}
+      {/* 1. Crystal Mirror Glass Specular Glow */}
       <div
-        className="pointer-events-none absolute inset-0 transition-opacity duration-300 opacity-70"
+        className="pointer-events-none absolute inset-0 opacity-80 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(circle 500px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 0.15), rgba(56, 189, 248, 0.08) 35%, transparent 70%)`,
+          background: `radial-gradient(circle 600px at ${mousePos.x}% ${mousePos.y}%, rgba(255, 255, 255, 0.9) 0%, rgba(226, 237, 249, 0.4) 40%, transparent 70%)`,
         }}
       />
 
-      {/* 3. Prismatic Angle Facets (Mirror Bevel Highlights) */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.25),rgba(255,255,255,0))]" />
+      {/* 2. Prismatic Mirror Bevel Sheen */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_75%_60%_at_50%_0%,rgba(255,255,255,0.85),transparent_70%)]" />
 
-      {/* 4. Diagonal Sweeping Light Beam (Mirror Reflection) */}
+      {/* 3. Sweeping Silver-White Light Beam (Mirror Reflection) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
-          className="animate-mirror-sweep absolute -top-1/2 -left-1/2 h-[200%] w-[60%] pointer-events-none"
+          className="animate-mirror-sweep absolute -top-1/2 -left-1/2 h-[200%] w-[55%] pointer-events-none"
           style={{
             background:
-              'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.03) 38%, rgba(255,255,255,0.32) 50%, rgba(245,197,24,0.28) 52%, rgba(255,255,255,0.12) 60%, transparent 75%)',
+              'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.1) 36%, rgba(255,255,255,0.75) 50%, rgba(245,197,24,0.4) 52%, rgba(255,255,255,0.3) 60%, transparent 75%)',
           }}
         />
       </div>
 
-      {/* 5. Glittering Diamond Glints & Sparkles Across Mirror */}
+      {/* 4. Sparkling Diamond Glints (Sparkling across the mirror surface) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {STATIC_SPARKLES.map((sparkle) => (
           <div
             key={sparkle.id}
-            className="animate-twinkle absolute"
+            className="animate-crystal-sparkle absolute"
             style={{
               top: sparkle.top,
               left: sparkle.left,
@@ -157,7 +170,6 @@ export default function CrystalMirrorHero() {
               animationDuration: sparkle.duration,
             }}
           >
-            {/* 4-Point Diamond Crystal Star */}
             <svg
               viewBox="0 0 24 24"
               fill={sparkle.color}
@@ -169,57 +181,117 @@ export default function CrystalMirrorHero() {
         ))}
       </div>
 
-      {/* 6. Top & Bottom Prismatic Edge Highlights */}
-      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/80 via-yellow/80 to-transparent" />
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-300/60 to-transparent" />
+      {/* 5. Crystal Edge Chrome Borders */}
+      <div className="pointer-events-none absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-white via-yellow/70 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-dark/20 to-transparent" />
 
-      {/* 7. Foreground Content (Mounted atop the Crystal Platter) */}
+      {/* 6. Foreground Content (High-Clarity Crystal Platter) */}
       <div className="marketing-container relative z-10 py-4 text-center">
-        {/* Crystal Pill Badge */}
-        <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border-2 border-white/50 bg-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.6)] mb-6 sm:mb-8 text-white font-black text-xs sm:text-sm tracking-wider uppercase transform -rotate-1 hover:rotate-0 transition-transform">
-          <Sparkles className="w-4 h-4 text-yellow animate-spin" style={{ animationDuration: '6s' }} />
-          <span>CRYSTAL LEARNING ECOSYSTEM</span>
-          <span className="w-2 h-2 rounded-full bg-yellow animate-ping" />
+        {/* Badge with Sparkle */}
+        <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border-2 border-dark bg-yellow shadow-[4px_4px_0px_#060E1C] mb-6 sm:mb-8 text-dark font-black text-xs sm:text-sm tracking-wider uppercase transform -rotate-1 hover:rotate-0 transition-transform">
+          <Sparkles className="w-4 h-4 text-dark animate-spin" style={{ animationDuration: '6s' }} />
+          <span>CRYSTAL MIRROR OF LEARNING</span>
+          <span className="w-2 h-2 rounded-full bg-dark animate-ping" />
         </div>
 
         {/* Hero Title */}
         <h1
-          className="font-heading font-black text-white max-w-5xl mx-auto break-words leading-[1.04] mb-6 sm:mb-8 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]"
+          className="font-heading font-black text-dark max-w-5xl mx-auto break-words leading-[1.04] mb-6 sm:mb-8 drop-shadow-[2px_2px_0px_rgba(255,255,255,0.8)]"
           style={{ fontSize: 'clamp(2.2rem, 9vw, 4.8rem)' }}
         >
-          A Complete Learning Ecosystem{' '}
-          <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-yellow via-white to-yellow-light drop-shadow-[0_0_20px_rgba(245,197,24,0.5)]">
-            Built to Win
+          See Your Future in the{' '}
+          <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-dark via-navy-light to-dark underline decoration-yellow decoration-wavy decoration-4">
+            Edvoura Mirror
           </span>
         </h1>
 
-        {/* Crystal Mirror Glass Card for Description */}
-        <div className="max-w-3xl mx-auto relative rounded-3xl p-6 sm:p-8 backdrop-blur-2xl bg-white/[0.08] border-2 border-white/30 shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.5)] mb-10 overflow-hidden">
-          {/* Internal Glass Reflection Highlight */}
-          <div className="pointer-events-none absolute -top-24 -left-24 w-48 h-48 rounded-full bg-white/15 blur-2xl" />
-          <div className="pointer-events-none absolute -bottom-24 -right-24 w-48 h-48 rounded-full bg-yellow/15 blur-2xl" />
+        {/* --- THE MIRROR FRAME (Reflecting the Learner) --- */}
+        <div className="max-w-3xl mx-auto relative rounded-[32px] p-6 sm:p-9 backdrop-blur-xl bg-white/75 border-[3px] border-dark shadow-[10px_10px_0px_#060E1C,inset_0_2px_4px_rgba(255,255,255,1)] mb-10 overflow-hidden">
+          {/* Subtle Silver Specular Rim */}
+          <div className="pointer-events-none absolute -top-28 -left-28 w-56 h-56 rounded-full bg-white/60 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-28 -right-28 w-56 h-56 rounded-full bg-yellow/20 blur-3xl" />
 
-          <p className="relative z-10 text-white text-base sm:text-xl font-bold leading-relaxed drop-shadow-sm">
-            From live 1-on-1 tutoring and WAEC/JAMB exam preparation to interactive curriculum skill graphs and illustrated vocabulary, Edvoura unites every tool your learner needs into one sparkling experience.
+          {/* Optional Live Camera Mirror Stream */}
+          {cameraActive ? (
+            <div className="relative mb-6 mx-auto w-full max-w-md aspect-video rounded-2xl overflow-hidden border-2 border-dark shadow-[4px_4px_0px_#060E1C] bg-dark">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover scale-x-[-1]"
+              />
+              <div className="absolute top-3 left-3 bg-dark/80 backdrop-blur-md text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 border border-white/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                Live Mirror Reflection
+              </div>
+              <div className="absolute bottom-3 inset-x-3 text-center bg-dark/80 backdrop-blur-md text-yellow font-bold text-xs py-1.5 rounded-xl border border-yellow/40">
+                ✨ The reflection of tomorrow&apos;s leader!
+              </div>
+            </div>
+          ) : (
+            /* Elegant Ethereal Mirror Reflection Silhouette */
+            <div className="relative mb-6 mx-auto w-full max-w-sm h-36 sm:h-44 rounded-2xl overflow-hidden border-2 border-dark/20 bg-gradient-to-b from-white/90 via-[#EEF4FB] to-[#DCE8F7] flex flex-col items-center justify-center shadow-inner">
+              {/* Ethereal Silhouette of a Learner looking in mirror */}
+              <div className="relative flex flex-col items-center opacity-40 hover:opacity-60 transition-opacity">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dark bg-yellow/60 shadow-[2px_2px_0px_#060E1C] flex items-center justify-center">
+                  <Star className="w-7 h-7 text-dark animate-pulse" />
+                </div>
+                <div className="w-24 sm:w-28 h-10 bg-dark/20 rounded-t-full mt-2 border-t-2 border-dark/30" />
+              </div>
+              <p className="mt-2 text-xs font-black uppercase tracking-widest text-dark/60">
+                &ldquo;When you look into Edvoura, you see who you can become.&rdquo;
+              </p>
+            </div>
+          )}
+
+          {/* Toggle Live Camera Mirror Button */}
+          <div className="mb-6 flex justify-center">
+            <button
+              type="button"
+              onClick={toggleCameraMirror}
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-dark bg-off-white hover:bg-yellow px-4 py-2 text-xs font-black uppercase tracking-wider text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all cursor-pointer"
+            >
+              {cameraActive ? (
+                <>
+                  <CameraOff className="w-4 h-4 text-dark" />
+                  Turn Off Live Mirror
+                </>
+              ) : (
+                <>
+                  <Camera className="w-4 h-4 text-dark" />
+                  🪞 Look Into The Live Mirror (See Your Reflection)
+                </>
+              )}
+            </button>
+          </div>
+
+          {cameraError && (
+            <p className="text-xs font-bold text-rose-600 mb-4">{cameraError}</p>
+          )}
+
+          {/* Description */}
+          <p className="relative z-10 text-dark text-base sm:text-lg font-bold leading-relaxed">
+            From live 1-on-1 tutoring and WAEC/JAMB exam preparation to interactive curriculum skill graphs and illustrated vocabulary, Edvoura reflects the full potential of every learner in a crystal-clear learning hub.
           </p>
 
           {/* Micro Feature Pills Floating on Glass */}
-          <div className="mt-6 pt-5 border-t border-white/20 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.06] border border-white/20">
-              <Video className="w-4 h-4 text-yellow shrink-0" />
-              <span className="text-[11px] sm:text-xs font-black text-white truncate">1-on-1 Tutoring</span>
+          <div className="mt-6 pt-5 border-t-2 border-dark/15 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border-2 border-dark shadow-[2px_2px_0px_#060E1C]">
+              <Video className="w-4 h-4 text-info shrink-0" />
+              <span className="text-[11px] sm:text-xs font-black text-dark truncate">1-on-1 Tutoring</span>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.06] border border-white/20">
-              <Brain className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-[11px] sm:text-xs font-black text-white truncate">Exam Prep</span>
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border-2 border-dark shadow-[2px_2px_0px_#060E1C]">
+              <Brain className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="text-[11px] sm:text-xs font-black text-dark truncate">Exam Prep</span>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.06] border border-white/20">
-              <Compass className="w-4 h-4 text-cyan-300 shrink-0" />
-              <span className="text-[11px] sm:text-xs font-black text-white truncate">Skill Roadmap</span>
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border-2 border-dark shadow-[2px_2px_0px_#060E1C]">
+              <Compass className="w-4 h-4 text-yellow-dim shrink-0" />
+              <span className="text-[11px] sm:text-xs font-black text-dark truncate">Skill Roadmap</span>
             </div>
-            <div className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.06] border border-white/20">
-              <BookOpen className="w-4 h-4 text-pink-300 shrink-0" />
-              <span className="text-[11px] sm:text-xs font-black text-white truncate">Word Atlas</span>
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border-2 border-dark shadow-[2px_2px_0px_#060E1C]">
+              <BookOpen className="w-4 h-4 text-pink-600 shrink-0" />
+              <span className="text-[11px] sm:text-xs font-black text-dark truncate">Word Atlas</span>
             </div>
           </div>
         </div>
@@ -228,10 +300,8 @@ export default function CrystalMirrorHero() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             href="/signup"
-            className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-3 bg-gradient-to-r from-success to-emerald-600 text-white border-[3px] border-dark font-heading font-black px-8 sm:px-12 py-4 sm:py-5 rounded-2xl shadow-[6px_6px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#060E1C] text-base sm:text-xl overflow-hidden"
+            className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-3 bg-yellow text-dark border-[3px] border-dark font-heading font-black px-8 sm:px-12 py-4 sm:py-5 rounded-2xl shadow-[6px_6px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_#060E1C] text-base sm:text-xl overflow-hidden"
           >
-            {/* Shimmer sheen inside button */}
-            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
             <span className="relative z-10 flex items-center gap-2">
               Start Learning Now <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </span>
@@ -239,9 +309,9 @@ export default function CrystalMirrorHero() {
 
           <Link
             href="/roadmap"
-            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-white/15 text-white border-[2px] border-white/50 backdrop-blur-xl font-heading font-black px-6 sm:px-8 py-4 sm:py-5 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all hover:bg-white/25 hover:border-white text-sm sm:text-base"
+            className="inline-flex w-full sm:w-auto items-center justify-center gap-2 bg-white text-dark border-[3px] border-dark font-heading font-black px-6 sm:px-8 py-4 sm:py-5 rounded-2xl shadow-[4px_4px_0px_#060E1C] transition-all hover:bg-off-white hover:translate-x-[1px] hover:translate-y-[1px] text-sm sm:text-base"
           >
-            <Compass className="w-4 h-4 text-yellow" />
+            <Compass className="w-4 h-4 text-dark" />
             Explore Curriculum Roadmap
           </Link>
         </div>
