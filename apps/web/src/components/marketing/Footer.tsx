@@ -103,15 +103,28 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-grey">Contact</h4>
-            <ul className="space-y-3 text-sm text-grey-light/70 font-semibold">
+            <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-grey">Contact &amp; Inquiries</h4>
+            <ul className="space-y-2.5 text-xs text-grey-light/70 font-semibold">
               <li className="hover:text-yellow transition-colors duration-200 break-all">
+                <span className="text-[10px] uppercase tracking-wider text-yellow font-bold block">General / Admissions</span>
                 <a href={`mailto:${siteContact.email.info}`}>{siteContact.email.info}</a>
               </li>
-              <li className="hover:text-yellow transition-colors duration-200">
-                <a href={`tel:${siteContact.phone.support}`}>{siteContact.phone.support}</a>
+              <li className="hover:text-emerald-300 transition-colors duration-200 break-all">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold block">Tutor Careers</span>
+                <a href={`mailto:${siteContact.email.careers}`}>{siteContact.email.careers}</a>
               </li>
-              <li className="leading-relaxed">{siteContact.address}</li>
+              <li className="hover:text-sky-300 transition-colors duration-200 break-all">
+                <span className="text-[10px] uppercase tracking-wider text-sky-400 font-bold block">Platform Support</span>
+                <a href={`mailto:${siteContact.email.support}`}>{siteContact.email.support}</a>
+              </li>
+              <li className="hover:text-yellow transition-colors duration-200 break-all">
+                <span className="text-[10px] uppercase tracking-wider text-yellow font-bold block">Billing &amp; Payments</span>
+                <a href={`mailto:${siteContact.email.payment}`}>{siteContact.email.payment}</a>
+              </li>
+              <li className="pt-2 border-t border-white/10 hover:text-yellow transition-colors duration-200">
+                <a href={`tel:${siteContact.phone.support}`}>Tel: {siteContact.phone.support}</a>
+              </li>
+              <li className="leading-relaxed opacity-70">{siteContact.address}</li>
             </ul>
           </div>
         </div>

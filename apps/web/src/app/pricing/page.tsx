@@ -92,6 +92,10 @@ const faqs = [
     a: 'Yes! We support global multi-currency payments via Stripe (Visa, Mastercard, American Express), as well as Paystack and Flutterwave for African and diaspora corridors.',
   },
   {
+    q: 'Can I pay via direct bank transfer and submit proof of payment?',
+    a: 'Yes! We accept direct bank transfers. You can send your transfer receipt or payment screenshot to payment@edvouralearninghub.com for immediate activation.',
+  },
+  {
     q: 'Can I change my plan later?',
     a: 'Yes! You can upgrade, downgrade, or pause your subscription at any time from your parent dashboard. Changes take effect on your next billing cycle.',
   },

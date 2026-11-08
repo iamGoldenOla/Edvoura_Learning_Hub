@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
             </a>
           </div>
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 13px; color: #64748B;">
-            <p style="margin: 0;">Official Inquiries: <a href="mailto:edvouralearninghub@gmail.com" style="color: #060E1C; font-weight: bold;">edvouralearninghub@gmail.com</a> • WhatsApp: <a href="https://wa.me/2349053363384" style="color: #059669; font-weight: bold; text-decoration: none;">+234 905 336 3384</a></p>
+            <p style="margin: 0;">Official Inquiries: <a href="mailto:info@edvouralearninghub.com" style="color: #060E1C; font-weight: bold;">info@edvouralearninghub.com</a> • Support: <a href="mailto:support@edvouralearninghub.com" style="color: #060E1C; font-weight: bold;">support@edvouralearninghub.com</a> • WhatsApp: <a href="https://wa.me/2349053363384" style="color: #059669; font-weight: bold; text-decoration: none;">+234 905 336 3384</a></p>
           </div>
         </div>
         <div style="background-color: #060E1C; color: #94A3B8; padding: 16px; text-align: center; font-size: 12px;">

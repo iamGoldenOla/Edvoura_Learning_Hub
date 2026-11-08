@@ -210,10 +210,13 @@ export default function CareersPage() {
           </div>
 
           <div className="text-center mt-20 p-6 sm:p-10 bg-white border-4 border-navy rounded-[2rem] shadow-[10px_10px_0px_#0A1628] max-w-full overflow-hidden">
-             <p className="text-navy text-xl font-bold mb-6 break-words">Don&apos;t see your role? Reach out to our talent acquisition team.</p>
-             <Link href="/contact" className="text-navy font-black text-base sm:text-lg underline decoration-4 underline-offset-8 decoration-yellow hover:text-info transition-colors break-all">
+             <p className="text-navy text-xl font-bold mb-4 break-words">Don&apos;t see your role? Reach out directly to our talent acquisition team:</p>
+             <a
+               href={`mailto:${siteContact.email.careers}?subject=Tutor%20Application%20-%20Educator%20Credentials`}
+               className="inline-block bg-yellow text-navy border-3 border-navy font-black text-base sm:text-lg px-6 py-3 rounded-xl shadow-[4px_4px_0px_#0A1628] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all break-all"
+             >
                {siteContact.email.careers}
-             </Link>
+             </a>
           </div>
         </div>
       </section>

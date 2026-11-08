@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2, Copy, Check, ShieldCheck, Download, Receipt, Sparkles, Send, X, ArrowUpRight } from 'lucide-react';
+import { Building2, Copy, Check, ShieldCheck, Download, Receipt, Sparkles, Send, X, ArrowUpRight, Mail } from 'lucide-react';
 
 export function BankTransferPaymentCard({
   parentName = 'Parent',
@@ -111,6 +111,18 @@ export function BankTransferPaymentCard({
             <p className="text-[10px] font-black uppercase tracking-widest text-dark/60">Account Name</p>
             <p className="mt-1 text-2xl font-black text-dark">Olujobi Akinola</p>
           </div>
+        </div>
+
+        <div className="rounded-2xl border-[2.5px] border-dark bg-yellow/30 p-4 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <Mail className="h-5 w-5 text-dark shrink-0" />
+            <p className="text-xs font-bold text-dark">
+              Send transfer receipt / screenshots to: <a href="mailto:payment@edvouralearninghub.com?subject=Bank%20Transfer%20Payment%20Proof" className="underline font-black hover:text-navy">payment@edvouralearninghub.com</a> for fast activation.
+            </p>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider bg-white border border-dark px-2.5 py-1 rounded-md">
+            Direct Verification
+          </span>
         </div>
 
         <div className="rounded-2xl border-[2.5px] border-dark bg-off-white p-4 flex items-center justify-between gap-4 flex-wrap">
@@ -256,6 +268,10 @@ export function BankTransferPaymentCard({
                 <div className="flex justify-between text-xs font-bold border-b border-dark/10 pb-2">
                   <span className="text-dark/60">Bank Account Paid To:</span>
                   <span className="font-black text-dark">First Bank (3110197941 - Olujobi Akinola)</span>
+                </div>
+                <div className="flex justify-between text-xs font-bold border-b border-dark/10 pb-2">
+                  <span className="text-dark/60">Payment Proof Inbox:</span>
+                  <span className="font-mono text-dark font-bold">payment@edvouralearninghub.com</span>
                 </div>
                 <div className="flex justify-between text-xs font-bold border-b border-dark/10 pb-2">
                   <span className="text-dark/60">Transfer Reference:</span>

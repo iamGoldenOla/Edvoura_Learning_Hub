@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
-import { Mail, Phone, MapPin, Send, MessageSquare, Globe, HelpCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, Globe, HelpCircle, Briefcase, CreditCard, LifeBuoy, Info } from 'lucide-react';
 import Link from 'next/link';
 import { siteContact } from '@/lib/site';
 import ContactFormClient from '@/components/marketing/ContactFormClient';
@@ -51,54 +51,100 @@ export default function ContactPage() {
             <div className="lg:col-span-2 space-y-10 w-full min-w-0">
               <div className="bg-navy rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 text-white border-4 sm:border-8 border-navy-mid shadow-[8px_8px_0px_#F5C518] sm:shadow-[15px_15px_0px_#F5C518] transform -rotate-1 max-w-full min-w-0">
                 <h3 className="font-heading font-black text-2xl sm:text-3xl mb-8 sm:mb-10 flex items-center gap-4 break-words">
-                   <Globe className="w-8 h-8 text-yellow shrink-0" /> Get in Touch
+                   <Globe className="w-8 h-8 text-yellow shrink-0" /> Official Email Directory
                 </h3>
-                <div className="space-y-8 w-full min-w-0">
-                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
-                      <Mail className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
+                <div className="space-y-6 w-full min-w-0">
+                  {/* General Inquiries */}
+                  <a
+                    href={`mailto:${siteContact.email.info}?subject=General%20Inquiry%20-%20Edvoura`}
+                    className="flex items-start gap-4 sm:gap-5 group hover:translate-x-1.5 transition-transform w-full min-w-0 bg-white/5 hover:bg-white/10 p-3.5 sm:p-4 rounded-2xl border-2 border-white/10"
+                  >
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white border-2 border-yellow rounded-xl flex items-center justify-center shrink-0 shadow-[3px_3px_0px_#F5C518] group-hover:rotate-6 transition-transform">
+                      <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-navy" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">General Email</p>
-                      <p className="text-base sm:text-xl text-white font-bold break-all">{siteContact.email.info}</p>
-                      <p className="mt-1 text-xs sm:text-sm text-white/70 font-bold break-all">Support: {siteContact.email.support}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[10px] sm:text-xs text-yellow font-black uppercase tracking-widest">General Inquiries</p>
+                        <span className="text-[9px] bg-yellow/20 text-yellow px-1.5 py-0.5 rounded font-black">Admissions</span>
+                      </div>
+                      <p className="text-sm sm:text-base text-white font-bold break-all group-hover:text-yellow transition-colors">{siteContact.email.info}</p>
+                      <p className="text-[11px] text-white/60 font-medium">Information, curriculum questions & free trials</p>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
-                      <Phone className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Support Line</p>
-                      <p className="text-base sm:text-xl text-white font-bold break-words">{siteContact.phone.support}</p>
-                    </div>
-                  </div>
+                  </a>
 
-                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:rotate-12 transition-transform">
-                      <MessageSquare className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
+                  {/* Careers / Tutors */}
+                  <a
+                    href={`mailto:${siteContact.email.careers}?subject=Tutor%20Application%20Inquiry`}
+                    className="flex items-start gap-4 sm:gap-5 group hover:translate-x-1.5 transition-transform w-full min-w-0 bg-white/5 hover:bg-white/10 p-3.5 sm:p-4 rounded-2xl border-2 border-white/10"
+                  >
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white border-2 border-emerald-400 rounded-xl flex items-center justify-center shrink-0 shadow-[3px_3px_0px_#22C55E] group-hover:-rotate-6 transition-transform">
+                      <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-navy" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">WhatsApp</p>
-                      <a
-                        href={`https://wa.me/${siteContact.phone.whatsappIntl}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-base sm:text-xl text-white font-bold hover:text-yellow transition-colors break-words block"
-                      >
-                        {siteContact.phone.whatsapp}
-                      </a>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[10px] sm:text-xs text-emerald-400 font-black uppercase tracking-widest">Careers & Tutors</p>
+                        <span className="text-[9px] bg-emerald-400/20 text-emerald-300 px-1.5 py-0.5 rounded font-black">Join Team</span>
+                      </div>
+                      <p className="text-sm sm:text-base text-white font-bold break-all group-hover:text-emerald-300 transition-colors">{siteContact.email.careers}</p>
+                      <p className="text-[11px] text-white/60 font-medium">Tutor onboarding, CV submissions & educator roles</p>
                     </div>
-                  </div>
+                  </a>
 
-                  <div className="flex items-start gap-4 sm:gap-6 group cursor-pointer hover:translate-x-2 transition-transform w-full min-w-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white border-4 border-yellow rounded-2xl flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#F5C518] group-hover:-rotate-12 transition-transform">
-                      <MapPin className="w-6 h-6 sm:w-7 sm:h-7 text-navy" />
+                  {/* Support */}
+                  <a
+                    href={`mailto:${siteContact.email.support}?subject=Support%20Request`}
+                    className="flex items-start gap-4 sm:gap-5 group hover:translate-x-1.5 transition-transform w-full min-w-0 bg-white/5 hover:bg-white/10 p-3.5 sm:p-4 rounded-2xl border-2 border-white/10"
+                  >
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white border-2 border-sky-400 rounded-xl flex items-center justify-center shrink-0 shadow-[3px_3px_0px_#38BDF8] group-hover:rotate-6 transition-transform">
+                      <LifeBuoy className="w-5 h-5 sm:w-6 sm:h-6 text-navy" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-yellow font-black uppercase tracking-widest mb-1">Address</p>
-                      <p className="text-base sm:text-xl text-white font-bold break-words">{siteContact.address}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[10px] sm:text-xs text-sky-400 font-black uppercase tracking-widest">Customer Support</p>
+                        <span className="text-[9px] bg-sky-400/20 text-sky-300 px-1.5 py-0.5 rounded font-black">24/7 Help</span>
+                      </div>
+                      <p className="text-sm sm:text-base text-white font-bold break-all group-hover:text-sky-300 transition-colors">{siteContact.email.support}</p>
+                      <p className="text-[11px] text-white/60 font-medium">Platform help, student accounts & technical issues</p>
+                    </div>
+                  </a>
+
+                  {/* Payment */}
+                  <a
+                    href={`mailto:${siteContact.email.payment}?subject=Payment%20Confirmation%20Receipt`}
+                    className="flex items-start gap-4 sm:gap-5 group hover:translate-x-1.5 transition-transform w-full min-w-0 bg-white/5 hover:bg-white/10 p-3.5 sm:p-4 rounded-2xl border-2 border-white/10"
+                  >
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white border-2 border-amber-400 rounded-xl flex items-center justify-center shrink-0 shadow-[3px_3px_0px_#F59E0B] group-hover:-rotate-6 transition-transform">
+                      <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-navy" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[10px] sm:text-xs text-amber-400 font-black uppercase tracking-widest">Billing & Payments</p>
+                        <span className="text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-black">Proof of Payment</span>
+                      </div>
+                      <p className="text-sm sm:text-base text-white font-bold break-all group-hover:text-amber-300 transition-colors">{siteContact.email.payment}</p>
+                      <p className="text-[11px] text-white/60 font-medium">Send transfer screenshots, receipts & invoice queries</p>
+                    </div>
+                  </a>
+
+                  {/* Phone & WhatsApp */}
+                  <div className="pt-4 border-t border-white/10 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-5 h-5 text-yellow shrink-0" />
+                      <div className="text-xs">
+                        <span className="text-white/60 font-bold">Support Line: </span>
+                        <a href={`tel:${siteContact.phone.support}`} className="text-white font-bold hover:text-yellow transition-colors">{siteContact.phone.support}</a>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MessageSquare className="w-5 h-5 text-emerald-400 shrink-0" />
+                      <div className="text-xs">
+                        <span className="text-white/60 font-bold">WhatsApp: </span>
+                        <a href={`https://wa.me/${siteContact.phone.whatsappIntl}`} target="_blank" rel="noreferrer" className="text-white font-bold hover:text-emerald-300 transition-colors">{siteContact.phone.whatsapp}</a>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-white/50 shrink-0" />
+                      <p className="text-xs text-white/60 font-bold">{siteContact.address}</p>
                     </div>
                   </div>
                 </div>

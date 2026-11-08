@@ -136,7 +136,8 @@ export default function ContactFormClient() {
                 <option value="Cambridge IGCSE & IB Mastery">Cambridge IGCSE & IB Mastery</option>
                 <option value="WAEC, NECO & JAMB Exam Prep">WAEC, NECO & JAMB Exam Prep</option>
                 <option value="Early Years / EYFS Preschool Program">Early Years / EYFS Preschool Program</option>
-                <option value="Tutor Application & Onboarding">Tutor Application & Onboarding</option>
+                <option value="Tutor Application & Onboarding">Tutor Application & Onboarding (careers@)</option>
+                <option value="Billing & Payment Confirmation">Billing & Payment Confirmation (payment@)</option>
                 <option value="Corporate / School Partnership">Corporate / School Partnership</option>
                 <option value="Other Inquiries">Other Inquiries</option>
               </select>

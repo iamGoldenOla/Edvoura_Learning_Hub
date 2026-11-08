@@ -2,9 +2,10 @@ export const siteContact = {
   email: {
     primary: 'edvouralearninghub@gmail.com',
     info: 'info@edvouralearninghub.com',
-    enquiries: 'enquiries@edvouralearninghub.com',
+    enquiries: 'info@edvouralearninghub.com',
     support: 'support@edvouralearninghub.com',
-    careers: 'career@edvouralearninghub.com',
+    careers: 'careers@edvouralearninghub.com',
+    payment: 'payment@edvouralearninghub.com',
     executive: 'a.olujobi@edvouralearninghub.com',
   },
   phone: {
