@@ -29,6 +29,7 @@ const servicesSubmenu = [
   { label: 'Curriculum Skill Roadmap', href: '/roadmap', desc: '1,860+ UK & Common Core skills' },
   { label: 'Illustrated Vocabulary Atlas', href: '/vocabulary', desc: '7,298 illustrated words with UK/US audio' },
   { label: 'Math Animation Studio', href: '/math-studio', desc: '60FPS ManimGX math animation generator' },
+  { label: 'STEM Mechanical Lab', href: '/anatomy-lab', desc: 'Interactive mechanical machines & logic' },
 ];
 
 export default function Navbar() {
@@ -186,7 +187,7 @@ export default function Navbar() {
 
                       {servicesOpen && (
                         <div className="absolute left-0 top-full z-30 pt-2">
-                          <div className="w-72 rounded-2xl border-2 border-white/20 bg-navy p-3 shadow-[8px_8px_0px_#000] animate-in fade-in slide-in-from-top-1 duration-150">
+                          <div className="w-80 rounded-2xl border-2 border-white/20 bg-navy p-3 shadow-[8px_8px_0px_#000] animate-in fade-in slide-in-from-top-1 duration-150">
                             <div className="flex flex-col gap-1">
                               {servicesSubmenu.map((sub) => (
                                 <Link
@@ -388,6 +389,13 @@ export default function Navbar() {
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
                           📐 Math Animation Studio (ManimGX)
+                        </Link>
+                        <Link
+                          href="/anatomy-lab"
+                          onClick={() => setMobileOpen(false)}
+                          className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
+                        >
+                          ⚙️ STEM Mechanical Lab (Anatomy)
                         </Link>
                       </div>
                     )}
