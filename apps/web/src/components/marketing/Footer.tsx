@@ -8,6 +8,7 @@ const platformLinks = [
   { label: 'About Us', href: '/about' },
   { label: 'Services', href: '/services' },
   { label: 'Skill Roadmap', href: '/roadmap' },
+  { label: 'Vocabulary Atlas', href: '/vocabulary' },
   { label: 'Pricing', href: '/pricing' },
 ];
 
