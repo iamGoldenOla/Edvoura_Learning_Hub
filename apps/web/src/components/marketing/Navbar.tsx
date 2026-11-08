@@ -12,8 +12,6 @@ const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'About', href: '/about' },
   { label: 'Services', href: '/services' },
-  { label: 'Roadmap', href: '/roadmap' },
-  { label: 'Vocabulary', href: '/vocabulary' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Blog', href: '/blog' },
   { label: 'Careers', href: '/careers' },
@@ -26,10 +24,17 @@ const portalLinks = [
   { label: 'Parent Portal', role: 'parent', icon: 'P', desc: 'Monitoring and growth' },
 ];
 
+const servicesSubmenu = [
+  { label: 'All Tutoring Services', href: '/services', desc: '1-on-1 personalized global tutoring' },
+  { label: 'Curriculum Skill Roadmap', href: '/roadmap', desc: '1,860+ UK & Common Core skills' },
+  { label: 'Illustrated Vocabulary Atlas', href: '/vocabulary', desc: '7,298 illustrated words with UK/US audio' },
+];
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showPromo, setShowPromo] = useState(false);
 
@@ -143,15 +148,68 @@ export default function Navbar() {
 
           <div className="hidden items-center gap-6 lg:flex xl:gap-8">
             <div className="flex items-center gap-4 xl:gap-6">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link) => {
+                if (link.label === 'Services') {
+                  return (
+                    <div
+                      key={link.href}
+                      className="relative"
+                      onMouseEnter={() => setServicesOpen(true)}
+                      onMouseLeave={() => setServicesOpen(false)}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setServicesOpen((v) => !v)}
+                        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs"
+                      >
+                        {link.label}
+                        <svg
+                          className={`h-3 w-3 transition-transform duration-200 ${servicesOpen ? 'rotate-180 text-yellow' : ''}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {servicesOpen && (
+                        <div className="absolute left-0 top-full z-30 pt-2">
+                          <div className="w-72 rounded-2xl border-2 border-white/20 bg-navy p-3 shadow-[8px_8px_0px_#000] animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="flex flex-col gap-1">
+                              {servicesSubmenu.map((sub) => (
+                                <Link
+                                  key={sub.href}
+                                  href={sub.href}
+                                  onClick={() => setServicesOpen(false)}
+                                  className="group flex flex-col rounded-xl p-2.5 transition-colors hover:bg-white/10"
+                                >
+                                  <span className="text-xs font-black uppercase tracking-wider text-white group-hover:text-yellow transition-colors">
+                                    {sub.label}
+                                  </span>
+                                  <span className="text-[10px] text-white/60 font-medium">
+                                    {sub.desc}
+                                  </span>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 transition-colors duration-200 hover:text-yellow xl:text-xs"
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
 
             <div className="relative flex shrink-0 items-center gap-3 border-l border-white/10 pl-4 xl:gap-4 xl:pl-6">
@@ -288,15 +346,34 @@ export default function Navbar() {
             <div className="flex flex-1 flex-col overflow-y-auto pr-1">
               <div className="flex flex-col gap-2">
                 {navLinks.map((link, i) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="animate-fade-up rounded-2xl border-2 border-white/10 bg-white/5 px-4 py-4 font-heading text-lg font-bold text-white transition-colors hover:border-yellow hover:text-yellow"
-                    style={{ animationDelay: `${i * 0.08}s` }}
-                  >
-                    {link.label}
-                  </Link>
+                  <React.Fragment key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="animate-fade-up rounded-2xl border-2 border-white/10 bg-white/5 px-4 py-3.5 font-heading text-lg font-bold text-white transition-colors hover:border-yellow hover:text-yellow"
+                      style={{ animationDelay: `${i * 0.08}s` }}
+                    >
+                      {link.label}
+                    </Link>
+                    {link.label === 'Services' && (
+                      <div className="ml-4 flex flex-col gap-1.5 border-l-2 border-yellow/40 pl-3">
+                        <Link
+                          href="/roadmap"
+                          onClick={() => setMobileOpen(false)}
+                          className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
+                        >
+                          🗺️ Curriculum Skill Roadmap
+                        </Link>
+                        <Link
+                          href="/vocabulary"
+                          onClick={() => setMobileOpen(false)}
+                          className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
+                        >
+                          📖 Vocabulary Atlas (7,298 Words)
+                        </Link>
+                      </div>
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
 

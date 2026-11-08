@@ -22,8 +22,8 @@ export const metadata: Metadata = {
 };
 
 export default function RoadmapPage() {
-  // Pre-load top topics for fast static/server hydration
-  const initialTopics = getTopics({ limit: 400 });
+  // Pre-load all curriculum micro-topics for instantaneous client filtering
+  const initialTopics = getTopics({ limit: 2500 });
   const subjectNames = getAllSubjects();
   const subjects = subjectNames.map((s) => ({
     subject: s,

@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function StudentRoadmapPage() {
-  const initialTopics = getTopics({ limit: 400 });
+  const initialTopics = getTopics({ limit: 2500 });
   const subjectNames = getAllSubjects();
   const subjects = subjectNames.map((s) => ({
     subject: s,

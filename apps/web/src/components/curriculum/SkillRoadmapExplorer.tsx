@@ -115,7 +115,7 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
   return (
     <div className="space-y-8">
       {/* Subject Filter Bar */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-3 pt-1 scrollbar-none">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
         {subjects.map((s) => {
           const isActive = selectedSubject === s.subject;
           return (
@@ -125,7 +125,7 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
                 setSelectedSubject(s.subject);
                 setSelectedDomain('All');
               }}
-              className={`px-5 py-3 rounded-2xl border-3 sm:border-4 font-black text-xs sm:text-sm tracking-tight transition-all shrink-0 cursor-pointer shadow-[3px_3px_0px_#060E1C] ${
+              className={`px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl border-3 sm:border-4 font-black text-xs sm:text-sm tracking-tight transition-all shrink-0 cursor-pointer shadow-[3px_3px_0px_#060E1C] ${
                 isActive
                   ? 'bg-navy text-white translate-x-1 translate-y-1 shadow-none'
                   : 'bg-white text-navy hover:bg-slate-50'
@@ -170,8 +170,8 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
         </div>
 
         {/* Domain Filter Pills */}
-        <div className="pt-2 border-t border-navy/10 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[11px] font-black uppercase tracking-wider text-navy/50 shrink-0">Domain:</span>
+        <div className="pt-2 border-t border-navy/10 flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span className="text-[11px] font-black uppercase tracking-wider text-navy/50 mr-1 shrink-0">Domain:</span>
           {currentDomains.slice(0, 14).map((dom) => (
             <button
               key={dom}
@@ -268,9 +268,18 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
             </div>
 
             <div className="space-y-6">
+              {/* Context Explanation Banner */}
+              <div className="bg-sky-50 border-2 border-sky-300 rounded-2xl p-4 flex items-start gap-3">
+                <Compass className="w-5 h-5 text-sky-700 shrink-0 mt-0.5" />
+                <div className="text-xs text-sky-950 font-medium leading-relaxed">
+                  <strong className="font-black text-sky-900 block mb-0.5">Tutor &amp; Parent Lesson Guide:</strong>
+                  This roadmap card shows what your child learns, the exact diagnostic question tutors use to test understanding, the stepping stones needed first, and the next lessons unlocked.
+                </div>
+              </div>
+
               {/* Description */}
               <div>
-                <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-2">Core Concept &amp; Goal</h5>
+                <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-2">🎯 Learning Objective &amp; Goal</h5>
                 <p className="text-sm sm:text-base font-bold text-navy leading-relaxed bg-off-white p-4 rounded-xl border-2 border-navy">
                   {activeTopic.description}
                 </p>
@@ -280,10 +289,13 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
               {activeTopic.assessmentPrompt && (
                 <div className="bg-yellow/30 border-3 border-navy rounded-2xl p-5 shadow-[3px_3px_0px_#060E1C]">
                   <div className="flex items-center gap-2 text-xs font-black uppercase text-navy mb-1.5">
-                    <HelpCircle className="w-4 h-4 text-navy" /> Diagnostic Evaluation Prompt
+                    <HelpCircle className="w-4 h-4 text-navy" /> ❓ In-Class Diagnostic Question (How Tutors Test Understanding)
                   </div>
                   <p className="text-sm font-black text-navy italic">
                     &ldquo;{activeTopic.assessmentPrompt.replace(/\{\{name\}\}/g, 'the learner')}&rdquo;
+                  </p>
+                  <p className="text-[11px] text-navy/70 mt-2 font-medium">
+                    During a lesson, your tutor asks this question to confirm the student actually understands the concept rather than just reciting textbook rules.
                   </p>
                 </div>
               )}
@@ -292,7 +304,7 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
               {activeTopic.evidence && activeTopic.evidence.length > 0 && (
                 <div>
                   <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-3 flex items-center gap-2">
-                    <Award className="w-4 h-4 text-emerald-600" /> Mastery Criteria (Checklist)
+                    <Award className="w-4 h-4 text-emerald-600" /> 📋 What the Student Must Demonstrate (Checklist)
                   </h5>
                   <div className="space-y-2">
                     {activeTopic.evidence.map((point, idx) => (
@@ -307,9 +319,12 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
 
               {/* Prerequisite Knowledge Graph */}
               <div className="pt-2">
-                <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-3 flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-amber-600" /> What to Master First (Prerequisites)
+                <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-2 flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-amber-600" /> 🧱 Stepping Stones (Skills to Master First)
                 </h5>
+                <p className="text-xs text-navy/60 mb-3 font-medium">
+                  If a learner is stuck on this topic, our tutors step back to ensure these foundational concepts are solid:
+                </p>
 
                 {activeNodeDetails.loading ? (
                   <p className="text-xs font-bold text-navy/40">Loading skill connections...</p>
@@ -323,7 +338,7 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[10px] font-black uppercase bg-white border border-navy px-1.5 py-0.5 rounded text-navy">
-                            {p.strength} prerequisite
+                            {p.strength} foundation
                           </span>
                           <span className="text-[10px] text-navy/50 font-bold">Age {p.topic.ageRangeStart}–{p.topic.ageRangeEnd}</span>
                         </div>
@@ -334,16 +349,19 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
                   </div>
                 ) : (
                   <p className="text-xs font-bold text-emerald-700 bg-emerald-50 p-3 rounded-xl border border-emerald-300">
-                    ✨ Foundational Concept: No prior prerequisites required. Perfect starting point!
+                    ✨ Foundational Concept: No prior prerequisites required. Great starting point!
                   </p>
                 )}
               </div>
 
               {/* Unlocks Next Graph */}
               <div>
-                <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-3 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-info" /> Unlocks What&apos;s Next
+                <h5 className="text-xs font-black uppercase tracking-wider text-navy/50 mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-info" /> 🚀 Next Lessons (What Mastering This Unlocks)
                 </h5>
+                <p className="text-xs text-navy/60 mb-3 font-medium">
+                  Once your child masters this skill, they will advance directly to these next-level topics:
+                </p>
 
                 {activeNodeDetails.loading ? (
                   <p className="text-xs font-bold text-navy/40">Loading unlocked skills...</p>
@@ -357,7 +375,7 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-[10px] font-black uppercase bg-white border border-navy px-1.5 py-0.5 rounded text-navy">
-                            Unlocks
+                            Next Milestone
                           </span>
                           <span className="text-[10px] text-navy/50 font-bold">Age {n.topic.ageRangeStart}–{n.topic.ageRangeEnd}</span>
                         </div>
@@ -368,11 +386,10 @@ export function SkillRoadmapExplorer({ initialTopics, subjects }: SkillRoadmapEx
                   </div>
                 ) : (
                   <p className="text-xs font-bold text-navy/50 bg-slate-50 p-3 rounded-xl border border-navy/10">
-                    Capstone Skill: Advanced mastery topic in this grade cycle.
+                    🏆 Capstone Skill: Highest-level mastery topic in this grade cycle.
                   </p>
                 )}
               </div>
-
               {/* Standards Tags */}
               {activeTopic.standards && activeTopic.standards.length > 0 && (
                 <div className="pt-2 border-t border-navy/10">

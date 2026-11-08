@@ -498,6 +498,47 @@ export default function ParentDashboardClient({
         </div>
       )}
 
+            {/* Curriculum & Learning Tools */}
+      <div className="border-[3px] sm:border-[4px] border-dark rounded-[20px] sm:rounded-[28px] bg-white shadow-[4px_4px_0px_#060E1C] sm:shadow-[10px_10px_0px_#060E1C] overflow-hidden min-w-0">
+        <div className="p-6 border-b-[4px] border-dark bg-amber-100 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Curriculum Standards</span>
+            <h2 className="text-2xl font-black text-dark tracking-tight">Interactive Learning Hub</h2>
+          </div>
+          <span className="rounded-lg border-[2px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-wider text-dark shadow-[2px_2px_0px_#060E1C]">
+            Parent Tools
+          </span>
+        </div>
+        <div className="p-6 sm:p-8 grid gap-4 sm:grid-cols-2">
+          <Link
+            href="/roadmap"
+            className="group rounded-2xl border-[3px] border-dark bg-yellow/15 p-5 shadow-[4px_4px_0px_#060E1C] hover:bg-yellow/30 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="rounded-lg border-[2px] border-dark bg-yellow px-2.5 py-1 text-[10px] font-black uppercase text-dark">Phase 1</span>
+              <span className="text-xs font-black text-dark group-hover:translate-x-1 transition-transform">Explore →</span>
+            </div>
+            <h3 className="text-lg font-black text-dark">Curriculum Skill Roadmap</h3>
+            <p className="mt-1 text-xs font-semibold text-dark/70">
+              Explore 1,860+ K-12 micro-topics across 8 subjects with foundational prerequisites, unlocks, and tutor diagnostic questions.
+            </p>
+          </Link>
+          <Link
+            href="/vocabulary"
+            className="group rounded-2xl border-[3px] border-dark bg-sky-50 p-5 shadow-[4px_4px_0px_#060E1C] hover:bg-sky-100 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <span className="rounded-lg border-[2px] border-dark bg-sky-200 px-2.5 py-1 text-[10px] font-black uppercase text-dark">Phase 2</span>
+              <span className="text-xs font-black text-dark group-hover:translate-x-1 transition-transform">Explore →</span>
+            </div>
+            <h3 className="text-lg font-black text-dark">Illustrated Vocabulary Atlas</h3>
+            <p className="mt-1 text-xs font-semibold text-dark/70">
+              Browse 7,290+ illustrated vocabulary words with CEFR levels, UK/US pronunciation audio, definitions, and sentence examples.
+            </p>
+          </Link>
+        </div>
+      </div>
+
       {/* Direct Bank Transfer & Instant Invoice Generator */}
       <BankTransferPaymentCard parentName={parentName} />
 
