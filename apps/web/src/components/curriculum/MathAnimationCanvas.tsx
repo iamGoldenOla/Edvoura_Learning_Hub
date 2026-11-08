@@ -122,7 +122,7 @@ export default function MathAnimationCanvas({ preset, params, onParamChange }: M
         <div className="flex items-center gap-2">
           <span className="flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 animate-ping" />
           <span className="text-xs font-black uppercase tracking-wider text-dark">
-            ManimGX 60FPS Interactive Engine
+            Edvoura MathMotion™ 60FPS Engine
           </span>
         </div>
         <div className="flex items-center gap-2">

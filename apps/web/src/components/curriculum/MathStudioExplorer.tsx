@@ -185,7 +185,7 @@ export default function MathStudioExplorer() {
                   activeTab === 'code' ? 'bg-yellow text-dark border-r-[2px] border-dark' : 'text-dark/60 hover:text-dark border-r-[2px] border-dark/20'
                 }`}
               >
-                <Code2 className="h-3.5 w-3.5" /> ManimGX
+                <Code2 className="h-3.5 w-3.5" /> Code
               </button>
               <button
                 type="button"
@@ -236,7 +236,7 @@ export default function MathStudioExplorer() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-[10px] font-black uppercase tracking-wider text-dark/50">
-                      Python 3.13 + ManimGX
+                      Python 3.13 Animation Script
                     </span>
                     <button
                       type="button"
@@ -251,7 +251,7 @@ export default function MathStudioExplorer() {
                     {activePreset.manimgxCode}
                   </pre>
                   <p className="text-[11px] font-semibold text-dark/60 leading-tight">
-                    💡 Run locally with <code className="bg-slate-100 px-1 py-0.5 rounded border border-dark/20 text-dark">pip install manimgx</code>. Render animations 10x faster via Rust &amp; WebGPU!
+                    💡 Run directly in Python to generate high-resolution video renders of these mathematical proofs.
                   </p>
                 </div>
               )}

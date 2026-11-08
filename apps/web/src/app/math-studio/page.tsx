@@ -6,13 +6,13 @@ import { Calculator, Sparkles, Cpu, Send, Layers, Compass, ArrowRight } from 'lu
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Interactive Math Animation Studio & Generator | Edvoura Learning Hub',
+  title: 'Edvoura MathMotion Studio™ | Interactive Visual Mathematics',
   description:
-    'Experience high-performance mathematical animations built on ManimGX principles. Explore geometry proofs, unit circle trigonometry, calculus derivatives, and physics kinematics in real time.',
+    'Experience high-performance mathematical animations built on Edvoura MathMotion principles. Explore geometry proofs, unit circle trigonometry, calculus derivatives, and physics kinematics in real time.',
   openGraph: {
-    title: 'Edvoura Math Animation Studio | Visual Mathematics Engine',
+    title: 'Edvoura MathMotion Studio™ | Interactive Visual Proofs',
     description:
-      'Turn abstract math formulas into crystal-clear geometric proofs and dynamic 60FPS animations. Powered by ManimGX WebGPU principles.',
+      'Turn abstract math formulas into crystal-clear geometric proofs and dynamic 60FPS animations. Powered by Edvoura MathMotion WebGPU principles.',
   },
 };
 
@@ -27,7 +27,7 @@ export default function MathStudioPage() {
 
         <div className="marketing-container relative z-10 text-center max-w-5xl mx-auto px-4">
           <div className="inline-flex items-center gap-2 bg-yellow border-3 sm:border-4 border-white text-navy font-heading font-black px-4 sm:px-6 py-2 rounded-xl mb-6 shadow-[4px_4px_0px_#FFFFFF] rotate-[-1deg]">
-            <Calculator className="w-5 h-5 text-navy" /> MANIMGX MATH ANIMATION STUDIO
+            <Calculator className="w-5 h-5 text-navy" /> EDVOURA MATHMOTION STUDIO™
           </div>
 
           <h1
@@ -41,7 +41,7 @@ export default function MathStudioPage() {
           </h1>
 
           <p className="text-white/80 text-base sm:text-xl max-w-3xl mx-auto font-medium leading-relaxed mb-8">
-            Why memorize formulas when you can see how they work? Powered by the open-source <strong className="text-yellow">ManimGX</strong> engine, Edvoura brings 3Blue1Brown-style interactive visualizations directly into your live lessons.
+            Why memorize formulas when you can see how they work? Powered by the proprietary <strong className="text-yellow">Edvoura MathMotion Engine™</strong>, Edvoura brings 60 FPS interactive visual proofs and dynamic geometry directly into your live lessons.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -106,9 +106,9 @@ export default function MathStudioPage() {
               <div className="w-12 h-12 rounded-2xl border-2 border-dark bg-blue-300 flex items-center justify-center mb-5 shadow-[3px_3px_0px_#060E1C]">
                 <Layers className="h-6 w-6 text-dark" />
               </div>
-              <h3 className="text-xl font-black text-dark">ManimGX Code Export</h3>
+              <h3 className="text-xl font-black text-dark">Python Animation Code Export</h3>
               <p className="mt-2 text-sm font-semibold text-dark/70 leading-relaxed">
-                Inspect and copy clean Python 3.13 code built for ManimGX. Run animations locally or embed them in Jupyter and school projects.
+                Inspect and copy clean Python 3.13 code ready for execution. Run animations locally or embed them in Jupyter and school projects.
               </p>
             </div>
           </div>

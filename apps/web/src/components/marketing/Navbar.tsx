@@ -26,10 +26,10 @@ const portalLinks = [
 
 const servicesSubmenu = [
   { label: 'All Tutoring Services', href: '/services', desc: '1-on-1 personalized global tutoring' },
-  { label: 'Curriculum Skill Roadmap', href: '/roadmap', desc: '1,860+ UK & Common Core skills' },
-  { label: 'Illustrated Vocabulary Atlas', href: '/vocabulary', desc: '7,298 illustrated words with UK/US audio' },
-  { label: 'Math Animation Studio', href: '/math-studio', desc: '60FPS ManimGX math animation generator' },
-  { label: 'STEM Mechanical Lab', href: '/anatomy-lab', desc: 'Interactive mechanical machines & logic' },
+  { label: 'Curriculum Matrix™', href: '/roadmap', desc: '1,860+ K-12 learning pathways' },
+  { label: 'LexiCore™ Word Atlas', href: '/vocabulary', desc: '7,298 illustrated words with audio' },
+  { label: 'MathMotion Studio™', href: '/math-studio', desc: '60 FPS interactive visual math proofs' },
+  { label: 'STEM MechLab™', href: '/anatomy-lab', desc: 'Physical machines for computing & physics' },
 ];
 
 export default function Navbar() {
@@ -374,28 +374,28 @@ export default function Navbar() {
                           onClick={() => setMobileOpen(false)}
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
-                          🗺️ Curriculum Skill Roadmap
+                          🗺️ Curriculum Matrix™
                         </Link>
                         <Link
                           href="/vocabulary"
                           onClick={() => setMobileOpen(false)}
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
-                          📖 Vocabulary Atlas (7,298 Words)
+                          📖 LexiCore™ (7,298 Words)
                         </Link>
                         <Link
                           href="/math-studio"
                           onClick={() => setMobileOpen(false)}
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
-                          📐 Math Animation Studio (ManimGX)
+                          📐 MathMotion Studio™
                         </Link>
                         <Link
                           href="/anatomy-lab"
                           onClick={() => setMobileOpen(false)}
                           className="py-1.5 text-xs font-black uppercase tracking-wider text-white/80 hover:text-yellow"
                         >
-                          ⚙️ STEM Mechanical Lab (Anatomy)
+                          ⚙️ STEM MechLab™
                         </Link>
                       </div>
                     )}

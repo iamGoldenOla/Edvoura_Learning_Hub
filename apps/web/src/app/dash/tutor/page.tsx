@@ -39,10 +39,10 @@ const tutorSections = [
   { href: '/dash/tutor/builder', title: 'Assignments', description: 'Create and manage assignments.', icon: FileText, color: 'text-dark bg-emerald-200' },
   { href: '/dash/tutor/grading', title: 'Grading Queue', description: 'Grade submissions.', icon: ClipboardCheck, color: 'text-dark bg-rose-200' },
   { href: '/dash/tutor/messages', title: 'Messages', description: 'Direct chat with parents.', icon: MessageCircle, color: 'text-dark bg-purple-200' },
-  { href: '/roadmap', title: 'Skill Roadmap', description: '1,860+ K-12 micro-topics & diagnostic questions.', icon: Compass, color: 'text-dark bg-amber-200' },
-  { href: '/vocabulary', title: 'Vocabulary Atlas', description: '7,290+ illustrated words & audio pronunciation.', icon: Sparkles, color: 'text-dark bg-cyan-200' },
-  { href: '/math-studio', title: 'Math Animation Studio', description: '60FPS visual calculus, geometry, and physics models.', icon: Calculator, color: 'text-dark bg-emerald-200' },
-  { href: '/anatomy-lab', title: 'STEM Mechanical Lab', description: 'Interactive mechanical models of computing & thermodynamics.', icon: Cog, color: 'text-dark bg-yellow' },
+  { href: '/roadmap', title: 'Curriculum Matrix™', description: '1,860+ K-12 micro-topics & diagnostic questions.', icon: Compass, color: 'text-dark bg-amber-200' },
+  { href: '/vocabulary', title: 'LexiCore™ Atlas', description: '7,290+ illustrated words & audio pronunciation.', icon: Sparkles, color: 'text-dark bg-cyan-200' },
+  { href: '/math-studio', title: 'MathMotion Studio™', description: '60 FPS visual calculus, geometry, and physics models.', icon: Calculator, color: 'text-dark bg-emerald-200' },
+  { href: '/anatomy-lab', title: 'STEM MechLab™', description: 'Interactive mechanical models of computing & thermodynamics.', icon: Cog, color: 'text-dark bg-yellow' },
 ];
 
 const formatDuration = (startIso: string, endIso: string) => {

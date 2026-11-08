@@ -4,7 +4,7 @@ import { Cog, ArrowLeft, Calculator, Compass } from 'lucide-react';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'STEM Mechanical Anatomy Lab | Student Dashboard',
+  title: 'Edvoura STEM MechLab™ | Student Dashboard',
   description: 'Operate physical isometric machines modeling rate limiters, CPU cache, and Carnot cycles.',
 };
 

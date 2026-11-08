@@ -6,11 +6,11 @@ import { Cog, Wrench, Shield, Compass, ArrowRight, Cpu, Layers } from 'lucide-re
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'STEM Mechanical Anatomy Lab & Physical Simulations | Edvoura Learning Hub',
+  title: 'Edvoura STEM MechLab™ | Physical Mechanical Simulations',
   description:
-    'Experience abstract computer science, networking, and thermodynamics as physical mechanical machines. Powered by Anatomy open-source principles.',
+    'Experience abstract computer science, networking, and thermodynamics as physical mechanical machines. Powered by Edvoura MechLab truth-first simulation modeling.',
   openGraph: {
-    title: 'Edvoura STEM Mechanical Anatomy Lab',
+    title: 'Edvoura STEM MechLab™ | Computing & Physics Machines',
     description:
       'Translating rate limiters, CPU cache hierarchies, binary search trees, and Carnot heat engines into interactive isometric machines.',
   },
@@ -27,7 +27,7 @@ export default function AnatomyLabPage() {
 
         <div className="marketing-container relative z-10 text-center max-w-5xl mx-auto px-4">
           <div className="inline-flex items-center gap-2 bg-yellow border-3 sm:border-4 border-white text-navy font-heading font-black px-4 sm:px-6 py-2 rounded-xl mb-6 shadow-[4px_4px_0px_#FFFFFF] rotate-[-1deg]">
-            <Cog className="w-5 h-5 text-navy" /> STEM MECHANICAL ANATOMY LAB
+            <Cog className="w-5 h-5 text-navy" /> EDVOURA STEM MECHLAB™
           </div>
 
           <h1
@@ -41,7 +41,7 @@ export default function AnatomyLabPage() {
           </h1>
 
           <p className="text-white/80 text-base sm:text-xl max-w-3xl mx-auto font-medium leading-relaxed mb-8">
-            Stop staring at dry code and abstract circuit diagrams. Powered by the open-source <strong className="text-yellow">Anatomy</strong> engine, Edvoura transforms rate limiters, memory caches, binary trees, and Carnot cycles into interactive mechanical machines you can operate with your hands.
+            Stop staring at dry code and abstract circuit diagrams. Powered by the proprietary <strong className="text-yellow">Edvoura MechLab Simulation Engine™</strong>, Edvoura transforms rate limiters, memory caches, binary trees, and Carnot cycles into interactive mechanical machines you can operate with your hands.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
