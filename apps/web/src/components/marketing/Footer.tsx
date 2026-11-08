@@ -7,6 +7,7 @@ const platformLinks = [
   { label: 'Home', href: '/' },
   { label: 'About Us', href: '/about' },
   { label: 'Services', href: '/services' },
+  { label: 'Skill Roadmap', href: '/roadmap' },
   { label: 'Pricing', href: '/pricing' },
 ];
 

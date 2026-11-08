@@ -681,9 +681,11 @@ export default function StudentBandClientWrapper({
                   <QuickLink href="/dash/student/games" label="🎮 3D Play Zone (11 Games)" />
                   <QuickLink href="/dash/student/games/color-sort" label="⭕ Color Ring Sort 3D (New!)" />
                   <QuickLink href="/dash/student/library" label="📚 Class Library" />
+                  <QuickLink href="/dash/student/roadmap" label="🗺️ Curriculum Skill Tree & Roadmap" />
                 </>
               ) : (
                 <>
+                  <QuickLink href="/dash/student/roadmap" label="🗺️ Curriculum Skill Tree & Roadmap" />
                   <QuickLink href="/dash/student/exam-prep" label="🎯 Exam Prep & Practice" />
                   <QuickLink href="/dash/student/mock-exams" label="🛡️ Simulated Mock Exams" />
                   <QuickLink href="/dash/student/past-questions" label="📜 JAMB & WAEC Past Questions" />
