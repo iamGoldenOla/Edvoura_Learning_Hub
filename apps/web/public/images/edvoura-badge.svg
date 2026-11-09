@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="neoShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="12" dy="12" stdDeviation="0" flood-color="#060E1C"/>
+    </filter>
+  </defs>
+  <!-- Background Neo-Brutalist Badge -->
+  <rect x="24" y="24" width="464" height="464" rx="96" ry="96" fill="#F5C518" stroke="#060E1C" stroke-width="20" filter="url(#neoShadow)"/>
+  
+  <!-- Graduation Cap Diamond -->
+  <polygon points="256,90 400,165 256,230 112,165" fill="#060E1C"/>
+  <!-- Cap Tassel & Star -->
+  <line x1="375" y1="175" x2="410" y2="235" stroke="#FF4757" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="410" cy="245" r="16" fill="#FF4757" stroke="#060E1C" stroke-width="6"/>
+
+  <!-- Iconic Neo-Brutalist 'E' -->
+  <path d="M 160 250 L 350 250 L 350 295 L 225 295 L 225 325 L 330 325 L 330 365 L 225 365 L 225 395 L 355 395 L 355 440 L 160 440 Z" fill="#060E1C"/>
+        
+  <!-- Accent Sparkle Star -->
+  <circle cx="395" cy="305" r="20" fill="#00D2D3" stroke="#060E1C" stroke-width="8"/>
+</svg>

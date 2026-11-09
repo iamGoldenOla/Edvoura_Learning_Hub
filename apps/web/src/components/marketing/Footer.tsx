@@ -126,6 +126,11 @@ export default function Footer() {
               </li>
               <li className="pt-2 border-t border-white/10 hover:text-yellow transition-colors duration-200">
                 <a href={`tel:${siteContact.phone.support}`}>Tel: {siteContact.phone.support}</a>
+                <span className="text-white/40 mx-1.5">•</span>
+                <a href={`tel:${siteContact.phone.secondary}`}>{siteContact.phone.secondary}</a>
+              </li>
+              <li className="hover:text-sky-300 transition-colors duration-200">
+                <a href={siteContact.phone.telegramUrl} target="_blank" rel="noreferrer">Telegram: {siteContact.phone.telegram}</a>
               </li>
               <li className="leading-relaxed opacity-70">{siteContact.address}</li>
             </ul>

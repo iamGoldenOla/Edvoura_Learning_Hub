@@ -126,13 +126,15 @@ export default function ContactPage() {
                     </div>
                   </a>
 
-                  {/* Phone & WhatsApp */}
+                  {/* Phone, WhatsApp & Telegram */}
                   <div className="pt-4 border-t border-white/10 space-y-4">
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 text-yellow shrink-0" />
                       <div className="text-xs">
-                        <span className="text-white/60 font-bold">Support Line: </span>
+                        <span className="text-white/60 font-bold">Call / Support: </span>
                         <a href={`tel:${siteContact.phone.support}`} className="text-white font-bold hover:text-yellow transition-colors">{siteContact.phone.support}</a>
+                        <span className="text-white/40 mx-1.5">•</span>
+                        <a href={`tel:${siteContact.phone.secondary}`} className="text-white font-bold hover:text-yellow transition-colors">{siteContact.phone.secondary}</a>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -140,6 +142,15 @@ export default function ContactPage() {
                       <div className="text-xs">
                         <span className="text-white/60 font-bold">WhatsApp: </span>
                         <a href={`https://wa.me/${siteContact.phone.whatsappIntl}`} target="_blank" rel="noreferrer" className="text-white font-bold hover:text-emerald-300 transition-colors">{siteContact.phone.whatsapp}</a>
+                        <span className="text-white/40 mx-1.5">•</span>
+                        <a href={`https://wa.me/${siteContact.phone.whatsappSecondaryIntl}`} target="_blank" rel="noreferrer" className="text-white font-bold hover:text-emerald-300 transition-colors">{siteContact.phone.secondary}</a>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Send className="w-5 h-5 text-sky-400 shrink-0" />
+                      <div className="text-xs">
+                        <span className="text-white/60 font-bold">Telegram: </span>
+                        <a href={siteContact.phone.telegramUrl} target="_blank" rel="noreferrer" className="text-white font-bold hover:text-sky-300 transition-colors">{siteContact.phone.telegram}</a>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

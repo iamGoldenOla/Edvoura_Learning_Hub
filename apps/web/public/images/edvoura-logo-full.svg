@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360">
+  <defs>
+    <filter id="badgeShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="8" dy="8" stdDeviation="0" flood-color="#060E1C"/>
+    </filter>
+  </defs>
+
+  <!-- Left Icon Badge -->
+  <g transform="translate(40, 30) scale(0.58)">
+    <rect x="24" y="24" width="464" height="464" rx="96" ry="96" fill="#F5C518" stroke="#060E1C" stroke-width="22" filter="url(#badgeShadow)"/>
+    <polygon points="256,90 400,165 256,230 112,165" fill="#060E1C"/>
+    <line x1="375" y1="175" x2="410" y2="235" stroke="#FF4757" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="410" cy="245" r="16" fill="#FF4757" stroke="#060E1C" stroke-width="6"/>
+    <path d="M 160 250 L 350 250 L 350 295 L 225 295 L 225 325 L 330 325 L 330 365 L 225 365 L 225 395 L 355 395 L 355 440 L 160 440 Z" fill="#060E1C"/>
+    <circle cx="395" cy="305" r="20" fill="#00D2D3" stroke="#060E1C" stroke-width="8"/>
+  </g>
+
+  <!-- Typography Right -->
+  <!-- "EDVOURA" -->
+  <text x="360" y="165" font-family="'Syne', 'Inter', 'Segoe UI', sans-serif" font-weight="900" font-size="115" letter-spacing="-2" fill="#060E1C">EDVOURA</text>
+  
+  <!-- "LEARNING HUB" -->
+  <rect x="360" y="195" width="480" height="52" rx="14" fill="#060E1C"/>
+  <text x="375" y="233" font-family="'Syne', 'Inter', 'Segoe UI', sans-serif" font-weight="900" font-size="34" letter-spacing="6" fill="#F5C518">LEARNING HUB</text>
+
+  <!-- Gold Star Accent -->
+  <circle cx="860" cy="221" r="12" fill="#F5C518"/>
+
+  <!-- Tagline -->
+  <text x="365" y="295" font-family="'DM Sans', 'Inter', sans-serif" font-weight="700" font-size="22" letter-spacing="4" fill="#060E1C" opacity="0.8">WHERE LEARNERS' DREAMS COME TRUE</text>
+</svg>
