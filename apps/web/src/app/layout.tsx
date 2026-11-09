@@ -30,10 +30,16 @@ export const metadata: Metadata = {
     template: "%s | Edvoura Learning Hub",
   },
   description:
-    "Edvoura is the premier global online tutoring platform trusted by international and diaspora families across the UK, US, Canada, China, Japan, Russia, UAE, and Nigeria. Connect with certified 1-on-1 tutors starting from $20/hr across Cambridge IGCSE, IB, US Common Core, and WAEC curricula.",
+    "Edvoura is the premier global online tutoring platform trusted by international and diaspora families across the UK, US, Canada, Uzbekistan, Russia, China, Japan, UAE, and Nigeria. Connect with certified 1-on-1 elementary and secondary tutors starting from $20/session across Cambridge Primary & IGCSE, IB, Singapore Math, US Common Core, and WAEC curricula.",
   keywords: [
-    // Global & Diaspora Corridors (GEO / AEO)
+    // Global, Uzbekistan, Russia & Diaspora Corridors (GEO / AEO)
     "online tutoring international students",
+    "online tutoring Uzbekistan Tashkent",
+    "Cambridge English tutor Uzbekistan Tashkent",
+    "Primary math tutor Tashkent Samarkand",
+    "online tutoring Russia CIS English medium",
+    "1 on 1 primary tutor Uzbekistan $20",
+    "international school online tutor Tashkent",
     "English online tutor Japan Tokyo expat",
     "K-12 online tutoring China Shanghai Beijing",
     "Cambridge IGCSE online tutoring Russia",
@@ -42,7 +48,7 @@ export const metadata: Metadata = {
     "International Baccalaureate IB online tutor",
     "Singapore math Olympiad problem solving",
     "WAEC JAMB past questions practice online",
-    "certified virtual tutors Grades 1-12",
+    "certified virtual tutors Grades 1-6 elementary",
     "EYFS nursery preschool early years online",
     "Edvoura Learning Hub",
     "EdTech global tutoring platform",
@@ -65,7 +71,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Edvoura Learning Hub | Global K-12 Online Tutoring & Academic Mastery",
     description:
-      "Elite 1-on-1 tutoring starting at $20/hr. Certified educators for Cambridge IGCSE, IB, US Common Core, and WAEC across UK, US, Canada, China, Japan, Russia & Nigeria.",
+      "Elite 1-on-1 tutoring starting at $20/session. Certified educators for Cambridge Primary & IGCSE, IB, Singapore Math, US Common Core, and WAEC across Uzbekistan, Russia, UK, US, Canada, China, Japan & Nigeria.",
     url: baseUrl,
     siteName: "Edvoura Learning Hub",
     locale: "en_US",
@@ -119,12 +125,17 @@ const jsonLdGraph = {
         "Premier global online tutoring and learning platform providing 1-on-1 live lessons, international curriculum mastery, and digital classroom tools for K-12 students worldwide.",
       foundingDate: "2024",
       areaServed: [
+        { "@type": "Country", name: "Uzbekistan" },
+        { "@type": "City", name: "Tashkent" },
+        { "@type": "City", name: "Samarkand" },
+        { "@type": "Country", name: "Russia" },
+        { "@type": "City", name: "Moscow" },
+        { "@type": "City", name: "Saint Petersburg" },
         { "@type": "Country", name: "United Kingdom" },
         { "@type": "Country", name: "United States" },
         { "@type": "Country", name: "Canada" },
         { "@type": "Country", name: "China" },
         { "@type": "Country", name: "Japan" },
-        { "@type": "Country", name: "Russia" },
         { "@type": "Country", name: "Nigeria" },
         { "@type": "Country", name: "United Arab Emirates" },
         { "@type": "Country", name: "Australia" },
@@ -158,7 +169,15 @@ const jsonLdGraph = {
       mainEntity: [
         {
           "@type": "Question",
-          name: "Can international families in China, Japan, Russia, the UK, and the US use Edvoura?",
+          name: "Does Edvoura provide online tutoring in Uzbekistan, Russia, and Central Asia?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. Edvoura connects international and bilingual families across Tashkent, Samarkand, Moscow, and Central Asia with certified 1-on-1 online tutors specializing in Cambridge Primary, Singapore Math, English phonics, and international school curricula starting from $20 per session.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Can international families in China, Japan, Russia, Uzbekistan, the UK, and the US use Edvoura?",
           acceptedAnswer: {
             "@type": "Answer",
             text: "Yes. Edvoura is built for international, expat, and diaspora families worldwide. Our certified bilingual and English-medium tutors accommodate time zones across Asia (JST, CST), Europe/UK (MSK, GMT/BST), North America (EST, CST, PST), and Africa (WAT).",

@@ -37,6 +37,18 @@ const REGION_LOOKUP: Record<string, { name: string; flag: string; curriculum: st
     curriculum: 'CBSE & ICSE Board Standards',
     sampleIntro: 'Curriculum-focused practice questions for Class 1-12 students in India.',
   },
+  UZ: {
+    name: 'Uzbekistan',
+    flag: '🇺🇿',
+    curriculum: 'Cambridge International & Tashkent English-Medium Standards',
+    sampleIntro: 'Foundational English, Singapore Math, and STEM practice questions tailored for students in Tashkent, Samarkand, and Uzbekistan.',
+  },
+  RU: {
+    name: 'Russia & Central Asia',
+    flag: '🇷🇺',
+    curriculum: 'International English & Bilingual Academic Standards',
+    sampleIntro: 'Comprehensive 1-on-1 English fluency, math mastery, and Cambridge curriculum practice for international and bilingual learners in Russia and Central Asia.',
+  },
   GLOBAL: {
     name: 'Universal International',
     flag: '🌐',
