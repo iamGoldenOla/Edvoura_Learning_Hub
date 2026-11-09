@@ -21,16 +21,18 @@ import {
   Heart,
   Smile,
   ShieldCheck,
+  Target,
+  Award,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Primary & Elementary Online Tutoring (Grades 1–6) | Edvoura Learning Hub',
+  title: '1-on-1 Tutoring Services (Primary Grades 1–6 & Senior Exam Prep) | Edvoura',
   description:
-    'Dedicated 1-on-1 online tutoring for primary and elementary pupils (Grades 1 to 6, Ages 5–11). Primary mathematics, phonics, reading fluency, homework help, and Cambridge Checkpoint prep starting at $20/session.',
+    'Premier 1-on-1 online tutoring: foundational mastery for primary pupils (Grades 1–6) alongside specialized masterclasses for WAEC, JAMB, IGCSE, and SAT starting at $20/session.',
   openGraph: {
-    title: 'Edvoura Primary Tutoring (Grades 1–6) | Where Young Learners Flourish',
+    title: 'Edvoura Learning Hub Tutoring Services | Primary to College Prep',
     description:
-      'Patient certified educators specializing in young minds (Ages 5–11). Primary math, reading, spelling, and homework confidence starting at $20/session.',
+      'From foundational elementary confidence (Grades 1–6) to secondary milestone exams (WAEC, JAMB, IGCSE, SAT). Certified international tutors starting at $20/session.',
   },
 };
 
@@ -46,7 +48,7 @@ export default function ServicesPage() {
 
         <div className="marketing-container relative z-10 max-w-5xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-xl border-3 border-navy bg-yellow px-5 py-2 text-xs sm:text-sm font-black uppercase tracking-wider text-navy shadow-[4px_4px_0px_#FFFFFF] rotate-[-1.5deg] mb-8">
-            <Star className="w-4 h-4 fill-navy" /> PRIMARY &amp; ELEMENTARY SPECIALISTS (GRADES 1 TO 6)
+            <Star className="w-4 h-4 fill-navy" /> PRIMARY SPECIALISTS (GRADES 1 TO 6) &amp; SENIOR EXAM PREP
           </div>
 
           <h1 className="font-heading font-black text-4xl sm:text-6xl md:text-7xl leading-[1.08] text-white tracking-tight mb-8 drop-shadow-[4px_4px_0px_#060E1C]">
@@ -110,7 +112,7 @@ export default function ServicesPage() {
         <div className="marketing-container max-w-7xl mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="inline-block rounded-xl border-2 border-navy bg-yellow px-4 py-1.5 text-xs font-black uppercase tracking-wider text-navy shadow-[3px_3px_0px_#0A1628] mb-4">
-              TAILORED FOR AGES 5 TO 11
+              PRIMARY FOUNDATIONS (GRADES 1 TO 6)
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-navy tracking-tight">
               What We Teach &amp; Master in Grades 1 to 6
@@ -209,7 +211,98 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ===== THE 4 PROPRIETARY TOOLS (REFRAMED FOR ELEMENTARY) ===== */}
+      {/* ===== SECONDARY & ADVANCED EXAM PREP (SUBTLE EXTENSION SECTION) ===== */}
+      <section className="bg-white py-20 sm:py-24 border-b-8 border-navy">
+        <div className="marketing-container max-w-7xl mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="inline-block rounded-xl border-2 border-navy bg-navy text-yellow px-4 py-1.5 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_#F5C518] mb-4">
+              SECONDARY &amp; COLLEGE PREP EXTENSION
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black text-navy tracking-tight">
+              Looking Ahead: Secondary &amp; High-Stakes Exam Masterclasses
+            </h2>
+            <p className="mt-4 text-base sm:text-lg font-bold text-navy/70 leading-relaxed">
+              As learners advance beyond Grade 6, Edvoura scales with them. For families with older siblings or students preparing for secondary milestone examinations, our senior specialist faculty delivers intensive 1-on-1 exam masterclasses.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Exam 1 */}
+            <div className="rounded-2xl border-3 border-navy bg-off-white p-6 shadow-[5px_5px_0px_#0A1628] hover:-translate-y-1 transition-transform flex flex-col justify-between">
+              <div>
+                <span className="inline-block text-[10px] font-black uppercase px-2 py-0.5 rounded border border-navy/30 bg-emerald-100 text-emerald-800 mb-3">
+                  West African Standards
+                </span>
+                <h3 className="font-heading font-black text-xl text-navy mb-2">WAEC SSCE &amp; NECO</h3>
+                <p className="text-xs font-semibold text-navy/70 leading-relaxed mb-4">
+                  Syllabus coverage across Math, English, Sciences, and Commercial subjects with deep past question analysis and WAEC mark scheme expectations.
+                </p>
+              </div>
+              <ul className="text-[11px] font-bold text-navy/80 space-y-1.5 pt-3 border-t border-navy/15">
+                <li>• Step-by-step theory proofs</li>
+                <li>• Objective speed techniques</li>
+                <li>• Science practical simulations</li>
+              </ul>
+            </div>
+
+            {/* Exam 2 */}
+            <div className="rounded-2xl border-3 border-navy bg-off-white p-6 shadow-[5px_5px_0px_#0A1628] hover:-translate-y-1 transition-transform flex flex-col justify-between">
+              <div>
+                <span className="inline-block text-[10px] font-black uppercase px-2 py-0.5 rounded border border-navy/30 bg-yellow/30 text-navy mb-3">
+                  University Matriculation
+                </span>
+                <h3 className="font-heading font-black text-xl text-navy mb-2">JAMB UTME (CBT)</h3>
+                <p className="text-xs font-semibold text-navy/70 leading-relaxed mb-4">
+                  High-score strategies for competitive admissions (Medicine, Law, Engineering) with timed computer-based drills and 300,000+ past questions.
+                </p>
+              </div>
+              <ul className="text-[11px] font-bold text-navy/80 space-y-1.5 pt-3 border-t border-navy/15">
+                <li>• 40-second speed heuristics</li>
+                <li>• Negative marking evasion</li>
+                <li>• Novel &amp; comprehension drills</li>
+              </ul>
+            </div>
+
+            {/* Exam 3 */}
+            <div className="rounded-2xl border-3 border-navy bg-off-white p-6 shadow-[5px_5px_0px_#0A1628] hover:-translate-y-1 transition-transform flex flex-col justify-between">
+              <div>
+                <span className="inline-block text-[10px] font-black uppercase px-2 py-0.5 rounded border border-navy/30 bg-sky-100 text-sky-800 mb-3">
+                  British International
+                </span>
+                <h3 className="font-heading font-black text-xl text-navy mb-2">Cambridge IGCSE &amp; A-Level</h3>
+                <p className="text-xs font-semibold text-navy/70 leading-relaxed mb-4">
+                  Structured preparation for Cambridge CIE, Edexcel, and Oxford AQA across Key Stage 3, GCSE, IGCSE, and AS/A-Levels.
+                </p>
+              </div>
+              <ul className="text-[11px] font-bold text-navy/80 space-y-1.5 pt-3 border-t border-navy/15">
+                <li>• Mark scheme precision</li>
+                <li>• Extended response writing</li>
+                <li>• Core &amp; Extended paper tactics</li>
+              </ul>
+            </div>
+
+            {/* Exam 4 */}
+            <div className="rounded-2xl border-3 border-navy bg-off-white p-6 shadow-[5px_5px_0px_#0A1628] hover:-translate-y-1 transition-transform flex flex-col justify-between">
+              <div>
+                <span className="inline-block text-[10px] font-black uppercase px-2 py-0.5 rounded border border-navy/30 bg-purple-100 text-purple-800 mb-3">
+                  US &amp; Global Admissions
+                </span>
+                <h3 className="font-heading font-black text-xl text-navy mb-2">US SAT &amp; AP Courses</h3>
+                <p className="text-xs font-semibold text-navy/70 leading-relaxed mb-4">
+                  Digital SAT math &amp; reading pacing, Desmos calculator shortcuts, and Advanced Placement (AP) credit modules.
+                </p>
+              </div>
+              <ul className="text-[11px] font-bold text-navy/80 space-y-1.5 pt-3 border-t border-navy/15">
+                <li>• Digital SAT adaptive tactics</li>
+                <li>• Desmos graph mastery</li>
+                <li>• AP Calculus &amp; Physics support</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== THE 4 PROPRIETARY TOOLS ===== */}
       <section className="bg-sand py-20 sm:py-28 border-b-8 border-navy">
         <div className="marketing-container max-w-7xl mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -217,10 +310,10 @@ export default function ServicesPage() {
               <Sparkles className="w-4 h-4 text-navy" /> PROPRIETARY TECHNOLOGY SUITE
             </span>
             <h2 className="text-3xl sm:text-5xl font-black text-navy tracking-tight">
-              Interactive Tools That Make Primary Learning Fun
+              Interactive Tools That Make Learning Engaging
             </h2>
             <p className="mt-4 text-base sm:text-lg font-bold text-navy/70 leading-relaxed">
-              We never subject elementary kids to boring PDF worksheets. Our tutors project interactive visual models directly onto the collaborative classroom whiteboard!
+              We never subject kids to boring PDF worksheets. Our tutors project interactive visual models directly onto the collaborative classroom whiteboard!
             </p>
           </div>
 
@@ -286,7 +379,7 @@ export default function ServicesPage() {
                 </div>
                 <h3 className="text-xl font-black text-navy mb-2">Curriculum Matrix™</h3>
                 <p className="text-xs font-semibold text-navy/70 leading-relaxed">
-                  1,860+ step-by-step micro-skills showing parents the exact foundational milestones their child has mastered in Grades 1 to 6.
+                  1,860+ step-by-step micro-skills showing parents the exact foundational milestones their child has mastered in Grades 1 to 6 and beyond.
                 </p>
               </div>
               <Link
@@ -310,7 +403,7 @@ export default function ServicesPage() {
                 </div>
                 <h3 className="text-xl font-black text-navy mb-2">STEM MechLab™</h3>
                 <p className="text-xs font-semibold text-navy/70 leading-relaxed">
-                  Interactive isometric machines with moving levers, heat engines, and marble sorters that spark early love for science.
+                  Interactive isometric machines with moving levers, heat engines, and marble sorters that spark early and advanced love for science.
                 </p>
               </div>
               <Link
@@ -324,39 +417,39 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* ===== SUPPORTED PRIMARY CURRICULA ===== */}
+      {/* ===== SUPPORTED ACCREDITED CURRICULA ===== */}
       <section className="bg-navy py-20 sm:py-24 text-white border-b-8 border-navy">
         <div className="marketing-container max-w-6xl mx-auto px-4 text-center">
           <span className="rounded-xl border-2 border-white bg-yellow px-4 py-1.5 text-xs font-black uppercase tracking-wider text-navy shadow-[3px_3px_0px_#FFFFFF] mb-4 inline-block">
             ACCREDITED CURRICULA
           </span>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
-            Curricula We Support for Grades 1–6
+            Curricula We Support Worldwide
           </h2>
           <p className="text-white/70 text-base max-w-2xl mx-auto font-medium mb-12">
-            Whether your child attends a British international school, a Nigerian private academy, or follows the US curriculum, our tutors teach to their official school standards.
+            Whether your child attends a British international school, a Nigerian academy, or follows the US curriculum, our tutors teach to their official school standards from primary grades through to college entrance.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
             <div className="rounded-2xl border-4 border-navy bg-off-white p-6 text-navy shadow-[6px_6px_0px_#F5C518]">
               <span className="text-2xl mb-3 block">🇬🇧</span>
-              <h3 className="text-xl font-black mb-2">British &amp; Cambridge Primary</h3>
+              <h3 className="text-xl font-black mb-2">British &amp; Cambridge</h3>
               <p className="text-xs font-semibold text-navy/70 leading-relaxed">
-                Key Stage 1 &amp; Key Stage 2 (Years 1 to 6), Cambridge Primary Checkpoint, and 11+ Plus Grammar school entrance preparation.
+                Key Stage 1 &amp; Key Stage 2 Primary, Cambridge Primary Checkpoint, 11+ Grammar Entrance, through to IGCSE and A-Levels.
               </p>
             </div>
             <div className="rounded-2xl border-4 border-navy bg-off-white p-6 text-navy shadow-[6px_6px_0px_#F5C518]">
               <span className="text-2xl mb-3 block">🇳🇬</span>
-              <h3 className="text-xl font-black mb-2">Nigerian Primary School</h3>
+              <h3 className="text-xl font-black mb-2">Nigerian Curriculum</h3>
               <p className="text-xs font-semibold text-navy/70 leading-relaxed">
-                Basic 1 to Basic 6 curriculum, National Common Entrance Examination (NCEE), and state model secondary school entrance exams.
+                Basic 1 to Basic 6 Primary (NCEE), Junior Secondary (BECE), through to Senior Secondary WAEC SSCE, NECO, and JAMB UTME.
               </p>
             </div>
             <div className="rounded-2xl border-4 border-navy bg-off-white p-6 text-navy shadow-[6px_6px_0px_#F5C518]">
               <span className="text-2xl mb-3 block">🇺🇸</span>
-              <h3 className="text-xl font-black mb-2">US Common Core Elementary</h3>
+              <h3 className="text-xl font-black mb-2">US &amp; International</h3>
               <p className="text-xs font-semibold text-navy/70 leading-relaxed">
-                Kindergarten to Grade 6 Common Core State Standards in Mathematics, English Language Arts (ELA), and inquiry-based STEM.
+                Kindergarten to Grade 6 Common Core State Standards in Mathematics &amp; ELA, through to High School Honors, AP courses, and SAT.
               </p>
             </div>
           </div>
@@ -373,7 +466,7 @@ export default function ServicesPage() {
             Give Your Child the Gift of Learning Confidence
           </h2>
           <p className="text-base sm:text-xl font-bold max-w-2xl mx-auto mb-10 text-navy/80">
-            Book a free 1-on-1 trial session today. We will pair your child with an encouraging primary tutor and send you an initial learning profile.
+            Book a free 1-on-1 trial session today. We will pair your child with an encouraging certified tutor and send you an initial learning profile.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link
