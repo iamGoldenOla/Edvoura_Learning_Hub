@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, BookOpenCheck, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
+import { Camera, FileText, CheckCircle2, Sparkles, ArrowRight, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SchoolSyllabusReassuranceBanner() {
@@ -9,7 +9,7 @@ export default function SchoolSyllabusReassuranceBanner() {
         <div className="rounded-[2.5rem] border-4 border-navy bg-white p-6 sm:p-10 md:p-12 shadow-[8px_8px_0px_#0A1628] flex flex-col lg:flex-row items-center gap-8 md:gap-12">
           {/* Visual Icon Badge */}
           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl border-4 border-navy bg-yellow flex items-center justify-center shrink-0 shadow-[4px_4px_0px_#0A1628]">
-            <Camera className="w-10 h-10 sm:w-12 sm:h-12 text-navy" />
+            <UploadCloud className="w-10 h-10 sm:w-12 sm:h-12 text-navy" />
           </div>
 
           {/* Text Content */}
@@ -20,19 +20,31 @@ export default function SchoolSyllabusReassuranceBanner() {
             </div>
 
             <h2 className="font-heading font-black text-2xl sm:text-3xl md:text-4xl text-navy leading-tight mb-3">
-              We Teach Your Child&apos;s Exact School Syllabus &amp; Homework
+              We Teach Your Child&apos;s Exact School Syllabus, Curriculum &amp; Homework
             </h2>
 
             <p className="text-sm sm:text-base font-bold text-navy/80 leading-relaxed max-w-2xl">
-              No generic, disconnected curriculum. Simply snap a photo or upload your child&apos;s school textbook page, worksheet, or homework assignment. Your dedicated educator sits 1-on-1 to re-teach that exact classroom lesson step-by-step.
+              No generic, disconnected lessons. You can share your child&apos;s school curriculum, term scheme of work, textbook chapter, or weekly homework worksheet. Your dedicated educator sits 1-on-1 to re-teach that exact classroom lesson step-by-step.
             </p>
 
             {/* 3 Steps */}
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
               {[
-                { step: '1', title: 'Snap School Task', desc: 'Send homework sheet or textbook chapter' },
-                { step: '2', title: '1-on-1 Breakdown', desc: 'Educator explains concept patiently' },
-                { step: '3', title: 'Independent Mastery', desc: 'Child completes work with zero tears' },
+                {
+                  step: '1',
+                  title: 'Share Curriculum or Task',
+                  desc: "Upload your child's term syllabus, textbook page, or homework sheet",
+                },
+                {
+                  step: '2',
+                  title: '1-on-1 Patient Breakdown',
+                  desc: 'Educator aligns coaching directly to what their school teacher taught',
+                },
+                {
+                  step: '3',
+                  title: 'Independent Mastery',
+                  desc: 'Child finishes assignments calmly with zero evening homework tears',
+                },
               ].map((item) => (
                 <div
                   key={item.step}
