@@ -22,8 +22,9 @@ export type StudentOption = {
 };
 
 const DEFAULT_REAL_STUDENTS: StudentOption[] = [
+  { id: 'EDV-STU-TITOMI-2026', name: 'Titomi Lawson', grade: 'Primary 4 / Grade 4 (UK)', avatar: '👧🏽' },
+  { id: 'EDV-STU-KENDRICK-2026', name: 'Kendrick Agbagwa', grade: 'Primary 2 / Grade 2 (NG)', avatar: '👦🏾' },
   { id: 'EDV-STU-JEDIDIAHZ-2026', name: 'James Jedidiahz', grade: 'Primary 3 / Grade 3', avatar: '👦🏽' },
-  { id: 'EDV-STU-TITOMI-2026', name: 'Titomi Lawson', grade: 'Primary 3 / Grade 3', avatar: '👧🏽' },
   { id: 'EDV-STU-SARAH-2026', name: 'Sarah Jenkins', grade: 'Primary 1 / Grade 1', avatar: '👧🏼' },
   { id: 'EDV-STU-DAVID-2026', name: 'David Adebayo', grade: 'Primary 1 / Grade 1', avatar: '👦🏿' },
 ];

@@ -712,7 +712,7 @@ export default function TutorLessonNotesPage() {
                               />
                               <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold text-dark/80">
                                 <span>Quick Select Student:</span>
-                                {['Titomi (Grade 3)', 'Alex (Grade 3)', 'David (Grade 2)', 'Sophia (Grade 4)'].map((name) => (
+                                {['Titomi Lawson (Grade 4 - UK)', 'Kendrick Agbagwa (Grade 2 - NG)', 'James Jedidiahz (Grade 3)'].map((name) => (
                                   <button
                                     key={name}
                                     type="button"
