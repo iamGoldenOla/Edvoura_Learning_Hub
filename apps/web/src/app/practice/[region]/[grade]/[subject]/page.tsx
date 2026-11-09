@@ -49,6 +49,36 @@ const REGION_LOOKUP: Record<string, { name: string; flag: string; curriculum: st
     curriculum: 'International English & Bilingual Academic Standards',
     sampleIntro: 'Comprehensive 1-on-1 English fluency, math mastery, and Cambridge curriculum practice for international and bilingual learners in Russia and Central Asia.',
   },
+  JP: {
+    name: 'Japan',
+    flag: '🇯🇵',
+    curriculum: 'Cambridge Primary & IB PYP Standards',
+    sampleIntro: 'Foundational English literacy and Singapore math practice questions for international and bilingual school students in Tokyo and Japan.',
+  },
+  CN: {
+    name: 'China',
+    flag: '🇨🇳',
+    curriculum: 'IB PYP & Cambridge Primary Standards',
+    sampleIntro: 'English reading comprehension, vocabulary, and Singapore math problem-solving practice for international students in Shanghai and Beijing.',
+  },
+  KR: {
+    name: 'South Korea',
+    flag: '🇰🇷',
+    curriculum: 'US Common Core & IB PYP Standards',
+    sampleIntro: 'Creative writing, phonics, and visual mathematics practice for students in Seoul, Songdo, and Jeju.',
+  },
+  CA: {
+    name: 'Canada',
+    flag: '🇨🇦',
+    curriculum: 'Ontario & British Columbia Provincial Curricula',
+    sampleIntro: 'Provincially aligned math heuristics and English literacy practice questions for students in Toronto, Vancouver, and across Canada.',
+  },
+  AE: {
+    name: 'United Arab Emirates',
+    flag: '🇦🇪',
+    curriculum: 'British National Curriculum & Cambridge Primary',
+    sampleIntro: 'Rigorous Key Stage math and English literacy practice questions for students attending British and international academies in Dubai and Abu Dhabi.',
+  },
   GLOBAL: {
     name: 'Universal International',
     flag: '🌐',
