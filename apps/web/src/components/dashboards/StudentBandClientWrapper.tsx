@@ -350,14 +350,12 @@ export default function StudentBandClientWrapper({
                       <p className="text-sm font-bold text-dark/40">{nextLesson.classTitle}</p>
                       
                       {nextLesson.joinUrl ? (
-                        <a
-                          href={nextLesson.joinUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block w-full py-4 sm:py-5 bg-yellow text-dark border-[3px] sm:border-[4px] border-dark rounded-2xl font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                        <Link
+                          href={`/dash/student/live/classroom?lessonId=${nextLesson.id}`}
+                          className="block w-full py-4 sm:py-5 bg-yellow text-dark border-[3px] sm:border-[4px] border-dark rounded-2xl font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_#060E1C] sm:shadow-[6px_6px_0px_#060E1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-center"
                         >
-                          Join Class Now
-                        </a>
+                          Enter Live Classroom
+                        </Link>
                       ) : (
                         <div className="py-4 text-sm font-bold text-dark/30 italic">Getting the room ready...</div>
                       )}
@@ -438,15 +436,13 @@ export default function StudentBandClientWrapper({
                 </div>
                 <div className="shrink-0">
                   {nextLesson.joinUrl ? (
-                    <a
-                      href={nextLesson.joinUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                    <Link
+                      href={`/dash/student/live/classroom?lessonId=${nextLesson.id}`}
                       className="inline-flex w-full sm:w-auto items-center justify-center bg-emerald-400 border-[3px] border-dark text-dark font-black rounded-xl shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 px-4 sm:px-6 py-3 sm:py-4 animate-pulse text-sm sm:text-base"
                     >
                       <PlayCircle className="mr-2 h-5 w-5" />
-                      Join Class Now
-                    </a>
+                      Enter Live Classroom
+                    </Link>
                   ) : (
                     <Link
                       href="/dash/student/live"

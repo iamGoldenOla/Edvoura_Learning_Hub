@@ -44,7 +44,7 @@ export default function FloatingQuickChat() {
 
             {/* Quick Action Options */}
             <div className="space-y-2">
-              {/* WhatsApp Line 1 */}
+              {/* WhatsApp Direct Chat */}
               <a
                 href={`https://wa.me/${siteContact.phone.whatsappIntl}?text=${encodeURIComponent(
                   "Hello Edvoura! I'm interested in 1-on-1 online tutoring for my child."
@@ -59,32 +59,9 @@ export default function FloatingQuickChat() {
                   </div>
                   <div className="text-left">
                     <span className="block text-xs font-black text-navy group-hover:text-emerald-800">
-                      WhatsApp Line 1
+                      WhatsApp Chat
                     </span>
-                    <span className="text-[10px] font-bold text-navy/60">{siteContact.phone.support}</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-navy/40 group-hover:translate-x-0.5 transition-transform" />
-              </a>
-
-              {/* WhatsApp Line 2 */}
-              <a
-                href={`https://wa.me/${siteContact.phone.whatsappSecondaryIntl}?text=${encodeURIComponent(
-                  "Hello Edvoura! I'd like to ask about tutoring schedules and trial lessons."
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3 rounded-2xl border-2 border-navy bg-emerald-50/60 hover:bg-emerald-100 transition-colors shadow-[2px_2px_0px_#0A1628] group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <span className="block text-xs font-black text-navy group-hover:text-emerald-800">
-                      WhatsApp Line 2
-                    </span>
-                    <span className="text-[10px] font-bold text-navy/60">{siteContact.phone.secondary}</span>
+                    <span className="text-[10px] font-bold text-navy/60">{siteContact.phone.whatsapp}</span>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-navy/40 group-hover:translate-x-0.5 transition-transform" />

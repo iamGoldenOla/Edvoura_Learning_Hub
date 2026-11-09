@@ -142,8 +142,6 @@ export default function ContactPage() {
                       <div className="text-xs">
                         <span className="text-white/60 font-bold">WhatsApp: </span>
                         <a href={`https://wa.me/${siteContact.phone.whatsappIntl}`} target="_blank" rel="noreferrer" className="text-white font-bold hover:text-emerald-300 transition-colors">{siteContact.phone.whatsapp}</a>
-                        <span className="text-white/40 mx-1.5">•</span>
-                        <a href={`https://wa.me/${siteContact.phone.whatsappSecondaryIntl}`} target="_blank" rel="noreferrer" className="text-white font-bold hover:text-emerald-300 transition-colors">{siteContact.phone.secondary}</a>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

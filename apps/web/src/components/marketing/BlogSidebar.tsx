@@ -121,7 +121,7 @@ export default function BlogSidebar() {
             <Image src="/images/trendtactics.jpg" alt="TrendTactics Digital Flyer" fill className="object-cover" />
           </div>
           <a
-            href="https://wa.me/2349068133874"
+            href="https://wa.me/2347010158258"
             target="_blank"
             rel="noopener noreferrer"
             className="flex w-full items-center justify-center gap-1.5 bg-success text-white border-2 border-navy font-heading text-xs font-black py-2.5 rounded-lg shadow-[3px_3px_0px_#0A1628] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_#0A1628] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all uppercase tracking-wider"
