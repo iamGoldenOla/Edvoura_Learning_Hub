@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import FloatingQuickChat from "@/components/marketing/FloatingQuickChat";
 
 const syne = Syne({
   variable: "--font-syne",
@@ -242,6 +243,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning className="min-h-full flex flex-col antialiased">
         {children}
+        <FloatingQuickChat />
         <script
           dangerouslySetInnerHTML={{
             __html: `

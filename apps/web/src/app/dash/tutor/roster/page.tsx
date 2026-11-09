@@ -3,6 +3,7 @@ import { AlertTriangle, BarChart3, CheckCircle2, Trophy, Users, Video } from 'lu
 
 import { Button } from '@/components/ui/button';
 import StudentLinkEditor from '@/components/dashboards/StudentLinkEditor';
+import QuickAddPupilButton from '@/components/tutor/QuickAddPupilButton';
 import { createClient } from '@/utils/supabase/server';
 
 type EnrollmentRow = {

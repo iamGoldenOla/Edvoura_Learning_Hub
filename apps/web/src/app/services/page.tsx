@@ -1,6 +1,8 @@
 import { Metadata } from 'next';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
+import SchoolSyllabusReassuranceBanner from '@/components/marketing/SchoolSyllabusReassuranceBanner';
+import ParentSocialProofSection from '@/components/marketing/ParentSocialProofSection';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -106,6 +108,9 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* ===== SCHOOL-ALIGNED SYLLABUS REASSURANCE BANNER ===== */}
+      <SchoolSyllabusReassuranceBanner />
 
       {/* ===== CORE PRIMARY (GRADES 1 TO 6) SERVICES ===== */}
       <section className="bg-white py-20 sm:py-28 border-b-8 border-navy">
@@ -455,6 +460,9 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
+
+      {/* ===== PARENT REVIEWS & SOCIAL PROOF ===== */}
+      <ParentSocialProofSection />
 
       {/* ===== GUARANTEE & CALL TO ACTION ===== */}
       <section className="bg-yellow py-20 sm:py-24 border-b-8 border-navy text-navy text-center">

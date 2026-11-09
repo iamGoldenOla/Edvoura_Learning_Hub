@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Navbar from '@/components/marketing/Navbar';
 import Footer from '@/components/marketing/Footer';
+import SchoolSyllabusReassuranceBanner from '@/components/marketing/SchoolSyllabusReassuranceBanner';
+import ParentSocialProofSection from '@/components/marketing/ParentSocialProofSection';
 import {
   Calculator,
   BookOpen,
@@ -280,6 +282,9 @@ export default function SouthKoreaTutoringPage() {
             </div>
           </div>
         </section>
+
+        {/* PARENT REVIEWS & SOCIAL PROOF */}
+        <ParentSocialProofSection />
 
         {/* BOTTOM CTA */}
         <section className="py-20 bg-[#060E1C] text-white text-center">

@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Star, ArrowRight, Globe2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Star, ArrowRight, Globe2, Sparkles, Copy, Check, Building2, MessageSquare } from 'lucide-react';
+import { siteContact } from '@/lib/site';
 
 type CurrencyCode = 'USD' | 'GBP' | 'NGN' | 'EUR' | 'CAD' | 'AUD';
 
@@ -83,6 +84,21 @@ const CURRENCIES: Record<CurrencyCode, CurrencyRate> = {
 
 export default function InteractivePricingCards() {
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('USD');
+  const [copied, setCopied] = useState(false);
+
+  const bankDetails = {
+    bankName: 'Access Bank / GTBank',
+    accountName: 'EDVOURA LEARNING HUB',
+    accountNumber: '1853049281',
+  };
+
+  const copyToClipboard = (text: string) => {
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
 
   const curr = CURRENCIES[selectedCurrency];
 
@@ -263,6 +279,89 @@ export default function InteractivePricingCards() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* DIRECT BANK TRANSFER & PROOF OF PAYMENT SECTION */}
+      <div className="mt-16 rounded-[2.5rem] border-4 border-navy bg-white p-6 sm:p-10 shadow-[8px_8px_0px_#0A1628] text-navy">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b-2 border-navy/10">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl border-3 border-navy bg-yellow flex items-center justify-center shrink-0 shadow-[3px_3px_0px_#0A1628]">
+              <Building2 className="w-7 h-7 text-navy" />
+            </div>
+            <div>
+              <span className="inline-block rounded-md border border-navy/30 bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 mb-1">
+                Nigeria &bull; UK &bull; Global Wire
+              </span>
+              <h3 className="font-heading font-black text-xl sm:text-2xl text-navy">
+                Prefer Direct Bank Transfer?
+              </h3>
+              <p className="text-xs sm:text-sm font-bold text-navy/70">
+                You can transfer directly into our account and send proof of payment on WhatsApp for instant session activation.
+              </p>
+            </div>
+          </div>
+
+          <a
+            href={`https://wa.me/${siteContact.phone.whatsappIntl}?text=${encodeURIComponent(
+              "Hello Edvoura! I've made a bank transfer for my child's tutoring sessions. Here is my payment receipt:"
+            )}`}
+            target="_blank"
+            rel="noreferrer"
+            className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border-3 border-navy bg-emerald-500 hover:bg-emerald-600 text-white font-heading font-black text-xs sm:text-sm uppercase tracking-wider px-6 py-3.5 shadow-[3px_3px_0px_#0A1628] hover:-translate-y-0.5 transition-transform"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Send Receipt on WhatsApp</span>
+          </a>
+        </div>
+
+        {/* Bank Account Details Grid */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="rounded-2xl border-2 border-navy bg-off-white p-4">
+            <span className="block text-[10px] font-black uppercase tracking-wider text-navy/60 mb-1">
+              Account Name
+            </span>
+            <p className="font-heading font-black text-base text-navy">{bankDetails.accountName}</p>
+          </div>
+
+          <div className="rounded-2xl border-2 border-navy bg-off-white p-4">
+            <span className="block text-[10px] font-black uppercase tracking-wider text-navy/60 mb-1">
+              Bank Name
+            </span>
+            <p className="font-heading font-black text-base text-navy">{bankDetails.bankName}</p>
+          </div>
+
+          <div className="rounded-2xl border-2 border-navy bg-yellow/30 p-4 flex items-center justify-between">
+            <div>
+              <span className="block text-[10px] font-black uppercase tracking-wider text-navy/60 mb-1">
+                Account Number (Naira &bull; NGN)
+              </span>
+              <p className="font-heading font-black text-lg text-navy tracking-wider">
+                {bankDetails.accountNumber}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => copyToClipboard(bankDetails.accountNumber)}
+              className="ml-3 px-3 py-2 rounded-xl border-2 border-navy bg-white hover:bg-yellow font-black text-xs text-navy flex items-center gap-1.5 shadow-[2px_2px_0px_#0A1628] transition-colors"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <p className="mt-4 text-[11px] font-bold text-navy/60 text-center sm:text-left">
+          💡 For UK (GBP), Canadian (CAD), or US (USD) bank wire/IBAN instructions, reach our team via WhatsApp at <a href={`https://wa.me/${siteContact.phone.whatsappIntl}`} className="text-navy font-black underline">{siteContact.phone.support}</a> or email <a href="mailto:payment@edvouralearninghub.com" className="text-navy font-black underline">payment@edvouralearninghub.com</a>.
+        </p>
       </div>
     </div>
   );
