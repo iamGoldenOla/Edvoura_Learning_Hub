@@ -193,6 +193,7 @@ export default function TutorBuilderPage() {
   const [formInstructions, setFormInstructions] = useState("");
   const [formResourceName, setFormResourceName] = useState("");
   const [formResourceFile, setFormResourceFile] = useState<File | null>(null);
+  const [formResourceFiles, setFormResourceFiles] = useState<File[]>([]);
 
   const [userId, setUserId] = useState("");
 
@@ -760,26 +761,67 @@ export default function TutorBuilderPage() {
                         />
 
                         <div className="rounded-xl border-[3px] border-dark bg-white p-4">
-                          <p className="font-black text-dark/70 uppercase tracking-widest text-xs mb-2">
-                            Attach{" "}
-                            {activeTool === "assignment"
-                              ? "assignment"
-                              : "lesson"}{" "}
-                            resource (optional)
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-black text-dark/70 uppercase tracking-widest text-xs">
+                              Attach{" "}
+                              {activeTool === "assignment"
+                                ? "assignment"
+                                : "lesson"}{" "}
+                              resources (Multi-File PDF / Word)
+                            </p>
+                            <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-yellow border-[2px] border-dark shadow-[1px_1px_0px_#060E1C]">
+                              Upload Multiple
+                            </span>
+                          </div>
+                          <p className="text-xs text-dark/60 font-semibold mb-3">
+                            Select one or more tutorial PDFs or converted docx files at a stretch:
                           </p>
                           <input
                             type="file"
+                            multiple
+                            accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                             onChange={(event) => {
-                              const file = event.target.files?.[0] ?? null;
-                              setFormResourceFile(file);
-                              setFormResourceName(file?.name ?? "");
+                              const files = Array.from(event.target.files || []);
+                              if (files.length > 0) {
+                                setFormResourceFiles((prev) => [...prev, ...files]);
+                                setFormResourceFile(files[0] || null);
+                                setFormResourceName(files.map((f) => f.name).join(", "));
+                              }
                             }}
                             className="block w-full text-xs font-bold text-dark file:mr-4 file:rounded-lg file:border-[2px] file:border-dark file:bg-yellow file:px-4 file:py-2 file:text-dark file:font-black file:shadow-[2px_2px_0px_#060E1C] cursor-pointer"
                           />
-                          {formResourceName ? (
-                            <p className="mt-3 text-xs font-black text-emerald-600 bg-emerald-100 px-3 py-1 rounded-md inline-block border-[2px] border-emerald-300">
-                              Selected: {formResourceName}
-                            </p>
+                          {formResourceFiles.length > 0 ? (
+                            <div className="mt-3 space-y-1.5">
+                              <p className="text-[11px] font-black uppercase tracking-wider text-dark/70">
+                                {formResourceFiles.length} file(s) ready to upload:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {formResourceFiles.map((file, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="flex items-center gap-2 text-xs font-bold bg-emerald-50 border-[2px] border-emerald-400 rounded-lg px-2.5 py-1 text-emerald-900"
+                                  >
+                                    <span className="truncate max-w-[180px]">{file.name}</span>
+                                    <span className="text-[10px] text-emerald-700">
+                                      ({(file.size / 1024).toFixed(0)} KB)
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const updated = formResourceFiles.filter((_, i) => i !== idx);
+                                        setFormResourceFiles(updated);
+                                        setFormResourceFile(updated[0] || null);
+                                        setFormResourceName(updated.map((f) => f.name).join(", "));
+                                      }}
+                                      className="text-rose-600 hover:text-rose-800 font-black ml-1 text-sm leading-none"
+                                      title="Remove file"
+                                    >
+                                      &times;
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           ) : null}
                         </div>
 
@@ -830,51 +872,35 @@ export default function TutorBuilderPage() {
                                   if (
                                     result.success &&
                                     result.id &&
-                                    formResourceFile
+                                    formResourceFiles.length > 0
                                   ) {
-                                    setFeedback(
-                                      "Publishing record... now uploading file...",
-                                    );
                                     const supabase = createClient();
-                                    const safeName = `${Date.now()}-${formResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-                                    const objectPath = `assignments/${result.id}/${safeName}`;
-
-                                    const upload = await supabase.storage
-                                      .from("assignment-assets")
-                                      .upload(objectPath, formResourceFile);
-
-                                    if (upload.error) {
-                                      console.error(
-                                        "Upload error:",
-                                        upload.error,
-                                      );
+                                    let uploadedCount = 0;
+                                    for (let i = 0; i < formResourceFiles.length; i++) {
+                                      const file = formResourceFiles[i];
                                       setFeedback(
-                                        `Record created, but file upload failed: ${upload.error.message}`,
+                                        `Publishing: uploading resource ${i + 1} of ${formResourceFiles.length} (${file.name})...`,
                                       );
-                                    } else {
-                                      const attach = await supabase.rpc(
-                                        "attach_assignment_asset",
-                                        {
-                                          target_assignment_id: result.id,
-                                          object_path: objectPath,
-                                          bucket_id: "assignment-assets",
-                                        },
-                                      );
+                                      const safeName = `${Date.now()}-${i}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+                                      const objectPath = `assignments/${result.id}/${safeName}`;
 
-                                      if (attach.error) {
-                                        console.error(
-                                          "Attach error:",
-                                          attach.error,
+                                      const upload = await supabase.storage
+                                        .from("assignment-assets")
+                                        .upload(objectPath, file);
+
+                                      if (!upload.error) {
+                                        await supabase.rpc(
+                                          "attach_assignment_asset",
+                                          {
+                                            target_assignment_id: result.id,
+                                            object_path: objectPath,
+                                            bucket_id: "assignment-assets",
+                                          },
                                         );
-                                        setFeedback(
-                                          `File uploaded, but failed to link to assignment: ${attach.error.message}`,
-                                        );
-                                      } else {
-                                        setFeedback(
-                                          "Everything published and attached successfully!",
-                                        );
+                                        uploadedCount++;
                                       }
                                     }
+                                    setFeedback(`Successfully published with ${uploadedCount} attached resource(s)!`);
                                   }
 
                                   setFormTitle("");
@@ -882,6 +908,7 @@ export default function TutorBuilderPage() {
                                   setFormDueAt("");
                                   setFormResourceName("");
                                   setFormResourceFile(null);
+                                  setFormResourceFiles([]);
                                   setShowAssignmentForm(false);
                                   if (!feedback.includes("failed")) {
                                     setFeedback(
@@ -898,6 +925,7 @@ export default function TutorBuilderPage() {
                                     setFormDueAt("");
                                     setFormResourceName("");
                                     setFormResourceFile(null);
+                                  setFormResourceFiles([]);
                                     setEditingAssignmentId(null);
                                     setShowAssignmentForm(false);
                                     setFeedback(`Assignment "${safeTitle}" updated successfully.`);
@@ -937,37 +965,30 @@ export default function TutorBuilderPage() {
 
                                   if (
                                     created?.assignment_id &&
-                                    formResourceFile
+                                    formResourceFiles.length > 0
                                   ) {
-                                    const safeName = `${Date.now()}-${formResourceFile.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-                                    const objectPath = `assignments/${created.assignment_id}/${safeName}`;
-                                    const upload = await supabase.storage
-                                      .from("assignment-assets")
-                                      .upload(objectPath, formResourceFile, {
-                                        cacheControl: "3600",
-                                        upsert: false,
-                                      });
+                                    for (let i = 0; i < formResourceFiles.length; i++) {
+                                      const file = formResourceFiles[i];
+                                      const safeName = `${Date.now()}-${i}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+                                      const objectPath = `assignments/${created.assignment_id}/${safeName}`;
+                                      const upload = await supabase.storage
+                                        .from("assignment-assets")
+                                        .upload(objectPath, file, {
+                                          cacheControl: "3600",
+                                          upsert: false,
+                                        });
 
-                                    if (upload.error) {
-                                      setFeedback(upload.error.message);
-                                      setIsSavingAssignment(false);
-                                      return;
-                                    }
-
-                                    const attach = await supabase.rpc(
-                                      "attach_assignment_asset",
-                                      {
-                                        target_assignment_id:
-                                          created.assignment_id,
-                                        object_path: objectPath,
-                                        bucket_id: "assignment-assets",
-                                      },
-                                    );
-
-                                    if (attach.error) {
-                                      setFeedback(attach.error.message);
-                                      setIsSavingAssignment(false);
-                                      return;
+                                      if (!upload.error) {
+                                        await supabase.rpc(
+                                          "attach_assignment_asset",
+                                          {
+                                            target_assignment_id:
+                                              created.assignment_id,
+                                            object_path: objectPath,
+                                            bucket_id: "assignment-assets",
+                                          },
+                                        );
+                                      }
                                     }
                                   }
 
@@ -976,6 +997,7 @@ export default function TutorBuilderPage() {
                                   setFormDueAt("");
                                   setFormResourceName("");
                                   setFormResourceFile(null);
+                                  setFormResourceFiles([]);
                                   setShowAssignmentForm(false);
                                   setFeedback(
                                     created

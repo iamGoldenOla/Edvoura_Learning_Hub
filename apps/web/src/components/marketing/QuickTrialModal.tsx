@@ -153,7 +153,7 @@ export default function QuickTrialModal({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Mrs. Lawson / Elena / Mr. Agbagwa"
+                  placeholder="e.g. Mrs. Adeleke / Elena / Dr. Folashade"
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border-2 border-navy bg-white text-navy font-bold text-sm focus:outline-none focus:ring-2 focus:ring-yellow shadow-[2px_2px_0px_#0A1628]"

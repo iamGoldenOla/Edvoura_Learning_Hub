@@ -17,6 +17,7 @@ import {
   Columns,
   Eye,
   EyeOff,
+  Upload,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -145,6 +146,39 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       void channel.unsubscribe();
     };
   }, [lessonId, role, selectedPdfUrl, selectedPdfTitle]);
+
+  const handleUploadCustomPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const file = files[0];
+    const localUrl = URL.createObjectURL(file);
+    setSelectedPdfUrl(localUrl);
+    setSelectedPdfTitle(file.name);
+    setActiveTab('pdf');
+
+    try {
+      const supabase = createClient();
+      const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+      const objectPath = `classroom/${lessonId}/${safeName}`;
+      const upload = await supabase.storage.from('assignment-assets').upload(objectPath, file);
+      if (!upload.error) {
+        const { data: publicData } = supabase.storage.from('assignment-assets').getPublicUrl(objectPath);
+        if (publicData?.publicUrl) {
+          setSelectedPdfUrl(publicData.publicUrl);
+          if (channelRef.current && role === 'tutor') {
+            channelRef.current.send({
+              type: 'broadcast',
+              event: 'load-pdf',
+              payload: { pdfUrl: publicData.publicUrl, pdfTitle: file.name },
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to upload classroom pdf:', err);
+    }
+  };
 
   const handleSelectPdf = (pdf: ClassResource) => {
     setSelectedPdfUrl(pdf.public_url);
@@ -378,10 +412,25 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
                 {/* Resource Selection panel (only tutor can push new PDFs, students can only see available list) */}
                 <div className="border-t-[2px] border-dark/10 pt-6">
-                  <h3 className="text-lg font-black text-dark mb-4 uppercase tracking-tight flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-yellow" />
-                    Comprehension Library &amp; Lesson Worksheets
-                  </h3>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                    <h3 className="text-lg font-black text-dark uppercase tracking-tight flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-yellow" />
+                      Comprehension Library &amp; Lesson Worksheets
+                    </h3>
+                    {role === 'tutor' && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-[2px] border-dark bg-yellow hover:bg-yellow/90 text-dark font-black text-xs shadow-[2px_2px_0px_#060E1C] cursor-pointer active:scale-95 transition-all shrink-0">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Tutorial / PDF</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf"
+                          onChange={handleUploadCustomPdf}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+                  </div>
                   {role === 'tutor' ? (
                     <p className="text-xs font-bold text-dark/50 mb-4">
                       Select a worksheet or curriculum resource below to load it into the <strong>PDF Annotator</strong> for yourself and the student.

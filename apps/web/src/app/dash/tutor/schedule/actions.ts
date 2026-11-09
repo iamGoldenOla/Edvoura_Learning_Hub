@@ -101,6 +101,13 @@ export async function createTutorLiveSlot(formData: FormData) {
         redirect(`/dash/tutor/schedule?error=${encodeURIComponent('Failed to enroll student to 1-on-1: ' + enrollError.message)}`);
       }
     }
+
+    if (joinUrl) {
+      await supabase
+        .from('student_profiles')
+        .update({ personal_meet_url: joinUrl, personal_meet_host_url: joinUrl })
+        .eq('user_id', studentId);
+    }
   } else {
     // Group lesson logic (default)
     const { data: existingClass, error: classError } = await supabase

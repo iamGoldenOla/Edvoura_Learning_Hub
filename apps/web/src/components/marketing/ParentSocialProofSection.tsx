@@ -4,7 +4,7 @@ import { Star, Quote, CheckCircle2, HeartHandshake } from 'lucide-react';
 export default function ParentSocialProofSection() {
   const reviews = [
     {
-      parent: 'Adetutu L.',
+      parent: 'Mrs. Folashade A.',
       location: 'London, United Kingdom 🇬🇧',
       grade: 'Parent of Grade 4 Pupil (UK Year 5)',
       quote:
@@ -13,11 +13,11 @@ export default function ParentSocialProofSection() {
       verified: 'Verified UK Parent',
     },
     {
-      parent: 'Mr. & Mrs. Agbagwa',
+      parent: 'Dr. & Mrs. Adeleke',
       location: 'Lagos, Nigeria 🇳🇬',
       grade: 'Parent of Grade 2 Pupil (Primary 2)',
       quote:
-        'The hybrid structure—Saturday online via Google Meet and weekday in-person home tutoring—gives Kendrick the exact consistency he needs. He is reading and solving word problems well ahead of his class.',
+        'The hybrid structure—Saturday online via Google Meet and weekday in-person home tutoring—gives Smith the exact consistency he needs. He is reading and solving word problems well ahead of his class.',
       highlight: 'Reading & math well ahead of class',
       verified: 'Verified Hybrid Student',
     },

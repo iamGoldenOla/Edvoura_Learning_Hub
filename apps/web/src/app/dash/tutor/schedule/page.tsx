@@ -12,6 +12,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { createTutorLiveSlot } from '@/app/dash/tutor/schedule/actions';
+import TutorScheduleSlotForm from '@/components/tutor/TutorScheduleSlotForm';
 import TutorLessonStartButton from '@/components/dashboards/TutorLessonStartButton';
 import { requireAppViewer } from '@/lib/app-context';
 import { createClient } from '@/utils/supabase/server';
@@ -59,7 +60,7 @@ export default async function TutorSchedulePage(props: {
     supabase.rpc('list_tutor_live_schedule'),
     supabase.from('grade_levels').select('id, display_name').order('display_name'),
     supabase.from('subjects').select('id, name').order('name'),
-    supabase.from('student_profiles').select('user_id, grade_level_id'),
+    supabase.from('student_profiles').select('user_id, grade_level_id, personal_meet_url'),
   ]);
 
   const studentUserIds = (allStudentProfiles ?? []).map((sp) => sp.user_id);
@@ -88,6 +89,8 @@ export default async function TutorSchedulePage(props: {
       userId: sp.user_id,
       name: profile?.full_name || profile?.email || 'Unnamed student',
       gradeName,
+      gradeLevelId: sp.grade_level_id,
+      personalMeetUrl: sp.personal_meet_url ?? null,
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -257,154 +260,12 @@ export default async function TutorSchedulePage(props: {
                   Fill in the details below to sync a new session to the student portal.
                 </p>
 
-                <form action={createTutorLiveSlot} className="mt-8 space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="subjectId" className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-dark/60">
-                        Subject
-                      </label>
-                      <select
-                        id="subjectId"
-                        name="subjectId"
-                        required
-                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
-                      >
-                        {(subjects || []).map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label htmlFor="gradeLevelId" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                        Grade Level / Audience
-                      </label>
-                      <select
-                        id="gradeLevelId"
-                        name="gradeLevelId"
-                        required
-                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
-                      >
-                        {(gradeLevels || []).map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.display_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="studentId" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                      Target Student (Optional - for 1-on-1 Sessions)
-                    </label>
-                    <select
-                      id="studentId"
-                      name="studentId"
-                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
-                    >
-                      <option value="">Group Session (All students in selected Grade Level)</option>
-                      {(studentOptions || []).map((item) => (
-                        <option key={item.userId} value={item.userId}>
-                          {item.name} ({item.gradeName})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="title" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                      Session Title
-                    </label>
-                    <input
-                      id="title"
-                      name="title"
-                      type="text"
-                      required
-                      placeholder="e.g. Mastering Algebraic Expressions"
-                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/30"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="scheduledStartAt" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                        Start Time
-                      </label>
-                        <input
-                        id="scheduledStartAt"
-                        name="scheduledStartAt"
-                        type="datetime-local"
-                        required
-                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="scheduledEndAt" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                        End Time
-                      </label>
-                      <input
-                        id="scheduledEndAt"
-                        name="scheduledEndAt"
-                        type="datetime-local"
-                        required
-                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 p-3 sm:p-4 rounded-xl border-[2px] sm:border-[3px] border-dark bg-white shadow-[2px_2px_0px_#060E1C]">
-                      <input
-                        type="checkbox"
-                        id="isRecurring"
-                        name="isRecurring"
-                        className="h-4 w-4 sm:h-5 sm:w-5 rounded border-[2px] border-dark text-dark accent-dark focus:ring-dark shrink-0"
-                      />
-                      <label htmlFor="isRecurring" className="text-xs font-black text-dark break-words">
-                        Repeat Weekly
-                      </label>
-                    </div>
-                    <div className="space-y-2">
-                      <label htmlFor="recurrenceWeeks" className="text-[11px] font-black uppercase tracking-widest text-dark/60">
-                        Weeks
-                      </label>
-                      <select
-                        id="recurrenceWeeks"
-                        name="recurrenceWeeks"
-                        className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none focus:border-yellow focus:bg-white"
-                        defaultValue="4"
-                      >
-                        <option value="1">Just once</option>
-                        <option value="4">4 weeks</option>
-                        <option value="8">8 weeks</option>
-                        <option value="12">12 weeks</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label htmlFor="joinUrl" className="text-[11px] font-black uppercase tracking-widest text-dark/60 break-words">
-                      Google Meet Link <span className="text-emerald-600 font-bold">(Optional — Auto-generated if left blank)</span>
-                    </label>
-                    <input
-                      id="joinUrl"
-                      name="joinUrl"
-                      type="url"
-                      placeholder="Paste link OR leave blank to auto-generate unique Meet link"
-                      className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white placeholder:text-dark/40"
-                    />
-                    <p className="text-[10px] sm:text-[11px] text-dark/60 font-semibold leading-snug break-words">
-                      Leave empty to automatically generate a unique Google Meet link for this session, or paste a custom link from <a href="https://meet.google.com" target="_blank" rel="noreferrer" className="underline text-blue-600">meet.google.com</a>.
-                    </p>
-                  </div>
-
-                  <button type="submit" className="w-full h-12 sm:h-14 bg-dark hover:bg-dark/90 text-white border-[2px] sm:border-[3px] border-dark rounded-xl font-black text-base sm:text-lg transition-all active:scale-95 shadow-[3px_3px_0px_#F5C518] sm:shadow-[4px_4px_0px_#F5C518] break-words flex items-center justify-center">
-                    Publish to Dashboard
-                  </button>
-                </form>
+                <TutorScheduleSlotForm
+                  subjects={subjects || []}
+                  gradeLevels={gradeLevels || []}
+                  studentOptions={studentOptions}
+                  action={createTutorLiveSlot}
+                />
               </div>
 
               {/* Neo-brutalist Tip Card */}
