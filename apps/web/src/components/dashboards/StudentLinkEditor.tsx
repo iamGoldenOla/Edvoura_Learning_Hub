@@ -5,7 +5,15 @@ import { Link as LinkIcon, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { updateStudentPersonalLink } from '@/app/dash/tutor/roster/actions';
 
-export default function StudentLinkEditor({ studentId, currentUrl, currentHostUrl }: { studentId: string, currentUrl: string | null, currentHostUrl: string | null }) {
+export default function StudentLinkEditor({
+  studentId,
+  currentUrl,
+  currentHostUrl,
+}: {
+  studentId: string;
+  currentUrl: string | null;
+  currentHostUrl: string | null;
+}) {
   const [isEditing, setIsEditing] = useState(false);
   const [url, setUrl] = useState(currentUrl || '');
   const [hostUrl, setHostUrl] = useState(currentHostUrl || '');
@@ -26,10 +34,11 @@ export default function StudentLinkEditor({ studentId, currentUrl, currentHostUr
 
   if (!isEditing) {
     return (
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         onClick={() => setIsEditing(true)}
-        className="text-[10px] h-6 px-2 text-slate-500 hover:text-blue-600"
+        className="text-[10px] h-6 px-2 text-slate-500 hover:text-blue-600 focus-visible:ring-2 focus-visible:ring-yellow"
+        aria-label="Edit student Google Meet link"
       >
         <LinkIcon className="w-3 h-3 mr-1" />
         {currentUrl ? 'Edit Meet Link' : 'Add Meet Link'}
@@ -39,25 +48,38 @@ export default function StudentLinkEditor({ studentId, currentUrl, currentHostUr
 
   return (
     <div className="flex flex-col gap-2 p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
-      <input 
-        type="url" 
-        placeholder="Student Join URL" 
-        value={url} 
+      <input
+        type="url"
+        aria-label="Student Google Meet Join URL"
+        placeholder="Student Join URL"
+        value={url}
         onChange={(e) => setUrl(e.target.value)}
-        className="text-[10px] px-2 py-1 border border-slate-200 rounded"
+        className="text-[10px] px-2 py-1 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-yellow"
       />
-      <input 
-        type="url" 
-        placeholder="Tutor Host URL" 
-        value={hostUrl} 
+      <input
+        type="url"
+        aria-label="Tutor Google Meet Host URL"
+        placeholder="Tutor Host URL"
+        value={hostUrl}
         onChange={(e) => setHostUrl(e.target.value)}
-        className="text-[10px] px-2 py-1 border border-slate-200 rounded"
+        className="text-[10px] px-2 py-1 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-yellow"
       />
       <div className="flex justify-end gap-1">
-        <Button variant="ghost" onClick={() => setIsEditing(false)} className="h-6 w-6 p-0 text-red-500">
+        <Button
+          variant="ghost"
+          onClick={() => setIsEditing(false)}
+          className="h-6 w-6 p-0 text-red-500"
+          aria-label="Cancel editing"
+        >
           <X className="w-3 h-3" />
         </Button>
-        <Button variant="ghost" onClick={handleSave} disabled={loading} className="h-6 w-6 p-0 text-green-500">
+        <Button
+          variant="ghost"
+          onClick={handleSave}
+          disabled={loading}
+          className="h-6 w-6 p-0 text-green-500"
+          aria-label="Save Google Meet link"
+        >
           <Check className="w-3 h-3" />
         </Button>
       </div>

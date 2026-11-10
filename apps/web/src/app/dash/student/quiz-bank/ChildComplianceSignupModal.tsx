@@ -193,9 +193,8 @@ export default function ChildComplianceSignupModal({
 
           <div>
             <label className="text-[10px] font-black uppercase text-dark/60">Parent / Guardian Email:</label>
-            <input
-              type="email"
-              placeholder="parent@example.com"
+            <input type="email"
+              aria-label="parent@example.com" placeholder="parent@example.com"
               value={guardianEmail}
               onChange={(e) => setGuardianEmail(e.target.value)}
               className="w-full mt-1 p-2 rounded-xl border-[2px] border-dark text-xs font-bold bg-white"

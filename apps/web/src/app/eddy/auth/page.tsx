@@ -84,11 +84,10 @@ export default function EddyAuthPage() {
           {mode === 'signup' ? (
             <div>
               <label className="block text-xs font-black uppercase text-dark">Full Name</label>
-              <input
-                name="fullName"
+              <input name="fullName"
                 type="text"
                 required
-                placeholder="Akinola Olujobi"
+                aria-label="Akinola Olujobi" placeholder="Akinola Olujobi"
                 className="mt-1.5 w-full rounded-xl border-[2px] border-dark px-4 py-3 text-xs font-bold text-dark focus:outline-none shadow-[2px_2px_0px_#000]"
               />
             </div>

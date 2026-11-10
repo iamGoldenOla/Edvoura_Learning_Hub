@@ -98,10 +98,9 @@ export default function QuickAddPupilModal({ isOpen, onClose, onSuccess }: Quick
                 <label className="block text-xs font-black uppercase tracking-wider text-navy mb-1">
                   Pupil Full Name *
                 </label>
-                <input
-                  type="text"
+                <input type="text"
                   required
-                  placeholder="e.g. Titomi Lawson / Kendrick Agbagwa"
+                  aria-label="e.g. Titomi Lawson / Kendrick Agbagwa" placeholder="e.g. Titomi Lawson / Kendrick Agbagwa"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border-2 border-navy bg-white font-bold text-sm text-navy focus:outline-none focus:ring-2 focus:ring-yellow shadow-[2px_2px_0px_#0A1628]"
@@ -131,9 +130,8 @@ export default function QuickAddPupilModal({ isOpen, onClose, onSuccess }: Quick
                   <label className="block text-xs font-black uppercase tracking-wider text-navy mb-1">
                     Parent Email (Optional)
                   </label>
-                  <input
-                    type="email"
-                    placeholder="parent@gmail.com"
+                  <input type="email"
+                    aria-label="parent@gmail.com" placeholder="parent@gmail.com"
                     value={parentEmail}
                     onChange={(e) => setParentEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border-2 border-navy bg-white font-bold text-sm text-navy focus:outline-none focus:ring-2 focus:ring-yellow shadow-[2px_2px_0px_#0A1628]"
@@ -147,10 +145,9 @@ export default function QuickAddPupilModal({ isOpen, onClose, onSuccess }: Quick
                 </label>
                 <div className="relative">
                   <Video className="absolute left-3 top-3 w-4 h-4 text-navy/40" />
-                  <input
-                    type="url"
+                  <input type="url"
                     required
-                    placeholder="https://meet.google.com/xxx-yyyy-zzz"
+                    aria-label="https://meet.google.com/xxx-yyyy-zzz" placeholder="https://meet.google.com/xxx-yyyy-zzz"
                     value={meetUrl}
                     onChange={(e) => setMeetUrl(e.target.value)}
                     className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border-2 border-navy bg-white font-bold text-sm text-navy focus:outline-none focus:ring-2 focus:ring-yellow shadow-[2px_2px_0px_#0A1628]"
@@ -162,9 +159,8 @@ export default function QuickAddPupilModal({ isOpen, onClose, onSuccess }: Quick
                 <label className="block text-xs font-black uppercase tracking-wider text-navy mb-1">
                   Schedule / Notes (Optional)
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Tuesdays 5:30pm UK, Saturdays 10am Online"
+                <input type="text"
+                  aria-label="e.g. Tuesdays 5:30pm UK, Saturdays 10am Online" placeholder="e.g. Tuesdays 5:30pm UK, Saturdays 10am Online"
                   value={scheduleNotes}
                   onChange={(e) => setScheduleNotes(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border-2 border-navy bg-white font-bold text-sm text-navy focus:outline-none focus:ring-2 focus:ring-yellow shadow-[2px_2px_0px_#0A1628]"

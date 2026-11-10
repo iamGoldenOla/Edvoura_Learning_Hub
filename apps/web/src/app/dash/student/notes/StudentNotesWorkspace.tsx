@@ -661,9 +661,8 @@ export default function StudentNotesWorkspace({
             })}
           </div>
 
-          <input
-            type="text"
-            placeholder="🔍 Search notes..."
+          <input type="text"
+            aria-label="🔍 Search notes..." placeholder="🔍 Search notes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="px-3 py-1.5 rounded-xl border-[2px] border-dark bg-white text-xs font-bold text-dark outline-none focus:border-yellow shrink-0 w-full sm:w-48"

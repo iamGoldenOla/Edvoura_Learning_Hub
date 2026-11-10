@@ -234,6 +234,7 @@ export default function StudentAITutorWidget({
           {/* Input Bar */}
           <div className="border-t-[3px] border-dark bg-white p-3 flex items-center gap-2">
             <input
+              aria-label="Ask Eddie AI Tutor a question"
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}

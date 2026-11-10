@@ -68,9 +68,8 @@ export function AdminLeadManagementTable() {
           {/* Search Box */}
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-dark/50" />
-            <input
-              type="text"
-              placeholder="Search by name, email..."
+            <input type="text"
+              aria-label="Search by name, email..." placeholder="Search by name, email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 pr-4 py-2 border-[2px] border-dark rounded-xl text-xs font-bold bg-white text-dark focus:outline-none"

@@ -136,7 +136,7 @@ export default function CareersPage() {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                         <div>
                            <label className="block text-xs sm:text-sm font-black text-navy uppercase mb-2 sm:mb-3">Full Name</label>
-                           <input type="text" placeholder="Dr. Sarah Jenkins" className="w-full bg-off-white border-4 border-navy rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all" />
+                           <input type="text" aria-label="Dr. Sarah Jenkins" placeholder="Dr. Sarah Jenkins" className="w-full bg-off-white border-4 border-navy rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base font-bold focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all" />
                         </div>
                         <div>
                            <label className="block text-xs sm:text-sm font-black text-navy uppercase mb-2 sm:mb-3">Email Address</label>

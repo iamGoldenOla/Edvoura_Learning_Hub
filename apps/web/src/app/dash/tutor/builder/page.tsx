@@ -739,9 +739,8 @@ export default function TutorBuilderPage() {
                         )}
 
                         {activeTool === "quiz" && (
-                          <input
-                            type="number"
-                            placeholder="Time limit (minutes, optional)"
+                          <input type="number"
+                            aria-label="Time limit (minutes, optional)" placeholder="Time limit (minutes, optional)"
                             className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                             onChange={(e) => setFormDueAt(e.target.value)} // Reusing formDueAt for time limit
                           />

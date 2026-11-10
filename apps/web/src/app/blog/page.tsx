@@ -78,9 +78,8 @@ export default function BlogPage() {
           </p>
           
           <div className="mt-12 flex justify-center max-w-md mx-auto relative group px-2 sm:px-0 w-full">
-             <input 
-               type="text" 
-               placeholder="Search articles..." 
+             <input type="text" 
+               aria-label="Search articles..." placeholder="Search articles..." 
                className="w-full bg-white border-4 border-navy rounded-2xl px-12 py-4 font-bold shadow-[8px_8px_0px_#0A1628] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-[4px_4px_0px_#0A1628] transition-all"
              />
              <Search className="absolute left-6 sm:left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-navy" />

@@ -199,8 +199,7 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
             {childrenDrafts.map((child, index) => (
               <div key={`child-draft-${index}`} className="rounded-2xl border-[3px] border-dark bg-off-white p-5 space-y-4 shadow-[4px_4px_0px_#060E1C]">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">Child {index + 1}</p>
-                <input
-                  placeholder="Child full name"
+                <input aria-label="Child full name" placeholder="Child full name"
                   value={child.fullName}
                   onChange={(event) =>
                     setChildrenDrafts((previous) =>
@@ -211,8 +210,7 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
                   }
                   className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-emerald-400"
                 />
-                <input
-                  placeholder="Child email (optional)"
+                <input aria-label="Child email (optional)" placeholder="Child email (optional)"
                   value={child.email}
                   onChange={(event) =>
                     setChildrenDrafts((previous) =>
@@ -257,8 +255,7 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
                   <option value="sibling">Sibling</option>
                   <option value="other">Other</option>
                 </select>
-                <input
-                  placeholder="School name (optional)"
+                <input aria-label="School name (optional)" placeholder="School name (optional)"
                   value={child.schoolName}
                   onChange={(event) =>
                     setChildrenDrafts((previous) =>
@@ -316,8 +313,7 @@ export default function ParentChildrenManager({ initialChildren }: { initialChil
               <p className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/60">
                 Link Existing Student Account
               </p>
-              <input
-                placeholder="Child existing email"
+              <input aria-label="Child existing email" placeholder="Child existing email"
                 value={linkForm.childEmail}
                 onChange={(event) => setLinkForm((prev) => ({ ...prev, childEmail: event.target.value }))}
                 className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none focus:border-blue-400"

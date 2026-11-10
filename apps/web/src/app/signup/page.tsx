@@ -552,7 +552,7 @@ function SignupPageContent() {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-navy mb-1.5">Years of experience</label>
-                      <input name="experience" type="number" min="0" placeholder="e.g. 5" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey" />
+                      <input name="experience" type="number" min="0" aria-label="e.g. 5" placeholder="e.g. 5" className="w-full px-4 py-3 rounded-xl border border-grey-light bg-off-white text-navy text-sm focus:outline-none focus:border-yellow focus:ring-2 focus:ring-yellow/20 transition-all placeholder:text-grey" />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-navy mb-1.5">Brief bio</label>
