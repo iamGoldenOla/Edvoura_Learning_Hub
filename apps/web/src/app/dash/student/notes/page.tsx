@@ -59,6 +59,53 @@ export default async function NotesPage() {
     subjectNames: dashboard.enrollments.map((entry) => entry.subjectName),
   });
 
+  // Fetch tutor-uploaded files from learning_activity_events (Titomi & pupil targeted work)
+  const studentFirstName = dashboard.profile.fullName?.split(' ')[0]?.toLowerCase() || '';
+  const { data: tutorResources } = await supabaseAdmin
+    .from('learning_activity_events')
+    .select('id, event_type, payload, created_at, assignment_id, class_id')
+    .eq('event_type', 'lesson_resource_uploaded')
+    .order('created_at', { ascending: false })
+    .limit(40);
+
+  const matchingTutorResources = (tutorResources || []).filter((r) => {
+    const p = r.payload || {};
+    const titleLower = String(p.title || '').toLowerCase();
+    const isTargeted = p.target_student_id === viewer.currentUser.userId;
+    const isNameMatch = studentFirstName && titleLower.includes(studentFirstName);
+    return isTargeted || isNameMatch;
+  });
+
+  if (matchingTutorResources.length > 0) {
+    const assignmentIds = matchingTutorResources.map((r) => r.assignment_id).filter(Boolean);
+    const { data: tutorFiles } = assignmentIds.length > 0
+      ? await supabaseAdmin.from('assignment_files').select('*').in('assignment_id', assignmentIds)
+      : { data: [] };
+
+    for (const res of matchingTutorResources) {
+      const relatedFiles = (tutorFiles || []).filter((f) => f.assignment_id === res.assignment_id);
+      for (const file of relatedFiles) {
+        const { data: signed } = await supabaseAdmin.storage.from(file.bucket_id).createSignedUrl(file.object_path, 86400);
+        const rawName = file.object_path.split('/').pop() || 'Tutor Resource';
+        const cleanName = rawName.replace(/^\d+[-_]/, '').replace(/\.{2,}/g, '.');
+
+        filteredNotes.unshift({
+          id: `tutor_res_file_${file.id}`,
+          title: cleanName,
+          subject: 'Mathematics',
+          topic: res.payload?.title || 'Tutor Lesson Tutorial',
+          grade: studentGradeCode,
+          content_json: {
+            lesson_summary: `Personalized tutorial worksheet uploaded by your tutor for review and practice.`,
+            official_file_url: signed?.signedUrl,
+            file_name: cleanName,
+          },
+          created_at: res.created_at,
+        });
+      }
+    }
+  }
+
   // Ensure Primary 3 Basic Science & Mathematics are present for Grade 3 student dashboards when published
   const isGrade3 = studentGradeCode.includes('3') || studentGradeName.includes('3');
   const hasBasicScience = filteredNotes.some(

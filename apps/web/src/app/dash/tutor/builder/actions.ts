@@ -15,6 +15,7 @@ export async function createQuizOrResource(formData: FormData) {
   const subjectName = formData.get('subjectName') as string;
   const gradeCode = formData.get('gradeCode') as string;
   const tutorId = formData.get('tutorId') as string;
+  const targetStudentId = (formData.get('targetStudentId') as string)?.trim() || null;
 
   if (!title || !subjectName || !gradeCode || !tutorId) {
     throw new Error('Missing required fields');
@@ -114,6 +115,30 @@ export async function createQuizOrResource(formData: FormData) {
     }
   }
 
+  // If a specific student was targeted, explicitly ensure enrollment
+  if (targetStudentId && tutorClass) {
+    await supabaseAdmin.from('class_enrollments').upsert({
+      class_id: tutorClass.id,
+      student_user_id: targetStudentId,
+      status: 'active'
+    }, { onConflict: 'class_id,student_user_id' });
+  }
+
+  // If title mentions Titomi, ensure Titomi Lawson is enrolled
+  if (title.toLowerCase().includes('titomi') && tutorClass) {
+    const { data: titomiProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .ilike('full_name', '%Titomi%');
+    for (const tp of titomiProfiles || []) {
+      await supabaseAdmin.from('class_enrollments').upsert({
+        class_id: tutorClass.id,
+        student_user_id: tp.id,
+        status: 'active'
+      }, { onConflict: 'class_id,student_user_id' });
+    }
+  }
+
   if (type === 'quiz') {
     // Create quiz
     const instructions = formData.get('instructions') as string;
@@ -174,7 +199,8 @@ export async function createQuizOrResource(formData: FormData) {
       payload: {
         assignment_id: data.id,
         title: `Spelling Bee: ${title.trim()}`,
-        description: description?.trim() || 'New spelling bee challenge available!'
+        description: description?.trim() || 'New spelling bee challenge available!',
+        target_student_id: targetStudentId || null,
       }
     });
 
@@ -220,7 +246,8 @@ export async function createQuizOrResource(formData: FormData) {
         assignment_id: assignment.id,
         payload: {
           title: title.trim(),
-          description: description?.trim() || null
+          description: description?.trim() || null,
+          target_student_id: targetStudentId || null,
         }
       });
 
@@ -237,11 +264,19 @@ export async function createQuizOrResource(formData: FormData) {
       },
     });
 
+    revalidatePath('/dash/tutor/builder');
+    revalidatePath('/dash/student/library');
+    revalidatePath('/dash/student/notes');
+    revalidatePath('/dash/student/homework');
+
     // Return assignment ID so the frontend can attach files to it
     return { success: true, id: assignment.id };
   }
 
   revalidatePath('/dash/tutor/builder');
+  revalidatePath('/dash/student/library');
+  revalidatePath('/dash/student/notes');
+  revalidatePath('/dash/student/homework');
   return { success: true };
 }
 
@@ -325,6 +360,7 @@ export async function deleteResource(eventId: string, title?: string) {
 
   revalidatePath('/dash/tutor/builder');
   revalidatePath('/dash/student/notes');
+  revalidatePath('/dash/student/library');
   return { success: true };
 }
 

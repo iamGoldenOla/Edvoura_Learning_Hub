@@ -24,7 +24,6 @@ import {
   Upload,
   Share2,
   Check,
-  X,
   ChevronRight,
   Server,
   Info,
@@ -41,7 +40,7 @@ interface ClassroomWorkspaceProps {
 }
 
 type ActiveTab = 'whiteboard' | 'seatwork' | 'pdf' | 'info';
-type ViewMode = 'full-video' | 'drawer-overlay' | 'split';
+type ViewMode = 'full-video' | 'whiteboard-full' | 'drawer-overlay' | 'split';
 type VideoServer = 'open-webrtc' | 'jitsi-public';
 
 interface ClassResource {
@@ -53,7 +52,8 @@ interface ClassResource {
 export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorkspaceProps) {
   // Google Meet Minimalism Architecture:
   // - Video takes 100% of the stage cleanly (unobstructed edge-to-edge)
-  // - All tools, overlay drawers, and layouts are accessible from the bottom dock & 3-dots menu
+  // - Whiteboard opens as Full-Stage Canvas with floating live video (ZERO scrollbar)
+  // - Native display screen sharing dialog (pick any window / tab on PC)
   const [viewMode, setViewMode] = useState<ViewMode>('full-video');
   const [activeTab, setActiveTab] = useState<ActiveTab>('whiteboard');
   const [lesson, setLesson] = useState<any>(null);
@@ -63,7 +63,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [availableResources, setAvailableResources] = useState<ClassResource[]>([]);
 
   // Video Server Engine:
-  // - 'open-webrtc': Uses fairmeeting.net (zero moderator login or 8x8 auth wall)
+  // - 'open-webrtc': Uses fairmeeting.net (zero moderator login wall, zero donation pages on hangup)
   // - 'jitsi-public': Standard meet.jit.si
   const [videoServer, setVideoServer] = useState<VideoServer>('open-webrtc');
 
@@ -88,7 +88,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
   const currentDomain = videoServer === 'open-webrtc' ? 'fairmeeting.net' : 'meet.jit.si';
   const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
-  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true`;
+  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false`;
 
   // Initialize Supabase & lesson metadata
   useEffect(() => {
@@ -202,7 +202,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Mount WebRTC Meeting API (No moderator login wall on fairmeeting.net)
+  // Mount WebRTC Meeting API with strict anti-redirect / anti-donation handlers
   useEffect(() => {
     let isMounted = true;
 
@@ -257,6 +257,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
+            SHOW_BRAND_WATERMARK: false,
+            SHOW_POWERED_BY: false,
+            GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
+            DISPLAY_WELCOME_PAGE_CONTENT: false,
             TOOLBAR_ALWAYS_VISIBLE: true,
             DEFAULT_BACKGROUND: '#060E1C',
           },
@@ -270,6 +274,15 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           videoMuteStatusChanged: (e: any) => setCameraEnabled(!e.muted),
           videoConferenceJoined: () => {
             api.executeCommand('setDisplayName', userName);
+          },
+          // Anti-donation trap: Intercept call exit immediately and return cleanly to Edvoura
+          videoConferenceLeft: () => {
+            try { api.dispose(); } catch (_) {}
+            window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
+          },
+          readyToClose: () => {
+            try { api.dispose(); } catch (_) {}
+            window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
           },
         });
       } catch (err) {
@@ -302,7 +315,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         jitsiApiRef.current = null;
       }
     };
-  }, [cleanRoom, userName, currentDomain]);
+  }, [cleanRoom, userName, currentDomain, role]);
 
   // Sync selected PDF across tutor and students
   useEffect(() => {
@@ -362,7 +375,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Screen Share Handler
+  // Google Meet Style Native Screen Share (Pick Window, Chrome Tab, or Entire Screen)
   const handleToggleScreenShare = async () => {
     if (jitsiApiRef.current) {
       try {
@@ -372,12 +385,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       }
     } else if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
       try {
-        await navigator.mediaDevices.getDisplayMedia({ video: true });
+        await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       } catch (err) {
         console.warn('Display capture cancelled', err);
       }
     } else {
-      alert('Screen sharing is available on desktop browsers or via the in-video controls.');
+      alert('Screen sharing is available on desktop browsers.');
     }
   };
 
@@ -406,9 +419,15 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       if (jitsiApiRef.current) {
         try {
           jitsiApiRef.current.executeCommand('hangup');
+          jitsiApiRef.current.dispose();
         } catch (_) {}
+        jitsiApiRef.current = null;
       }
-      window.location.href = role === 'tutor' ? '/dash/tutor/roster' : '/dash/student';
+      if (videoMountRef.current) {
+        videoMountRef.current.innerHTML = '';
+      }
+      // Clean immediate Edvoura redirect (Never show 3rd party donation or fairmeeting landing page)
+      window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
     }
   };
 
@@ -482,473 +501,479 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   return (
     <div ref={containerRef} className="font-sans select-none relative w-full">
       {/* ============================================================
-          MAIN CLASSROOM STAGE (100% CLEAN FULL-SCREEN VIDEO VIEWPORT)
+          MAIN CLASSROOM STAGE (GOOGLE MEET MINIMALISM - 100% UNINTERRUPTED)
           ============================================================ */}
       <div className="relative w-full h-[88vh] min-h-[620px] rounded-3xl border-[3.5px] border-dark bg-slate-950 overflow-hidden shadow-[8px_8px_0px_#060E1C] flex">
         
         {/* ============================================================
-            100% VIDEO VIEWPORT (NEVER SQUISHED, GOOGLE MEET MINIMALISM)
+            VIEW MODE A: 100% FULL-STAGE WHITEBOARD (GOOGLE JAMBOARD STYLE)
+            When tutor or student shares Whiteboard, it fills the ENTIRE stage!
+            The video tile floats in the bottom-right corner (PiP) without squashing.
+            ZERO vertical scrollbar!
             ============================================================ */}
-        <div
-          className={`h-full relative flex flex-col bg-black transition-all duration-300 ease-in-out ${
-            viewMode === 'split' ? 'w-full xl:w-[50%] border-r-[3px] border-dark' : 'w-full'
-          }`}
-        >
-          {/* WebRTC Video Mount (100% Full Width & Height) */}
-          <div className="w-full h-full relative bg-black">
-            <div ref={videoMountRef} className="w-full h-full" />
-            
-            {/* Fallback iframe while script initialises */}
-            {!isJitsiReady && (
-              <iframe
-                src={jitsiUrl}
-                allow="camera; microphone; display-capture; autoplay; clipboard-write; screen-wake-lock; fullscreen"
-                allowFullScreen
-                className="w-full h-full border-none absolute inset-0"
-                title="Edvoura Live Video Meeting"
-              />
-            )}
-          </div>
+        {viewMode === 'whiteboard-full' ? (
+          <div className="w-full h-full relative flex flex-col bg-white">
+            <CollaborativeWhiteboard
+              lessonId={lessonId}
+              role={role}
+              userName={userName}
+              onReturnToFullVideo={() => setViewMode('full-video')}
+            />
 
-          {/* ============================================================
-              BOTTOM DOCK LEFT: ROOM & PUPIL INFO (Google Meet Style)
-              ============================================================ */}
-          <div className="absolute bottom-5 left-6 z-30 hidden md:flex items-center gap-2 pointer-events-auto">
-            <button
-              onClick={() => setShowDetailsMenu(!showDetailsMenu)}
-              className="flex items-center gap-2 bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 px-3.5 py-2 rounded-full text-white text-xs font-bold shadow-lg transition-all"
-              title="Classroom session details"
-              aria-label="Classroom Details"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="truncate max-w-[200px]">
-                {studentDisplayName ? `1-on-1 • ${studentDisplayName}` : lesson?.title || 'Interactive Hub'}
-              </span>
-              <Info className="w-3.5 h-3.5 opacity-60" />
-            </button>
-
-            {/* Session Details Popup */}
-            {showDetailsMenu && (
-              <div className="absolute bottom-12 left-0 w-72 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-3 text-white z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="text-xs font-black text-yellow uppercase tracking-wider mb-1">
-                  Active Lesson
-                </div>
-                <p className="text-xs font-bold text-white mb-2">{lesson?.title || '1-on-1 Mentorship'}</p>
-                <div className="text-[11px] text-white/70 space-y-1 border-t border-white/10 pt-2">
-                  <p>Role: <span className="font-bold text-white capitalize">{role}</span> ({userName})</p>
-                  <p>Engine: <span className="font-bold text-emerald-400">{videoServer === 'open-webrtc' ? 'Open WebRTC (Zero Login)' : 'Public Jitsi'}</span></p>
-                  {externalMeetingUrl && (
-                    <p className="truncate">Meet URL: <span className="font-mono text-cyan-300">{externalMeetingUrl}</span></p>
-                  )}
-                </div>
+            {/* Floating Live Video Tile in Corner (Google Meet Picture-in-Picture) */}
+            <div className="absolute bottom-20 right-6 w-64 h-40 sm:w-72 sm:h-44 rounded-2xl border-[3px] border-dark bg-black shadow-2xl z-40 overflow-hidden animate-in fade-in zoom-in-90">
+              <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-black/70 text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Live Feed ({userName})</span>
               </div>
-            )}
+              <div ref={videoMountRef} className="w-full h-full" />
+            </div>
           </div>
-
-          {/* ============================================================
-              BOTTOM DOCK CENTER: GOOGLE MEET CONTROL DOCK
-              ============================================================ */}
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-            <div className="bg-[#1e1e1e]/95 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.7)] flex items-center gap-2 sm:gap-3 transition-all">
+        ) : (
+          /* ============================================================
+              VIEW MODE B: 100% WIDESCREEN VIDEO STAGE (GOOGLE MEET DEFAULT)
+              ============================================================ */
+          <div
+            className={`h-full relative flex flex-col bg-black transition-all duration-300 ease-in-out ${
+              viewMode === 'split' ? 'w-full xl:w-[50%] border-r-[3px] border-dark' : 'w-full'
+            }`}
+          >
+            {/* WebRTC Video Mount (100% Full Width & Height) */}
+            <div className="w-full h-full relative bg-black">
+              <div ref={videoMountRef} className="w-full h-full" />
               
-              {/* Mic Toggle */}
-              <button
-                onClick={handleToggleMic}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                  micEnabled
-                    ? 'bg-white/10 hover:bg-white/20 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
-                }`}
-                title={micEnabled ? 'Turn off microphone' : 'Turn on microphone'}
-                aria-label="Toggle Microphone"
-              >
-                {micEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-              </button>
+              {/* Fallback iframe while script initialises */}
+              {!isJitsiReady && (
+                <iframe
+                  src={jitsiUrl}
+                  allow="camera; microphone; display-capture; autoplay; clipboard-write; screen-wake-lock; fullscreen"
+                  allowFullScreen
+                  className="w-full h-full border-none absolute inset-0"
+                  title="Edvoura Live Video Meeting"
+                />
+              )}
+            </div>
+          </div>
+        )}
 
-              {/* Camera Toggle */}
-              <button
-                onClick={handleToggleCamera}
-                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                  cameraEnabled
-                    ? 'bg-white/10 hover:bg-white/20 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
-                }`}
-                title={cameraEnabled ? 'Turn off camera' : 'Turn on camera'}
-                aria-label="Toggle Video Camera"
-              >
-                {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-              </button>
+        {/* ============================================================
+            BOTTOM DOCK LEFT: ROOM & PUPIL INFO (Google Meet Style)
+            ============================================================ */}
+        <div className="absolute bottom-5 left-6 z-30 hidden md:flex items-center gap-2 pointer-events-auto">
+          <button
+            onClick={() => setShowDetailsMenu(!showDetailsMenu)}
+            className="flex items-center gap-2 bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 px-3.5 py-2 rounded-full text-white text-xs font-bold shadow-lg transition-all"
+            title="Classroom session details"
+            aria-label="Classroom Details"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="truncate max-w-[200px]">
+              {studentDisplayName ? `1-on-1 • ${studentDisplayName}` : lesson?.title || 'Interactive Hub'}
+            </span>
+            <Info className="w-3.5 h-3.5 opacity-60" />
+          </button>
 
-              {/* Share Button (Zoom / Google Meet Style Popover) */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setShowShareMenu(!showShareMenu);
-                    setShowOptionsMenu(false);
-                    setShowDetailsMenu(false);
-                  }}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                    showShareMenu
-                      ? 'bg-yellow text-dark shadow-md'
-                      : 'bg-white/10 hover:bg-white/20 text-white'
-                  }`}
-                  title="Share Whiteboard, Screen, or Worksheets"
-                  aria-label="Share Screen or Whiteboard"
-                >
-                  <ScreenShare className="w-5 h-5" />
-                </button>
-
-                {/* Share Options Menu */}
-                {showShareMenu && (
-                  <div className="absolute bottom-14 left-1/2 -translate-x-1/2 w-80 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-3 text-white z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="text-[11px] font-black uppercase tracking-wider text-white/50 px-2 py-1 mb-1">
-                      Choose what to share:
-                    </div>
-
-                    {/* 1. Blank Interactive Whiteboard */}
-                    <button
-                      onClick={() => {
-                        setViewMode('drawer-overlay');
-                        setActiveTab('whiteboard');
-                        setShowShareMenu(false);
-                      }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-yellow text-dark flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
-                        <Presentation className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-white">Whiteboard (Blank Canvas)</p>
-                        <p className="text-[10px] font-bold text-white/60">Draw, write equations, &amp; collaborate live</p>
-                      </div>
-                    </button>
-
-                    {/* 2. Desktop Screen Share */}
-                    <button
-                      onClick={() => {
-                        setShowShareMenu(false);
-                        handleToggleScreenShare();
-                      }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
-                        <ScreenShare className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-white">Share Screen (Desktop / Tab)</p>
-                        <p className="text-[10px] font-bold text-white/60">Present your screen or browser window</p>
-                      </div>
-                    </button>
-
-                    {/* 3. School Worksheet / PDF */}
-                    <button
-                      onClick={() => {
-                        setViewMode('drawer-overlay');
-                        setActiveTab('pdf');
-                        setShowShareMenu(false);
-                      }}
-                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
-                    >
-                      <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
-                        <BookOpen className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-black text-white">Worksheets &amp; PDF</p>
-                        <p className="text-[10px] font-bold text-white/60">Annotate homework and curriculum</p>
-                      </div>
-                    </button>
-
-                    {/* 4. Google Meet Room Direct Launch */}
-                    {externalMeetingUrl && (
-                      <a
-                        href={externalMeetingUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={() => setShowShareMenu(false)}
-                        className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group border-t border-white/10 mt-1 pt-2"
-                      >
-                        <div className="w-9 h-9 rounded-xl bg-cyan-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
-                          <ExternalLink className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-black text-white">Launch Pupil&apos;s Google Meet</p>
-                          <p className="text-[10px] font-bold text-white/60">Open permanent room in dedicated tab</p>
-                        </div>
-                      </a>
-                    )}
-                  </div>
+          {/* Session Details Popup */}
+          {showDetailsMenu && (
+            <div className="absolute bottom-12 left-0 w-72 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-3 text-white z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div className="text-xs font-black text-yellow uppercase tracking-wider mb-1">
+                Active Lesson
+              </div>
+              <p className="text-xs font-bold text-white mb-2">{lesson?.title || '1-on-1 Mentorship'}</p>
+              <div className="text-[11px] text-white/70 space-y-1 border-t border-white/10 pt-2">
+                <p>Role: <span className="font-bold text-white capitalize">{role}</span> ({userName})</p>
+                <p>Engine: <span className="font-bold text-emerald-400">{videoServer === 'open-webrtc' ? 'Open WebRTC (Zero Login)' : 'Public Jitsi'}</span></p>
+                {externalMeetingUrl && (
+                  <p className="truncate">Meet URL: <span className="font-mono text-cyan-300">{externalMeetingUrl}</span></p>
                 )}
               </div>
+            </div>
+          )}
+        </div>
 
-              {/* Whiteboard / Tools Slide Drawer Toggle */}
+        {/* ============================================================
+            BOTTOM DOCK CENTER: GOOGLE MEET CONTROL DOCK
+            ============================================================ */}
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+          <div className="bg-[#1e1e1e]/95 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.7)] flex items-center gap-2 sm:gap-3 transition-all">
+            
+            {/* Mic Toggle */}
+            <button
+              onClick={handleToggleMic}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                micEnabled
+                  ? 'bg-white/10 hover:bg-white/20 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
+              }`}
+              title={micEnabled ? 'Turn off microphone' : 'Turn on microphone'}
+              aria-label="Toggle Microphone"
+            >
+              {micEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+            </button>
+
+            {/* Camera Toggle */}
+            <button
+              onClick={handleToggleCamera}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                cameraEnabled
+                  ? 'bg-white/10 hover:bg-white/20 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white shadow-md'
+              }`}
+              title={cameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+              aria-label="Toggle Video Camera"
+            >
+              {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+            </button>
+
+            {/* Share Button (Google Meet / Zoom Style Popover) */}
+            <div className="relative">
               <button
                 onClick={() => {
-                  if (viewMode === 'full-video') {
-                    setViewMode('drawer-overlay');
-                    setActiveTab('whiteboard');
-                  } else {
-                    setViewMode('full-video');
-                  }
+                  setShowShareMenu(!showShareMenu);
+                  setShowOptionsMenu(false);
+                  setShowDetailsMenu(false);
                 }}
-                className={`px-4 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all ${
-                  viewMode !== 'full-video'
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  showShareMenu
                     ? 'bg-yellow text-dark shadow-md'
                     : 'bg-white/10 hover:bg-white/20 text-white'
                 }`}
-                title={viewMode !== 'full-video' ? 'Hide tools drawer (100% video)' : 'Open whiteboard & worksheets drawer'}
-                aria-label="Toggle Whiteboard and Tools Drawer"
+                title="Share Whiteboard, Screen, or Worksheets"
+                aria-label="Share Screen or Whiteboard"
               >
-                <Presentation className="w-4 h-4" />
-                <span className="hidden sm:inline">{viewMode !== 'full-video' ? 'Close Tools' : 'Board & Tools'}</span>
+                <ScreenShare className="w-5 h-5" />
               </button>
 
-              {/* 3-Dots Options Menu (Google Meet Style) */}
-              <div className="relative">
-                <button
-                  onClick={() => {
-                    setShowOptionsMenu(!showOptionsMenu);
-                    setShowShareMenu(false);
-                    setShowDetailsMenu(false);
-                  }}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                    showOptionsMenu
-                      ? 'bg-white text-dark shadow-md'
-                      : 'bg-white/10 hover:bg-white/20 text-white'
-                  }`}
-                  title="More Options"
-                  aria-label="More Meeting Options"
-                >
-                  <MoreVertical className="w-5 h-5" />
-                </button>
-
-                {showOptionsMenu && (
-                  <div
-                    className="absolute bottom-14 left-1/2 -translate-x-1/2 w-72 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-2.5 text-white z-50 animate-in fade-in zoom-in-95 duration-150"
-                  >
-                    <div className="text-[10px] font-black uppercase tracking-wider text-white/50 px-2.5 py-1 mb-1">
-                      Classroom Tools &amp; Layout
-                    </div>
-
-                    {/* Edge-to-Edge Fullscreen */}
-                    <button
-                      onClick={() => {
-                        toggleNativeFullscreen();
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
-                    >
-                      <Maximize2 className="w-4 h-4 text-yellow" />
-                      <span>{isNativeFullscreen ? 'Exit Fullscreen' : 'Edge-to-Edge Fullscreen'}</span>
-                    </button>
-
-                    {/* Layout: Full Video */}
-                    <button
-                      onClick={() => {
-                        setViewMode('full-video');
-                        setShowOptionsMenu(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors ${
-                        viewMode === 'full-video' ? 'text-yellow bg-white/5' : ''
-                      }`}
-                    >
-                      <Video className="w-4 h-4" />
-                      <span>100% Full Video (No Clutter)</span>
-                    </button>
-
-                    {/* Layout: Board Drawer Overlay */}
-                    <button
-                      onClick={() => {
-                        setViewMode('drawer-overlay');
-                        setActiveTab('whiteboard');
-                        setShowOptionsMenu(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors ${
-                        viewMode === 'drawer-overlay' ? 'text-yellow bg-white/5' : ''
-                      }`}
-                    >
-                      <Presentation className="w-4 h-4" />
-                      <span>Side Board Overlay Drawer</span>
-                    </button>
-
-                    {/* Layout: Dual Studio Split */}
-                    <button
-                      onClick={() => {
-                        setViewMode('split');
-                        setShowOptionsMenu(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors ${
-                        viewMode === 'split' ? 'text-yellow bg-white/5' : ''
-                      }`}
-                    >
-                      <Columns className="w-4 h-4" />
-                      <span>50/50 Dual Studio Split</span>
-                    </button>
-
-                    <div className="border-t border-white/10 my-1 pt-1" />
-
-                    {/* Copy Class Invite */}
-                    <button
-                      onClick={() => {
-                        handleCopyClassInvite();
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
-                    >
-                      {copiedInvite ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-amber-400" />}
-                      <span>{copiedInvite ? 'Invite Copied to Clipboard!' : 'Copy Student Invite Link'}</span>
-                    </button>
-
-                    {/* Launch Google Meet */}
-                    {externalMeetingUrl && (
-                      <a
-                        href={externalMeetingUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={() => setShowOptionsMenu(false)}
-                        className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold text-cyan-300 transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                        <span>Open in Google Meet</span>
-                      </a>
-                    )}
-
-                    {/* Switch Video Provider (Never stuck on moderator wall) */}
-                    <div className="border-t border-white/10 my-1 pt-1" />
-                    <button
-                      onClick={() => {
-                        const nextServer = videoServer === 'open-webrtc' ? 'jitsi-public' : 'open-webrtc';
-                        setVideoServer(nextServer);
-                        setShowOptionsMenu(false);
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-[11px] font-bold text-white/70 transition-colors"
-                      title="Switch stream server"
-                    >
-                      <Server className="w-4 h-4 text-emerald-400" />
-                      <span>Server: {videoServer === 'open-webrtc' ? 'Open WebRTC (No Login)' : 'Public Jitsi'}</span>
-                    </button>
+              {/* Share Options Menu */}
+              {showShareMenu && (
+                <div className="absolute bottom-14 left-1/2 -translate-x-1/2 w-80 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-3 text-white z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="text-[11px] font-black uppercase tracking-wider text-white/50 px-2 py-1 mb-1">
+                    Choose what to share:
                   </div>
-                )}
-              </div>
 
-              {/* Red Hangup Button */}
-              <button
-                onClick={handleLeaveCall}
-                className="w-14 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
-                title="Leave classroom"
-                aria-label="Leave Classroom"
-              >
-                <PhoneOff className="w-5 h-5" />
-              </button>
+                  {/* 1. Full-Stage Collaborative Whiteboard (Google Jamboard Style) */}
+                  <button
+                    onClick={() => {
+                      setViewMode('whiteboard-full');
+                      setActiveTab('whiteboard');
+                      setShowShareMenu(false);
+                    }}
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-yellow text-dark flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                      <Presentation className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-white">Full-Stage Whiteboard</p>
+                      <p className="text-[10px] font-bold text-white/60">100% canvas to solve math &amp; draw (No scroll)</p>
+                    </div>
+                  </button>
+
+                  {/* 2. Desktop / Window / Tab Native Screen Share */}
+                  <button
+                    onClick={() => {
+                      setShowShareMenu(false);
+                      handleToggleScreenShare();
+                    }}
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                      <ScreenShare className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-white">Share Screen (Window / Tab)</p>
+                      <p className="text-[10px] font-bold text-white/60">Picks open Word, PDF, or Chrome tab</p>
+                    </div>
+                  </button>
+
+                  {/* 3. School Worksheet / PDF */}
+                  <button
+                    onClick={() => {
+                      setViewMode('drawer-overlay');
+                      setActiveTab('pdf');
+                      setShowShareMenu(false);
+                    }}
+                    className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-black text-white">Worksheets &amp; PDF</p>
+                      <p className="text-[10px] font-bold text-white/60">Annotate homework and curriculum</p>
+                    </div>
+                  </button>
+
+                  {/* 4. Google Meet Room Direct Launch */}
+                  {externalMeetingUrl && (
+                    <a
+                      href={externalMeetingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setShowShareMenu(false)}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group border-t border-white/10 mt-1 pt-2"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-cyan-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                        <ExternalLink className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-white">Launch Pupil&apos;s Google Meet</p>
+                        <p className="text-[10px] font-bold text-white/60">Open permanent room in dedicated tab</p>
+                      </div>
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* ============================================================
-              BOTTOM DOCK RIGHT: GOOGLE MEET & FULLSCREEN SHORTCUTS
-              ============================================================ */}
-          <div className="absolute bottom-5 right-6 z-30 hidden md:flex items-center gap-2 pointer-events-auto">
-            {externalMeetingUrl && (
-              <a
-                href={externalMeetingUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/20 bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] text-cyan-300 text-xs font-black shadow-lg active:scale-95 transition-all"
-                title="Launch pupil's official Google Meet room"
-                aria-label="Launch Google Meet"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-                <span>Google Meet</span>
-              </a>
-            )}
-
+            {/* Whiteboard / Tools Toggle Button */}
             <button
-              onClick={toggleNativeFullscreen}
-              className="w-10 h-10 rounded-full bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] border border-white/20 text-white flex items-center justify-center transition-all shadow-lg active:scale-95"
-              title={isNativeFullscreen ? 'Exit Fullscreen' : 'Edge-to-Edge Fullscreen'}
-              aria-label="Toggle Fullscreen"
+              onClick={() => {
+                if (viewMode === 'full-video') {
+                  setViewMode('whiteboard-full');
+                  setActiveTab('whiteboard');
+                } else {
+                  setViewMode('full-video');
+                }
+              }}
+              className={`px-4 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all ${
+                viewMode === 'whiteboard-full'
+                  ? 'bg-yellow text-dark shadow-md'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
+              title={viewMode === 'whiteboard-full' ? 'Return to 100% full video' : 'Open full whiteboard (Google Jamboard)'}
+              aria-label="Toggle Whiteboard"
             >
-              {isNativeFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              <Presentation className="w-4 h-4" />
+              <span className="hidden sm:inline">{viewMode === 'whiteboard-full' ? 'Full Video' : 'Shared Board'}</span>
+            </button>
+
+            {/* 3-Dots Options Menu (Google Meet Style) */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowOptionsMenu(!showOptionsMenu);
+                  setShowShareMenu(false);
+                  setShowDetailsMenu(false);
+                }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  showOptionsMenu
+                    ? 'bg-white text-dark shadow-md'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title="More Options"
+                aria-label="More Meeting Options"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </button>
+
+              {showOptionsMenu && (
+                <div
+                  className="absolute bottom-14 left-1/2 -translate-x-1/2 w-72 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-2.5 text-white z-50 animate-in fade-in zoom-in-95 duration-150"
+                >
+                  <div className="text-[10px] font-black uppercase tracking-wider text-white/50 px-2.5 py-1 mb-1">
+                    Classroom Tools &amp; Layout
+                  </div>
+
+                  {/* Edge-to-Edge Fullscreen */}
+                  <button
+                    onClick={() => {
+                      toggleNativeFullscreen();
+                      setShowOptionsMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
+                  >
+                    <Maximize2 className="w-4 h-4 text-yellow" />
+                    <span>{isNativeFullscreen ? 'Exit Fullscreen' : 'Edge-to-Edge Fullscreen'}</span>
+                  </button>
+
+                  {/* Layout: Full Video */}
+                  <button
+                    onClick={() => {
+                      setViewMode('full-video');
+                      setShowOptionsMenu(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors ${
+                      viewMode === 'full-video' ? 'text-yellow bg-white/5' : ''
+                    }`}
+                  >
+                    <Video className="w-4 h-4" />
+                    <span>100% Full Video Stage</span>
+                  </button>
+
+                  {/* Layout: Full-Stage Whiteboard */}
+                  <button
+                    onClick={() => {
+                      setViewMode('whiteboard-full');
+                      setActiveTab('whiteboard');
+                      setShowOptionsMenu(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors ${
+                      viewMode === 'whiteboard-full' ? 'text-yellow bg-white/5' : ''
+                    }`}
+                  >
+                    <Presentation className="w-4 h-4" />
+                    <span>Full Whiteboard (Google Jamboard)</span>
+                  </button>
+
+                  {/* Layout: Side Overlay Drawer */}
+                  <button
+                    onClick={() => {
+                      setViewMode('drawer-overlay');
+                      setActiveTab('whiteboard');
+                      setShowOptionsMenu(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors ${
+                      viewMode === 'drawer-overlay' ? 'text-yellow bg-white/5' : ''
+                    }`}
+                  >
+                    <Columns className="w-4 h-4" />
+                    <span>Side Overlay Drawer</span>
+                  </button>
+
+                  <div className="border-t border-white/10 my-1 pt-1" />
+
+                  {/* Copy Class Invite */}
+                  <button
+                    onClick={() => {
+                      handleCopyClassInvite();
+                      setShowOptionsMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
+                  >
+                    {copiedInvite ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4 text-amber-400" />}
+                    <span>{copiedInvite ? 'Invite Copied to Clipboard!' : 'Copy Student Invite Link'}</span>
+                  </button>
+
+                  {/* Launch Google Meet */}
+                  {externalMeetingUrl && (
+                    <a
+                      href={externalMeetingUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => setShowOptionsMenu(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold text-cyan-300 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Open in Google Meet</span>
+                    </a>
+                  )}
+
+                  {/* Switch Video Provider */}
+                  <div className="border-t border-white/10 my-1 pt-1" />
+                  <button
+                    onClick={() => {
+                      const nextServer = videoServer === 'open-webrtc' ? 'jitsi-public' : 'open-webrtc';
+                      setVideoServer(nextServer);
+                      setShowOptionsMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-[11px] font-bold text-white/70 transition-colors"
+                    title="Switch stream server"
+                  >
+                    <Server className="w-4 h-4 text-emerald-400" />
+                    <span>Server: {videoServer === 'open-webrtc' ? 'Open WebRTC (Zero Login)' : 'Public Jitsi'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Red Hangup Button */}
+            <button
+              onClick={handleLeaveCall}
+              className="w-14 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
+              title="Leave classroom"
+              aria-label="Leave Classroom"
+            >
+              <PhoneOff className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* ============================================================
-            INTERACTIVE SLIDE-OVER DRAWER / SPLIT WORKSPACE
+            BOTTOM DOCK RIGHT: GOOGLE MEET & FULLSCREEN SHORTCUTS
             ============================================================ */}
-        {(viewMode === 'drawer-overlay' || viewMode === 'split') && (
-          <div
-            className={`flex flex-col bg-white overflow-hidden z-40 transition-all duration-300 ease-out ${
-              viewMode === 'split'
-                ? 'w-full xl:w-[50%] h-full relative'
-                : 'absolute top-0 right-0 w-full sm:w-[85%] md:w-[70%] xl:w-[62%] h-full border-l-[4px] border-dark shadow-[-10px_0px_30px_rgba(0,0,0,0.5)]'
-            }`}
+        <div className="absolute bottom-5 right-6 z-30 hidden md:flex items-center gap-2 pointer-events-auto">
+          {externalMeetingUrl && (
+            <a
+              href={externalMeetingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-white/20 bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] text-cyan-300 text-xs font-black shadow-lg active:scale-95 transition-all"
+              title="Launch pupil's official Google Meet room"
+              aria-label="Launch Google Meet"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Google Meet</span>
+            </a>
+          )}
+
+          <button
+            onClick={toggleNativeFullscreen}
+            className="w-10 h-10 rounded-full bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] border border-white/20 text-white flex items-center justify-center transition-all shadow-lg active:scale-95"
+            title={isNativeFullscreen ? 'Exit Fullscreen' : 'Edge-to-Edge Fullscreen'}
+            aria-label="Toggle Fullscreen"
           >
+            {isNativeFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* ============================================================
+            INTERACTIVE SLIDE-OVER DRAWER (FOR PDF WORKSHEETS & SEATWORK)
+            ============================================================ */}
+        {viewMode === 'drawer-overlay' && (
+          <div className="absolute top-0 right-0 w-full sm:w-[85%] md:w-[70%] xl:w-[62%] h-full border-l-[4px] border-dark bg-white shadow-[-10px_0px_30px_rgba(0,0,0,0.5)] z-40 flex flex-col overflow-hidden animate-in slide-in-from-right duration-200">
             {/* Drawer Header Strip */}
-            <div className="flex items-center justify-between gap-2 p-3 border-b-[3px] border-dark bg-yellow/20 shrink-0 overflow-x-auto">
+            <div className="h-12 flex items-center justify-between gap-2 px-3 border-b-[2.5px] border-dark bg-yellow/20 shrink-0">
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
-                  onClick={() => setActiveTab('whiteboard')}
-                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
-                    activeTab === 'whiteboard' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
-                  }`}
-                  aria-label="Switch to Shared Board"
-                >
-                  <Presentation className="h-4 w-4 mr-1.5" /> Shared Board
-                </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={() => setActiveTab('seatwork')}
-                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
-                    activeTab === 'seatwork' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
-                  }`}
-                  aria-label="Switch to Student Desks"
-                >
-                  <Users className="h-4 w-4 mr-1.5" /> {role === 'tutor' ? 'Student Desks & Mark Work' : 'My Seat-Work'}
-                </Button>
-
-                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => setActiveTab('pdf')}
                   disabled={!selectedPdfUrl}
-                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all disabled:opacity-50 ${
+                  className={`h-7 px-2.5 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
                     activeTab === 'pdf' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
                   }`}
-                  aria-label="Switch to PDF Annotations"
                 >
-                  <BookOpen className="h-4 w-4 mr-1.5" /> PDF {!selectedPdfUrl && '(No PDF)'}
+                  <BookOpen className="h-3.5 w-3.5 mr-1" /> Worksheets {!selectedPdfUrl && '(No PDF)'}
                 </Button>
 
                 <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab('seatwork')}
+                  className={`h-7 px-2.5 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
+                    activeTab === 'seatwork' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
+                  }`}
+                >
+                  <Users className="h-3.5 w-3.5 mr-1" /> {role === 'tutor' ? 'Student Desks' : 'My Seatwork'}
+                </Button>
+
+                <Button
+                  size="sm"
                   variant="outline"
                   onClick={() => setActiveTab('info')}
-                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
+                  className={`h-7 px-2.5 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
                     activeTab === 'info' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
                   }`}
-                  aria-label="Switch to Curriculum Worksheets"
                 >
-                  <FileText className="h-4 w-4 mr-1.5" /> Curriculum
+                  <FileText className="h-3.5 w-3.5 mr-1" /> Curriculum
                 </Button>
               </div>
 
               {/* Close Drawer Button -> Returns immediately to 100% Video */}
               <button
                 onClick={() => setViewMode('full-video')}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 border-[2px] border-dark rounded-xl font-black text-xs uppercase tracking-wider text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all shrink-0"
-                title="Close drawer back to 100% Full Video"
+                className="flex items-center gap-1 h-7 px-2.5 bg-white hover:bg-slate-100 border-[2px] border-dark rounded-lg font-black text-xs text-dark shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all shrink-0"
+                title="Close drawer back to Full Video"
                 aria-label="Close Drawer"
               >
                 <span>Full Video</span>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {/* Drawer Body */}
             <div className="flex-1 min-h-0 overflow-y-auto">
-              {activeTab === 'whiteboard' && (
-                <CollaborativeWhiteboard lessonId={lessonId} role={role} userName={userName} />
-              )}
-
               {activeTab === 'seatwork' && (
                 <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
               )}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, Download, Eye, BookOpen, Target, Library as LibraryIcon, Sparkles } from 'lucide-react';
+import { FileText, Download, Eye, BookOpen, Target, Library as LibraryIcon } from 'lucide-react';
 import { PDFViewerModal } from '@/components/ui/PDFViewerModal';
 import { StoryViewerModal, type StoryContent } from '@/components/ui/StoryViewerModal';
 
@@ -66,7 +66,7 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
             <LibraryIcon className="h-10 w-10" /> Resource Library
           </h1>
           <p className="mt-4 text-sm md:text-base font-bold text-dark/70 max-w-xl">
-            Access general lesson resources, study guides, stories, and materials uploaded by your tutors.
+            Access general lesson resources, study guides, stories, and worksheets uploaded by your tutors.
           </p>
         </div>
       </div>
@@ -98,23 +98,15 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
                         <h3 className="text-xl font-black text-dark truncate">{resource.payload.title}</h3>
                         {isQuiz && (
                           <span className="inline-flex rounded-xl border-[2px] border-dark bg-purple-200 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
-                            Interactive Quiz
+                            Assessment
                           </span>
                         )}
-                        {isStory && (
-                          <span className="inline-flex rounded-xl border-[2px] border-dark bg-amber-300 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
-                            Storybook Fable
-                          </span>
-                        )}
-                        {resource.event_type === 'spelling_bee_created' && (
-                          <span className="inline-flex rounded-xl border-[2px] border-dark bg-amber-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-amber-900 shadow-[2px_2px_0px_#060E1C]">
-                            Spelling Bee
-                          </span>
-                        )}
+                        <span className="inline-flex rounded-xl border-[2px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
+                          {new Date(resource.created_at).toLocaleDateString()}
+                        </span>
                       </div>
-                      <p className="mt-2 text-sm font-bold text-dark/70 leading-relaxed">{resource.payload.description || 'No description provided.'}</p>
-                      <p className="mt-3 text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">
-                        {new Date(resource.created_at).toLocaleDateString()}
+                      <p className="mt-2 text-sm font-bold text-dark/70 leading-relaxed">
+                        {resource.payload.description || 'Curriculum resource available for study and review.'}
                       </p>
                     </div>
                   </div>
@@ -123,7 +115,7 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
                   <div className="flex items-center gap-3 shrink-0">
                     {isQuiz ? (
                       <a href="/dash/student/quiz">
-                        <button className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-purple-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95">
+                        <button className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-purple-300 px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 cursor-pointer">
                           <Target className="h-4 w-4 text-dark" />
                           Take Interactive Quiz
                         </button>
@@ -131,7 +123,7 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
                     ) : (
                       <button
                         onClick={() => handleOpenStory(resource)}
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl border-[3px] border-dark bg-yellow px-5 py-3 text-xs font-black uppercase tracking-wider text-dark shadow-[4px_4px_0px_#060E1C] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:scale-95 cursor-pointer"
                       >
                         <BookOpen className="h-4 w-4 text-dark" />
                         {isStory ? 'Read Story' : 'Open Resource'}
@@ -143,23 +135,35 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
                 {resource.files.length > 0 && (
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mt-2 border-t-[2px] border-dark/10 pt-4">
                     {resource.files.map((file) => {
-                      const fileName = file.object_path.split('/').pop() || 'resource';
-                      const isPdf = fileName.toLowerCase().endsWith('.pdf');
+                      const rawName = file.object_path.split('/').pop() || 'resource';
+                      const cleanFileName = rawName.replace(/^\d+[-_]/, '').replace(/\.{2,}/g, '.');
+                      const isPdf = rawName.toLowerCase().endsWith('.pdf');
+                      const isDocx = rawName.toLowerCase().endsWith('.doc') || rawName.toLowerCase().endsWith('.docx');
+                      const isImage = /\.(png|jpe?g|webp|gif)$/i.test(rawName);
+                      const canPreview = isPdf || isDocx || isImage;
 
                       return (
                         <div 
                           key={file.id} 
-                          className="flex flex-col gap-2 rounded-xl border-[3px] border-dark bg-off-white p-3 shadow-[4px_4px_0px_#060E1C]"
+                          className="flex flex-col gap-2 rounded-xl border-[3px] border-dark bg-off-white p-3.5 shadow-[4px_4px_0px_#060E1C]"
                         >
-                          <span className="truncate text-xs font-black text-dark">{fileName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-yellow border border-dark text-[9px] font-black uppercase tracking-wider text-dark shrink-0">
+                              {isDocx ? 'Word' : isPdf ? 'PDF' : isImage ? 'Image' : 'File'}
+                            </span>
+                            <span className="truncate text-xs font-black text-dark" title={cleanFileName}>
+                              {cleanFileName}
+                            </span>
+                          </div>
+
                           <div className="flex items-center gap-2 mt-1">
-                            {isPdf && file.downloadUrl && (
+                            {canPreview && file.downloadUrl && (
                               <button
-                                onClick={() => handleOpenPdf(file.downloadUrl!, fileName)}
-                                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all"
+                                onClick={() => handleOpenPdf(file.downloadUrl!, cleanFileName)}
+                                className="flex-1 flex items-center justify-center gap-1.5 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1.5 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all cursor-pointer"
                               >
                                 <Eye className="h-3.5 w-3.5" />
-                                View PDF
+                                {isDocx ? 'Open Doc' : 'View'}
                               </button>
                             )}
                             <a 
@@ -192,6 +196,7 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
         onClose={handleClosePdf}
         pdfUrl={activePdfUrl}
         title={activePdfTitle}
+        unlockedWeek={36}
       />
 
       <StoryViewerModal

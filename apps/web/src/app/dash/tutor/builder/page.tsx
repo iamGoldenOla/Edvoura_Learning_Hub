@@ -35,6 +35,17 @@ type GradeOption = {
   display_name: string;
 };
 
+type PupilOption = {
+  id: string;
+  fullName: string;
+  gradeCode: string | null;
+  gradeName: string | null;
+};
+
+const cleanFileName = (name: string) => {
+  return name.replace(/^\d+-\d+-/, "").replace(/^\d+-/, "");
+};
+
 type AssignmentRow = {
   id: string;
   title: string;
@@ -178,6 +189,7 @@ export default function TutorBuilderPage() {
 
   const [subjects, setSubjects] = useState<SubjectOption[]>([]);
   const [gradeLevels, setGradeLevels] = useState<GradeOption[]>([]);
+  const [pupils, setPupils] = useState<PupilOption[]>([]);
   const [assignments, setAssignments] = useState<AssignmentCard[]>([]);
   const [quizzes, setQuizzes] = useState<QuizCard[]>([]);
   const [resources, setResources] = useState<ResourceCard[]>([]);
@@ -189,6 +201,7 @@ export default function TutorBuilderPage() {
   const [formTitle, setFormTitle] = useState("");
   const [formSubject, setFormSubject] = useState("");
   const [formGradeCode, setFormGradeCode] = useState("");
+  const [formTargetStudentId, setFormTargetStudentId] = useState("");
   const [formDueAt, setFormDueAt] = useState("");
   const [formInstructions, setFormInstructions] = useState("");
   const [formResourceName, setFormResourceName] = useState("");
@@ -293,6 +306,31 @@ export default function TutorBuilderPage() {
 
     setSubjects(subjectRows ?? []);
     setGradeLevels(gradeRows ?? []);
+
+    const { data: pupilRows } = await supabase
+      .from("student_profiles")
+      .select(`
+        id,
+        grade_level_id,
+        grade_levels (code, display_name),
+        profiles (first_name, last_name, display_name)
+      `)
+      .order("created_at", { ascending: false });
+
+    if (pupilRows) {
+      const mappedPupils: PupilOption[] = pupilRows.map((row: any) => {
+        const p = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+        const g = Array.isArray(row.grade_levels) ? row.grade_levels[0] : row.grade_levels;
+        const name = p?.display_name || `${p?.first_name || ""} ${p?.last_name || ""}`.trim() || "Student";
+        return {
+          id: row.id,
+          fullName: name,
+          gradeCode: g?.code ?? null,
+          gradeName: g?.display_name ?? null,
+        };
+      });
+      setPupils(mappedPupils);
+    }
 
     const subjectById = new Map(
       (subjectRows ?? []).map((entry) => [entry.id, entry.name]),
@@ -727,6 +765,36 @@ export default function TutorBuilderPage() {
                           </select>
                         </div>
 
+                        <div className="rounded-xl border-[3px] border-dark bg-yellow/10 p-3.5 space-y-1">
+                          <label className="block text-xs font-black uppercase tracking-wider text-dark/80">
+                            Target Pupil (Optional)
+                          </label>
+                          <select
+                            value={formTargetStudentId}
+                            onChange={(event) => {
+                              const selectedId = event.target.value;
+                              setFormTargetStudentId(selectedId);
+                              if (selectedId) {
+                                const pupil = pupils.find((p) => p.id === selectedId);
+                                if (pupil?.gradeCode) {
+                                  setFormGradeCode(pupil.gradeCode);
+                                }
+                              }
+                            }}
+                            className="w-full rounded-lg border-[2px] border-dark bg-white px-3 py-2 text-xs font-bold text-dark outline-none focus:border-yellow cursor-pointer"
+                          >
+                            <option value="">Whole Class / All Grade Students</option>
+                            {pupils.map((pupil) => (
+                              <option key={pupil.id} value={pupil.id}>
+                                {pupil.fullName} {pupil.gradeName ? `(${pupil.gradeName})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-[10px] text-dark/60 font-semibold">
+                            Directly sends this tutorial / worksheet to the selected student&apos;s library and Notes hub.
+                          </p>
+                        </div>
+
                         {activeTool === "assignment" && (
                           <input
                             type="datetime-local"
@@ -852,6 +920,9 @@ export default function TutorBuilderPage() {
                                   formData.append("subjectName", formSubject);
                                   formData.append("gradeCode", formGradeCode);
                                   formData.append("tutorId", userId);
+                                  if (formTargetStudentId) {
+                                    formData.append("targetStudentId", formTargetStudentId);
+                                  }
                                   if (activeTool === "quiz") {
                                     formData.append("timeLimit", formDueAt); // Reused field
                                     formData.append(
@@ -905,6 +976,7 @@ export default function TutorBuilderPage() {
                                   setFormTitle("");
                                   setFormInstructions("");
                                   setFormDueAt("");
+                                  setFormTargetStudentId("");
                                   setFormResourceName("");
                                   setFormResourceFile(null);
                                   setFormResourceFiles([]);
@@ -962,6 +1034,17 @@ export default function TutorBuilderPage() {
                                     ? data[0]
                                     : null;
 
+                                  if (formTargetStudentId && created?.class_id) {
+                                    await supabase.from("class_enrollments").upsert(
+                                      {
+                                        class_id: created.class_id,
+                                        student_id: formTargetStudentId,
+                                        status: "active",
+                                      },
+                                      { onConflict: "class_id,student_id" }
+                                    );
+                                  }
+
                                   if (
                                     created?.assignment_id &&
                                     formResourceFiles.length > 0
@@ -994,6 +1077,7 @@ export default function TutorBuilderPage() {
                                   setFormTitle("");
                                   setFormInstructions("");
                                   setFormDueAt("");
+                                  setFormTargetStudentId("");
                                   setFormResourceName("");
                                   setFormResourceFile(null);
                                   setFormResourceFiles([]);
@@ -1240,20 +1324,22 @@ export default function TutorBuilderPage() {
                             {item.files && item.files.length > 0 && (
                               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 mt-4">
                                 {item.files.map((file) => {
-                                  const isPdf = file.fileName.toLowerCase().endsWith('.pdf');
+                                  const lower = file.fileName.toLowerCase();
+                                  const isViewable = lower.endsWith('.pdf') || lower.endsWith('.docx') || lower.endsWith('.doc') || lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg');
+                                  const displayName = cleanFileName(file.fileName);
                                   return (
                                     <div 
                                       key={file.id} 
                                       className="flex flex-col gap-2 rounded-xl border-[2px] border-dark bg-white p-3 shadow-[2px_2px_0px_#060E1C]"
                                     >
-                                      <span className="truncate text-xs font-black text-dark">{file.fileName}</span>
+                                      <span className="truncate text-xs font-black text-dark" title={displayName}>{displayName}</span>
                                       <div className="flex items-center gap-2 mt-1">
-                                        {isPdf && file.downloadUrl && (
+                                        {isViewable && file.downloadUrl && (
                                           <button
                                             type="button"
                                             onClick={() => {
                                               setActivePdfUrl(file.downloadUrl);
-                                              setActivePdfTitle(file.fileName);
+                                              setActivePdfTitle(displayName);
                                             }}
                                             className="flex-1 flex items-center justify-center gap-1 rounded-lg border-[2px] border-dark bg-yellow px-2 py-1 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all"
                                           >
@@ -1264,7 +1350,7 @@ export default function TutorBuilderPage() {
                                         {file.downloadUrl && (
                                           <a 
                                             href={file.downloadUrl}
-                                            download
+                                            download={displayName}
                                             className="flex-1 flex items-center justify-center gap-1 rounded-lg border-[2px] border-dark bg-slate-100 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-dark hover:translate-y-[-1px] transition-all"
                                           >
                                             <Download className="h-3 w-3" />
@@ -1667,6 +1753,7 @@ export default function TutorBuilderPage() {
         }}
         pdfUrl={activePdfUrl}
         title={activePdfTitle}
+        unlockedWeek={36}
       />
     </div>
   );
