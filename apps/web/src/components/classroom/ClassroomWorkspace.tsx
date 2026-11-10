@@ -24,8 +24,8 @@ import {
   Loader2,
   Upload,
   ArrowRight,
-  MonitorPlay,
-  CheckCircle2,
+  Share2,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -68,9 +68,16 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
+  const [isJitsiReady, setIsJitsiReady] = useState(false);
+  const [copiedInvite, setCopiedInvite] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoMountRef = useRef<HTMLDivElement>(null);
+  const jitsiApiRef = useRef<any>(null);
   const channelRef = useRef<any>(null);
+
+  const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
+  const jitsiUrl = `https://meet.jit.si/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true`;
 
   // Initialize Supabase & classroom data
   useEffect(() => {
@@ -182,6 +189,95 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
+  // Load official Jitsi Meet External API (Zero Name Prompt, Instant Stream & Real Screen Share)
+  useEffect(() => {
+    let isMounted = true;
+
+    const initJitsi = () => {
+      if (!videoMountRef.current || jitsiApiRef.current || !(window as any).JitsiMeetExternalAPI) return;
+
+      try {
+        videoMountRef.current.innerHTML = '';
+        const api = new (window as any).JitsiMeetExternalAPI('meet.jit.si', {
+          roomName: cleanRoom,
+          parentNode: videoMountRef.current,
+          width: '100%',
+          height: '100%',
+          userInfo: {
+            displayName: userName,
+          },
+          configOverwrite: {
+            prejoinConfig: { enabled: false },
+            prejoinPageEnabled: false,
+            skipPrejoin: true,
+            startWithAudioMuted: false,
+            startWithVideoMuted: false,
+            disableDeepLinking: true,
+            enableClosePage: false,
+            enableWelcomePage: false,
+            p2p: { enabled: true },
+            toolbarButtons: [
+              'microphone',
+              'camera',
+              'closedcaptions',
+              'desktop',
+              'fullscreen',
+              'fodeviceselection',
+              'hangup',
+              'chat',
+              'raisehand',
+              'videoquality',
+              'filmstrip',
+              'tileview',
+              'select-background',
+            ],
+          },
+          interfaceConfigOverwrite: {
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+            TOOLBAR_ALWAYS_VISIBLE: true,
+            DEFAULT_BACKGROUND: '#060E1C',
+          },
+        });
+
+        jitsiApiRef.current = api;
+        setIsJitsiReady(true);
+
+        api.addEventListeners({
+          audioMuteStatusChanged: (e: any) => setMicEnabled(!e.muted),
+          videoMuteStatusChanged: (e: any) => setCameraEnabled(!e.muted),
+          videoConferenceJoined: () => {
+            api.executeCommand('setDisplayName', userName);
+          },
+        });
+      } catch (err) {
+        console.warn('Jitsi External API mount error, using fallback:', err);
+      }
+    };
+
+    if ((window as any).JitsiMeetExternalAPI) {
+      initJitsi();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://meet.jit.si/external_api.js';
+      script.async = true;
+      script.onload = () => {
+        if (isMounted) initJitsi();
+      };
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      isMounted = false;
+      if (jitsiApiRef.current) {
+        try {
+          jitsiApiRef.current.dispose();
+        } catch (_) {}
+        jitsiApiRef.current = null;
+      }
+    };
+  }, [cleanRoom, userName]);
+
   // Sync selected PDF across tutor and students
   useEffect(() => {
     const supabase = createClient();
@@ -218,7 +314,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     };
   }, [lessonId, role, selectedPdfUrl, selectedPdfTitle]);
 
-  // Handle Fullscreen edge-to-edge browser monitor expansion
+  // Native Fullscreen Toggle
   const toggleNativeFullscreen = () => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen().then(() => {
@@ -238,6 +334,64 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  // Real Screen Share Trigger
+  const handleToggleScreenShare = async () => {
+    if (jitsiApiRef.current) {
+      try {
+        jitsiApiRef.current.executeCommand('toggleShareScreen');
+      } catch (err) {
+        console.warn('Jitsi share command error:', err);
+      }
+    } else if (typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      try {
+        await navigator.mediaDevices.getDisplayMedia({ video: true });
+      } catch (err) {
+        console.warn('Display capture cancelled', err);
+      }
+    } else {
+      alert('Screen sharing is available on desktop or via the video toolbar buttons.');
+    }
+  };
+
+  const handleToggleMic = () => {
+    if (jitsiApiRef.current) {
+      try {
+        jitsiApiRef.current.executeCommand('toggleAudio');
+      } catch (_) {}
+    } else {
+      setMicEnabled(!micEnabled);
+    }
+  };
+
+  const handleToggleCamera = () => {
+    if (jitsiApiRef.current) {
+      try {
+        jitsiApiRef.current.executeCommand('toggleVideo');
+      } catch (_) {}
+    } else {
+      setCameraEnabled(!cameraEnabled);
+    }
+  };
+
+  const handleLeaveCall = () => {
+    if (confirm('Leave the active classroom session?')) {
+      if (jitsiApiRef.current) {
+        try {
+          jitsiApiRef.current.executeCommand('hangup');
+        } catch (_) {}
+      }
+      window.location.href = role === 'tutor' ? '/dash/tutor/roster' : '/dash/student';
+    }
+  };
+
+  const handleCopyClassInvite = () => {
+    if (typeof window === 'undefined') return;
+    const url = `${window.location.origin}/dash/student/live/classroom?lessonId=${lessonId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedInvite(true);
+    setTimeout(() => setCopiedInvite(false), 3000);
+  };
 
   const handleUploadCustomPdf = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -298,10 +452,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     );
   }
 
-  // Widescreen Jitsi configuration (clean, skips prejoin, enables full widescreen HD)
-  const roomName = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
-  const jitsiUrl = `https://meet.jit.si/${roomName}#config.prejoinPageEnabled=false&config.disableDeepLinking=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}`;
-
   return (
     <div ref={containerRef} className="space-y-3 font-sans select-none">
       
@@ -320,6 +470,16 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         {/* View Layout Controls (Google Meet Style) */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopyClassInvite}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border-[2.5px] border-dark bg-white hover:bg-slate-50 text-dark font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all"
+            title="Copy Student Invite Link"
+            aria-label="Copy Student Invite Link"
+          >
+            {copiedInvite ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+            <span className="hidden md:inline">{copiedInvite ? 'Invite Copied!' : 'Copy Invite'}</span>
+          </button>
+
           <div className="flex items-center gap-1 border-[2.5px] border-dark rounded-xl p-1 bg-off-white shadow-[2px_2px_0px_#060E1C]">
             <button
               onClick={() => setLayoutMode('video-stage')}
@@ -443,15 +603,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             )}
           </div>
 
-          {/* The Live Video iframe (Full Widescreen 16:9 Google Meet canvas) */}
+          {/* The Live Video Container (Zero Name Prompt, Instant Stream & Real Screen Share) */}
           <div className="flex-1 w-full h-full bg-black relative">
-            <iframe
-              src={jitsiUrl}
-              allow="camera; microphone; display-capture; autoplay; clipboard-write; screen-wake-lock; fullscreen"
-              allowFullScreen
-              className="w-full h-full border-none"
-              title="Edvoura Live Video Meeting"
-            />
+            <div ref={videoMountRef} className="w-full h-full" />
+            
+            {/* Direct Fallback if script loading takes a second */}
+            {!isJitsiReady && (
+              <iframe
+                src={jitsiUrl}
+                allow="camera; microphone; display-capture; autoplay; clipboard-write; screen-wake-lock; fullscreen"
+                allowFullScreen
+                className="w-full h-full border-none absolute inset-0"
+                title="Edvoura Live Video Meeting"
+              />
+            )}
           </div>
 
           {/* ============================================================
@@ -463,7 +628,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 
                 {/* Audio Status Pill */}
                 <button
-                  onClick={() => setMicEnabled(!micEnabled)}
+                  onClick={handleToggleMic}
                   className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
                     micEnabled
                       ? 'bg-white/10 hover:bg-white/20 text-white'
@@ -477,7 +642,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
                 {/* Video Camera Status Pill */}
                 <button
-                  onClick={() => setCameraEnabled(!cameraEnabled)}
+                  onClick={handleToggleCamera}
                   className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
                     cameraEnabled
                       ? 'bg-white/10 hover:bg-white/20 text-white'
@@ -489,15 +654,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
                 </button>
 
-                {/* Screen Share / Project Desk */}
+                {/* Real Screen Share Trigger */}
                 <button
-                  onClick={() => {
-                    setLayoutMode('split');
-                    setActiveTab('whiteboard');
-                  }}
+                  onClick={handleToggleScreenShare}
                   className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
-                  title="Share Screen or Project Board"
-                  aria-label="Share Screen or Open Board"
+                  title="Share Screen (Present Your Display / Tab)"
+                  aria-label="Share Screen"
                 >
                   <ScreenShare className="w-5 h-5" />
                 </button>
@@ -568,12 +730,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                         <span>Adjust view (Side-by-Side)</span>
                       </button>
 
+                      <button
+                        onClick={handleCopyClassInvite}
+                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors border-t border-white/10 mt-1 pt-2"
+                      >
+                        <Share2 className="w-4 h-4 text-amber-400" />
+                        <span>Copy Class Invite Link</span>
+                      </button>
+
                       {externalMeetingUrl && (
                         <a
                           href={externalMeetingUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors border-t border-white/10 mt-1 pt-2"
+                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
                         >
                           <ExternalLink className="w-4 h-4 text-cyan-400" />
                           <span>Google Meet Popout Backup</span>
@@ -585,11 +755,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
                 {/* Red End Call / Exit Button */}
                 <button
-                  onClick={() => {
-                    if (confirm('Leave the active classroom session?')) {
-                      window.location.href = role === 'tutor' ? '/dash/tutor/roster' : '/dash/student';
-                    }
-                  }}
+                  onClick={handleLeaveCall}
                   className="w-14 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
                   title="Leave classroom"
                   aria-label="Leave Classroom"
