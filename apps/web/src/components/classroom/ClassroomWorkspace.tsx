@@ -26,6 +26,9 @@ import {
   ArrowRight,
   Share2,
   Check,
+  X,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -39,7 +42,7 @@ interface ClassroomWorkspaceProps {
 }
 
 type ActiveTab = 'whiteboard' | 'seatwork' | 'pdf' | 'info';
-type LayoutMode = 'video-stage' | 'split' | 'board-focus';
+type ViewMode = 'full-video' | 'drawer-overlay' | 'split';
 
 interface ClassResource {
   id: string;
@@ -48,11 +51,11 @@ interface ClassResource {
 }
 
 export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorkspaceProps) {
-  // Google Meet-style layout modes:
-  // - 'video-stage': Full widescreen cinema video with floating Google Meet bottom controls
-  // - 'split': 50/50 Dual Studio (Video on left, Whiteboard/Worksheet on right)
-  // - 'board-focus': Full Whiteboard with floating Picture-in-Picture camera tile in bottom right
-  const [layoutMode, setLayoutMode] = useState<LayoutMode>('video-stage');
+  // 100% Video Persistence Architecture:
+  // - 'full-video': Video takes 100% full stage (uninterrupted widescreen)
+  // - 'drawer-overlay': Video stays 100% full stage while interactive board slides in as an overlay drawer on the right
+  // - 'split': Dual 50/50 stage when actively drawing together
+  const [viewMode, setViewMode] = useState<ViewMode>('full-video');
   const [activeTab, setActiveTab] = useState<ActiveTab>('whiteboard');
   const [lesson, setLesson] = useState<any>(null);
   const [externalMeetingUrl, setExternalMeetingUrl] = useState<string | null>(null);
@@ -63,7 +66,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
   const [selectedPdfTitle, setSelectedPdfTitle] = useState<string>('');
 
-  // Meeting controls & Google Meet menu
+  // Floating controls state
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
@@ -79,7 +82,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
   const jitsiUrl = `https://meet.jit.si/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true`;
 
-  // Initialize Supabase & classroom data
+  // Initialize Supabase & lesson metadata
   useEffect(() => {
     const supabase = createClient();
 
@@ -169,7 +172,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           }
         }
 
-        // Check for private lesson live session link
         const { data: sessionData } = await supabase
           .from('private.lesson_live_sessions' as any)
           .select('join_url, host_url')
@@ -189,7 +191,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Load official Jitsi Meet External API (Zero Name Prompt, Instant Stream & Real Screen Share)
+  // Mount Jitsi Meet API with zero prejoin prompt & authenticated user name
   useEffect(() => {
     let isMounted = true;
 
@@ -251,7 +253,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           },
         });
       } catch (err) {
-        console.warn('Jitsi External API mount error, using fallback:', err);
+        console.warn('Jitsi External API mount error:', err);
       }
     };
 
@@ -289,6 +291,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         setSelectedPdfUrl(payload.pdfUrl);
         setSelectedPdfTitle(payload.pdfTitle);
         setActiveTab('pdf');
+        setViewMode('drawer-overlay');
       })
       .on('broadcast', { event: 'pdf-sync-request' }, () => {
         if (role === 'tutor' && selectedPdfUrl) {
@@ -314,7 +317,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     };
   }, [lessonId, role, selectedPdfUrl, selectedPdfTitle]);
 
-  // Native Fullscreen Toggle
+  // Native Fullscreen edge-to-edge monitor expansion
   const toggleNativeFullscreen = () => {
     if (!document.fullscreenElement) {
       containerRef.current?.requestFullscreen().then(() => {
@@ -335,7 +338,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  // Real Screen Share Trigger
+  // Screen Share Handler
   const handleToggleScreenShare = async () => {
     if (jitsiApiRef.current) {
       try {
@@ -350,7 +353,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         console.warn('Display capture cancelled', err);
       }
     } else {
-      alert('Screen sharing is available on desktop or via the video toolbar buttons.');
+      alert('Screen sharing is available on desktop browsers or via the in-video controls.');
     }
   };
 
@@ -402,7 +405,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     setSelectedPdfUrl(localUrl);
     setSelectedPdfTitle(file.name);
     setActiveTab('pdf');
-    setLayoutMode('split');
+    setViewMode('drawer-overlay');
 
     try {
       const supabase = createClient();
@@ -431,7 +434,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     setSelectedPdfUrl(pdf.public_url);
     setSelectedPdfTitle(pdf.title);
     setActiveTab('pdf');
-    setLayoutMode('split');
+    setViewMode('drawer-overlay');
 
     if (channelRef.current && role === 'tutor') {
       channelRef.current.send({
@@ -447,7 +450,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       <div className="flex flex-col items-center justify-center min-h-[70vh] bg-off-white rounded-3xl border-4 border-dark p-12">
         <Loader2 className="h-12 w-12 animate-spin text-dark mb-4" />
         <h3 className="text-xl font-black text-dark">Connecting to Edvoura Classroom Hub...</h3>
-        <p className="text-xs font-bold text-dark/60 mt-1">Initializing video stage and shared canvas</p>
+        <p className="text-xs font-bold text-dark/60 mt-1">Initializing 100% video stage and shared canvas</p>
       </div>
     );
   }
@@ -455,7 +458,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   return (
     <div ref={containerRef} className="space-y-3 font-sans select-none">
       
-      {/* Top Classroom Bar with Google Meet-style Mode Toggles */}
+      {/* Top Classroom Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white border-[3px] border-dark rounded-2xl p-3 shadow-[4px_4px_0px_#060E1C]">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-2 px-3 py-1 bg-red-500 border-[2px] border-dark rounded-xl text-white text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C]">
@@ -468,7 +471,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           </span>
         </div>
 
-        {/* View Layout Controls (Google Meet Style) */}
+        {/* View Layout & Action Controls */}
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyClassInvite}
@@ -480,51 +483,55 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <span className="hidden md:inline">{copiedInvite ? 'Invite Copied!' : 'Copy Invite'}</span>
           </button>
 
+          {/* Mode Switcher */}
           <div className="flex items-center gap-1 border-[2.5px] border-dark rounded-xl p-1 bg-off-white shadow-[2px_2px_0px_#060E1C]">
             <button
-              onClick={() => setLayoutMode('video-stage')}
+              onClick={() => setViewMode('full-video')}
               className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 ${
-                layoutMode === 'video-stage'
+                viewMode === 'full-video'
                   ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
                   : 'text-dark/70 hover:text-dark hover:bg-white'
               }`}
-              title="Full Video Stage: Widescreen view just like Google Meet & Zoom"
-              aria-label="Full Video Stage Mode"
+              title="100% Full Video Stage (Uninterrupted widescreen)"
+              aria-label="Full Video Stage"
             >
               <Video className="w-3.5 h-3.5" />
-              <span>Full Video Stage</span>
+              <span>Full Video</span>
             </button>
 
             <button
-              onClick={() => setLayoutMode('split')}
+              onClick={() => {
+                setViewMode('drawer-overlay');
+                setActiveTab('whiteboard');
+              }}
               className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 ${
-                layoutMode === 'split'
+                viewMode === 'drawer-overlay'
                   ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
                   : 'text-dark/70 hover:text-dark hover:bg-white'
               }`}
-              title="Dual Studio: Side-by-side 50/50 view with whiteboard"
-              aria-label="Side-by-side Split View"
+              title="Video + Slide-over Whiteboard Drawer"
+              aria-label="Video with Slide-over Board"
+            >
+              <Presentation className="w-3.5 h-3.5" />
+              <span>Board Overlay</span>
+            </button>
+
+            <button
+              onClick={() => setViewMode('split')}
+              className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 ${
+                viewMode === 'split'
+                  ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                  : 'text-dark/70 hover:text-dark hover:bg-white'
+              }`}
+              title="50/50 Dual Studio"
+              aria-label="Side-by-side Dual Studio"
             >
               <Columns className="w-3.5 h-3.5" />
-              <span>Side-by-Side</span>
-            </button>
-
-            <button
-              onClick={() => setLayoutMode('board-focus')}
-              className={`px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 ${
-                layoutMode === 'board-focus'
-                  ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                  : 'text-dark/70 hover:text-dark hover:bg-white'
-              }`}
-              title="Board Focus with Picture-in-Picture camera tile"
-              aria-label="Board Focus with Picture-in-Picture"
-            >
-              <PictureInPicture2 className="w-3.5 h-3.5" />
-              <span>Board &amp; PiP</span>
+              <span>Dual Studio</span>
             </button>
           </div>
 
-          {/* Native HTML5 Fullscreen (edge-to-edge monitor expansion) */}
+          {/* Edge-to-Edge Monitor Fullscreen */}
           <button
             onClick={toggleNativeFullscreen}
             className="flex items-center gap-1.5 px-3 py-2 border-[2.5px] border-dark bg-white hover:bg-slate-50 text-dark font-black text-xs uppercase tracking-wider rounded-xl shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all"
@@ -535,7 +542,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <span className="hidden md:inline">{isNativeFullscreen ? 'Exit Full' : 'Fullscreen'}</span>
           </button>
 
-          {/* External Google Meet Backup if needed */}
+          {/* External Google Meet Backup if parent/tutor requested it */}
           {externalMeetingUrl && (
             <a
               href={externalMeetingUrl}
@@ -552,62 +559,51 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         </div>
       </div>
 
-      {/* Main Classroom Viewport */}
-      <div className="relative w-full h-[84vh] min-h-[580px] rounded-3xl border-[3.5px] border-dark bg-slate-950 overflow-hidden shadow-[8px_8px_0px_#060E1C] flex flex-col xl:flex-row">
+      {/* ============================================================
+          MAIN CLASSROOM STAGE (100% VIDEO VIEWPORT AT ALL TIMES)
+          ============================================================ */}
+      <div className="relative w-full h-[84vh] min-h-[580px] rounded-3xl border-[3.5px] border-dark bg-slate-950 overflow-hidden shadow-[8px_8px_0px_#060E1C] flex">
         
         {/* ============================================================
-            VIDEO STAGE (GOOGLE MEET / ZOOM FULLSCREEN EXPERIENCE)
+            100% VIDEO VIEWPORT (NEVER SQUISHED, PERMANENT WIDESCREEN)
             ============================================================ */}
         <div
-          className={`relative transition-all duration-300 ease-in-out flex flex-col bg-slate-900 ${
-            layoutMode === 'video-stage'
-              ? 'w-full h-full'
-              : layoutMode === 'split'
-              ? 'w-full xl:w-[50%] h-[40vh] xl:h-full border-b-[3px] xl:border-b-0 xl:border-r-[3px] border-dark'
-              : 'fixed bottom-6 right-6 w-72 sm:w-88 h-48 sm:h-56 z-40 rounded-2xl border-4 border-dark shadow-2xl overflow-hidden'
+          className={`h-full relative flex flex-col bg-black transition-all duration-300 ease-in-out ${
+            viewMode === 'split' ? 'w-full xl:w-[50%] border-r-[3px] border-dark' : 'w-full'
           }`}
         >
-          {/* Top Stage Bar */}
+          {/* Top In-Video Status Bar */}
           <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-            <div className="flex items-center gap-2 pointer-events-auto bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-white text-xs font-bold">
+            <div className="flex items-center gap-2 pointer-events-auto bg-black/60 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-white text-xs font-bold">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Edvoura Live Room</span>
+              <span>Edvoura 100% Video Stage</span>
               <span className="opacity-50">•</span>
               <span className="text-[11px] opacity-80">{userName} ({role})</span>
             </div>
 
-            {/* Quick Button to Slide Open Whiteboard when in Full Video Stage */}
-            {layoutMode === 'video-stage' && (
+            {/* Quick Trigger to Open Whiteboard Drawer when in Full-Video view */}
+            {viewMode === 'full-video' && (
               <button
-                onClick={() => setLayoutMode('split')}
-                className="pointer-events-auto flex items-center gap-2 px-3.5 py-2 bg-yellow hover:bg-yellow/90 border-[2.5px] border-dark text-dark font-black text-xs uppercase tracking-wider rounded-xl shadow-[3px_3px_0px_#060E1C] active:scale-95 transition-all"
-                aria-label="Open Interactive Whiteboard and Seatwork"
+                onClick={() => {
+                  setViewMode('drawer-overlay');
+                  setActiveTab('whiteboard');
+                }}
+                className="pointer-events-auto flex items-center gap-2 px-4 py-2 bg-yellow hover:bg-yellow/90 border-[2.5px] border-dark text-dark font-black text-xs uppercase tracking-wider rounded-xl shadow-[3px_3px_0px_#060E1C] active:scale-95 transition-all"
+                title="Slide open the collaborative whiteboard without shrinking video"
+                aria-label="Open Whiteboard Overlay Drawer"
               >
                 <Presentation className="w-4 h-4" />
-                <span>Open Whiteboard &amp; Worksheets</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-
-            {/* In Picture-in-Picture mode: button to restore Full Video Stage */}
-            {layoutMode === 'board-focus' && (
-              <button
-                onClick={() => setLayoutMode('video-stage')}
-                className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 bg-yellow text-dark border-2 border-dark font-black text-xs rounded-xl shadow-lg active:scale-95"
-                title="Expand back to Big Video Stage"
-                aria-label="Restore Full Video Stage"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-                <span>Enlarge</span>
+                <span>Open Board &amp; Worksheets</span>
+                <ChevronLeft className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          {/* The Live Video Container (Zero Name Prompt, Instant Stream & Real Screen Share) */}
-          <div className="flex-1 w-full h-full bg-black relative">
+          {/* Jitsi Meet Video Mount (100% Full Width & Height) */}
+          <div className="w-full h-full relative bg-black">
             <div ref={videoMountRef} className="w-full h-full" />
             
-            {/* Direct Fallback if script loading takes a second */}
+            {/* Fallback iframe while script initialises */}
             {!isJitsiReady && (
               <iframe
                 src={jitsiUrl}
@@ -620,169 +616,167 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           </div>
 
           {/* ============================================================
-              GOOGLE MEET FLOATING BOTTOM CONTROL BAR (Screenshot 2 & 3)
+              UNIFIED GOOGLE MEET BOTTOM CONTROL DOCK (Screenshot 2 & 3)
               ============================================================ */}
-          {layoutMode !== 'board-focus' && (
-            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
-              <div className="bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_25px_rgba(0,0,0,0.6)] flex items-center gap-2 sm:gap-3 transition-all">
-                
-                {/* Audio Status Pill */}
-                <button
-                  onClick={handleToggleMic}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                    micEnabled
-                      ? 'bg-white/10 hover:bg-white/20 text-white'
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                  title={micEnabled ? 'Mute microphone' : 'Unmute microphone'}
-                  aria-label="Toggle Microphone"
-                >
-                  {micEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-                </button>
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+            <div className="bg-[#1e1e1e]/90 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_25px_rgba(0,0,0,0.6)] flex items-center gap-2 sm:gap-3 transition-all">
+              
+              {/* Mic Status */}
+              <button
+                onClick={handleToggleMic}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  micEnabled
+                    ? 'bg-white/10 hover:bg-white/20 text-white'
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+                title={micEnabled ? 'Mute microphone' : 'Unmute microphone'}
+                aria-label="Toggle Microphone"
+              >
+                {micEnabled ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+              </button>
 
-                {/* Video Camera Status Pill */}
-                <button
-                  onClick={handleToggleCamera}
-                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-                    cameraEnabled
-                      ? 'bg-white/10 hover:bg-white/20 text-white'
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                  title={cameraEnabled ? 'Turn off camera' : 'Turn on camera'}
-                  aria-label="Toggle Video Camera"
-                >
-                  {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-                </button>
+              {/* Camera Status */}
+              <button
+                onClick={handleToggleCamera}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  cameraEnabled
+                    ? 'bg-white/10 hover:bg-white/20 text-white'
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+                title={cameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+                aria-label="Toggle Video Camera"
+              >
+                {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+              </button>
 
-                {/* Real Screen Share Trigger */}
+              {/* Real Screen Share Presentation */}
+              <button
+                onClick={handleToggleScreenShare}
+                className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
+                title="Share Screen (Present Your Display / Tab to Pupil)"
+                aria-label="Share Screen"
+              >
+                <ScreenShare className="w-5 h-5" />
+              </button>
+
+              {/* Whiteboard Overlay Drawer Toggle */}
+              <button
+                onClick={() => {
+                  if (viewMode === 'full-video') {
+                    setViewMode('drawer-overlay');
+                    setActiveTab('whiteboard');
+                  } else {
+                    setViewMode('full-video');
+                  }
+                }}
+                className={`px-4 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                  viewMode !== 'full-video'
+                    ? 'bg-yellow text-dark shadow-md'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title="Slide-over Collaborative Whiteboard"
+                aria-label="Toggle Whiteboard"
+              >
+                <Presentation className="w-4 h-4" />
+                <span className="hidden sm:inline">Shared Board</span>
+              </button>
+
+              {/* Edge-to-Edge Fullscreen Button */}
+              <button
+                onClick={toggleNativeFullscreen}
+                className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
+                title="Edge-to-Edge Monitor Fullscreen"
+                aria-label="Toggle Fullscreen"
+              >
+                {isNativeFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+              </button>
+
+              {/* 3-Dots Options Menu */}
+              <div className="relative">
                 <button
-                  onClick={handleToggleScreenShare}
+                  onClick={() => setShowOptionsMenu(!showOptionsMenu)}
                   className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
-                  title="Share Screen (Present Your Display / Tab)"
-                  aria-label="Share Screen"
+                  title="More Options"
+                  aria-label="More Meeting Options"
                 >
-                  <ScreenShare className="w-5 h-5" />
+                  <MoreVertical className="w-5 h-5" />
                 </button>
 
-                {/* Switch to Whiteboard / Worksheets */}
-                <button
-                  onClick={() => setLayoutMode(layoutMode === 'split' ? 'video-stage' : 'split')}
-                  className={`px-4 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-                    layoutMode === 'split'
-                      ? 'bg-yellow text-dark shadow-md'
-                      : 'bg-white/10 hover:bg-white/20 text-white'
-                  }`}
-                  title="Toggle Side-by-Side Shared Board"
-                  aria-label="Toggle Shared Board"
-                >
-                  <Presentation className="w-4 h-4" />
-                  <span className="hidden sm:inline">Shared Board</span>
-                </button>
-
-                {/* Fullscreen Expansion Button */}
-                <button
-                  onClick={toggleNativeFullscreen}
-                  className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
-                  title="Full Screen Edge-to-Edge"
-                  aria-label="Toggle Fullscreen Edge-to-Edge"
-                >
-                  {isNativeFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
-                </button>
-
-                {/* 3-Dots Options Menu (Google Meet Screenshot 3) */}
-                <div className="relative">
-                  <button
-                    onClick={() => setShowOptionsMenu(!showOptionsMenu)}
-                    className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
-                    title="More Options"
-                    aria-label="More Meeting Options"
+                {showOptionsMenu && (
+                  <div
+                    className="absolute bottom-14 left-1/2 -translate-x-1/2 w-64 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-2 text-white z-50 animate-in fade-in zoom-in-95 duration-150"
+                    onClick={() => setShowOptionsMenu(false)}
                   >
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-
-                  {/* Options Dropdown Menu */}
-                  {showOptionsMenu && (
-                    <div
-                      className="absolute bottom-14 left-1/2 -translate-x-1/2 w-64 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-2 text-white z-50 animate-in fade-in zoom-in-95 duration-150"
-                      onClick={() => setShowOptionsMenu(false)}
+                    <button
+                      onClick={toggleNativeFullscreen}
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
                     >
-                      <button
-                        onClick={toggleNativeFullscreen}
+                      <Maximize2 className="w-4 h-4 text-yellow" />
+                      <span>Edge-to-Edge Fullscreen</span>
+                    </button>
+
+                    <button
+                      onClick={() => setViewMode(viewMode === 'split' ? 'full-video' : 'split')}
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
+                    >
+                      <Layout className="w-4 h-4 text-blue-400" />
+                      <span>{viewMode === 'split' ? 'Switch to Full Video' : 'Switch to 50/50 Dual Studio'}</span>
+                    </button>
+
+                    <button
+                      onClick={handleCopyClassInvite}
+                      className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors border-t border-white/10 mt-1 pt-2"
+                    >
+                      <Share2 className="w-4 h-4 text-amber-400" />
+                      <span>Copy Class Invite Link</span>
+                    </button>
+
+                    {externalMeetingUrl && (
+                      <a
+                        href={externalMeetingUrl}
+                        target="_blank"
+                        rel="noreferrer"
                         className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
                       >
-                        <Maximize2 className="w-4 h-4 text-yellow" />
-                        <span>Edge-to-Edge Fullscreen</span>
-                      </button>
-
-                      <button
-                        onClick={() => setLayoutMode('board-focus')}
-                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
-                      >
-                        <PictureInPicture2 className="w-4 h-4 text-emerald-400" />
-                        <span>Open Picture-in-Picture mode</span>
-                      </button>
-
-                      <button
-                        onClick={() => setLayoutMode(layoutMode === 'split' ? 'video-stage' : 'split')}
-                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
-                      >
-                        <Layout className="w-4 h-4 text-blue-400" />
-                        <span>Adjust view (Side-by-Side)</span>
-                      </button>
-
-                      <button
-                        onClick={handleCopyClassInvite}
-                        className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors border-t border-white/10 mt-1 pt-2"
-                      >
-                        <Share2 className="w-4 h-4 text-amber-400" />
-                        <span>Copy Class Invite Link</span>
-                      </button>
-
-                      {externalMeetingUrl && (
-                        <a
-                          href={externalMeetingUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-white/10 flex items-center gap-2.5 text-xs font-bold transition-colors"
-                        >
-                          <ExternalLink className="w-4 h-4 text-cyan-400" />
-                          <span>Google Meet Popout Backup</span>
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Red End Call / Exit Button */}
-                <button
-                  onClick={handleLeaveCall}
-                  className="w-14 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
-                  title="Leave classroom"
-                  aria-label="Leave Classroom"
-                >
-                  <PhoneOff className="w-5 h-5" />
-                </button>
+                        <ExternalLink className="w-4 h-4 text-cyan-400" />
+                        <span>Google Meet Popout Backup</span>
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
+
+              {/* Red Hangup Button */}
+              <button
+                onClick={handleLeaveCall}
+                className="w-14 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
+                title="Leave classroom"
+                aria-label="Leave Classroom"
+              >
+                <PhoneOff className="w-5 h-5" />
+              </button>
             </div>
-          )}
+          </div>
         </div>
 
         {/* ============================================================
-            SHARED INTERACTIVE CANVAS & DESK WORKSPACE
+            INTERACTIVE SLIDE-OVER DRAWER / SPLIT WORKSPACE
             ============================================================ */}
-        {(layoutMode === 'split' || layoutMode === 'board-focus') && (
+        {(viewMode === 'drawer-overlay' || viewMode === 'split') && (
           <div
-            className={`flex flex-col bg-white overflow-hidden transition-all duration-300 ${
-              layoutMode === 'split' ? 'w-full xl:w-[50%] h-[60vh] xl:h-full' : 'w-full h-full'
+            className={`flex flex-col bg-white overflow-hidden z-40 transition-all duration-300 ease-out ${
+              viewMode === 'split'
+                ? 'w-full xl:w-[50%] h-full relative'
+                : 'absolute top-0 right-0 w-full sm:w-[85%] md:w-[70%] xl:w-[62%] h-full border-l-[4px] border-dark shadow-[-10px_0px_30px_rgba(0,0,0,0.5)]'
             }`}
           >
-            {/* Top Navigation Tabs */}
-            <div className="flex items-center justify-between gap-2 p-3 border-b-[3px] border-dark bg-off-white shrink-0 overflow-x-auto">
+            {/* Drawer Top Bar */}
+            <div className="flex items-center justify-between gap-2 p-3 border-b-[3px] border-dark bg-yellow/20 shrink-0 overflow-x-auto">
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab('whiteboard')}
-                  className={`border-[2px] border-dark rounded-xl font-bold text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
+                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
                     activeTab === 'whiteboard' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
                   }`}
                   aria-label="Switch to Shared Board"
@@ -793,51 +787,51 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab('seatwork')}
-                  className={`border-[2px] border-dark rounded-xl font-bold text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
+                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
                     activeTab === 'seatwork' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
                   }`}
-                  aria-label="Switch to Student Desks and Seatwork"
+                  aria-label="Switch to Student Desks"
                 >
-                  <Users className="h-4 w-4 mr-1.5" /> {role === 'tutor' ? 'Student Desks & Mark Work' : 'My Seat-Work Desk'}
+                  <Users className="h-4 w-4 mr-1.5" /> {role === 'tutor' ? 'Student Desks & Mark Work' : 'My Seat-Work'}
                 </Button>
 
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab('pdf')}
                   disabled={!selectedPdfUrl}
-                  className={`border-[2px] border-dark rounded-xl font-bold text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all disabled:opacity-50 ${
+                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all disabled:opacity-50 ${
                     activeTab === 'pdf' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
                   }`}
-                  aria-label="Switch to PDF Worksheet Annotations"
+                  aria-label="Switch to PDF Annotations"
                 >
-                  <BookOpen className="h-4 w-4 mr-1.5" /> PDF Annotations {!selectedPdfUrl && '(No PDF loaded)'}
+                  <BookOpen className="h-4 w-4 mr-1.5" /> PDF {!selectedPdfUrl && '(No PDF)'}
                 </Button>
 
                 <Button
                   variant="outline"
                   onClick={() => setActiveTab('info')}
-                  className={`border-[2px] border-dark rounded-xl font-bold text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
+                  className={`border-[2px] border-dark rounded-xl font-black text-xs shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all ${
                     activeTab === 'info' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
                   }`}
-                  aria-label="Switch to Curriculum and Worksheets"
+                  aria-label="Switch to Curriculum Worksheets"
                 >
-                  <FileText className="h-4 w-4 mr-1.5" /> Curriculum &amp; Worksheets
+                  <FileText className="h-4 w-4 mr-1.5" /> Curriculum
                 </Button>
               </div>
 
-              {/* Close / Return to Full Video Stage */}
+              {/* Close Drawer / Slide Away Button */}
               <button
-                onClick={() => setLayoutMode('video-stage')}
-                className="px-3 py-1.5 rounded-xl border-[2px] border-dark bg-white hover:bg-slate-50 text-dark font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all shrink-0 flex items-center gap-1.5"
-                title="Expand Video Stage to Fullscreen"
-                aria-label="Back to Full Video Stage"
+                onClick={() => setViewMode('full-video')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 border-[2px] border-dark rounded-xl font-black text-xs uppercase tracking-wider text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all shrink-0"
+                title="Minimize Drawer back to Full Video"
+                aria-label="Close Drawer"
               >
-                <Video className="w-3.5 h-3.5 text-red-500" />
-                <span>Full Video Stage</span>
+                <span>Full Video</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Active Canvas Display */}
+            {/* Drawer Body */}
             <div className="flex-1 min-h-0 overflow-y-auto">
               {activeTab === 'whiteboard' && (
                 <CollaborativeWhiteboard lessonId={lessonId} role={role} userName={userName} />
@@ -866,7 +860,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     </div>
                   </div>
 
-                  {/* Resource Selection panel */}
+                  {/* Preloaded Resources List */}
                   <div className="border-t-[2px] border-dark/10 pt-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                       <h3 className="text-lg font-black text-dark uppercase tracking-tight flex items-center gap-2">
