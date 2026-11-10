@@ -659,28 +659,6 @@ export function CollaborativeWhiteboard({
             </button>
           </div>
 
-          {/* Screen Share Board */}
-          <button
-            onClick={handleScreenShareBoard}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl border-[2px] border-black bg-yellow hover:bg-yellow/90 text-black font-black text-xs uppercase shadow-[2px_2px_0px_#000] active:scale-95 transition-all"
-            title="Present and Screen-Share this Board to student"
-            aria-label="Screen Share Board"
-          >
-            <ScreenShare className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Share Screen</span>
-          </button>
-
-          {/* Copy Board Invite Link */}
-          <button
-            onClick={handleShareBoardLink}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl border-[2px] border-black bg-white hover:bg-slate-100 text-black font-black text-xs uppercase shadow-[2px_2px_0px_#000] active:scale-95 transition-all"
-            title="Copy board room link to send to pupil"
-            aria-label="Copy Board Invite Link"
-          >
-            {copiedBoardLink ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Share2 className="h-3.5 w-3.5" />}
-            <span>{copiedBoardLink ? 'Link Copied!' : 'Share Board'}</span>
-          </button>
-
           {/* Export Button */}
           <button
             onClick={handleExportPNG}
@@ -688,7 +666,7 @@ export function CollaborativeWhiteboard({
             title="Download Canvas Snapshot"
           >
             <Download className="h-3.5 w-3.5" />
-            <span className="hidden md:inline">Save</span>
+            <span className="hidden md:inline">Save Canvas</span>
           </button>
         </div>
       </div>
