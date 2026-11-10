@@ -21,10 +21,24 @@ export default async function FlashcardPage() {
 
   const gradeLevelName = ((profile as StudentLearningProfileRow)?.grade_level?.display_name ?? 'Primary').trim() || 'Primary';
 
+  const suggested = getFlashcardSubjectSuggestions(gradeLevelName);
+  const coreSubjects = [
+    'Mathematics',
+    'English Language',
+    'Basic Science',
+    'Quantitative Reasoning',
+    'Verbal Reasoning',
+    'Social Studies',
+    'Civic Education',
+    'Agricultural Science',
+    'Computing & ICT',
+  ];
+  const allSubjects = Array.from(new Set([...suggested, ...coreSubjects]));
+
   return (
     <FlashcardClient 
       gradeLevel={gradeLevelName}
-      subjectSuggestions={getFlashcardSubjectSuggestions(gradeLevelName)}
+      subjectSuggestions={allSubjects}
       topicSuggestions={getFlashcardTopicSuggestions(gradeLevelName)}
     />
   );

@@ -197,12 +197,16 @@ export default async function TutorRosterPage(props: {
                           <p className="text-xs font-bold text-dark/70 break-words">{learner.gradeLabel}</p>
                           <p className="text-xs font-bold text-dark/70 break-words">{learner.schoolName ?? 'School pending'}</p>
                           <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.1em] sm:tracking-[0.12em] text-emerald-600 bg-emerald-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border-[2px] border-emerald-300 self-start md:self-auto text-center shrink-0 w-fit md:w-full break-words">{learner.status}</p>
-                          <div className="flex flex-col gap-2 sm:col-span-2 md:col-span-5 pt-3 mt-3 border-t-[2px] border-dark/10 min-w-0">
-                            {learner.personalMeetHostUrl ? (
-                              <a href={learner.personalMeetHostUrl} target="_blank" rel="noreferrer" className="text-[10px] sm:text-xs font-black text-blue-600 hover:underline inline-flex items-center gap-1 w-fit break-words">
-                                <Video className="w-3 h-3 sm:w-4 sm:h-4" /> Join Eternal Meet
-                              </a>
-                            ) : null}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:col-span-2 md:col-span-5 pt-3 mt-3 border-t-[2px] border-dark/10 min-w-0">
+                            <Link
+                              href={`/dash/tutor/live/classroom?studentId=${learner.id}&studentName=${encodeURIComponent(learner.name)}`}
+                              className="px-3.5 py-2 bg-emerald-400 hover:bg-emerald-500 border-[2px] border-dark text-dark text-xs font-black rounded-xl shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all inline-flex items-center gap-2 w-fit"
+                              title="Enter 1-on-1 Classroom inside Edvoura (no external new tabs)"
+                            >
+                              <Video className="w-4 h-4 fill-current" />
+                              <span>Enter Classroom Hub</span>
+                            </Link>
+
                             <StudentLinkEditor 
                               studentId={learner.id} 
                               currentUrl={learner.personalMeetUrl} 

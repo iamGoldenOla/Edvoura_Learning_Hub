@@ -7,28 +7,23 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 interface PageProps {
-  searchParams: {
+  searchParams?: Promise<{
     lessonId?: string;
+    studentId?: string;
+  }> | {
+    lessonId?: string;
+    studentId?: string;
   };
 }
 
-export default async function StudentClassroomPage({ searchParams }: PageProps) {
+export default async function StudentClassroomPage(props: PageProps) {
   const viewer = await requireAppViewer();
-  const lessonId = searchParams.lessonId;
+  const searchParams = (await props.searchParams) ?? {};
+  let lessonId = searchParams.lessonId;
 
   if (!lessonId) {
-    return (
-      <div className="max-w-md mx-auto text-center py-20 bg-white border-[4px] border-dark rounded-[28px] p-8 shadow-[8px_8px_0px_#060E1C] mt-12">
-        <h2 className="text-2xl font-black text-dark mb-4">Classroom Error</h2>
-        <p className="text-sm font-bold text-dark/60 mb-6">No active class session identifier was supplied.</p>
-        <Link
-          href="/dash/student/live"
-          className="inline-flex items-center gap-2 px-6 py-3 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] rounded-xl hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:scale-95 transition-all"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Waiting Room
-        </Link>
-      </div>
-    );
+    // Default to student's personal 1-on-1 room if no specific lesson id
+    lessonId = `1on1-${viewer.currentUser.userId}`;
   }
 
   const userName = viewer.currentUser.profile?.fullName || 'Student';

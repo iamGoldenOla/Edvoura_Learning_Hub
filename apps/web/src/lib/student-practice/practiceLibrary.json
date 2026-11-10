@@ -9,14 +9,78 @@
           "theme": "Daily Vocabulary",
           "instructions": "Listen carefully, type each word, and build confidence with everyday school and home vocabulary.",
           "words": [
-            { "word": "school", "pronunciation": "skool", "syllables": 1, "definition": "A place where children go to learn.", "exampleSentence": "The children arrived at school early in the morning.", "hint": "It begins with s and ends with l.", "difficulty": "easy" },
-            { "word": "garden", "pronunciation": "GAR-den", "syllables": 2, "definition": "A piece of ground where flowers or plants grow.", "exampleSentence": "We planted tomatoes in the garden behind the house.", "hint": "It has two syllables and starts with g.", "difficulty": "easy" },
-            { "word": "window", "pronunciation": "WIN-doh", "syllables": 2, "definition": "An opening in a wall fitted with glass.", "exampleSentence": "Please open the window and let fresh air inside.", "hint": "It begins with w and has the word win at the start.", "difficulty": "medium" },
-            { "word": "blanket", "pronunciation": "BLANG-kit", "syllables": 2, "definition": "A large cloth used for warmth on a bed.", "exampleSentence": "She covered the baby with a soft blanket.", "hint": "It starts with bl and ends with et.", "difficulty": "medium" },
-            { "word": "morning", "pronunciation": "MOR-ning", "syllables": 2, "definition": "The early part of the day before noon.", "exampleSentence": "We read our storybook every morning.", "hint": "It begins with m and has ing at the end.", "difficulty": "medium" },
-            { "word": "beautiful", "pronunciation": "BYOO-ti-ful", "syllables": 3, "definition": "Very pleasing to look at or hear.", "exampleSentence": "The garden looked beautiful after the rain.", "hint": "It starts with beau and has three syllables.", "difficulty": "hard" },
-            { "word": "friendly", "pronunciation": "FREND-lee", "syllables": 2, "definition": "Kind and pleasant to others.", "exampleSentence": "Our new neighbour is friendly and cheerful.", "hint": "It ends with ly and starts with fr.", "difficulty": "hard" },
-            { "word": "important", "pronunciation": "im-POR-tent", "syllables": 3, "definition": "Having great value or meaning.", "exampleSentence": "It is important to listen when the teacher speaks.", "hint": "It begins with im and ends with ant.", "difficulty": "hard" }
+            {
+              "word": "school",
+              "pronunciation": "skool",
+              "syllables": 1,
+              "definition": "A place where children go to learn.",
+              "exampleSentence": "The children arrived at school early in the morning.",
+              "hint": "It begins with s and ends with l.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "garden",
+              "pronunciation": "GAR-den",
+              "syllables": 2,
+              "definition": "A piece of ground where flowers or plants grow.",
+              "exampleSentence": "We planted tomatoes in the garden behind the house.",
+              "hint": "It has two syllables and starts with g.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "window",
+              "pronunciation": "WIN-doh",
+              "syllables": 2,
+              "definition": "An opening in a wall fitted with glass.",
+              "exampleSentence": "Please open the window and let fresh air inside.",
+              "hint": "It begins with w and has the word win at the start.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "blanket",
+              "pronunciation": "BLANG-kit",
+              "syllables": 2,
+              "definition": "A large cloth used for warmth on a bed.",
+              "exampleSentence": "She covered the baby with a soft blanket.",
+              "hint": "It starts with bl and ends with et.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "morning",
+              "pronunciation": "MOR-ning",
+              "syllables": 2,
+              "definition": "The early part of the day before noon.",
+              "exampleSentence": "We read our storybook every morning.",
+              "hint": "It begins with m and has ing at the end.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "beautiful",
+              "pronunciation": "BYOO-ti-ful",
+              "syllables": 3,
+              "definition": "Very pleasing to look at or hear.",
+              "exampleSentence": "The garden looked beautiful after the rain.",
+              "hint": "It starts with beau and has three syllables.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "friendly",
+              "pronunciation": "FREND-lee",
+              "syllables": 2,
+              "definition": "Kind and pleasant to others.",
+              "exampleSentence": "Our new neighbour is friendly and cheerful.",
+              "hint": "It ends with ly and starts with fr.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "important",
+              "pronunciation": "im-POR-tent",
+              "syllables": 3,
+              "definition": "Having great value or meaning.",
+              "exampleSentence": "It is important to listen when the teacher speaks.",
+              "hint": "It begins with im and ends with ant.",
+              "difficulty": "hard"
+            }
           ]
         },
         {
@@ -25,12 +89,60 @@
           "theme": "Science Words",
           "instructions": "Practise science-related words that help you talk about the world around you.",
           "words": [
-            { "word": "air", "pronunciation": "air", "syllables": 1, "definition": "The invisible mixture of gases around us.", "exampleSentence": "Plants, animals, and people all need air to live.", "hint": "It is a short word with three letters.", "difficulty": "easy" },
-            { "word": "plant", "pronunciation": "plant", "syllables": 1, "definition": "A living thing that grows in soil or water.", "exampleSentence": "We watered the plant after class.", "hint": "It starts with pl.", "difficulty": "easy" },
-            { "word": "animal", "pronunciation": "AN-i-mal", "syllables": 3, "definition": "A living thing that can move and breathe.", "exampleSentence": "A goat is an animal that lives on many farms.", "hint": "It begins with a and has three syllables.", "difficulty": "medium" },
-            { "word": "weather", "pronunciation": "WETH-er", "syllables": 2, "definition": "The condition of the air at a certain time.", "exampleSentence": "The weather is sunny today.", "hint": "It begins with wea.", "difficulty": "medium" },
-            { "word": "transport", "pronunciation": "TRANS-port", "syllables": 2, "definition": "To carry people or goods from one place to another.", "exampleSentence": "Buses transport children safely to school.", "hint": "It begins with trans.", "difficulty": "hard" },
-            { "word": "environment", "pronunciation": "en-VY-run-ment", "syllables": 4, "definition": "The natural world and surroundings where we live.", "exampleSentence": "We should keep the environment clean.", "hint": "It starts with en and ends with ment.", "difficulty": "hard" }
+            {
+              "word": "air",
+              "pronunciation": "air",
+              "syllables": 1,
+              "definition": "The invisible mixture of gases around us.",
+              "exampleSentence": "Plants, animals, and people all need air to live.",
+              "hint": "It is a short word with three letters.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "plant",
+              "pronunciation": "plant",
+              "syllables": 1,
+              "definition": "A living thing that grows in soil or water.",
+              "exampleSentence": "We watered the plant after class.",
+              "hint": "It starts with pl.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "animal",
+              "pronunciation": "AN-i-mal",
+              "syllables": 3,
+              "definition": "A living thing that can move and breathe.",
+              "exampleSentence": "A goat is an animal that lives on many farms.",
+              "hint": "It begins with a and has three syllables.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "weather",
+              "pronunciation": "WETH-er",
+              "syllables": 2,
+              "definition": "The condition of the air at a certain time.",
+              "exampleSentence": "The weather is sunny today.",
+              "hint": "It begins with wea.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "transport",
+              "pronunciation": "TRANS-port",
+              "syllables": 2,
+              "definition": "To carry people or goods from one place to another.",
+              "exampleSentence": "Buses transport children safely to school.",
+              "hint": "It begins with trans.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "environment",
+              "pronunciation": "en-VY-run-ment",
+              "syllables": 4,
+              "definition": "The natural world and surroundings where we live.",
+              "exampleSentence": "We should keep the environment clean.",
+              "hint": "It starts with en and ends with ment.",
+              "difficulty": "hard"
+            }
           ]
         },
         {
@@ -39,12 +151,60 @@
           "theme": "English Words",
           "instructions": "Practise useful reading and writing words that help learners speak and write with confidence.",
           "words": [
-            { "word": "sentence", "pronunciation": "SEN-tens", "syllables": 2, "definition": "A group of words that makes complete sense.", "exampleSentence": "Write one sentence about your best friend.", "hint": "It starts with sen and ends with ce.", "difficulty": "easy" },
-            { "word": "picture", "pronunciation": "PIK-chur", "syllables": 2, "definition": "A drawing or image that shows something.", "exampleSentence": "The picture in the book shows a busy market.", "hint": "It starts with pic.", "difficulty": "easy" },
-            { "word": "teacher", "pronunciation": "TEE-chur", "syllables": 2, "definition": "A person who helps students learn.", "exampleSentence": "Our teacher explained the topic clearly.", "hint": "It begins with tea but is not the drink.", "difficulty": "medium" },
-            { "word": "library", "pronunciation": "LY-brer-ee", "syllables": 3, "definition": "A place where books are kept for reading.", "exampleSentence": "We visited the library to borrow a storybook.", "hint": "It starts with li and ends with ry.", "difficulty": "medium" },
-            { "word": "question", "pronunciation": "KWES-chun", "syllables": 2, "definition": "Something asked in order to get an answer.", "exampleSentence": "The student raised her hand to ask a question.", "hint": "It begins with qu.", "difficulty": "hard" },
-            { "word": "understand", "pronunciation": "un-der-STAND", "syllables": 3, "definition": "To know the meaning of something clearly.", "exampleSentence": "I understand the lesson better after practice.", "hint": "It starts with under.", "difficulty": "hard" }
+            {
+              "word": "sentence",
+              "pronunciation": "SEN-tens",
+              "syllables": 2,
+              "definition": "A group of words that makes complete sense.",
+              "exampleSentence": "Write one sentence about your best friend.",
+              "hint": "It starts with sen and ends with ce.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "picture",
+              "pronunciation": "PIK-chur",
+              "syllables": 2,
+              "definition": "A drawing or image that shows something.",
+              "exampleSentence": "The picture in the book shows a busy market.",
+              "hint": "It starts with pic.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "teacher",
+              "pronunciation": "TEE-chur",
+              "syllables": 2,
+              "definition": "A person who helps students learn.",
+              "exampleSentence": "Our teacher explained the topic clearly.",
+              "hint": "It begins with tea but is not the drink.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "library",
+              "pronunciation": "LY-brer-ee",
+              "syllables": 3,
+              "definition": "A place where books are kept for reading.",
+              "exampleSentence": "We visited the library to borrow a storybook.",
+              "hint": "It starts with li and ends with ry.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "question",
+              "pronunciation": "KWES-chun",
+              "syllables": 2,
+              "definition": "Something asked in order to get an answer.",
+              "exampleSentence": "The student raised her hand to ask a question.",
+              "hint": "It begins with qu.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "understand",
+              "pronunciation": "un-der-STAND",
+              "syllables": 3,
+              "definition": "To know the meaning of something clearly.",
+              "exampleSentence": "I understand the lesson better after practice.",
+              "hint": "It starts with under.",
+              "difficulty": "hard"
+            }
           ]
         },
         {
@@ -53,12 +213,60 @@
           "theme": "Social Studies Words",
           "instructions": "Practise words linked to family life, transportation, and the community so spelling also reinforces social studies ideas.",
           "words": [
-            { "word": "family", "pronunciation": "FAM-uh-lee", "syllables": 3, "definition": "A group of related people who care for one another.", "exampleSentence": "My family ate dinner together last night.", "hint": "It starts with fam.", "difficulty": "easy" },
-            { "word": "market", "pronunciation": "MAR-kit", "syllables": 2, "definition": "A place where goods are bought and sold.", "exampleSentence": "Mother bought fruit at the market.", "hint": "It ends with ket.", "difficulty": "easy" },
-            { "word": "traffic", "pronunciation": "TRAF-ik", "syllables": 2, "definition": "Vehicles moving on the road.", "exampleSentence": "Traffic was heavy near the bus stop.", "hint": "It starts with tra.", "difficulty": "medium" },
-            { "word": "journey", "pronunciation": "JER-nee", "syllables": 2, "definition": "Travel from one place to another.", "exampleSentence": "The journey to school was short today.", "hint": "It contains our.", "difficulty": "medium" },
-            { "word": "bicycle", "pronunciation": "BY-sik-ul", "syllables": 3, "definition": "A vehicle with two wheels that is moved by pedalling.", "exampleSentence": "Tola rode her bicycle carefully.", "hint": "It begins with bi.", "difficulty": "hard" },
-            { "word": "community", "pronunciation": "kuh-MYOO-nuh-tee", "syllables": 4, "definition": "People living and working in the same area.", "exampleSentence": "The whole community helped to clean the field.", "hint": "It starts with commu.", "difficulty": "hard" }
+            {
+              "word": "family",
+              "pronunciation": "FAM-uh-lee",
+              "syllables": 3,
+              "definition": "A group of related people who care for one another.",
+              "exampleSentence": "My family ate dinner together last night.",
+              "hint": "It starts with fam.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "market",
+              "pronunciation": "MAR-kit",
+              "syllables": 2,
+              "definition": "A place where goods are bought and sold.",
+              "exampleSentence": "Mother bought fruit at the market.",
+              "hint": "It ends with ket.",
+              "difficulty": "easy"
+            },
+            {
+              "word": "traffic",
+              "pronunciation": "TRAF-ik",
+              "syllables": 2,
+              "definition": "Vehicles moving on the road.",
+              "exampleSentence": "Traffic was heavy near the bus stop.",
+              "hint": "It starts with tra.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "journey",
+              "pronunciation": "JER-nee",
+              "syllables": 2,
+              "definition": "Travel from one place to another.",
+              "exampleSentence": "The journey to school was short today.",
+              "hint": "It contains our.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "bicycle",
+              "pronunciation": "BY-sik-ul",
+              "syllables": 3,
+              "definition": "A vehicle with two wheels that is moved by pedalling.",
+              "exampleSentence": "Tola rode her bicycle carefully.",
+              "hint": "It begins with bi.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "community",
+              "pronunciation": "kuh-MYOO-nuh-tee",
+              "syllables": 4,
+              "definition": "People living and working in the same area.",
+              "exampleSentence": "The whole community helped to clean the field.",
+              "hint": "It starts with commu.",
+              "difficulty": "hard"
+            }
           ]
         }
       ]
@@ -72,10 +280,42 @@
           "theme": "Classroom Language",
           "instructions": "Strengthen your classroom language with words you meet in reading, science, and social studies.",
           "words": [
-            { "word": "fraction", "pronunciation": "FRAK-shun", "syllables": 2, "definition": "A number that shows part of a whole.", "exampleSentence": "One half is a fraction.", "hint": "It starts with fr and ends with tion.", "difficulty": "medium" },
-            { "word": "paragraph", "pronunciation": "PAR-uh-graf", "syllables": 3, "definition": "A group of related sentences on one main idea.", "exampleSentence": "Write one paragraph about your favourite season.", "hint": "It begins with para.", "difficulty": "hard" },
-            { "word": "experiment", "pronunciation": "ik-SPER-uh-ment", "syllables": 4, "definition": "A scientific test done to learn something.", "exampleSentence": "The class did an experiment with water and ice.", "hint": "It starts with ex and ends with ment.", "difficulty": "hard" },
-            { "word": "journey", "pronunciation": "JER-nee", "syllables": 2, "definition": "Travel from one place to another.", "exampleSentence": "The family began a long journey by train.", "hint": "It contains our.", "difficulty": "medium" }
+            {
+              "word": "fraction",
+              "pronunciation": "FRAK-shun",
+              "syllables": 2,
+              "definition": "A number that shows part of a whole.",
+              "exampleSentence": "One half is a fraction.",
+              "hint": "It starts with fr and ends with tion.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "paragraph",
+              "pronunciation": "PAR-uh-graf",
+              "syllables": 3,
+              "definition": "A group of related sentences on one main idea.",
+              "exampleSentence": "Write one paragraph about your favourite season.",
+              "hint": "It begins with para.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "experiment",
+              "pronunciation": "ik-SPER-uh-ment",
+              "syllables": 4,
+              "definition": "A scientific test done to learn something.",
+              "exampleSentence": "The class did an experiment with water and ice.",
+              "hint": "It starts with ex and ends with ment.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "journey",
+              "pronunciation": "JER-nee",
+              "syllables": 2,
+              "definition": "Travel from one place to another.",
+              "exampleSentence": "The family began a long journey by train.",
+              "hint": "It contains our.",
+              "difficulty": "medium"
+            }
           ]
         },
         {
@@ -84,12 +324,60 @@
           "theme": "Cross-Subject Vocabulary",
           "instructions": "Build stronger subject vocabulary with words from science, social studies, and mathematics.",
           "words": [
-            { "word": "resource", "pronunciation": "REE-sors", "syllables": 2, "definition": "Something useful that people can use.", "exampleSentence": "Water is an important natural resource.", "hint": "It begins with re and ends with ce.", "difficulty": "medium" },
-            { "word": "temperature", "pronunciation": "TEM-pruh-chur", "syllables": 4, "definition": "The measure of how hot or cold something is.", "exampleSentence": "The temperature was high in the afternoon.", "hint": "It starts with temp.", "difficulty": "hard" },
-            { "word": "continent", "pronunciation": "KON-tih-nent", "syllables": 3, "definition": "One of the large land areas of the world.", "exampleSentence": "Africa is a continent with many countries.", "hint": "It begins with con and ends with ent.", "difficulty": "hard" },
-            { "word": "division", "pronunciation": "di-VIZH-un", "syllables": 3, "definition": "A mathematical process of sharing into equal parts.", "exampleSentence": "We used division to share the oranges equally.", "hint": "It starts with div.", "difficulty": "medium" },
-            { "word": "community", "pronunciation": "kuh-MYOO-nuh-tee", "syllables": 4, "definition": "A group of people living in the same place.", "exampleSentence": "Everyone in the community helped to clean the park.", "hint": "It begins with commu.", "difficulty": "hard" },
-            { "word": "nutrient", "pronunciation": "NOO-tree-ent", "syllables": 3, "definition": "A substance that helps living things grow and stay healthy.", "exampleSentence": "Plants need nutrients from the soil.", "hint": "It starts with nu and ends with ent.", "difficulty": "hard" }
+            {
+              "word": "resource",
+              "pronunciation": "REE-sors",
+              "syllables": 2,
+              "definition": "Something useful that people can use.",
+              "exampleSentence": "Water is an important natural resource.",
+              "hint": "It begins with re and ends with ce.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "temperature",
+              "pronunciation": "TEM-pruh-chur",
+              "syllables": 4,
+              "definition": "The measure of how hot or cold something is.",
+              "exampleSentence": "The temperature was high in the afternoon.",
+              "hint": "It starts with temp.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "continent",
+              "pronunciation": "KON-tih-nent",
+              "syllables": 3,
+              "definition": "One of the large land areas of the world.",
+              "exampleSentence": "Africa is a continent with many countries.",
+              "hint": "It begins with con and ends with ent.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "division",
+              "pronunciation": "di-VIZH-un",
+              "syllables": 3,
+              "definition": "A mathematical process of sharing into equal parts.",
+              "exampleSentence": "We used division to share the oranges equally.",
+              "hint": "It starts with div.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "community",
+              "pronunciation": "kuh-MYOO-nuh-tee",
+              "syllables": 4,
+              "definition": "A group of people living in the same place.",
+              "exampleSentence": "Everyone in the community helped to clean the park.",
+              "hint": "It begins with commu.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "nutrient",
+              "pronunciation": "NOO-tree-ent",
+              "syllables": 3,
+              "definition": "A substance that helps living things grow and stay healthy.",
+              "exampleSentence": "Plants need nutrients from the soil.",
+              "hint": "It starts with nu and ends with ent.",
+              "difficulty": "hard"
+            }
           ]
         },
         {
@@ -98,12 +386,60 @@
           "theme": "Lesson Reinforcement",
           "instructions": "Practise vocabulary linked to common classroom topics so spelling supports the same ideas learners revise in notes and flashcards.",
           "words": [
-            { "word": "fraction", "pronunciation": "FRAK-shun", "syllables": 2, "definition": "A number showing part of a whole.", "exampleSentence": "One quarter is a fraction.", "hint": "It starts with fra.", "difficulty": "medium" },
-            { "word": "evaporation", "pronunciation": "ee-vap-uh-RAY-shun", "syllables": 5, "definition": "The process in which liquid changes into vapour.", "exampleSentence": "Evaporation is part of the water cycle.", "hint": "It begins with eva.", "difficulty": "hard" },
-            { "word": "machine", "pronunciation": "muh-SHEEN", "syllables": 2, "definition": "A tool or device that helps people do work.", "exampleSentence": "A simple machine can make work easier.", "hint": "It starts with ma.", "difficulty": "medium" },
-            { "word": "resource", "pronunciation": "REE-sors", "syllables": 2, "definition": "Something useful that people can use.", "exampleSentence": "Water is a natural resource.", "hint": "It starts with re.", "difficulty": "medium" },
-            { "word": "grammar", "pronunciation": "GRAM-er", "syllables": 2, "definition": "The rules used in speaking and writing a language correctly.", "exampleSentence": "Good grammar makes writing clearer.", "hint": "It begins with gra.", "difficulty": "medium" },
-            { "word": "conservation", "pronunciation": "kon-ser-VAY-shun", "syllables": 4, "definition": "The careful protection and use of resources.", "exampleSentence": "Tree planting supports conservation.", "hint": "It starts with con.", "difficulty": "hard" }
+            {
+              "word": "fraction",
+              "pronunciation": "FRAK-shun",
+              "syllables": 2,
+              "definition": "A number showing part of a whole.",
+              "exampleSentence": "One quarter is a fraction.",
+              "hint": "It starts with fra.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "evaporation",
+              "pronunciation": "ee-vap-uh-RAY-shun",
+              "syllables": 5,
+              "definition": "The process in which liquid changes into vapour.",
+              "exampleSentence": "Evaporation is part of the water cycle.",
+              "hint": "It begins with eva.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "machine",
+              "pronunciation": "muh-SHEEN",
+              "syllables": 2,
+              "definition": "A tool or device that helps people do work.",
+              "exampleSentence": "A simple machine can make work easier.",
+              "hint": "It starts with ma.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "resource",
+              "pronunciation": "REE-sors",
+              "syllables": 2,
+              "definition": "Something useful that people can use.",
+              "exampleSentence": "Water is a natural resource.",
+              "hint": "It starts with re.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "grammar",
+              "pronunciation": "GRAM-er",
+              "syllables": 2,
+              "definition": "The rules used in speaking and writing a language correctly.",
+              "exampleSentence": "Good grammar makes writing clearer.",
+              "hint": "It begins with gra.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "conservation",
+              "pronunciation": "kon-ser-VAY-shun",
+              "syllables": 4,
+              "definition": "The careful protection and use of resources.",
+              "exampleSentence": "Tree planting supports conservation.",
+              "hint": "It starts with con.",
+              "difficulty": "hard"
+            }
           ]
         }
       ]
@@ -117,9 +453,33 @@
           "theme": "High-Confidence Vocabulary",
           "instructions": "Practise mature academic words that appear across subjects and formal writing.",
           "words": [
-            { "word": "analysis", "pronunciation": "uh-NAL-uh-sis", "syllables": 4, "definition": "Detailed examination of something.", "exampleSentence": "Her analysis of the poem was thoughtful and clear.", "hint": "It starts with ana.", "difficulty": "hard" },
-            { "word": "hypothesis", "pronunciation": "hy-POTH-uh-sis", "syllables": 4, "definition": "An idea that can be tested.", "exampleSentence": "The student wrote a hypothesis before the experiment.", "hint": "It begins with hypo.", "difficulty": "hard" },
-            { "word": "responsibility", "pronunciation": "ri-spon-suh-BIL-uh-tee", "syllables": 6, "definition": "A duty or task that one is expected to do.", "exampleSentence": "Leadership comes with responsibility.", "hint": "It ends with ility.", "difficulty": "hard" }
+            {
+              "word": "analysis",
+              "pronunciation": "uh-NAL-uh-sis",
+              "syllables": 4,
+              "definition": "Detailed examination of something.",
+              "exampleSentence": "Her analysis of the poem was thoughtful and clear.",
+              "hint": "It starts with ana.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "hypothesis",
+              "pronunciation": "hy-POTH-uh-sis",
+              "syllables": 4,
+              "definition": "An idea that can be tested.",
+              "exampleSentence": "The student wrote a hypothesis before the experiment.",
+              "hint": "It begins with hypo.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "responsibility",
+              "pronunciation": "ri-spon-suh-BIL-uh-tee",
+              "syllables": 6,
+              "definition": "A duty or task that one is expected to do.",
+              "exampleSentence": "Leadership comes with responsibility.",
+              "hint": "It ends with ility.",
+              "difficulty": "hard"
+            }
           ]
         },
         {
@@ -128,12 +488,60 @@
           "theme": "Secondary Study Words",
           "instructions": "Practise formal words that appear in secondary school tests, reports, and subject explanations.",
           "words": [
-            { "word": "evaluation", "pronunciation": "ee-val-yoo-AY-shun", "syllables": 5, "definition": "Careful judgement about the value or quality of something.", "exampleSentence": "The teacher wrote an evaluation of the project.", "hint": "It begins with eva.", "difficulty": "hard" },
-            { "word": "equation", "pronunciation": "ee-KWAY-zhun", "syllables": 3, "definition": "A mathematical statement showing two expressions are equal.", "exampleSentence": "The student solved the equation correctly.", "hint": "It starts with equ.", "difficulty": "hard" },
-            { "word": "organism", "pronunciation": "OR-guh-niz-um", "syllables": 4, "definition": "A living thing such as a plant, animal, or tiny microbe.", "exampleSentence": "Every organism needs energy to survive.", "hint": "It begins with org.", "difficulty": "hard" },
-            { "word": "democracy", "pronunciation": "di-MOK-ruh-see", "syllables": 4, "definition": "A system of government in which people have the power to choose leaders.", "exampleSentence": "The class learned how democracy gives citizens a voice.", "hint": "It starts with demo.", "difficulty": "hard" },
-            { "word": "interpretation", "pronunciation": "in-tur-pruh-TAY-shun", "syllables": 5, "definition": "An explanation of the meaning of something.", "exampleSentence": "Her interpretation of the poem was thoughtful.", "hint": "It begins with inter.", "difficulty": "hard" },
-            { "word": "significant", "pronunciation": "sig-NIF-ih-kunt", "syllables": 4, "definition": "Important enough to deserve attention.", "exampleSentence": "There was a significant change in the test results.", "hint": "It starts with sig.", "difficulty": "hard" }
+            {
+              "word": "evaluation",
+              "pronunciation": "ee-val-yoo-AY-shun",
+              "syllables": 5,
+              "definition": "Careful judgement about the value or quality of something.",
+              "exampleSentence": "The teacher wrote an evaluation of the project.",
+              "hint": "It begins with eva.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "equation",
+              "pronunciation": "ee-KWAY-zhun",
+              "syllables": 3,
+              "definition": "A mathematical statement showing two expressions are equal.",
+              "exampleSentence": "The student solved the equation correctly.",
+              "hint": "It starts with equ.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "organism",
+              "pronunciation": "OR-guh-niz-um",
+              "syllables": 4,
+              "definition": "A living thing such as a plant, animal, or tiny microbe.",
+              "exampleSentence": "Every organism needs energy to survive.",
+              "hint": "It begins with org.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "democracy",
+              "pronunciation": "di-MOK-ruh-see",
+              "syllables": 4,
+              "definition": "A system of government in which people have the power to choose leaders.",
+              "exampleSentence": "The class learned how democracy gives citizens a voice.",
+              "hint": "It starts with demo.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "interpretation",
+              "pronunciation": "in-tur-pruh-TAY-shun",
+              "syllables": 5,
+              "definition": "An explanation of the meaning of something.",
+              "exampleSentence": "Her interpretation of the poem was thoughtful.",
+              "hint": "It begins with inter.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "significant",
+              "pronunciation": "sig-NIF-ih-kunt",
+              "syllables": 4,
+              "definition": "Important enough to deserve attention.",
+              "exampleSentence": "There was a significant change in the test results.",
+              "hint": "It starts with sig.",
+              "difficulty": "hard"
+            }
           ]
         },
         {
@@ -142,12 +550,60 @@
           "theme": "Curriculum Language",
           "instructions": "Practise advanced subject words so spelling revision supports science, mathematics, English, and civic learning at secondary level.",
           "words": [
-            { "word": "photosynthesis", "pronunciation": "foh-toh-SIN-thuh-sis", "syllables": 5, "definition": "The process by which green plants make food using sunlight.", "exampleSentence": "Photosynthesis takes place in green leaves.", "hint": "It begins with photo.", "difficulty": "hard" },
-            { "word": "equilibrium", "pronunciation": "ee-kwuh-LIB-ree-um", "syllables": 5, "definition": "A state of balance.", "exampleSentence": "The reaction reached equilibrium after some time.", "hint": "It starts with equi.", "difficulty": "hard" },
-            { "word": "government", "pronunciation": "GUV-un-ment", "syllables": 3, "definition": "The group of people who rule or manage a country or state.", "exampleSentence": "The government announced a new policy.", "hint": "It starts with gov.", "difficulty": "medium" },
-            { "word": "equation", "pronunciation": "ee-KWAY-zhun", "syllables": 3, "definition": "A mathematical statement that shows two expressions are equal.", "exampleSentence": "She solved the equation carefully.", "hint": "It starts with equ.", "difficulty": "hard" },
-            { "word": "paragraph", "pronunciation": "PAR-uh-graf", "syllables": 3, "definition": "A group of related sentences on one main idea.", "exampleSentence": "Write a paragraph about honesty.", "hint": "It begins with para.", "difficulty": "medium" },
-            { "word": "democracy", "pronunciation": "di-MOK-ruh-see", "syllables": 4, "definition": "A system of government in which people choose their leaders.", "exampleSentence": "Students learned how democracy gives citizens a voice.", "hint": "It starts with demo.", "difficulty": "hard" }
+            {
+              "word": "photosynthesis",
+              "pronunciation": "foh-toh-SIN-thuh-sis",
+              "syllables": 5,
+              "definition": "The process by which green plants make food using sunlight.",
+              "exampleSentence": "Photosynthesis takes place in green leaves.",
+              "hint": "It begins with photo.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "equilibrium",
+              "pronunciation": "ee-kwuh-LIB-ree-um",
+              "syllables": 5,
+              "definition": "A state of balance.",
+              "exampleSentence": "The reaction reached equilibrium after some time.",
+              "hint": "It starts with equi.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "government",
+              "pronunciation": "GUV-un-ment",
+              "syllables": 3,
+              "definition": "The group of people who rule or manage a country or state.",
+              "exampleSentence": "The government announced a new policy.",
+              "hint": "It starts with gov.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "equation",
+              "pronunciation": "ee-KWAY-zhun",
+              "syllables": 3,
+              "definition": "A mathematical statement that shows two expressions are equal.",
+              "exampleSentence": "She solved the equation carefully.",
+              "hint": "It starts with equ.",
+              "difficulty": "hard"
+            },
+            {
+              "word": "paragraph",
+              "pronunciation": "PAR-uh-graf",
+              "syllables": 3,
+              "definition": "A group of related sentences on one main idea.",
+              "exampleSentence": "Write a paragraph about honesty.",
+              "hint": "It begins with para.",
+              "difficulty": "medium"
+            },
+            {
+              "word": "democracy",
+              "pronunciation": "di-MOK-ruh-see",
+              "syllables": 4,
+              "definition": "A system of government in which people choose their leaders.",
+              "exampleSentence": "Students learned how democracy gives citizens a voice.",
+              "hint": "It starts with demo.",
+              "difficulty": "hard"
+            }
           ]
         }
       ]
@@ -157,40 +613,247 @@
     "grades_1_3": {
       "display_name": "Grades 1-3",
       "subjects": {
+        "Mathematics": {
+          "display_name": "Mathematics",
+          "topics": [
+            {
+              "topic": "Addition and Subtraction",
+              "cards": [
+                {
+                  "front": "What does addition mean in math?",
+                  "back": "📖 Definition: Addition means putting numbers or groups together to find the total sum.\n\n✏️ Worked Example: If you have 7 pencils and get 5 more, 7 + 5 = 12 pencils.\n\n💡 Memory Tip: Plus (+) means add together to get more!"
+                },
+                {
+                  "front": "What does subtraction mean in math?",
+                  "back": "📖 Definition: Subtraction means taking away an amount from a total to find the difference.\n\n✏️ Worked Example: You had 15 biscuits and ate 6. 15 − 6 = 9 biscuits left.\n\n💡 Memory Tip: Minus (−) means take away and find what remains!"
+                },
+                {
+                  "front": "What is 8 + 7?",
+                  "back": "8 + 7 = 15.\n\n💡 Hint: Think 8 + 2 = 10, then add 5 more to reach 15!"
+                },
+                {
+                  "front": "What is 20 − 8?",
+                  "back": "20 − 8 = 12.\n\n💡 Hint: 8 + 12 = 20."
+                },
+                {
+                  "front": "What is Place Value for Tens and Units in 47?",
+                  "back": "📖 Definition: Place value tells you how much each digit is worth.\n\n✏️ In 47: The digit 4 is in the Tens place (4 Tens = 40), and the digit 7 is in the Units place (7 Units = 7).\n\n💡 Total: 40 + 7 = 47!"
+                }
+              ]
+            },
+            {
+              "topic": "Multiplication & Times Tables",
+              "cards": [
+                {
+                  "front": "What is multiplication?",
+                  "back": "📖 Definition: Multiplication is fast repeated addition of equal groups.\n\n✏️ Worked Example: 3 × 4 means 3 groups of 4 (4 + 4 + 4 = 12).\n\n💡 Memory Tip: The '×' sign means 'groups of'!"
+                },
+                {
+                  "front": "What is 2 × 8?",
+                  "back": "2 × 8 = 16 (Double 8 is 16)."
+                },
+                {
+                  "front": "What is 5 × 6?",
+                  "back": "5 × 6 = 30.\n\n💡 Hint: Count by 5s six times: 5, 10, 15, 20, 25, 30!"
+                },
+                {
+                  "front": "What is 10 × 7?",
+                  "back": "10 × 7 = 70.\n\n💡 Rule: When multiplying any whole number by 10, place a zero at the end!"
+                }
+              ]
+            },
+            {
+              "topic": "Fractions (Halves & Quarters)",
+              "cards": [
+                {
+                  "front": "What is a fraction?",
+                  "back": "📖 Definition: A fraction represents an equal part of a whole thing or group.\n\n✏️ Worked Example: Half a pizza or 1 slice out of 4 equal slices."
+                },
+                {
+                  "front": "What is one-half (1/2)?",
+                  "back": "📖 1/2 means dividing a whole object into 2 equal parts and taking 1 part.\n\n✏️ Example: Half of 10 oranges is 5 oranges."
+                },
+                {
+                  "front": "What is one-quarter (1/4)?",
+                  "back": "📖 1/4 means dividing a whole into 4 equal parts and taking 1 part.\n\n✏️ Example: Half of a half is a quarter!"
+                }
+              ]
+            },
+            {
+              "topic": "2D and 3D Shapes",
+              "cards": [
+                {
+                  "front": "How many sides does a triangle have?",
+                  "back": "A triangle has 3 straight sides and 3 corners (vertices)."
+                },
+                {
+                  "front": "How is a square different from a rectangle?",
+                  "back": "A square has all 4 sides of equal length. A rectangle has opposite sides equal in length."
+                },
+                {
+                  "front": "Name a 3D solid shape with 6 square faces.",
+                  "back": "A Cube! (Like a playing die or a Rubik's cube)."
+                }
+              ]
+            }
+          ]
+        },
+        "English Language": {
+          "display_name": "English Language",
+          "topics": [
+            {
+              "topic": "Nouns & Naming Words",
+              "cards": [
+                {
+                  "front": "What is a noun?",
+                  "back": "📖 Definition: A noun is a naming word for a person, animal, place, or thing.\n\n✏️ Examples: Tolu (person), Elephant (animal), London (place), Table (thing).\n\n💡 Memory Tip: If you can name it or see it, it's a noun!"
+                },
+                {
+                  "front": "What is a Proper Noun?",
+                  "back": "📖 Definition: A proper noun is the specific name of a particular person, place, or day. It ALWAYS begins with a CAPITAL letter!\n\n✏️ Examples: Nigeria, Kendrick, Titomi, Tuesday, December."
+                },
+                {
+                  "front": "Give the plural of 'Child' and 'Foot'.",
+                  "back": "The plural of Child is 'Children' (not childs).\nThe plural of Foot is 'Feet' (not foots)."
+                }
+              ]
+            },
+            {
+              "topic": "Action Verbs & Tenses",
+              "cards": [
+                {
+                  "front": "What is a verb?",
+                  "back": "📖 Definition: A verb is an action word or doing word.\n\n✏️ Examples: jump, read, write, sing, eat, sleep.\n\n💡 Test: Can you DO it? If yes, it is a verb!"
+                },
+                {
+                  "front": "Change this sentence to past tense: 'I eat my lunch.'",
+                  "back": "Past tense: 'I ate my lunch.'\n\n'Ate' is the past tense of 'eat'."
+                },
+                {
+                  "front": "What is an adjective?",
+                  "back": "📖 Definition: An adjective is a describing word that gives more information about a noun.\n\n✏️ Example: In 'The giant green tree', 'giant' and 'green' are adjectives describing the tree."
+                }
+              ]
+            },
+            {
+              "topic": "Phonics & Rhymes",
+              "cards": [
+                {
+                  "front": "What sound does the digraph 'sh' make?",
+                  "back": "The digraph 'sh' makes the quiet '/ʃ/' sound, as in 'ship', 'shoe', 'wish', and 'fish'."
+                },
+                {
+                  "front": "Name three words that rhyme with 'bright'.",
+                  "back": "Light, Night, Sight, Right, and Flight all rhyme with 'bright'!"
+                }
+              ]
+            }
+          ]
+        },
         "Basic Science": {
           "display_name": "Basic Science",
           "topics": [
             {
-              "topic": "Air",
-              "cards": [
-                { "front": "What is air?", "back": "Air is the invisible mixture of gases all around us. People, animals, and plants need it to live." },
-                { "front": "Can we see air?", "back": "We cannot usually see air, but we can feel it when the wind blows or a fan is on." },
-                { "front": "Why is air important?", "back": "Air is important because living things need it for breathing and burning." },
-                { "front": "Name one place where air is found.", "back": "Air is found everywhere around us, including in the classroom, at home, and outdoors." },
-                { "front": "How can moving air help us?", "back": "Moving air can cool us, dry clothes, and help seeds spread." },
-                { "front": "Give one example of air in action.", "back": "A balloon fills up because air goes inside it." }
-              ]
-            },
-            {
-              "topic": "Plants",
-              "cards": [
-                { "front": "What is a plant?", "back": "A plant is a living thing that grows in soil or water and makes its own food." },
-                { "front": "What do plants need to grow?", "back": "Plants need air, sunlight, water, and soil or nutrients to grow well." },
-                { "front": "Name one part of a plant.", "back": "Some parts of a plant are the root, stem, leaf, flower, and fruit." },
-                { "front": "What does the root do?", "back": "The root holds the plant in the soil and takes in water and nutrients." },
-                { "front": "Why are plants useful?", "back": "Plants give us food, shade, medicine, and clean air." },
-                { "front": "Give one example of a plant product.", "back": "Fruit, vegetables, wood, and cotton all come from plants." }
-              ]
-            },
-            {
               "topic": "Living and Non-Living Things",
               "cards": [
-                { "front": "What is a living thing?", "back": "A living thing is something that grows, breathes, moves, feeds, and reproduces." },
-                { "front": "What is a non-living thing?", "back": "A non-living thing does not grow, breathe, feed, or reproduce." },
-                { "front": "Name two examples of living things.", "back": "Examples of living things are a dog, a tree, a fish, and a human being." },
-                { "front": "Name two examples of non-living things.", "back": "Examples of non-living things are a chair, a stone, a book, and a table." },
-                { "front": "What do living things need?", "back": "Living things need air, water, food, and a suitable place to live." },
-                { "front": "How can you tell a plant is living?", "back": "A plant is living because it grows, needs water and air, and can reproduce." }
+                {
+                  "front": "What is a living thing?",
+                  "back": "📖 Definition: A living thing is an organism that can grow, breathe, move, take in food, and reproduce.\n\n✏️ Examples: Humans, dogs, trees, birds, and insects."
+                },
+                {
+                  "front": "What is a non-living thing?",
+                  "back": "📖 Definition: A non-living thing cannot grow, breathe, feed, feel, or reproduce on its own.\n\n✏️ Examples: A stone, pencil, book, car, water, and chair."
+                },
+                {
+                  "front": "Name two examples of living things.",
+                  "back": "1. A mango tree (plant)\n2. A horse (animal)\n(Humans and birds are also living things!)"
+                },
+                {
+                  "front": "Name two examples of non-living things.",
+                  "back": "1. A school desk\n2. A drinking cup\n(Pencils, shoes, and stones are non-living things!)"
+                },
+                {
+                  "front": "What do all living things need to survive?",
+                  "back": "All living things need:\n1. Air (oxygen)\n2. Water\n3. Food (nutrients)\n4. Sunlight & shelter"
+                },
+                {
+                  "front": "How do we know plants are living things even though they cannot walk?",
+                  "back": "Plants are living because they GROW, need water and air, make their own food through sunlight, and produce seeds to reproduce!"
+                }
+              ]
+            },
+            {
+              "topic": "Human Body & Senses",
+              "cards": [
+                {
+                  "front": "Name the five human senses and their organs.",
+                  "back": "1. Sight (Eyes)\n2. Hearing (Ears)\n3. Smell (Nose)\n4. Taste (Tongue)\n5. Touch (Skin)"
+                },
+                {
+                  "front": "Which organ pumps blood throughout the human body?",
+                  "back": "The Heart! It beats continuously to circulate oxygen and blood to every part of the body."
+                }
+              ]
+            },
+            {
+              "topic": "Air & Atmosphere",
+              "cards": [
+                {
+                  "front": "What is air?",
+                  "back": "Air is an invisible mixture of gases (including oxygen, nitrogen, and carbon dioxide) surrounding Earth."
+                },
+                {
+                  "front": "What is moving air called?",
+                  "back": "Moving air is called Wind!"
+                }
+              ]
+            }
+          ]
+        },
+        "Quantitative Reasoning": {
+          "display_name": "Quantitative Reasoning",
+          "topics": [
+            {
+              "topic": "Number Patterns & Codes",
+              "cards": [
+                {
+                  "front": "What comes next in the pattern: 2, 4, 6, 8, __?",
+                  "back": "Answer: 10!\n\n💡 Rule: Add 2 each time (Counting in twos / even numbers)."
+                },
+                {
+                  "front": "Find the missing number: 5, 10, 15, __, 25.",
+                  "back": "Answer: 20!\n\n💡 Rule: Skip counting by 5."
+                },
+                {
+                  "front": "If 10 − 3 = 7 and 10 − 4 = 6, what is 10 − 6?",
+                  "back": "Answer: 4!\n\n💡 Rule: 6 and 4 are number bonds to 10 (6 + 4 = 10)."
+                }
+              ]
+            }
+          ]
+        },
+        "Verbal Reasoning": {
+          "display_name": "Verbal Reasoning",
+          "topics": [
+            {
+              "topic": "Synonyms & Antonyms",
+              "cards": [
+                {
+                  "front": "What is a Synonym?",
+                  "back": "📖 Definition: A synonym is a word that means the SAME or nearly the same as another word.\n\n✏️ Example: 'Happy' and 'Joyful', 'Big' and 'Huge', 'Fast' and 'Quick'."
+                },
+                {
+                  "front": "What is an Antonym?",
+                  "back": "📖 Definition: An antonym is a word that means the OPPOSITE of another word.\n\n✏️ Example: 'Hot' and 'Cold', 'Up' and 'Down', 'Strong' and 'Weak'."
+                },
+                {
+                  "front": "What is the synonym of 'Tiny'?",
+                  "back": "Small, Little, or Miniature!"
+                },
+                {
+                  "front": "What is the antonym of 'Difficult'?",
+                  "back": "Easy, Simple, or Effortless!"
+                }
               ]
             }
           ]
@@ -201,22 +864,14 @@
             {
               "topic": "Transportation",
               "cards": [
-                { "front": "What is transportation?", "back": "📖 Definition: Transportation is the movement of people, animals, and goods from one location to another.\n\n✏️ Worked Example: Taking a Danfo bus or train from Ikeja to Lagos Island to carry market goods.\n\n💡 Memory Tip: Land, Water, and Air are the 3 main ways to move!" },
-                { "front": "Name the three main types of transportation.", "back": "📖 Definition: Land, Water, and Air transport.\n\n✏️ Worked Example: Cars/Trains (Land), Boats/Ferries (Water), Planes (Air).\n\n💡 Memory Tip: Wheels for land, hulls for water, wings for air!" },
-                { "front": "What is a noun?", "back": "📖 Definition: A noun is a naming word for a person, place, animal, or thing.\n\n✏️ Worked Example: 'Tola' (person), 'Lagos' (place), 'Goat' (animal), 'Book' (thing).\n\n💡 Memory Tip: If you can see it, touch it, or name it, it's a noun!" },
-                { "front": "What is a verb?", "back": "📖 Definition: A verb is an action word or state of being.\n\n✏️ Worked Example: In 'Ade runs to school', 'runs' is the action verb.\n\n💡 Memory Tip: Verbs are what you DO!" },
-                { "front": "What is 3 x 4 in multiplication?", "back": "📖 Definition: Multiplication is repeated addition of equal groups.\n\n✏️ Worked Example: 3 x 4 means 4 + 4 + 4 = 12.\n\n💡 Memory Tip: 3 groups of 4 make 12!" }
-              ]
-            },
-            {
-              "topic": "Addition and Subtraction",
-              "cards": [
-                { "front": "What does addition mean?", "back": "Addition means putting numbers or groups together to find the total." },
-                { "front": "What does subtraction mean?", "back": "Subtraction means taking away from a number to find what is left." },
-                { "front": "What is 8 + 5?", "back": "8 + 5 = 13." },
-                { "front": "What is 14 - 6?", "back": "14 - 6 = 8." },
-                { "front": "When do we use addition?", "back": "We use addition when we join groups, count totals, or find how many altogether." },
-                { "front": "When do we use subtraction?", "back": "We use subtraction when we remove items, compare amounts, or find how many remain." }
+                {
+                  "front": "What is transportation?",
+                  "back": "📖 Definition: Transportation is the movement of people and goods from one location to another.\n\n✏️ Examples: Cars, trains, ships, and aeroplanes."
+                },
+                {
+                  "front": "Name the 3 main types of transportation.",
+                  "back": "1. Land Transport (Cars, buses, trains)\n2. Water Transport (Boats, ships, canoes)\n3. Air Transport (Aeroplanes, helicopters)"
+                }
               ]
             }
           ]
@@ -232,23 +887,59 @@
             {
               "topic": "The Water Cycle",
               "cards": [
-                { "front": "What is evaporation?", "back": "Evaporation happens when liquid water changes into water vapour because of heat." },
-                { "front": "What is condensation?", "back": "Condensation happens when water vapour cools and turns back into tiny droplets." },
-                { "front": "What is precipitation?", "back": "Precipitation is water falling from clouds as rain, snow, hail, or sleet." },
-                { "front": "Why is the water cycle important?", "back": "It moves water around Earth and helps supply water for plants, animals, and people." },
-                { "front": "Where does collection happen?", "back": "Collection happens when water gathers in rivers, lakes, oceans, and the ground." },
-                { "front": "What gives energy for the water cycle?", "back": "The Sun provides the heat energy that starts much of the water cycle." }
+                {
+                  "front": "What is evaporation?",
+                  "back": "Evaporation happens when liquid water changes into water vapour because of heat."
+                },
+                {
+                  "front": "What is condensation?",
+                  "back": "Condensation happens when water vapour cools and turns back into tiny droplets."
+                },
+                {
+                  "front": "What is precipitation?",
+                  "back": "Precipitation is water falling from clouds as rain, snow, hail, or sleet."
+                },
+                {
+                  "front": "Why is the water cycle important?",
+                  "back": "It moves water around Earth and helps supply water for plants, animals, and people."
+                },
+                {
+                  "front": "Where does collection happen?",
+                  "back": "Collection happens when water gathers in rivers, lakes, oceans, and the ground."
+                },
+                {
+                  "front": "What gives energy for the water cycle?",
+                  "back": "The Sun provides the heat energy that starts much of the water cycle."
+                }
               ]
             },
             {
               "topic": "Simple Machines",
               "cards": [
-                { "front": "What is a simple machine?", "back": "A simple machine is a tool that makes work easier." },
-                { "front": "Name two examples of simple machines.", "back": "Examples include lever, pulley, wheel and axle, inclined plane, wedge, and screw." },
-                { "front": "What does a lever do?", "back": "A lever helps lift or move a load more easily." },
-                { "front": "What is an inclined plane?", "back": "An inclined plane is a sloping surface that helps move objects up or down with less effort." },
-                { "front": "Why are simple machines important?", "back": "They help people do work with less force, less time, or less difficulty." },
-                { "front": "Give one real-life example of a simple machine.", "back": "A seesaw is a lever, a knife is a wedge, and a staircase acts like an inclined plane." }
+                {
+                  "front": "What is a simple machine?",
+                  "back": "A simple machine is a tool that makes work easier."
+                },
+                {
+                  "front": "Name two examples of simple machines.",
+                  "back": "Examples include lever, pulley, wheel and axle, inclined plane, wedge, and screw."
+                },
+                {
+                  "front": "What does a lever do?",
+                  "back": "A lever helps lift or move a load more easily."
+                },
+                {
+                  "front": "What is an inclined plane?",
+                  "back": "An inclined plane is a sloping surface that helps move objects up or down with less effort."
+                },
+                {
+                  "front": "Why are simple machines important?",
+                  "back": "They help people do work with less force, less time, or less difficulty."
+                },
+                {
+                  "front": "Give one real-life example of a simple machine.",
+                  "back": "A seesaw is a lever, a knife is a wedge, and a staircase acts like an inclined plane."
+                }
               ]
             }
           ]
@@ -259,23 +950,59 @@
             {
               "topic": "Figures of Speech",
               "cards": [
-                { "front": "What is a simile?", "back": "A simile compares two things using like or as." },
-                { "front": "What is a metaphor?", "back": "A metaphor compares two things by saying one thing is another." },
-                { "front": "What is personification?", "back": "Personification gives human qualities to animals, objects, or ideas." },
-                { "front": "Why do writers use figures of speech?", "back": "They make writing more vivid, imaginative, and memorable." },
-                { "front": "Give an example of a simile.", "back": "\"As brave as a lion\" is a simile." },
-                { "front": "How is a metaphor different from a simile?", "back": "A simile uses like or as, but a metaphor does not." }
+                {
+                  "front": "What is a simile?",
+                  "back": "A simile compares two things using like or as."
+                },
+                {
+                  "front": "What is a metaphor?",
+                  "back": "A metaphor compares two things by saying one thing is another."
+                },
+                {
+                  "front": "What is personification?",
+                  "back": "Personification gives human qualities to animals, objects, or ideas."
+                },
+                {
+                  "front": "Why do writers use figures of speech?",
+                  "back": "They make writing more vivid, imaginative, and memorable."
+                },
+                {
+                  "front": "Give an example of a simile.",
+                  "back": "\"As brave as a lion\" is a simile."
+                },
+                {
+                  "front": "How is a metaphor different from a simile?",
+                  "back": "A simile uses like or as, but a metaphor does not."
+                }
               ]
             },
             {
               "topic": "Tenses",
               "cards": [
-                { "front": "What is a tense?", "back": "A tense shows the time when an action happens." },
-                { "front": "What is present tense?", "back": "Present tense shows an action happening now or usually, such as 'She reads every day.'" },
-                { "front": "What is past tense?", "back": "Past tense shows an action that already happened, such as 'She read yesterday.'" },
-                { "front": "What is future tense?", "back": "Future tense shows an action that will happen later, such as 'She will read tomorrow.'" },
-                { "front": "Why do tenses matter?", "back": "Tenses help readers and listeners know when an action happened." },
-                { "front": "Change 'They play football' to past tense.", "back": "The past-tense sentence is 'They played football.'" }
+                {
+                  "front": "What is a tense?",
+                  "back": "A tense shows the time when an action happens."
+                },
+                {
+                  "front": "What is present tense?",
+                  "back": "Present tense shows an action happening now or usually, such as 'She reads every day.'"
+                },
+                {
+                  "front": "What is past tense?",
+                  "back": "Past tense shows an action that already happened, such as 'She read yesterday.'"
+                },
+                {
+                  "front": "What is future tense?",
+                  "back": "Future tense shows an action that will happen later, such as 'She will read tomorrow.'"
+                },
+                {
+                  "front": "Why do tenses matter?",
+                  "back": "Tenses help readers and listeners know when an action happened."
+                },
+                {
+                  "front": "Change 'They play football' to past tense.",
+                  "back": "The past-tense sentence is 'They played football.'"
+                }
               ]
             }
           ]
@@ -284,14 +1011,37 @@
           "display_name": "Mathematics",
           "topics": [
             {
-              "topic": "Fractions",
+              "topic": "Fractions, Decimals & Percentages",
               "cards": [
-                { "front": "What is a fraction?", "back": "A fraction is a number that shows part of a whole." },
-                { "front": "What do the top and bottom numbers in a fraction mean?", "back": "The top number is the numerator and the bottom number is the denominator." },
-                { "front": "What does 1/2 mean?", "back": "1/2 means one out of two equal parts." },
-                { "front": "Which is greater: 1/4 or 1/2?", "back": "1/2 is greater than 1/4." },
-                { "front": "How can fractions be seen in daily life?", "back": "Fractions appear when sharing food, measuring ingredients, or dividing shapes into equal parts." },
-                { "front": "What is an equivalent fraction?", "back": "Equivalent fractions are different fractions that have the same value, such as 1/2 and 2/4." }
+                {
+                  "front": "What is 1/2 expressed as a decimal and as a percentage?",
+                  "back": "Decimal: 0.5\nPercentage: 50%\n\n💡 Hint: 1/2 = 50 out of 100!"
+                },
+                {
+                  "front": "What is 1/4 expressed as a percentage?",
+                  "back": "25% (and as a decimal it is 0.25)."
+                },
+                {
+                  "front": "What is 3/4 expressed as a decimal?",
+                  "back": "0.75 (and as a percentage it is 75%)."
+                },
+                {
+                  "front": "How do you add fractions with the same denominator? (e.g. 2/7 + 3/7)",
+                  "back": "Add the numerators together and keep the denominator the same:\n2/7 + 3/7 = 5/7!"
+                }
+              ]
+            },
+            {
+              "topic": "Perimeter and Area",
+              "cards": [
+                {
+                  "front": "What is Perimeter?",
+                  "back": "📖 Definition: Perimeter is the total distance all the way around the outside of a 2D shape.\n\n✏️ Example: For a rectangle with length 6cm and width 4cm, Perimeter = 2 × (6 + 4) = 20cm."
+                },
+                {
+                  "front": "What is Area?",
+                  "back": "📖 Definition: Area is the amount of flat space inside the boundary of a shape, measured in square units (cm² or m²).\n\n✏️ Formula for Rectangle Area = Length × Width."
+                }
               ]
             }
           ]
@@ -302,12 +1052,30 @@
             {
               "topic": "Natural Resources",
               "cards": [
-                { "front": "What is a natural resource?", "back": "A natural resource is something found in nature that people use." },
-                { "front": "Name four natural resources.", "back": "Examples are water, soil, air, forests, sunlight, and minerals." },
-                { "front": "Why are natural resources important?", "back": "Natural resources provide food, water, shelter, energy, and materials for daily life." },
-                { "front": "What is conservation?", "back": "Conservation means using resources wisely and protecting them from waste or damage." },
-                { "front": "How can we protect natural resources?", "back": "We can avoid waste, plant trees, keep water clean, and use resources carefully." },
-                { "front": "Give one example of misuse of resources.", "back": "Cutting down too many trees without replacing them is misuse of natural resources." }
+                {
+                  "front": "What is a natural resource?",
+                  "back": "A natural resource is something found in nature that people use."
+                },
+                {
+                  "front": "Name four natural resources.",
+                  "back": "Examples are water, soil, air, forests, sunlight, and minerals."
+                },
+                {
+                  "front": "Why are natural resources important?",
+                  "back": "Natural resources provide food, water, shelter, energy, and materials for daily life."
+                },
+                {
+                  "front": "What is conservation?",
+                  "back": "Conservation means using resources wisely and protecting them from waste or damage."
+                },
+                {
+                  "front": "How can we protect natural resources?",
+                  "back": "We can avoid waste, plant trees, keep water clean, and use resources carefully."
+                },
+                {
+                  "front": "Give one example of misuse of resources.",
+                  "back": "Cutting down too many trees without replacing them is misuse of natural resources."
+                }
               ]
             }
           ]
@@ -318,12 +1086,66 @@
             {
               "topic": "Weeds",
               "cards": [
-                { "front": "What are weeds?", "back": "Weeds are unwanted plants that grow where they are not needed, especially on farms and in gardens." },
-                { "front": "Why are weeds harmful to crops?", "back": "Weeds compete with crops for water, sunlight, space, and nutrients in the soil." },
-                { "front": "Give one example of a problem caused by weeds.", "back": "Weeds can slow crop growth, reduce harvest, or make farm work harder." },
-                { "front": "How can farmers control weeds?", "back": "Farmers can remove weeds by hand, use hoes, mulch the soil, or apply safe weed-control methods." },
-                { "front": "Why should weeds be removed early?", "back": "Early removal stops weeds from growing bigger, spreading seeds, and taking more nutrients from crops." },
-                { "front": "What is the difference between a crop and a weed?", "back": "A crop is planted on purpose for food or use, while a weed grows where it is not wanted." }
+                {
+                  "front": "What are weeds?",
+                  "back": "Weeds are unwanted plants that grow where they are not needed, especially on farms and in gardens."
+                },
+                {
+                  "front": "Why are weeds harmful to crops?",
+                  "back": "Weeds compete with crops for water, sunlight, space, and nutrients in the soil."
+                },
+                {
+                  "front": "Give one example of a problem caused by weeds.",
+                  "back": "Weeds can slow crop growth, reduce harvest, or make farm work harder."
+                },
+                {
+                  "front": "How can farmers control weeds?",
+                  "back": "Farmers can remove weeds by hand, use hoes, mulch the soil, or apply safe weed-control methods."
+                },
+                {
+                  "front": "Why should weeds be removed early?",
+                  "back": "Early removal stops weeds from growing bigger, spreading seeds, and taking more nutrients from crops."
+                },
+                {
+                  "front": "What is the difference between a crop and a weed?",
+                  "back": "A crop is planted on purpose for food or use, while a weed grows where it is not wanted."
+                }
+              ]
+            }
+          ]
+        },
+        "Quantitative Reasoning": {
+          "display_name": "Quantitative Reasoning",
+          "topics": [
+            {
+              "topic": "Factors and Prime Numbers",
+              "cards": [
+                {
+                  "front": "What is a Prime Number?",
+                  "back": "📖 Definition: A prime number is a whole number greater than 1 that has EXACTLY two factors: 1 and itself.\n\n✏️ Examples: 2, 3, 5, 7, 11, 13, 17, 19."
+                },
+                {
+                  "front": "What is the only EVEN prime number?",
+                  "back": "The number 2! Every other even number can be divided by 2."
+                }
+              ]
+            }
+          ]
+        },
+        "Verbal Reasoning": {
+          "display_name": "Verbal Reasoning",
+          "topics": [
+            {
+              "topic": "Analogies and Word Codes",
+              "cards": [
+                {
+                  "front": "Complete the analogy: Doctor is to Hospital as Teacher is to _____?",
+                  "back": "School!\n\n💡 Reason: A hospital is the place of work for a doctor, and a school is the place of work for a teacher."
+                },
+                {
+                  "front": "What is an Anagram?",
+                  "back": "An anagram is a word formed by rearranging the letters of another word.\n\n✏️ Example: 'LISTEN' rearranges to 'SILENT'!"
+                }
               ]
             }
           ]
@@ -339,12 +1161,30 @@
             {
               "topic": "Weeds",
               "cards": [
-                { "front": "What is a weed in agricultural science?", "back": "A weed is any plant growing where it is not wanted and which interferes with the growth or management of useful crops." },
-                { "front": "State two effects of weeds on crop production.", "back": "Weeds compete with crops for nutrients, water, light, and space, and they can also reduce yield or harbor pests and diseases." },
-                { "front": "Why can weeds increase the cost of farming?", "back": "Weeds make land preparation, weeding, harvesting, and general crop management more difficult and time-consuming." },
-                { "front": "Name two methods of weed control.", "back": "Methods include manual weeding, hoeing, mulching, cover cropping, and careful use of herbicides." },
-                { "front": "What is selective weed control?", "back": "Selective weed control removes weeds without seriously damaging the crop being protected." },
-                { "front": "Why is proper weed management important?", "back": "Proper weed management helps crops grow well, improves yield, and supports healthier and more efficient farm production." }
+                {
+                  "front": "What is a weed in agricultural science?",
+                  "back": "A weed is any plant growing where it is not wanted and which interferes with the growth or management of useful crops."
+                },
+                {
+                  "front": "State two effects of weeds on crop production.",
+                  "back": "Weeds compete with crops for nutrients, water, light, and space, and they can also reduce yield or harbor pests and diseases."
+                },
+                {
+                  "front": "Why can weeds increase the cost of farming?",
+                  "back": "Weeds make land preparation, weeding, harvesting, and general crop management more difficult and time-consuming."
+                },
+                {
+                  "front": "Name two methods of weed control.",
+                  "back": "Methods include manual weeding, hoeing, mulching, cover cropping, and careful use of herbicides."
+                },
+                {
+                  "front": "What is selective weed control?",
+                  "back": "Selective weed control removes weeds without seriously damaging the crop being protected."
+                },
+                {
+                  "front": "Why is proper weed management important?",
+                  "back": "Proper weed management helps crops grow well, improves yield, and supports healthier and more efficient farm production."
+                }
               ]
             }
           ]
@@ -355,12 +1195,30 @@
             {
               "topic": "Photosynthesis",
               "cards": [
-                { "front": "What is photosynthesis?", "back": "Photosynthesis is the process by which green plants use sunlight to make food from carbon dioxide and water." },
-                { "front": "Where does photosynthesis take place?", "back": "It takes place mainly in the chloroplasts of green plant cells." },
-                { "front": "Why is chlorophyll important?", "back": "Chlorophyll traps light energy needed for photosynthesis." },
-                { "front": "What are the raw materials of photosynthesis?", "back": "The raw materials are water and carbon dioxide." },
-                { "front": "What are the products of photosynthesis?", "back": "The products are glucose and oxygen." },
-                { "front": "Why is photosynthesis important to life?", "back": "It provides food for plants and releases oxygen needed by most living things." }
+                {
+                  "front": "What is photosynthesis?",
+                  "back": "Photosynthesis is the process by which green plants use sunlight to make food from carbon dioxide and water."
+                },
+                {
+                  "front": "Where does photosynthesis take place?",
+                  "back": "It takes place mainly in the chloroplasts of green plant cells."
+                },
+                {
+                  "front": "Why is chlorophyll important?",
+                  "back": "Chlorophyll traps light energy needed for photosynthesis."
+                },
+                {
+                  "front": "What are the raw materials of photosynthesis?",
+                  "back": "The raw materials are water and carbon dioxide."
+                },
+                {
+                  "front": "What are the products of photosynthesis?",
+                  "back": "The products are glucose and oxygen."
+                },
+                {
+                  "front": "Why is photosynthesis important to life?",
+                  "back": "It provides food for plants and releases oxygen needed by most living things."
+                }
               ]
             }
           ]
@@ -371,12 +1229,30 @@
             {
               "topic": "Acids and Bases",
               "cards": [
-                { "front": "What is an acid?", "back": "An acid is a substance that can release hydrogen ions in solution and often has a sour taste." },
-                { "front": "What is a base?", "back": "A base is a substance that can accept hydrogen ions and often feels slippery in solution." },
-                { "front": "What does an indicator do?", "back": "An indicator changes colour to show whether a substance is acidic, basic, or neutral." },
-                { "front": "What is neutralisation?", "back": "Neutralisation happens when an acid reacts with a base to form salt and water." },
-                { "front": "Give one common acid and one common base.", "back": "Lemon juice contains acid, while soap solution is basic." },
-                { "front": "Why are acids and bases important?", "back": "They are important in industry, cleaning, digestion, farming, and laboratory work." }
+                {
+                  "front": "What is an acid?",
+                  "back": "An acid is a substance that can release hydrogen ions in solution and often has a sour taste."
+                },
+                {
+                  "front": "What is a base?",
+                  "back": "A base is a substance that can accept hydrogen ions and often feels slippery in solution."
+                },
+                {
+                  "front": "What does an indicator do?",
+                  "back": "An indicator changes colour to show whether a substance is acidic, basic, or neutral."
+                },
+                {
+                  "front": "What is neutralisation?",
+                  "back": "Neutralisation happens when an acid reacts with a base to form salt and water."
+                },
+                {
+                  "front": "Give one common acid and one common base.",
+                  "back": "Lemon juice contains acid, while soap solution is basic."
+                },
+                {
+                  "front": "Why are acids and bases important?",
+                  "back": "They are important in industry, cleaning, digestion, farming, and laboratory work."
+                }
               ]
             }
           ]
@@ -387,12 +1263,30 @@
             {
               "topic": "Force and Motion",
               "cards": [
-                { "front": "What is force?", "back": "Force is a push or pull that can change the motion of an object." },
-                { "front": "What is motion?", "back": "Motion is the change in position of an object over time." },
-                { "front": "How can force change motion?", "back": "Force can start motion, stop motion, speed up motion, slow it down, or change direction." },
-                { "front": "What is friction?", "back": "Friction is a force that opposes motion when two surfaces rub together." },
-                { "front": "Give one example of force in daily life.", "back": "Kicking a football, pushing a trolley, or pulling a door all involve force." },
-                { "front": "Why is friction useful?", "back": "Friction helps us walk, hold objects, and stop moving vehicles." }
+                {
+                  "front": "What is force?",
+                  "back": "Force is a push or pull that can change the motion of an object."
+                },
+                {
+                  "front": "What is motion?",
+                  "back": "Motion is the change in position of an object over time."
+                },
+                {
+                  "front": "How can force change motion?",
+                  "back": "Force can start motion, stop motion, speed up motion, slow it down, or change direction."
+                },
+                {
+                  "front": "What is friction?",
+                  "back": "Friction is a force that opposes motion when two surfaces rub together."
+                },
+                {
+                  "front": "Give one example of force in daily life.",
+                  "back": "Kicking a football, pushing a trolley, or pulling a door all involve force."
+                },
+                {
+                  "front": "Why is friction useful?",
+                  "back": "Friction helps us walk, hold objects, and stop moving vehicles."
+                }
               ]
             }
           ]
@@ -403,12 +1297,30 @@
             {
               "topic": "Essay Writing",
               "cards": [
-                { "front": "What is an essay?", "back": "An essay is a piece of writing that explains, describes, argues, or narrates an idea in paragraphs." },
-                { "front": "What belongs in the introduction?", "back": "The introduction presents the topic and prepares the reader for the main points." },
-                { "front": "What should body paragraphs do?", "back": "Body paragraphs develop the main ideas with explanation, examples, and supporting details." },
-                { "front": "What is the purpose of the conclusion?", "back": "The conclusion summarizes the main ideas and leaves the reader with a final thought." },
-                { "front": "Why is planning important in essay writing?", "back": "Planning helps organize ideas clearly before writing the full essay." },
-                { "front": "Name one quality of a good essay.", "back": "A good essay is clear, organized, relevant, and supported with examples." }
+                {
+                  "front": "What is an essay?",
+                  "back": "An essay is a piece of writing that explains, describes, argues, or narrates an idea in paragraphs."
+                },
+                {
+                  "front": "What belongs in the introduction?",
+                  "back": "The introduction presents the topic and prepares the reader for the main points."
+                },
+                {
+                  "front": "What should body paragraphs do?",
+                  "back": "Body paragraphs develop the main ideas with explanation, examples, and supporting details."
+                },
+                {
+                  "front": "What is the purpose of the conclusion?",
+                  "back": "The conclusion summarizes the main ideas and leaves the reader with a final thought."
+                },
+                {
+                  "front": "Why is planning important in essay writing?",
+                  "back": "Planning helps organize ideas clearly before writing the full essay."
+                },
+                {
+                  "front": "Name one quality of a good essay.",
+                  "back": "A good essay is clear, organized, relevant, and supported with examples."
+                }
               ]
             }
           ]
@@ -419,12 +1331,30 @@
             {
               "topic": "Linear Equations",
               "cards": [
-                { "front": "What is a linear equation?", "back": "A linear equation is an equation in which the highest power of the variable is 1." },
-                { "front": "What is the goal when solving a linear equation?", "back": "The goal is to find the value of the variable that makes the equation true." },
-                { "front": "How do you solve x + 5 = 12?", "back": "Subtract 5 from both sides to get x = 7." },
-                { "front": "Why must the same operation be done on both sides?", "back": "Doing the same operation on both sides keeps the equation balanced." },
-                { "front": "What is a variable?", "back": "A variable is a symbol, usually a letter, that stands for an unknown value." },
-                { "front": "How can linear equations be useful?", "back": "They help solve real-life problems involving unknown quantities, costs, distances, and relationships." }
+                {
+                  "front": "What is a linear equation?",
+                  "back": "A linear equation is an equation in which the highest power of the variable is 1."
+                },
+                {
+                  "front": "What is the goal when solving a linear equation?",
+                  "back": "The goal is to find the value of the variable that makes the equation true."
+                },
+                {
+                  "front": "How do you solve x + 5 = 12?",
+                  "back": "Subtract 5 from both sides to get x = 7."
+                },
+                {
+                  "front": "Why must the same operation be done on both sides?",
+                  "back": "Doing the same operation on both sides keeps the equation balanced."
+                },
+                {
+                  "front": "What is a variable?",
+                  "back": "A variable is a symbol, usually a letter, that stands for an unknown value."
+                },
+                {
+                  "front": "How can linear equations be useful?",
+                  "back": "They help solve real-life problems involving unknown quantities, costs, distances, and relationships."
+                }
               ]
             }
           ]

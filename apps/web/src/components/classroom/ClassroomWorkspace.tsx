@@ -61,6 +61,39 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
     async function loadClassroomData() {
       try {
+        // Check if this is a direct 1-on-1 session without a pre-scheduled lesson
+        if (lessonId && lessonId.startsWith('1on1-')) {
+          const targetStudentId = lessonId.replace('1on1-', '');
+          const { data: stProfile } = await supabase
+            .from('student_profiles')
+            .select('personal_meet_url, grade_level:grade_levels(code, display_name)')
+            .eq('user_id', targetStudentId)
+            .maybeSingle();
+
+          setLesson({
+            title: '1-on-1 Interactive Classroom Hub',
+            description: 'Live 1-on-1 coaching workspace with synchronized whiteboard, live video, and worksheet annotator.',
+            classes: {
+              title: '1-on-1 Mentorship',
+              grade_levels: stProfile?.grade_level || { display_name: 'Primary' },
+            },
+          });
+
+          if (stProfile?.personal_meet_url) {
+            setExternalMeetingUrl(stProfile.personal_meet_url);
+          }
+
+          const gradeCode = (stProfile?.grade_level as any)?.code || 'grade_3';
+          const { data: resources } = await supabase
+            .from('preloaded_resources')
+            .select('id, title, public_url')
+            .eq('grade_level_code', gradeCode)
+            .eq('resource_type', 'comprehension');
+          if (resources) setAvailableResources(resources);
+          setLoading(false);
+          return;
+        }
+
         // 1. Fetch lesson details
         const { data: lessonData } = await supabase
           .from('lessons')

@@ -32,7 +32,7 @@ export default function StudentLinkEditor({ studentId, currentUrl, currentHostUr
         className="text-[10px] h-6 px-2 text-slate-500 hover:text-blue-600"
       >
         <LinkIcon className="w-3 h-3 mr-1" />
-        {currentUrl ? 'Edit Eternal Link' : 'Add Eternal Link'}
+        {currentUrl ? 'Edit Meet Link' : 'Add Meet Link'}
       </Button>
     );
   }

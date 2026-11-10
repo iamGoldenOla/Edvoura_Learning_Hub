@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight, Gamepad2, FileText, Zap, BookMarked, Tv, Folder, CircleDot, Globe, Award, UserCheck } from 'lucide-react';
+import { Compass, Cog, Network, BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight, Gamepad2, FileText, Zap, BookMarked, Tv, Folder, CircleDot, Globe, Award, UserCheck } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import DashboardFeedWidget from './DashboardFeedWidget';
@@ -213,6 +213,12 @@ export default function StudentBandClientWrapper({
         <StudentSkillHeatmap />
 
         {/* Quick Fun Links */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-4 mb-4">
+          <FunCard icon={Compass} label="Math Studio" href="/math-studio" color="bg-yellow" />
+          <FunCard icon={BookMarked} label="Word Atlas" href="/vocabulary" color="bg-pink-300" />
+          <FunCard icon={Cog} label="STEM MechLab" href="/anatomy-lab" color="bg-cyan-300" />
+          <FunCard icon={Network} label="Curriculum Tree" href="/roadmap" color="bg-emerald-300" />
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
           <FunCard icon={BookOpen} label="Subjects" href="/dash/student/subjects" color="bg-emerald-300" />
           <FunCard icon={FileText} label="Notes" href="/dash/student/notes" color="bg-indigo-300" />
@@ -672,6 +678,10 @@ export default function StudentBandClientWrapper({
               {band === '4-6' ? (
                 <>
                   <QuickLink href="/dash/student/live" label="🎥 Join Live Class" />
+                  <QuickLink href="/math-studio" label="📐 MathMotion Studio™ (Interactive 60 FPS Visuals)" />
+                  <QuickLink href="/vocabulary" label="📖 LexiCore™ Word Atlas (7,298 Words & Audio)" />
+                  <QuickLink href="/anatomy-lab" label="⚙️ STEM MechLab™ (Interactive Physical Simulations)" />
+                  <QuickLink href="/roadmap" label="🗺️ Curriculum Matrix™ (1,860+ Learning Pathways)" />
                   <QuickLink href="/dash/student/homework" label="📋 My Homework" />
                   <QuickLink href="/dash/student/quiz" label="🤖 AI Study Hub" />
                   <QuickLink href="/dash/student/games" label="🎮 3D Play Zone (11 Games)" />

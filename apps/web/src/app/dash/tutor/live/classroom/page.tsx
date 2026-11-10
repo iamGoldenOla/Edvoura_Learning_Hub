@@ -7,20 +7,31 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 interface PageProps {
-  searchParams: {
+  searchParams?: Promise<{
     lessonId?: string;
+    studentId?: string;
+    studentName?: string;
+  }> | {
+    lessonId?: string;
+    studentId?: string;
+    studentName?: string;
   };
 }
 
-export default async function TutorClassroomPage({ searchParams }: PageProps) {
+export default async function TutorClassroomPage(props: PageProps) {
   const viewer = await requireAppViewer();
-  const lessonId = searchParams.lessonId;
+  const searchParams = (await props.searchParams) ?? {};
+  let lessonId = searchParams.lessonId;
+
+  if (!lessonId && searchParams.studentId) {
+    lessonId = `1on1-${searchParams.studentId}`;
+  }
 
   if (!lessonId) {
     return (
       <div className="max-w-md mx-auto text-center py-20 bg-white border-[4px] border-dark rounded-[28px] p-8 shadow-[8px_8px_0px_#060E1C] mt-12">
         <h2 className="text-2xl font-black text-dark mb-4">Classroom Error</h2>
-        <p className="text-sm font-bold text-dark/60 mb-6">No active class session identifier was supplied.</p>
+        <p className="text-sm font-bold text-dark/60 mb-6">No active class session or student identifier was supplied.</p>
         <Link
           href="/dash/tutor/schedule"
           className="inline-flex items-center gap-2 px-6 py-3 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] rounded-xl hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:scale-95 transition-all"
@@ -38,13 +49,15 @@ export default async function TutorClassroomPage({ searchParams }: PageProps) {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
-            href="/dash/tutor/schedule"
+            href="/dash/tutor/roster"
             className="flex h-10 w-10 items-center justify-center rounded-xl border-[2.5px] border-dark bg-white hover:bg-slate-50 text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:scale-95 shrink-0"
             title="Leave classroom"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-xl sm:text-2xl font-black text-dark tracking-tight uppercase">Tutor Classroom Hub</h1>
+          <h1 className="text-xl sm:text-2xl font-black text-dark tracking-tight uppercase">
+            Tutor Classroom Hub {searchParams.studentName ? `• ${searchParams.studentName}` : ''}
+          </h1>
         </div>
       </div>
 

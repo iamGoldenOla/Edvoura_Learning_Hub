@@ -28,6 +28,7 @@ export default function FlashcardClient({
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [studyMode, setStudyMode] = useState<'flip' | 'sheet'>('flip');
   const [isLoading, setIsLoading] = useState(false);
   const [deckTitle, setDeckTitle] = useState('');
   const [provider, setProvider] = useState('');
@@ -283,87 +284,194 @@ export default function FlashcardClient({
             </div>
           ) : null}
 
-          {/* Flashcard 3D Flip Container */}
-          <div style={{ perspective: '1000px' }} className="relative aspect-[4/3] w-full max-w-[min(100%,500px)] min-h-[320px]">
-            <div
-              onClick={() => {
-                setIsFlipped(!isFlipped);
-                if (!isFlipped) speak(flashcards[currentIdx].back);
-              }}
-              style={{
-                transformStyle: 'preserve-3d',
-                transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                transition: 'transform 0.5s',
-              }}
-              className="relative h-full w-full cursor-pointer"
+          {/* Study Mode Switcher */}
+          <div className="flex items-center gap-2 border-[2px] border-dark rounded-xl p-1 bg-white shadow-[2px_2px_0px_#060E1C]">
+            <button
+              type="button"
+              onClick={() => setStudyMode('flip')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${
+                studyMode === 'flip' ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]' : 'text-dark/60'
+              }`}
             >
-              {/* Front Side */}
-              <div
-                style={{ backfaceVisibility: 'hidden' }}
-                className="absolute inset-0 flex flex-col items-center justify-between rounded-[28px] border-[4px] border-dark bg-white p-6 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[5px] sm:p-8"
-              >
-                <span className="rounded-lg border-[1.5px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-dark">
-                  QUESTION / CONCEPT
+              🔄 3D Flip Card
+            </button>
+            <button
+              type="button"
+              onClick={() => setStudyMode('sheet')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${
+                studyMode === 'sheet' ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]' : 'text-dark/60'
+              }`}
+            >
+              📖 Study Sheet (Show Answer Side-by-Side)
+            </button>
+          </div>
+
+          {studyMode === 'sheet' ? (
+            /* Study Sheet Mode: Question and Answer stacked side-by-side */
+            <div className="w-full max-w-2xl rounded-[32px] border-[4px] border-dark bg-white p-6 sm:p-8 shadow-[8px_8px_0px_#060E1C] space-y-6">
+              <div className="p-4 sm:p-6 rounded-2xl border-[3px] border-dark bg-yellow/20">
+                <span className="inline-block rounded-md border-[1.5px] border-dark bg-yellow px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-dark mb-2">
+                  Question #{currentIdx + 1}
                 </span>
-                <div className="my-auto break-words text-center text-lg font-black leading-snug text-dark sm:text-2xl">
+                <p className="text-lg sm:text-xl font-black text-dark leading-snug">
                   {flashcards[currentIdx].front}
-                </div>
-                <p className="text-center text-xs font-bold italic text-dark/50">Tap card to reveal in-depth explanation</p>
+                </p>
               </div>
 
-              {/* Back Side */}
-              <div
-                style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                className="absolute inset-0 flex flex-col items-center justify-between overflow-y-auto rounded-[28px] border-[4px] border-dark bg-emerald-50 p-6 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[5px] sm:p-8"
-              >
-                <div className="w-full flex items-center justify-between">
-                  <span className="rounded-lg border-[1.5px] border-dark bg-emerald-200 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-dark">
-                    IN-DEPTH EXPLANATION
+              <div className="p-4 sm:p-6 rounded-2xl border-[3px] border-dark bg-emerald-50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="inline-block rounded-md border-[1.5px] border-dark bg-emerald-300 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-dark">
+                    Answer &amp; Explanation
                   </span>
                   <button
                     type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      speak(flashcards[currentIdx].back);
-                    }}
-                    className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark shadow-[1.5px_1.5px_0px_#060E1C]"
+                    onClick={() => speak(flashcards[currentIdx].back)}
+                    className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-white px-2 py-1 text-[10px] font-black uppercase text-dark shadow-[1px_1px_0px_#060E1C]"
                   >
-                    <Volume2 className="h-3.5 w-3.5" /> Listen
+                    <Volume2 className="h-3 w-3" /> Listen
                   </button>
                 </div>
-
-                <div className="my-auto w-full text-left text-xs font-semibold leading-relaxed text-dark sm:text-sm md:text-base whitespace-pre-line">
+                <p className="text-sm sm:text-base font-bold text-dark whitespace-pre-line leading-relaxed">
                   {flashcards[currentIdx].back}
+                </p>
+              </div>
+
+              {/* Self-Testing Mastery Buttons */}
+              <div className="flex w-full gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={markNeedPractice}
+                  className={`flex-1 rounded-xl border-[2px] border-dark px-4 py-3 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
+                    reviewIndices.includes(currentIdx)
+                      ? 'bg-rose-400 text-dark'
+                      : 'bg-white text-dark hover:bg-rose-50'
+                  }`}
+                >
+                  🔁 Need More Practice
+                </button>
+                <button
+                  type="button"
+                  onClick={markGotIt}
+                  className={`flex-1 rounded-xl border-[2px] border-dark px-4 py-3 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
+                    masteredIndices.includes(currentIdx)
+                      ? 'bg-emerald-400 text-dark'
+                      : 'bg-emerald-300 text-dark hover:bg-emerald-400'
+                  }`}
+                >
+                  💚 I Got It Right! (Mastered)
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* 3D Flip Card Mode with Obvious Big Reveal Button */
+            <div style={{ perspective: '1000px' }} className="relative aspect-[4/3] w-full max-w-[min(100%,520px)] min-h-[350px]">
+              <div
+                onClick={() => {
+                  setIsFlipped(!isFlipped);
+                  if (!isFlipped) speak(flashcards[currentIdx].back);
+                }}
+                style={{
+                  transformStyle: 'preserve-3d',
+                  transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                  transition: 'transform 0.5s',
+                }}
+                className="relative h-full w-full cursor-pointer"
+              >
+                {/* Front Side */}
+                <div
+                  style={{ backfaceVisibility: 'hidden' }}
+                  className="absolute inset-0 flex flex-col items-center justify-between rounded-[28px] border-[4px] border-dark bg-white p-6 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[5px] sm:p-8"
+                >
+                  <span className="rounded-lg border-[1.5px] border-dark bg-yellow px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-dark">
+                    QUESTION / CONCEPT
+                  </span>
+                  <div className="my-auto break-words text-center text-xl font-black leading-snug text-dark sm:text-2xl px-2">
+                    {flashcards[currentIdx].front}
+                  </div>
+                  
+                  {/* Big Prominent Reveal Button */}
+                  <div className="w-full flex flex-col items-center gap-2 mt-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsFlipped(true);
+                        speak(flashcards[currentIdx].back);
+                      }}
+                      className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border-[3px] border-dark bg-yellow hover:bg-yellow/90 text-dark font-black text-sm uppercase tracking-wider shadow-[4px_4px_0px_#060E1C] active:scale-95 transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Brain className="w-4 h-4 text-dark fill-current" />
+                      <span>💡 Reveal Answer &amp; Explanation</span>
+                    </button>
+                    <p className="text-[11px] font-bold italic text-dark/40">Or tap card to flip</p>
+                  </div>
                 </div>
 
-                {/* Self-Testing Mastery Buttons */}
-                <div className="mt-3 flex w-full gap-2 pt-2 border-t-[2px] border-dark/20" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    type="button"
-                    onClick={markNeedPractice}
-                    className={`flex-1 rounded-xl border-[2px] border-dark px-3 py-2 text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
-                      reviewIndices.includes(currentIdx)
-                        ? 'bg-rose-400 text-dark font-black'
-                        : 'bg-white text-dark hover:bg-rose-100'
-                    }`}
-                  >
-                    🔁 Need Practice
-                  </button>
-                  <button
-                    type="button"
-                    onClick={markGotIt}
-                    className={`flex-1 rounded-xl border-[2px] border-dark px-3 py-2 text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
-                      masteredIndices.includes(currentIdx)
-                        ? 'bg-emerald-400 text-dark font-black'
-                        : 'bg-emerald-300 text-dark hover:bg-emerald-400'
-                    }`}
-                  >
-                    💚 Got It (Mastered)
-                  </button>
+                {/* Back Side */}
+                <div
+                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                  className="absolute inset-0 flex flex-col items-center justify-between overflow-y-auto rounded-[28px] border-[4px] border-dark bg-emerald-50 p-6 shadow-[8px_8px_0px_#060E1C] sm:rounded-[40px] sm:border-[5px] sm:p-8"
+                >
+                  <div className="w-full flex items-center justify-between gap-2 pb-2 border-b-[2px] border-dark/15 shrink-0">
+                    <span className="rounded-lg border-[1.5px] border-dark bg-emerald-200 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-dark">
+                      ANSWER &amp; EXPLANATION
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          speak(flashcards[currentIdx].back);
+                        }}
+                        className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark shadow-[1.5px_1.5px_0px_#060E1C]"
+                      >
+                        <Volume2 className="h-3.5 w-3.5" /> Listen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setIsFlipped(false);
+                        }}
+                        className="flex items-center gap-1 rounded-lg border-[1.5px] border-dark bg-yellow hover:bg-yellow/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-dark shadow-[1.5px_1.5px_0px_#060E1C]"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Question
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="my-auto w-full text-left text-xs font-bold leading-relaxed text-dark sm:text-sm md:text-base whitespace-pre-line py-3">
+                    {flashcards[currentIdx].back}
+                  </div>
+
+                  {/* Self-Testing Mastery Buttons */}
+                  <div className="mt-3 flex w-full gap-2 pt-2 border-t-[2px] border-dark/20" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={markNeedPractice}
+                      className={`flex-1 rounded-xl border-[2px] border-dark px-3 py-2 text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
+                        reviewIndices.includes(currentIdx)
+                          ? 'bg-rose-400 text-dark font-black'
+                          : 'bg-white text-dark hover:bg-rose-100'
+                      }`}
+                    >
+                      🔁 Need Practice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={markGotIt}
+                      className={`flex-1 rounded-xl border-[2px] border-dark px-3 py-2 text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C] transition-all ${
+                        masteredIndices.includes(currentIdx)
+                          ? 'bg-emerald-400 text-dark font-black'
+                          : 'bg-emerald-300 text-dark hover:bg-emerald-400'
+                      }`}
+                    >
+                      💚 Got It (Mastered)
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="flex w-full flex-wrap items-center justify-center gap-4 sm:gap-6">
             <button
