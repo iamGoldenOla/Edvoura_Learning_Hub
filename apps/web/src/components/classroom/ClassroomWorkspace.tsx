@@ -68,6 +68,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
   // Floating controls state
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
@@ -649,15 +650,88 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
               </button>
 
-              {/* Real Screen Share Presentation */}
-              <button
-                onClick={handleToggleScreenShare}
-                className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
-                title="Share Screen (Present Your Display / Tab to Pupil)"
-                aria-label="Share Screen"
-              >
-                <ScreenShare className="w-5 h-5" />
-              </button>
+              {/* Share Screen & Whiteboard Button (Zoom / Google Meet Style) */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowShareMenu(!showShareMenu);
+                    setShowOptionsMenu(false);
+                  }}
+                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                    showShareMenu
+                      ? 'bg-yellow text-dark shadow-md'
+                      : 'bg-white/10 hover:bg-white/20 text-white'
+                  }`}
+                  title="Share Whiteboard or Screen (Zoom / Google Meet Style)"
+                  aria-label="Share Screen or Whiteboard"
+                >
+                  <ScreenShare className="w-5 h-5" />
+                </button>
+
+                {/* Zoom / Google Meet Share Options Menu */}
+                {showShareMenu && (
+                  <div
+                    className="absolute bottom-14 left-1/2 -translate-x-1/2 w-80 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-3 text-white z-50 animate-in fade-in zoom-in-95 duration-150"
+                  >
+                    <div className="text-[11px] font-black uppercase tracking-wider text-white/50 px-2 py-1 mb-1">
+                      Choose what to share:
+                    </div>
+
+                    {/* 1. Blank Interactive Whiteboard to write on */}
+                    <button
+                      onClick={() => {
+                        setViewMode('drawer-overlay');
+                        setActiveTab('whiteboard');
+                        setShowShareMenu(false);
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-yellow text-dark flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                        <Presentation className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-white">Whiteboard (Blank Canvas)</p>
+                        <p className="text-[10px] font-bold text-white/60">Draw, write equations, &amp; collaborate live</p>
+                      </div>
+                    </button>
+
+                    {/* 2. Real Screen Share (Desktop / Window / Tab) */}
+                    <button
+                      onClick={() => {
+                        setShowShareMenu(false);
+                        handleToggleScreenShare();
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group mb-1"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-blue-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                        <ScreenShare className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-white">Share Screen (Desktop / Tab)</p>
+                        <p className="text-[10px] font-bold text-white/60">Present your screen or browser window</p>
+                      </div>
+                    </button>
+
+                    {/* 3. School Worksheet / PDF */}
+                    <button
+                      onClick={() => {
+                        setViewMode('drawer-overlay');
+                        setActiveTab('pdf');
+                        setShowShareMenu(false);
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-white/10 flex items-center gap-3 transition-colors group"
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-black shrink-0 shadow-md group-hover:scale-105 transition-transform">
+                        <BookOpen className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-white">Worksheets &amp; PDF</p>
+                        <p className="text-[10px] font-bold text-white/60">Annotate homework and curriculum</p>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Whiteboard Overlay Drawer Toggle */}
               <button
