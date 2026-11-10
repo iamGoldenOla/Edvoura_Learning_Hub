@@ -134,11 +134,26 @@ export async function quickOnboardPupil(data: {
       }
     }
 
+    if (!studentUserId) {
+      throw new Error('Student user ID could not be resolved');
+    }
+
     revalidatePath('/dash/tutor/roster');
     revalidatePath('/dash/tutor/lesson-notes');
     revalidatePath('/dash/student/live');
+    revalidatePath('/dash/tutor/schedule');
 
-    return { success: true, studentUserId };
+    return {
+      success: true,
+      studentUserId,
+      student: {
+        userId: studentUserId,
+        name: fullName.trim(),
+        gradeName: `Grade ${gradeLevel}`,
+        gradeLevelId: targetGrade.id,
+        personalMeetUrl: meetUrl.trim(),
+      },
+    };
   } catch (err: unknown) {
     const error = err as Error;
     return { success: false, error: error.message };

@@ -61,34 +61,62 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
     async function loadClassroomData() {
       try {
-        // Check if this is a direct 1-on-1 session without a pre-scheduled lesson
-        if (lessonId && lessonId.startsWith('1on1-')) {
-          const targetStudentId = lessonId.replace('1on1-', '');
-          const { data: stProfile } = await supabase
-            .from('student_profiles')
-            .select('personal_meet_url, grade_level:grade_levels(code, display_name)')
-            .eq('user_id', targetStudentId)
-            .maybeSingle();
+        // Check if this is a direct 1-on-1 session or instant teaching studio
+        if (lessonId && (lessonId.startsWith('1on1-') || lessonId.startsWith('instant-'))) {
+          let meetUrl: string | null = null;
+          let title = '1-on-1 Interactive Classroom Hub';
+          let gradeName = 'Primary / All Grades';
+          let gradeCode = 'grade_3';
+
+          if (lessonId.startsWith('1on1-')) {
+            const targetStudentId = lessonId.replace('1on1-', '');
+            const [{ data: stProfile }, { data: userProfile }] = await Promise.all([
+              supabase
+                .from('student_profiles')
+                .select('personal_meet_url, grade_level:grade_levels(code, display_name)')
+                .eq('user_id', targetStudentId)
+                .maybeSingle(),
+              supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', targetStudentId)
+                .maybeSingle(),
+            ]);
+
+            if (stProfile?.personal_meet_url) {
+              meetUrl = stProfile.personal_meet_url;
+            }
+            if ((stProfile?.grade_level as any)?.code) {
+              gradeCode = (stProfile?.grade_level as any).code;
+            }
+            if ((stProfile?.grade_level as any)?.display_name) {
+              gradeName = (stProfile?.grade_level as any).display_name;
+            }
+            if (userProfile?.full_name) {
+              title = `1-on-1 Mentorship • ${userProfile.full_name}`;
+            }
+          }
 
           setLesson({
-            title: '1-on-1 Interactive Classroom Hub',
-            description: 'Live 1-on-1 coaching workspace with synchronized whiteboard, live video, and worksheet annotator.',
+            title,
+            description: 'Live coaching workspace with synchronized whiteboard, live video, and worksheet annotator.',
             classes: {
-              title: '1-on-1 Mentorship',
-              grade_levels: stProfile?.grade_level || { display_name: 'Primary' },
+              title,
+              grade_levels: { display_name: gradeName },
             },
           });
 
-          if (stProfile?.personal_meet_url) {
-            setExternalMeetingUrl(stProfile.personal_meet_url);
+          if (meetUrl) {
+            setExternalMeetingUrl(meetUrl);
           }
 
-          const gradeCode = (stProfile?.grade_level as any)?.code || 'grade_3';
           const { data: resources } = await supabase
             .from('preloaded_resources')
             .select('id, title, public_url')
-            .eq('grade_level_code', gradeCode)
-            .eq('resource_type', 'comprehension');
+            .or(`grade_level_code.eq.${gradeCode},grade_level_code.eq.grade_3`)
+            .eq('resource_type', 'comprehension')
+            .limit(10);
+
           if (resources) setAvailableResources(resources);
           setLoading(false);
           return;

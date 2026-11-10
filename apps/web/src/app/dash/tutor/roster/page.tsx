@@ -118,7 +118,7 @@ export default async function TutorRosterPage(props: {
     const relatedClass = classById.get(row.class_id);
 
     return {
-      id: row.id,
+      id: row.student_user_id,
       name: profile?.full_name ?? profile?.email ?? 'Unnamed learner',
       className: relatedClass?.title ?? 'Untitled class',
       gradeLabel: studentProfile?.grade_level_id ? gradeLevelById.get(studentProfile.grade_level_id) ?? 'Grade pending' : 'Grade pending',

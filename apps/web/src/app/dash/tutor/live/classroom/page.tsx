@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { requireAppViewer } from '@/lib/app-context';
 import { ClassroomWorkspace } from '@/components/classroom/ClassroomWorkspace';
-import { ArrowLeft } from 'lucide-react';
+import { TutorClassroomPupilSwitch } from '@/components/classroom/TutorClassroomPupilSwitch';
+import { ArrowLeft, Video } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -21,48 +23,108 @@ interface PageProps {
 export default async function TutorClassroomPage(props: PageProps) {
   const viewer = await requireAppViewer();
   const searchParams = (await props.searchParams) ?? {};
-  let lessonId = searchParams.lessonId;
+  const supabase = await createClient();
 
-  if (!lessonId && searchParams.studentId) {
-    lessonId = `1on1-${searchParams.studentId}`;
+  let lessonId = searchParams.lessonId;
+  let activeStudentId = searchParams.studentId;
+  let activeStudentName = searchParams.studentName;
+
+  if (!lessonId && activeStudentId) {
+    lessonId = `1on1-${activeStudentId}`;
   }
 
+  // Auto-resolve lesson if not explicitly provided
   if (!lessonId) {
-    return (
-      <div className="max-w-md mx-auto text-center py-20 bg-white border-[4px] border-dark rounded-[28px] p-8 shadow-[8px_8px_0px_#060E1C] mt-12">
-        <h2 className="text-2xl font-black text-dark mb-4">Classroom Error</h2>
-        <p className="text-sm font-bold text-dark/60 mb-6">No active class session or student identifier was supplied.</p>
-        <Link
-          href="/dash/tutor/schedule"
-          className="inline-flex items-center gap-2 px-6 py-3 border-[3px] border-dark bg-yellow text-dark font-black uppercase text-xs tracking-widest shadow-[4px_4px_0px_#060E1C] rounded-xl hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:scale-95 transition-all"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Schedule
-        </Link>
-      </div>
-    );
+    const nowIso = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+
+    // 1. Check for live or upcoming scheduled lesson for this tutor
+    const { data: upcomingLessons } = await supabase
+      .from('lessons')
+      .select('id, title, status, scheduled_start_at')
+      .eq('tutor_id', viewer.currentUser.userId)
+      .or(`status.eq.live,scheduled_start_at.gte.${nowIso}`)
+      .order('scheduled_start_at', { ascending: true })
+      .limit(1);
+
+    if (upcomingLessons && upcomingLessons.length > 0) {
+      lessonId = upcomingLessons[0].id;
+    } else {
+      // 2. Check for most recently created lesson
+      const { data: recentLessons } = await supabase
+        .from('lessons')
+        .select('id, title, status')
+        .eq('tutor_id', viewer.currentUser.userId)
+        .order('scheduled_start_at', { ascending: false })
+        .limit(1);
+
+      if (recentLessons && recentLessons.length > 0) {
+        lessonId = recentLessons[0].id;
+      } else {
+        // 3. Fallback to instant studio workspace (always available)
+        lessonId = `instant-${viewer.currentUser.userId}`;
+      }
+    }
+  }
+
+  // Fetch student roster so tutor can switch pupil on the fly
+  const { data: studentProfiles = [] } = await supabase
+    .from('student_profiles')
+    .select('user_id, personal_meet_url, grade_levels(display_name)');
+
+  const studentUserIds = (studentProfiles ?? []).map((sp) => sp.user_id);
+  const { data: profileRows = [] } = studentUserIds.length
+    ? await supabase.from('profiles').select('id, full_name, email').in('id', studentUserIds)
+    : { data: [] };
+
+  const nameMap = new Map((profileRows ?? []).map((p) => [p.id, p.full_name || p.email || 'Student']));
+
+  const pupilsList = (studentProfiles ?? []).map((sp) => ({
+    id: sp.user_id,
+    name: nameMap.get(sp.user_id) || 'Student',
+    grade: (sp.grade_levels as any)?.display_name || 'Primary',
+  })).sort((a, b) => a.name.localeCompare(b.name));
+
+  // If a student was targeted, find their display name if not passed in searchParams
+  if (activeStudentId && !activeStudentName) {
+    activeStudentName = nameMap.get(activeStudentId) || undefined;
   }
 
   const userName = viewer.currentUser.profile?.fullName || 'Tutor';
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link
             href="/dash/tutor/roster"
             className="flex h-10 w-10 items-center justify-center rounded-xl border-[2.5px] border-dark bg-white hover:bg-slate-50 text-dark shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:scale-95 shrink-0"
-            title="Leave classroom"
+            title="Return to Student Roster"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-xl sm:text-2xl font-black text-dark tracking-tight uppercase">
-            Tutor Classroom Hub {searchParams.studentName ? `• ${searchParams.studentName}` : ''}
-          </h1>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black text-dark tracking-tight uppercase flex items-center gap-2">
+              <Video className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>Tutor Classroom Hub</span>
+              {activeStudentName && (
+                <span className="text-dark/60 text-base font-bold lowercase normal-case">
+                  • {activeStudentName}
+                </span>
+              )}
+            </h1>
+          </div>
         </div>
+
+        {/* Pupil Switcher inside classroom */}
+        <TutorClassroomPupilSwitch
+          currentStudentId={activeStudentId}
+          currentStudentName={activeStudentName}
+          pupils={pupilsList}
+        />
       </div>
 
       <ClassroomWorkspace
-        lessonId={lessonId}
+        lessonId={lessonId || `instant-${viewer.currentUser.userId}`}
         role="tutor"
         userName={userName}
       />

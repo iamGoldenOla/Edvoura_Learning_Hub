@@ -7,7 +7,13 @@ import { quickOnboardPupil } from '@/app/dash/tutor/roster/actions';
 interface QuickAddPupilModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (newStudent?: {
+    userId: string;
+    name: string;
+    gradeName: string;
+    gradeLevelId?: string;
+    personalMeetUrl?: string | null;
+  }) => void;
 }
 
 export default function QuickAddPupilModal({ isOpen, onClose, onSuccess }: QuickAddPupilModalProps) {
@@ -47,8 +53,8 @@ export default function QuickAddPupilModal({ isOpen, onClose, onSuccess }: Quick
       setTimeout(() => {
         setSuccess(false);
         onClose();
-        if (onSuccess) onSuccess();
-      }, 1500);
+        if (onSuccess) onSuccess(res.student);
+      }, 1000);
     } else {
       setErrorMsg(res.error || 'Failed to onboard pupil.');
     }

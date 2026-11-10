@@ -35,11 +35,13 @@ export default function TutorScheduleSlotForm({
   studentOptions,
   action,
 }: TutorScheduleSlotFormProps) {
+  const [students, setStudents] = useState<StudentOption[]>(studentOptions);
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [selectedGradeLevelId, setSelectedGradeLevelId] = useState<string>(gradeLevels[0]?.id || '');
   const [title, setTitle] = useState<string>('');
   const [joinUrl, setJoinUrl] = useState<string>('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [justAddedNotice, setJustAddedNotice] = useState<string | null>(null);
 
   const handleStudentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const studentId = e.target.value;
@@ -49,7 +51,7 @@ export default function TutorScheduleSlotForm({
       return;
     }
 
-    const foundStudent = studentOptions.find((s) => s.userId === studentId);
+    const foundStudent = students.find((s) => s.userId === studentId);
     if (foundStudent) {
       // Auto-match Grade Level if available
       if (foundStudent.gradeLevelId) {
@@ -64,6 +66,27 @@ export default function TutorScheduleSlotForm({
         setJoinUrl(foundStudent.personalMeetUrl);
       }
     }
+  };
+
+  const handlePupilAdded = (newPupil?: StudentOption) => {
+    setIsAddModalOpen(false);
+    if (!newPupil) return;
+
+    setStudents((prev) => {
+      const filtered = prev.filter((s) => s.userId !== newPupil.userId);
+      return [newPupil, ...filtered];
+    });
+
+    setSelectedStudentId(newPupil.userId);
+    if (newPupil.gradeLevelId) {
+      setSelectedGradeLevelId(newPupil.gradeLevelId);
+    }
+    setTitle(`1-on-1 Lesson with ${newPupil.name}`);
+    if (newPupil.personalMeetUrl) {
+      setJoinUrl(newPupil.personalMeetUrl);
+    }
+    setJustAddedNotice(`Pupil ${newPupil.name} onboarded & auto-selected!`);
+    setTimeout(() => setJustAddedNotice(null), 5000);
   };
 
   return (
@@ -134,12 +157,19 @@ export default function TutorScheduleSlotForm({
             className="w-full h-12 rounded-xl border-[2px] sm:border-[3px] border-dark bg-off-white px-3 sm:px-4 text-sm font-bold text-dark outline-none transition-all focus:border-yellow focus:bg-white"
           >
             <option value="">Group Session (All students in selected Grade Level)</option>
-            {(studentOptions || []).map((item) => (
+            {(students || []).map((item) => (
               <option key={item.userId} value={item.userId}>
                 {item.name} ({item.gradeName})
               </option>
             ))}
           </select>
+
+          {justAddedNotice && (
+            <p className="text-xs font-black text-amber-900 bg-amber-100 border-[2px] border-amber-400 rounded-lg p-2.5 animate-pulse flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{justAddedNotice}</span>
+            </p>
+          )}
 
           {selectedStudentId && (
             <p className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-300 rounded-lg p-2 flex items-center gap-1.5">
@@ -254,10 +284,7 @@ export default function TutorScheduleSlotForm({
       <QuickAddPupilModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onSuccess={() => {
-          setIsAddModalOpen(false);
-          window.location.reload();
-        }}
+        onSuccess={handlePupilAdded}
       />
     </>
   );
