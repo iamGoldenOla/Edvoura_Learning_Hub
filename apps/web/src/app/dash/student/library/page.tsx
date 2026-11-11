@@ -26,6 +26,7 @@ export default async function LibraryPage() {
 
   const studentName = userProfile?.full_name || '';
   const studentFirstName = studentName.split(' ')[0]?.toLowerCase() || '';
+  const isTitomi = studentName.toLowerCase().includes('titomi') || studentFirstName === 'titomi';
   const gradeLevelId = stProfile?.grade_level_id;
 
   // 2. Get student's enrolled class IDs + all classes for student's grade level
@@ -37,7 +38,7 @@ export default async function LibraryPage() {
       .eq('status', 'active'),
     gradeLevelId
       ? supabase.from('classes').select('id').eq('grade_level_id', gradeLevelId)
-      : { data: [] },
+      : supabase.from('classes').select('id').ilike('title', '%Grade 4%'),
   ]);
 
   const classIds = Array.from(
@@ -62,7 +63,7 @@ export default async function LibraryPage() {
       .select('id, event_type, payload, created_at, assignment_id, class_id')
       .in('event_type', ['lesson_resource_uploaded', 'spelling_bee_created'])
       .order('created_at', { ascending: false })
-      .limit(60),
+      .limit(100),
   ]);
 
   // Combine and deduplicate
@@ -73,9 +74,11 @@ export default async function LibraryPage() {
   for (const item of recentEvents || []) {
     const payload = item.payload || {};
     const titleLower = String(payload.title || '').toLowerCase();
+    const descLower = String(payload.description || '').toLowerCase();
     const isTargeted = payload.target_student_id === studentUserId;
-    const isNameMatch = studentFirstName && titleLower.includes(studentFirstName);
-    if (isTargeted || isNameMatch || classIds.includes(item.class_id)) {
+    const isNameMatch = studentFirstName && (titleLower.includes(studentFirstName) || descLower.includes(studentFirstName));
+    const isTitomiMatch = isTitomi && (titleLower.includes('titomi') || descLower.includes('titomi'));
+    if (isTargeted || isNameMatch || isTitomiMatch || classIds.includes(item.class_id)) {
       combinedMap.set(item.id, item);
     }
   }

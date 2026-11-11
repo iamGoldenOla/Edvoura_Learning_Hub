@@ -1,13 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { MessageSquare, Send, Phone, X, Sparkles, Calendar, ChevronRight } from 'lucide-react';
 import { siteContact } from '@/lib/site';
 import QuickTrialModal from './QuickTrialModal';
 
 export default function FloatingQuickChat() {
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [trialModalOpen, setTrialModalOpen] = useState(false);
+
+  // Hide the floating contact button on all dashboard routes (/dash/*)
+  // so it never interferes with student learning, tutor workspace, or live video/whiteboard
+  if (pathname?.startsWith('/dash')) {
+    return null;
+  }
 
   return (
     <>

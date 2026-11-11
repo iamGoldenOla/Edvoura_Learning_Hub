@@ -310,27 +310,30 @@ export default function TutorBuilderPage() {
     const { data: pupilRows } = await supabase
       .from("student_profiles")
       .select(`
-        id,
+        user_id,
         grade_level_id,
-        grade_levels (code, display_name),
-        profiles (first_name, last_name, display_name)
-      `)
-      .order("created_at", { ascending: false });
+        grade_levels (code, display_name)
+      `);
 
-    if (pupilRows) {
-      const mappedPupils: PupilOption[] = pupilRows.map((row: any) => {
-        const p = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
-        const g = Array.isArray(row.grade_levels) ? row.grade_levels[0] : row.grade_levels;
-        const name = p?.display_name || `${p?.first_name || ""} ${p?.last_name || ""}`.trim() || "Student";
-        return {
-          id: row.id,
-          fullName: name,
-          gradeCode: g?.code ?? null,
-          gradeName: g?.display_name ?? null,
-        };
-      });
-      setPupils(mappedPupils);
-    }
+    const pupilUserIds = (pupilRows || []).map((r) => r.user_id).filter(Boolean);
+    const { data: pupilProfiles } = pupilUserIds.length
+      ? await supabase.from("profiles").select("id, full_name").in("id", pupilUserIds)
+      : { data: [] };
+
+    const nameMap = new Map((pupilProfiles || []).map((p) => [p.id, p.full_name]));
+
+    const mappedPupils: PupilOption[] = (pupilRows || []).map((row: any) => {
+      const g = Array.isArray(row.grade_levels) ? row.grade_levels[0] : row.grade_levels;
+      const name = nameMap.get(row.user_id) || "Student";
+      return {
+        id: row.user_id,
+        fullName: name,
+        gradeCode: g?.code ?? null,
+        gradeName: g?.display_name ?? null,
+      };
+    }).filter((p) => p.fullName && p.fullName !== "Student");
+
+    setPupils(mappedPupils);
 
     const subjectById = new Map(
       (subjectRows ?? []).map((entry) => [entry.id, entry.name]),
@@ -1038,10 +1041,10 @@ export default function TutorBuilderPage() {
                                     await supabase.from("class_enrollments").upsert(
                                       {
                                         class_id: created.class_id,
-                                        student_id: formTargetStudentId,
+                                        student_user_id: formTargetStudentId,
                                         status: "active",
                                       },
-                                      { onConflict: "class_id,student_id" }
+                                      { onConflict: "class_id,student_user_id" }
                                     );
                                   }
 

@@ -68,12 +68,15 @@ export default async function NotesPage() {
     .order('created_at', { ascending: false })
     .limit(40);
 
+  const isStudentTitomi = (dashboard.profile.fullName || '').toLowerCase().includes('titomi') || studentFirstName === 'titomi';
   const matchingTutorResources = (tutorResources || []).filter((r) => {
     const p = r.payload || {};
     const titleLower = String(p.title || '').toLowerCase();
+    const descLower = String(p.description || '').toLowerCase();
     const isTargeted = p.target_student_id === viewer.currentUser.userId;
-    const isNameMatch = studentFirstName && titleLower.includes(studentFirstName);
-    return isTargeted || isNameMatch;
+    const isNameMatch = studentFirstName && (titleLower.includes(studentFirstName) || descLower.includes(studentFirstName));
+    const isTitomiMatch = isStudentTitomi && (titleLower.includes('titomi') || descLower.includes('titomi'));
+    return isTargeted || isNameMatch || isTitomiMatch;
   });
 
   if (matchingTutorResources.length > 0) {
