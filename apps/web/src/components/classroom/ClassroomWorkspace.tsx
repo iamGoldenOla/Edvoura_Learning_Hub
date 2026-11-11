@@ -79,6 +79,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [micEnabled, setMicEnabled] = useState(true);
   const [isJitsiReady, setIsJitsiReady] = useState(false);
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoMountRef = useRef<HTMLDivElement>(null);
@@ -266,7 +267,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               'microphone',
               'camera',
               'closedcaptions',
-              'desktop',
               'fullscreen',
               'fodeviceselection',
               'hangup',
@@ -378,22 +378,28 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  // Native Browser Screen Sharing Dialog
+  // Native Browser Screen Sharing (Direct W3C getDisplayMedia - 100% Free, Zero Paywalls)
   const handleToggleScreenShare = async () => {
-    if (jitsiApiRef.current) {
-      try {
-        jitsiApiRef.current.executeCommand('toggleShareScreen');
-        return;
-      } catch (_) {}
+    if (screenStream) {
+      screenStream.getTracks().forEach((t) => t.stop());
+      setScreenStream(null);
+      return;
     }
 
     if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
       try {
         const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: { cursor: 'always' } as any,
-          audio: false,
+          video: {
+            cursor: 'always',
+          } as any,
+          audio: true,
         });
-        stream.getVideoTracks()[0].onended = () => {};
+
+        setScreenStream(stream);
+
+        stream.getVideoTracks()[0].onended = () => {
+          setScreenStream(null);
+        };
       } catch (err: any) {
         if (err.name !== 'NotAllowedError') {
           console.warn('Native display media error:', err);
@@ -639,6 +645,32 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 className="w-full h-full border-none absolute inset-0"
                 title="Edvoura Live Video Meeting"
               />
+            )}
+
+            {/* Native Screen Share Overlay (Crystal Clear 1080p, 100% Free, NO Paywalls) */}
+            {screenStream && (
+              <div className="absolute inset-0 z-30 bg-black flex items-center justify-center">
+                <video
+                  ref={(el) => {
+                    if (el && el.srcObject !== screenStream) {
+                      el.srcObject = screenStream;
+                    }
+                  }}
+                  autoPlay
+                  playsInline
+                  className="w-full h-full object-contain"
+                />
+                <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-white/20 text-white text-xs font-bold shadow-2xl backdrop-blur-md">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span>Sharing Screen (HD Window / Tab)</span>
+                  <button
+                    onClick={handleToggleScreenShare}
+                    className="ml-2 px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95"
+                  >
+                    Stop Sharing
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -892,11 +924,15 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
           </button>
 
-          {/* Share Screen (Native Windows/Tab dialog) */}
+          {/* Share Screen (Native browser window/tab dialog - Zero Paywalls) */}
           <button
             onClick={handleToggleScreenShare}
-            className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
-            title="Share your screen (select window or tab)"
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+              screenStream
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={screenStream ? 'Stop Sharing Screen' : 'Share Screen (Select any window, PDF, Word, or tab)'}
             aria-label="Share Screen"
           >
             <ScreenShare className="w-5 h-5" />
@@ -945,6 +981,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             aria-label="Teaching Tools"
           >
             <BookOpen className="w-5 h-5" />
+          </button>
+
+          {/* Switch to Google Meet (Same Tab) */}
+          <button
+            onClick={() => {
+              if (confirm('Switch directly to Google Meet for this lesson in this tab?')) {
+                window.location.href = effectiveGoogleMeetUrl;
+              }
+            }}
+            className="px-3.5 h-11 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+            title="Switch directly to Google Meet in this tab"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span className="hidden sm:inline">Google Meet</span>
           </button>
 
           {/* Red Hangup Button */}
