@@ -15,7 +15,6 @@ import {
   FileText,
   Users,
   ExternalLink,
-  MoreVertical,
   PhoneOff,
   Sparkles,
   Loader2,
@@ -24,8 +23,6 @@ import {
   Check,
   X,
   ArrowLeft,
-  ChevronRight,
-  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -38,8 +35,7 @@ interface ClassroomWorkspaceProps {
   userName: string;
 }
 
-type ViewMode = 'full-video' | 'whiteboard-full';
-type SidebarTab = 'whiteboard' | 'worksheets' | 'seatwork' | 'curriculum';
+type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks';
 type VideoServer = 'open-webrtc' | 'jitsi-public';
 
 interface ClassResource {
@@ -49,14 +45,12 @@ interface ClassResource {
 }
 
 export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorkspaceProps) {
-  // Google Meet Minimalist Architecture:
-  // 1. Video takes 100% of the entire viewport (zero outer or inner scrollbars)
-  // 2. Minimalist floating bottom dock (Mic, Camera, Screen Share, Whiteboard, Teaching Tools, Leave)
-  // 3. Sleek right-hand sidebar for Whiteboard, Worksheets, Student Desks, and Curriculum (never squashing or cluttering video)
-  // 4. Same-tab Google Meet option for seamless transition to Google Meet without opening extra tabs
-  const [viewMode, setViewMode] = useState<ViewMode>('full-video');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('whiteboard');
+  // Google Meet Presentation Architecture:
+  // 1. When presenting Whiteboard or Worksheet: Content FILLS the large main stage, and video shrinks into a neat right column.
+  // 2. When NOT presenting: Video takes 100% full screen.
+  // 3. Zero vertical scrollbars, crystal-clear reading and writing.
+  const [presentationMode, setPresentationMode] = useState<PresentationMode>('none');
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
 
   const [lesson, setLesson] = useState<any>(null);
   const [externalMeetingUrl, setExternalMeetingUrl] = useState<string | null>(null);
@@ -64,7 +58,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [loading, setLoading] = useState(true);
   const [availableResources, setAvailableResources] = useState<ClassResource[]>([]);
 
-  // Video Server Engine: fairmeeting.net (no moderator login wall, zero donation pages on exit)
+  // Video Server Engine: fairmeeting.net (no moderator login wall, zero donation popups on exit)
   const [videoServer, setVideoServer] = useState<VideoServer>('open-webrtc');
 
   // Selected PDF state
@@ -73,7 +67,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
   // Floating menus & hardware state
   const [showMeetMenu, setShowMeetMenu] = useState(false);
-  const [showDetailsMenu, setShowDetailsMenu] = useState(false);
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
@@ -352,13 +345,19 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         if (payload?.pdfUrl) {
           setSelectedPdfUrl(payload.pdfUrl);
           setSelectedPdfTitle(payload.pdfTitle || 'Shared Worksheet');
-          setSidebarTab('worksheets');
-          setIsSidebarOpen(true);
+          setPresentationMode('worksheet');
+          setIsToolsOpen(false);
         }
       })
       .on('broadcast', { event: 'close-pdf' }, () => {
         setSelectedPdfUrl(null);
         setSelectedPdfTitle('');
+        setPresentationMode('none');
+      })
+      .on('broadcast', { event: 'present-mode' }, ({ payload }) => {
+        if (payload?.mode) {
+          setPresentationMode(payload.mode);
+        }
       })
       .subscribe();
 
@@ -460,8 +459,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     const localUrl = URL.createObjectURL(file);
     setSelectedPdfUrl(localUrl);
     setSelectedPdfTitle(file.name);
-    setSidebarTab('worksheets');
-    setIsSidebarOpen(true);
+    setPresentationMode('worksheet');
+    setIsToolsOpen(false);
 
     try {
       const supabase = createClient();
@@ -489,8 +488,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const handleSelectPdf = (pdf: ClassResource) => {
     setSelectedPdfUrl(pdf.public_url);
     setSelectedPdfTitle(pdf.title);
-    setSidebarTab('worksheets');
-    setIsSidebarOpen(true);
+    setPresentationMode('worksheet');
+    setIsToolsOpen(false);
 
     if (channelRef.current && role === 'tutor') {
       channelRef.current.send({
@@ -501,7 +500,30 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  const effectiveGoogleMeetUrl = externalMeetingUrl || 'https://meet.google.com/new';
+  const handleToggleWhiteboard = () => {
+    if (presentationMode === 'whiteboard') {
+      setPresentationMode('none');
+      if (channelRef.current && role === 'tutor') {
+        channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'none' } });
+      }
+    } else {
+      setPresentationMode('whiteboard');
+      setIsToolsOpen(false);
+      if (channelRef.current && role === 'tutor') {
+        channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'whiteboard' } });
+      }
+    }
+  };
+
+  const handleStopPresenting = () => {
+    setPresentationMode('none');
+    if (channelRef.current && role === 'tutor') {
+      channelRef.current.send({ type: 'broadcast', event: 'close-pdf' });
+      channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'none' } });
+    }
+  };
+
+  const effectiveGoogleMeetUrl = externalMeetingUrl || 'https://meet.google.com/xyb-ikse-odx';
 
   if (loading) {
     return (
@@ -606,35 +628,140 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       </header>
 
       {/* ============================================================
-          MAIN BODY: 100% WIDESCREEN VIDEO + SLEEK GOOGLE MEET SIDEBAR
+          MAIN BODY: GOOGLE MEET PRESENTATION ARCHITECTURE
+          - When presenting: Worksheet / Whiteboard fills MAIN STAGE. Video shrinks to right frame!
+          - When NOT presenting: Video takes 100% full stage!
           ============================================================ */}
       <main className="flex-1 w-full min-h-0 flex relative overflow-hidden bg-black">
         {/* ==========================================================
-            VIEW MODE A: FULL-STAGE WHITEBOARD (GOOGLE JAMBOARD STYLE)
+            STAGE 1: PRESENTATION CONTENT (LARGE MAIN STAGE ON LEFT)
             ========================================================== */}
-        {viewMode === 'whiteboard-full' ? (
-          <div className="w-full h-full relative flex flex-col bg-white">
-            <CollaborativeWhiteboard
-              lessonId={lessonId}
-              role={role}
-              userName={userName}
-              onReturnToFullVideo={() => setViewMode('full-video')}
-            />
-
-            {/* Corner Picture-in-Picture Video */}
-            <div className="absolute bottom-20 right-6 w-60 h-36 sm:w-72 sm:h-44 rounded-2xl border-[3px] border-dark bg-black shadow-2xl z-40 overflow-hidden animate-in fade-in zoom-in-90">
-              <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md bg-black/70 text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Live Feed ({userName})</span>
+        {presentationMode !== 'none' && (
+          <div className="flex-1 h-full min-w-0 bg-white relative flex flex-col overflow-hidden animate-in fade-in duration-150">
+            {/* Presentation Header Strip */}
+            <div className="h-12 px-3 sm:px-4 bg-yellow/20 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-black text-dark flex items-center gap-1.5 uppercase tracking-wide truncate">
+                  {presentationMode === 'whiteboard' && (
+                    <>
+                      <Presentation className="w-4 h-4 text-dark shrink-0" />
+                      <span>Interactive Whiteboard</span>
+                    </>
+                  )}
+                  {presentationMode === 'worksheet' && (
+                    <>
+                      <BookOpen className="w-4 h-4 text-dark shrink-0" />
+                      <span className="truncate">Worksheet: {selectedPdfTitle || 'Lesson Tutorial'}</span>
+                    </>
+                  )}
+                  {presentationMode === 'desks' && (
+                    <>
+                      <Users className="w-4 h-4 text-dark shrink-0" />
+                      <span>Student Desks &amp; Seatwork</span>
+                    </>
+                  )}
+                </span>
               </div>
-              <div ref={videoMountRef} className="w-full h-full" />
+
+              {/* Presentation Switchers & Stop Button */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => setPresentationMode('whiteboard')}
+                  className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                    presentationMode === 'whiteboard'
+                      ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                      : 'bg-white text-dark/70 hover:bg-slate-50'
+                  }`}
+                  title="Switch to Whiteboard"
+                >
+                  Whiteboard
+                </button>
+
+                {selectedPdfUrl && (
+                  <button
+                    onClick={() => setPresentationMode('worksheet')}
+                    className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                      presentationMode === 'worksheet'
+                        ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                        : 'bg-white text-dark/70 hover:bg-slate-50'
+                    }`}
+                    title="Switch to Worksheet"
+                  >
+                    Worksheet
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setPresentationMode('desks')}
+                  className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                    presentationMode === 'desks'
+                      ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                      : 'bg-white text-dark/70 hover:bg-slate-50'
+                  }`}
+                  title="Switch to Student Desks"
+                >
+                  Desks
+                </button>
+
+                {/* Stop Presentation -> Restores 100% Video immediately */}
+                <button
+                  onClick={handleStopPresenting}
+                  className="flex items-center gap-1 px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ml-1"
+                  title="Stop presentation and restore full video"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Stop Presenting</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Presentation Stage Content */}
+            <div className="flex-1 min-h-0 relative w-full h-full overflow-hidden bg-white">
+              {presentationMode === 'whiteboard' && (
+                <CollaborativeWhiteboard
+                  lessonId={lessonId}
+                  role={role}
+                  userName={userName}
+                  onReturnToFullVideo={handleStopPresenting}
+                />
+              )}
+
+              {presentationMode === 'worksheet' && selectedPdfUrl && (
+                <PDFAnnotator pdfUrl={selectedPdfUrl} lessonId={lessonId} role={role} />
+              )}
+
+              {presentationMode === 'desks' && (
+                <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
+              )}
             </div>
           </div>
-        ) : (
-          /* ==========================================================
-              VIEW MODE B: 100% WIDESCREEN VIDEO STAGE (DEFAULT)
-              ========================================================== */
-          <div className="flex-1 h-full min-w-0 relative flex flex-col bg-black overflow-hidden">
+        )}
+
+        {/* ==========================================================
+            STAGE 2: PARTICIPANTS LIVE VIDEO FRAME
+            - When presenting: Shrinks into small frame on the right (Google Meet Style!)
+            - When NOT presenting: Fills 100% of the stage!
+            ========================================================== */}
+        <div
+          className={`h-full relative flex flex-col bg-black transition-all duration-300 ease-in-out ${
+            presentationMode !== 'none'
+              ? 'w-[240px] sm:w-[280px] xl:w-[320px] border-l-[3px] border-dark shrink-0 z-20'
+              : 'flex-1 min-w-0'
+          }`}
+        >
+          {/* Right Header Strip when shrunk */}
+          {presentationMode !== 'none' && (
+            <div className="h-10 px-3 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Live Video</span>
+              </div>
+              <span className="text-[9px] font-bold text-white/40">{role === 'tutor' ? 'Tutor & Pupil' : 'Class Feed'}</span>
+            </div>
+          )}
+
+          {/* Persistent Live Video Mount (Never drops connection) */}
+          <div className="flex-1 w-full relative bg-black flex items-center justify-center overflow-hidden">
             <div ref={videoMountRef} className="w-full h-full" />
 
             {!isJitsiReady && (
@@ -673,218 +800,115 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               </div>
             )}
           </div>
-        )}
+        </div>
 
         {/* ============================================================
-            SLEEK GOOGLE MEET STYLE RIGHT SIDEBAR (ACTIVITIES & TOOLS)
-            Width: 380px-420px. Never squashes video, never shows outer scrollbar!
+            TEACHING TOOLS DRAWER (WHEN NOT PRESENTING)
+            Allows tutor to browse curriculum, select a worksheet, or push a custom PDF.
             ============================================================ */}
-        {isSidebarOpen && viewMode !== 'whiteboard-full' && (
+        {isToolsOpen && presentationMode === 'none' && (
           <aside className="w-[360px] sm:w-[400px] xl:w-[440px] h-full bg-white border-l-[3px] border-dark flex flex-col z-30 shadow-2xl animate-in slide-in-from-right duration-200 shrink-0">
-            {/* Sidebar Tab Header */}
-            <div className="h-14 px-3 bg-yellow/20 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
-                <button
-                  onClick={() => setSidebarTab('whiteboard')}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border-[2px] border-dark font-black text-xs transition-all ${
-                    sidebarTab === 'whiteboard' ? 'bg-yellow text-dark shadow-[1.5px_1.5px_0px_#060E1C]' : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Collaborative Whiteboard"
-                >
-                  <Presentation className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Whiteboard</span>
-                </button>
-
-                <button
-                  onClick={() => setSidebarTab('worksheets')}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border-[2px] border-dark font-black text-xs transition-all ${
-                    sidebarTab === 'worksheets' ? 'bg-yellow text-dark shadow-[1.5px_1.5px_0px_#060E1C]' : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Worksheets & PDF"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Worksheets</span>
-                </button>
-
-                <button
-                  onClick={() => setSidebarTab('seatwork')}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border-[2px] border-dark font-black text-xs transition-all ${
-                    sidebarTab === 'seatwork' ? 'bg-yellow text-dark shadow-[1.5px_1.5px_0px_#060E1C]' : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Student Desks"
-                >
-                  <Users className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{role === 'tutor' ? 'Desks' : 'Seatwork'}</span>
-                </button>
-
-                <button
-                  onClick={() => setSidebarTab('curriculum')}
-                  className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border-[2px] border-dark font-black text-xs transition-all ${
-                    sidebarTab === 'curriculum' ? 'bg-yellow text-dark shadow-[1.5px_1.5px_0px_#060E1C]' : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Curriculum & Notes"
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Curriculum</span>
-                </button>
+            {/* Drawer Header */}
+            <div className="h-14 px-4 bg-yellow/20 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-dark" />
+                <h3 className="font-black text-sm text-dark uppercase tracking-tight">Teaching Activities</h3>
               </div>
-
-              {/* Close Sidebar Button -> Restores 100% Video immediately */}
               <button
-                onClick={() => setIsSidebarOpen(false)}
-                className="w-8 h-8 rounded-lg border-[2px] border-dark bg-white hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-dark shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all shrink-0 ml-1"
-                title="Close sidebar"
-                aria-label="Close sidebar"
+                onClick={() => setIsToolsOpen(false)}
+                className="w-8 h-8 rounded-lg border-[2px] border-dark bg-white hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center text-dark shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Sidebar Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              {/* TAB 1: WHITEBOARD */}
-              {sidebarTab === 'whiteboard' && (
-                <div className="h-full flex flex-col">
-                  <div className="p-2 border-b border-dark/10 bg-slate-50 flex items-center justify-between shrink-0">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-dark/60">
-                      Shared Canvas
-                    </span>
-                    <button
-                      onClick={() => setViewMode('whiteboard-full')}
-                      className="flex items-center gap-1 px-2 py-1 rounded bg-yellow border-[2px] border-dark text-[10px] font-black uppercase text-dark shadow-[1px_1px_0px_#060E1C] hover:translate-y-[-1px] transition-all"
-                    >
-                      <Maximize2 className="w-3 h-3" />
-                      <span>Full Stage Canvas</span>
-                    </button>
-                  </div>
-                  <div className="flex-1 min-h-0 relative">
-                    <CollaborativeWhiteboard lessonId={lessonId} role={role} userName={userName} />
-                  </div>
+            {/* Drawer Content */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+              {/* Quick Launch Whiteboard */}
+              <div className="p-4 rounded-2xl border-[2px] border-dark bg-yellow/10 space-y-2">
+                <h4 className="text-xs font-black uppercase tracking-wider text-dark">Interactive Whiteboard</h4>
+                <p className="text-xs text-dark/70 font-semibold leading-relaxed">
+                  Open full-screen digital canvas to draw, solve math equations, and write notes.
+                </p>
+                <Button
+                  onClick={handleToggleWhiteboard}
+                  className="w-full bg-yellow border-[2px] border-dark text-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                >
+                  <Presentation className="w-4 h-4 mr-1.5" />
+                  <span>Launch Whiteboard Stage</span>
+                </Button>
+              </div>
+
+              {/* Upload Custom Worksheet */}
+              {role === 'tutor' && (
+                <div className="p-4 rounded-2xl border-[2px] border-dark bg-blue-50 space-y-2">
+                  <h4 className="text-xs font-black uppercase tracking-wider text-dark">Present Custom Worksheet</h4>
+                  <p className="text-xs text-dark/70 font-semibold leading-relaxed">
+                    Upload any PDF, Word document, or image to present and annotate live.
+                  </p>
+                  <label className="cursor-pointer flex items-center justify-center gap-2 py-2 px-3 bg-white hover:bg-slate-50 border-[2px] border-dark rounded-xl text-xs font-black text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all">
+                    <Upload className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Upload &amp; Present Worksheet</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.png,.jpg"
+                      onChange={handleUploadCustomPdf}
+                      className="hidden"
+                    />
+                  </label>
                 </div>
               )}
 
-              {/* TAB 2: WORKSHEETS & PDF */}
-              {sidebarTab === 'worksheets' && (
-                <div className="h-full flex flex-col">
-                  {selectedPdfUrl ? (
-                    <div className="h-full flex flex-col">
-                      <div className="p-2 border-b border-dark/10 bg-yellow/10 flex items-center justify-between shrink-0">
-                        <span className="text-xs font-black truncate max-w-[240px] text-dark">
-                          {selectedPdfTitle}
-                        </span>
-                        <button
-                          onClick={() => {
-                            setSelectedPdfUrl(null);
-                            setSelectedPdfTitle('');
-                            if (channelRef.current && role === 'tutor') {
-                              channelRef.current.send({ type: 'broadcast', event: 'close-pdf' });
-                            }
-                          }}
-                          className="text-[10px] font-black text-rose-600 hover:underline"
+              {/* Preloaded Class Worksheets */}
+              <div className="space-y-2">
+                <h5 className="text-[11px] font-black uppercase tracking-wider text-dark/60">
+                  Preloaded Class Worksheets
+                </h5>
+                {availableResources.length > 0 ? (
+                  <div className="space-y-2">
+                    {availableResources.map((res) => (
+                      <div
+                        key={res.id}
+                        className="p-3 rounded-xl border-[2px] border-dark bg-white hover:bg-slate-50 flex items-center justify-between gap-2 shadow-[2px_2px_0px_#060E1C]"
+                      >
+                        <span className="text-xs font-black text-dark truncate">{res.title}</span>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSelectPdf(res)}
+                          className="h-7 px-3 text-[10px] font-black uppercase bg-dark text-white rounded-lg active:scale-95"
                         >
-                          Close Worksheet
-                        </button>
+                          Present
+                        </Button>
                       </div>
-                      <div className="flex-1 min-h-0">
-                        <PDFAnnotator pdfUrl={selectedPdfUrl} lessonId={lessonId} role={role} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-4 space-y-4">
-                      <div className="p-4 rounded-2xl border-[2px] border-dark bg-yellow/10 space-y-2">
-                        <h4 className="text-sm font-black text-dark">Annotate Worksheets &amp; Tutorials</h4>
-                        <p className="text-xs text-dark/70 font-semibold leading-relaxed">
-                          Select a curriculum worksheet below or upload a custom worksheet to annotate live with your student.
-                        </p>
-                        {role === 'tutor' && (
-                          <label className="cursor-pointer inline-flex items-center gap-2 mt-2 px-3 py-2 bg-yellow border-[2px] border-dark rounded-xl text-xs font-black text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all">
-                            <Upload className="h-3.5 w-3.5" />
-                            <span>Upload Custom Worksheet</span>
-                            <input
-                              type="file"
-                              accept=".pdf,.doc,.docx,.png,.jpg"
-                              onChange={handleUploadCustomPdf}
-                              className="hidden"
-                            />
-                          </label>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <h5 className="text-[11px] font-black uppercase tracking-wider text-dark/60">
-                          Preloaded Class Worksheets
-                        </h5>
-                        {availableResources.length > 0 ? (
-                          <div className="space-y-2">
-                            {availableResources.map((res) => (
-                              <div
-                                key={res.id}
-                                className="p-3 rounded-xl border-[2px] border-dark bg-white hover:bg-slate-50 flex items-center justify-between gap-2 shadow-[2px_2px_0px_#060E1C]"
-                              >
-                                <span className="text-xs font-black text-dark truncate">{res.title}</span>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSelectPdf(res)}
-                                  className="h-7 px-2.5 text-[10px] font-black uppercase bg-dark text-white rounded-lg active:scale-95"
-                                >
-                                  Open
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-xs font-bold text-dark/50 italic p-3 bg-slate-50 rounded-xl border border-dark/10">
-                            No worksheets attached yet. Upload tutorial notes or assign directly to student.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* TAB 3: STUDENT DESKS */}
-              {sidebarTab === 'seatwork' && (
-                <div className="h-full flex flex-col">
-                  <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
-                </div>
-              )}
-
-              {/* TAB 4: CURRICULUM & LESSON GOALS */}
-              {sidebarTab === 'curriculum' && (
-                <div className="p-5 space-y-4 text-dark font-sans">
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-400">
-                      Live Lesson Plan
-                    </span>
-                    <h3 className="text-lg font-black text-dark mt-2 leading-snug">
-                      {lesson?.title || 'Interactive Lesson'}
-                    </h3>
-                    <p className="text-xs font-bold text-dark/60 mt-1">
-                      Class: {lesson?.classes?.title || 'General'} • Grade: {lesson?.classes?.grade_levels?.display_name || 'All'}
-                    </p>
+                    ))}
                   </div>
+                ) : (
+                  <p className="text-xs font-bold text-dark/50 italic p-3 bg-slate-50 rounded-xl border border-dark/10">
+                    No preloaded worksheets found. Upload above or assign from Tutor Builder.
+                  </p>
+                )}
+              </div>
 
-                  <div className="p-4 bg-slate-50 border-[2px] border-dark rounded-2xl">
-                    <p className="text-[10px] font-black text-dark/50 uppercase tracking-wider">Lesson Goal &amp; Objective</p>
-                    <p className="text-xs font-bold text-dark/80 mt-1 leading-relaxed">
-                      {lesson?.description || 'Active 1-on-1 tutoring session with live video, synchronized whiteboard, and worksheet review.'}
-                    </p>
-                  </div>
+              {/* Lesson Objectives */}
+              <div className="p-4 bg-slate-50 border-[2px] border-dark rounded-2xl space-y-1">
+                <p className="text-[10px] font-black text-dark/50 uppercase tracking-wider">Lesson Goal</p>
+                <p className="text-xs font-bold text-dark/80 leading-relaxed">
+                  {lesson?.description || 'Active 1-on-1 tutoring session with live video and interactive stage.'}
+                </p>
+              </div>
 
-                  <div className="p-4 bg-yellow/10 border-[2px] border-dark rounded-2xl space-y-2">
-                    <p className="text-[10px] font-black text-dark/60 uppercase tracking-wider">Direct Classroom Link</p>
-                    <Button
-                      size="sm"
-                      onClick={handleCopyClassInvite}
-                      className="w-full h-8 text-xs font-black bg-white text-dark border-[2px] border-dark shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
-                    >
-                      {copiedInvite ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 mr-1" />}
-                      <span>{copiedInvite ? 'Copied to Clipboard!' : 'Copy Student Invite Link'}</span>
-                    </Button>
-                  </div>
-                </div>
-              )}
+              {/* Invite Link */}
+              <div className="p-4 bg-yellow/10 border-[2px] border-dark rounded-2xl space-y-2">
+                <p className="text-[10px] font-black text-dark/60 uppercase tracking-wider">Classroom Link</p>
+                <Button
+                  size="sm"
+                  onClick={handleCopyClassInvite}
+                  className="w-full h-8 text-xs font-black bg-white text-dark border-[2px] border-dark shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
+                >
+                  {copiedInvite ? <Check className="w-3.5 h-3.5 mr-1 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 mr-1" />}
+                  <span>{copiedInvite ? 'Copied to Clipboard!' : 'Copy Student Invite Link'}</span>
+                </Button>
+              </div>
             </div>
           </aside>
         )}
@@ -892,7 +916,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
       {/* ============================================================
           FLOATING MINIMALIST BOTTOM DOCK (EXACT GOOGLE MEET DESIGN)
-          Centered, translucent, zero clutter!
           ============================================================ */}
       <footer className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
         <div className="bg-[#1e1e1e]/95 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2 sm:gap-3 transition-all">
@@ -924,7 +947,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
           </button>
 
-          {/* Share Screen (Native browser window/tab dialog - Zero Paywalls) */}
+          {/* Share Screen (Native Windows/Tab dialog - Zero Paywalls) */}
           <button
             onClick={handleToggleScreenShare}
             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
@@ -938,46 +961,38 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <ScreenShare className="w-5 h-5" />
           </button>
 
-          {/* Whiteboard Toggle (Opens Whiteboard in Sidebar or Full Stage) */}
+          {/* Whiteboard Toggle (Opens Whiteboard in Main Stage & Shrinks Video to Right!) */}
           <button
-            onClick={() => {
-              if (viewMode === 'whiteboard-full') {
-                setViewMode('full-video');
-              } else if (isSidebarOpen && sidebarTab === 'whiteboard') {
-                setViewMode('whiteboard-full');
-              } else {
-                setSidebarTab('whiteboard');
-                setIsSidebarOpen(true);
-              }
-            }}
+            onClick={handleToggleWhiteboard}
             className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-              viewMode === 'whiteboard-full' || (isSidebarOpen && sidebarTab === 'whiteboard')
+              presentationMode === 'whiteboard'
                 ? 'bg-yellow text-dark shadow-md'
                 : 'bg-white/10 hover:bg-white/20 text-white'
             }`}
-            title="Open Interactive Whiteboard"
+            title={presentationMode === 'whiteboard' ? 'Stop Presenting Whiteboard' : 'Present Whiteboard on Main Stage'}
             aria-label="Whiteboard"
           >
             <Presentation className="w-4 h-4" />
             <span className="hidden sm:inline">Whiteboard</span>
           </button>
 
-          {/* Teaching Tools / Sidebar Toggle */}
+          {/* Teaching Tools / Worksheets Toggle */}
           <button
             onClick={() => {
-              if (viewMode === 'whiteboard-full') {
-                setViewMode('full-video');
-                setIsSidebarOpen(true);
+              if (presentationMode === 'worksheet') {
+                setPresentationMode('none');
+              } else if (selectedPdfUrl) {
+                setPresentationMode('worksheet');
               } else {
-                setIsSidebarOpen(!isSidebarOpen);
+                setIsToolsOpen(!isToolsOpen);
               }
             }}
             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-              isSidebarOpen && viewMode !== 'whiteboard-full'
+              presentationMode === 'worksheet' || isToolsOpen
                 ? 'bg-white text-dark shadow-md'
                 : 'bg-white/10 hover:bg-white/20 text-white'
             }`}
-            title="Classroom Activities & Teaching Tools"
+            title="Classroom Worksheets & Activities"
             aria-label="Teaching Tools"
           >
             <BookOpen className="w-5 h-5" />
