@@ -14,7 +14,6 @@ import {
   BookOpen,
   FileText,
   Users,
-  ExternalLink,
   PhoneOff,
   Sparkles,
   Loader2,
@@ -23,11 +22,16 @@ import {
   Check,
   X,
   ArrowLeft,
+  ChevronRight,
+  ChevronLeft,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
 import { StudentDeskManager } from './StudentDeskManager';
 import { PDFAnnotator } from './PDFAnnotator';
+import { AIWorksheetModal } from './AIWorksheetModal';
 
 interface ClassroomWorkspaceProps {
   lessonId: string;
@@ -46,33 +50,36 @@ interface ClassResource {
 
 export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorkspaceProps) {
   // Google Meet Presentation Architecture:
-  // 1. When presenting Whiteboard or Worksheet: Content FILLS the large main stage, and video shrinks into a neat right column.
-  // 2. When NOT presenting: Video takes 100% full screen.
-  // 3. Zero vertical scrollbars, crystal-clear reading and writing.
+  // 1. When presenting Whiteboard or Worksheet: Content FILLS the large main stage.
+  // 2. Right video column can be collapsed/expanded via toggle!
+  // 3. When NOT presenting: Video takes 100% full screen.
+  // 4. Zero vertical scrollbars, crystal-clear reading and writing.
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('none');
+  const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [showAiWorksheetModal, setShowAiWorksheetModal] = useState(false);
 
   const [lesson, setLesson] = useState<any>(null);
-  const [externalMeetingUrl, setExternalMeetingUrl] = useState<string | null>(null);
   const [studentDisplayName, setStudentDisplayName] = useState<string>('');
+  const [gradeDisplayName, setGradeDisplayName] = useState<string>('Grade 4');
   const [loading, setLoading] = useState(true);
   const [availableResources, setAvailableResources] = useState<ClassResource[]>([]);
 
-  // Video Server Engine: fairmeeting.net (no moderator login wall, zero donation popups on exit)
-  const [videoServer, setVideoServer] = useState<VideoServer>('open-webrtc');
+  // Video Server Engine
+  const [videoServer] = useState<VideoServer>('open-webrtc');
 
   // Selected PDF state
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
   const [selectedPdfTitle, setSelectedPdfTitle] = useState<string>('');
 
-  // Floating menus & hardware state
-  const [showMeetMenu, setShowMeetMenu] = useState(false);
+  // Hardware state
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
   const [isJitsiReady, setIsJitsiReady] = useState(false);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [screenShareNotification, setScreenShareNotification] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const videoMountRef = useRef<HTMLDivElement>(null);
@@ -81,7 +88,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
   const currentDomain = videoServer === 'open-webrtc' ? 'fairmeeting.net' : 'meet.jit.si';
   const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
-  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false`;
+  // Strictly stripped out all watermarks, logos, and donate popups
+  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false&interfaceConfig.DEFAULT_LOGO_URL=""&interfaceConfig.JITSI_WATERMARK_LINK=""&interfaceConfig.BRAND_WATERMARK_LINK=""`;
 
   // Initialize Supabase & lesson metadata
   useEffect(() => {
@@ -90,7 +98,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     async function loadClassroomData() {
       try {
         if (lessonId && (lessonId.startsWith('1on1-') || lessonId.startsWith('instant-'))) {
-          let meetUrl: string | null = null;
           let title = '1-on-1 Interactive Classroom Hub';
           let gradeName = 'Primary / All Grades';
           let gradeCode = 'grade_3';
@@ -111,7 +118,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 .maybeSingle(),
             ]);
 
-            meetUrl = stProfile?.personal_meet_url || null;
             pupilName = userProfile?.full_name || '';
             if (pupilName) {
               setStudentDisplayName(pupilName);
@@ -120,10 +126,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             if (stProfile?.grade_level) {
               gradeName = (stProfile.grade_level as any).display_name || gradeName;
               gradeCode = (stProfile.grade_level as any).code || gradeCode;
+              setGradeDisplayName(gradeName);
             }
           }
 
-          setExternalMeetingUrl(meetUrl);
           setLesson({
             id: lessonId,
             title,
@@ -134,7 +140,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             },
           });
 
-          // Fetch preloaded worksheets for this grade
+          // Fetch preloaded worksheets
           const { data: dbResources } = await supabase
             .from('resources')
             .select('id, title, file_path')
@@ -170,7 +176,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             title,
             description,
             status,
-            meeting_url,
             classes (
               id,
               title,
@@ -183,8 +188,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         if (lessonData) {
           setLesson(lessonData);
-          setExternalMeetingUrl(lessonData.meeting_url || null);
-
           const gradeLevelId = (lessonData.classes as any)?.grade_level_id || (Array.isArray(lessonData.classes) ? (lessonData.classes[0] as any)?.grade_level_id : null);
           if (gradeLevelId) {
             const { data: gradeResources } = await supabase
@@ -221,7 +224,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Mount WebRTC Meeting API with strict anti-redirect / anti-donation handlers
+  // Mount WebRTC Meeting API with strict anti-watermark and anti-redirect configurations
   useEffect(() => {
     let isMounted = true;
 
@@ -276,6 +279,9 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             SHOW_WATERMARK_FOR_GUESTS: false,
             SHOW_BRAND_WATERMARK: false,
             SHOW_POWERED_BY: false,
+            DEFAULT_LOGO_URL: '',
+            JITSI_WATERMARK_LINK: '',
+            BRAND_WATERMARK_LINK: '',
             GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
             DISPLAY_WELCOME_PAGE_CONTENT: false,
             TOOLBAR_ALWAYS_VISIBLE: true,
@@ -377,11 +383,14 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  // Native Browser Screen Sharing (Direct W3C getDisplayMedia - 100% Free, Zero Paywalls)
+  // Native Browser Screen Sharing (W3C getDisplayMedia - 100% Free, NO Paywalls)
   const handleToggleScreenShare = async () => {
     if (screenStream) {
       screenStream.getTracks().forEach((t) => t.stop());
       setScreenStream(null);
+      setScreenShareNotification('Screen share finished. Returned to Edvoura Classroom.');
+      setTimeout(() => setScreenShareNotification(null), 4000);
+      try { window.focus(); } catch (_) {}
       return;
     }
 
@@ -398,6 +407,9 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         stream.getVideoTracks()[0].onended = () => {
           setScreenStream(null);
+          setScreenShareNotification('Screen share finished. Returned to Edvoura Classroom.');
+          setTimeout(() => setScreenShareNotification(null), 4000);
+          try { window.focus(); } catch (_) {}
         };
       } catch (err: any) {
         if (err.name !== 'NotAllowedError') {
@@ -523,7 +535,13 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  const effectiveGoogleMeetUrl = externalMeetingUrl || 'https://meet.google.com/xyb-ikse-odx';
+  const handlePresentAiWorksheet = (_worksheetText: string, title: string) => {
+    setSelectedPdfTitle(title);
+    setPresentationMode('whiteboard');
+    if (channelRef.current && role === 'tutor') {
+      channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'whiteboard' } });
+    }
+  };
 
   if (loading) {
     return (
@@ -540,10 +558,19 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       ref={containerRef}
       className="fixed inset-0 z-50 w-screen h-screen bg-[#070D18] flex flex-col overflow-hidden select-none font-sans"
     >
+      {/* Global CSS to strip any third-party watermarks/logos */}
+      <style jsx global>{`
+        .watermark, .leftwatermark, .rightwatermark, [class*="watermark"], .jitsi-icon {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+        }
+      `}</style>
+
       {/* ============================================================
-          TOP FLOATING STATUS BAR (CLEAN, MINIMALIST, GOOGLE MEET STYLE)
+          TOP STATUS BAR (CLEAN, MINIMALIST - NO GOOGLE MEET BUTTON)
           ============================================================ */}
-      <header className="h-14 px-4 sm:px-6 bg-[#070D18]/90 backdrop-blur-md border-b border-white/10 flex items-center justify-between z-30 shrink-0">
+      <header className="h-14 px-4 sm:px-6 bg-[#070D18]/95 backdrop-blur-md border-b border-white/10 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={handleLeaveCall}
@@ -562,59 +589,19 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           </div>
         </div>
 
-        {/* Top Right Quick Actions */}
+        {/* Top Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Switch to Google Meet Dropdown */}
-          <div className="relative">
+          {/* Quick AI Worksheet Studio trigger */}
+          {role === 'tutor' && (
             <button
-              onClick={() => setShowMeetMenu(!showMeetMenu)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/20 bg-blue-600/90 hover:bg-blue-600 text-white text-xs font-black shadow-md transition-all active:scale-95"
-              title="Launch or Switch to Google Meet"
+              onClick={() => setShowAiWorksheetModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-yellow/40 bg-yellow hover:bg-yellow/90 text-dark text-xs font-black shadow-md transition-all active:scale-95"
+              title="Open AI Worksheet Studio (Canva Style)"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Google Meet</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">AI Worksheets</span>
             </button>
-
-            {showMeetMenu && (
-              <div className="absolute right-0 top-11 w-64 bg-slate-900 border border-white/20 rounded-2xl shadow-2xl p-2.5 text-white z-50 animate-in fade-in zoom-in-95 duration-150">
-                <div className="text-[10px] font-black uppercase tracking-wider text-white/50 px-2 py-1 mb-1">
-                  Google Meet Integration
-                </div>
-
-                {/* Same Tab Navigation */}
-                <button
-                  onClick={() => {
-                    setShowMeetMenu(false);
-                    if (confirm('Switch directly to Google Meet in this tab?')) {
-                      window.location.href = effectiveGoogleMeetUrl;
-                    }
-                  }}
-                  className="w-full text-left p-2 rounded-xl hover:bg-white/10 flex items-center gap-2 text-xs font-bold transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4 text-emerald-400" />
-                  <div>
-                    <p className="text-white">Switch on Same Tab</p>
-                    <p className="text-[10px] text-white/50">Replaces current tab directly</p>
-                  </div>
-                </button>
-
-                {/* New Tab Option */}
-                <button
-                  onClick={() => {
-                    setShowMeetMenu(false);
-                    window.open(effectiveGoogleMeetUrl, '_blank');
-                  }}
-                  className="w-full text-left p-2 rounded-xl hover:bg-white/10 flex items-center gap-2 text-xs font-bold transition-colors"
-                >
-                  <Share2 className="w-4 h-4 text-cyan-400" />
-                  <div>
-                    <p className="text-white">Open in New Tab</p>
-                    <p className="text-[10px] text-white/50">Side-by-side or dual screen</p>
-                  </div>
-                </button>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Fullscreen Toggle */}
           <button
@@ -627,9 +614,17 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         </div>
       </header>
 
+      {/* Screen Share Notification Toast */}
+      {screenShareNotification && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-emerald-600 border border-emerald-400 rounded-full text-white text-xs font-black shadow-2xl animate-in fade-in slide-in-from-top-2">
+          {screenShareNotification}
+        </div>
+      )}
+
       {/* ============================================================
           MAIN BODY: GOOGLE MEET PRESENTATION ARCHITECTURE
-          - When presenting: Worksheet / Whiteboard fills MAIN STAGE. Video shrinks to right frame!
+          - When presenting: Worksheet / Whiteboard fills MAIN STAGE.
+          - Right video column is COLLAPSIBLE via 1-click toggle!
           - When NOT presenting: Video takes 100% full stage!
           ============================================================ */}
       <main className="flex-1 w-full min-h-0 flex relative overflow-hidden bg-black">
@@ -703,6 +698,19 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   Desks
                 </button>
 
+                {/* Collapsed Video Quick Expand Pill */}
+                {isVideoCollapsed && (
+                  <button
+                    onClick={() => setIsVideoCollapsed(false)}
+                    className="flex items-center gap-1.5 px-3 py-1 bg-slate-900 text-white hover:bg-slate-800 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                    title="Expand Live Video Strip"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>Show Video</span>
+                  </button>
+                )}
+
                 {/* Stop Presentation -> Restores 100% Video immediately */}
                 <button
                   onClick={handleStopPresenting}
@@ -739,28 +747,40 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         {/* ==========================================================
             STAGE 2: PARTICIPANTS LIVE VIDEO FRAME
-            - When presenting: Shrinks into small frame on the right (Google Meet Style!)
+            - When presenting: Shrinks into small right frame (Collapsible with 1-click!)
             - When NOT presenting: Fills 100% of the stage!
+            - PERSISTENT DOM MOUNT: WebRTC call never disconnects!
             ========================================================== */}
         <div
           className={`h-full relative flex flex-col bg-black transition-all duration-300 ease-in-out ${
             presentationMode !== 'none'
-              ? 'w-[240px] sm:w-[280px] xl:w-[320px] border-l-[3px] border-dark shrink-0 z-20'
+              ? isVideoCollapsed
+                ? 'w-0 overflow-hidden border-none shrink-0'
+                : 'w-[240px] sm:w-[280px] xl:w-[320px] border-l-[3px] border-dark shrink-0 z-20'
               : 'flex-1 min-w-0'
           }`}
         >
-          {/* Right Header Strip when shrunk */}
-          {presentationMode !== 'none' && (
+          {/* Header Strip when shrunk with Collapse Button */}
+          {presentationMode !== 'none' && !isVideoCollapsed && (
             <div className="h-10 px-3 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Live Video</span>
               </div>
-              <span className="text-[9px] font-bold text-white/40">{role === 'tutor' ? 'Tutor & Pupil' : 'Class Feed'}</span>
+
+              {/* Collapse/Hide Button */}
+              <button
+                onClick={() => setIsVideoCollapsed(true)}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[10px] font-black uppercase transition-all"
+                title="Collapse video panel to maximize whiteboard"
+              >
+                <EyeOff className="w-3 h-3" />
+                <span>Hide</span>
+              </button>
             </div>
           )}
 
-          {/* Persistent Live Video Mount (Never drops connection) */}
+          {/* Persistent Live Video Mount (Never drops WebRTC connection) */}
           <div className="flex-1 w-full relative bg-black flex items-center justify-center overflow-hidden">
             <div ref={videoMountRef} className="w-full h-full" />
 
@@ -824,6 +844,29 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
             {/* Drawer Content */}
             <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+              {/* AI Worksheet Studio Banner */}
+              {role === 'tutor' && (
+                <div className="p-4 rounded-2xl border-[2.5px] border-dark bg-yellow/25 space-y-2 shadow-[2px_2px_0px_#060E1C]">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-dark" />
+                    <h4 className="text-xs font-black uppercase tracking-wider text-dark">AI Worksheet Studio (Canva Style)</h4>
+                  </div>
+                  <p className="text-xs text-dark/80 font-bold leading-relaxed">
+                    Generate instant printable and whiteboard-ready worksheets with math drills, exercises, and answer keys.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setIsToolsOpen(false);
+                      setShowAiWorksheetModal(true);
+                    }}
+                    className="w-full bg-yellow border-[2px] border-dark text-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1.5" />
+                    <span>Open AI Worksheet Studio</span>
+                  </Button>
+                </div>
+              )}
+
               {/* Quick Launch Whiteboard */}
               <div className="p-4 rounded-2xl border-[2px] border-dark bg-yellow/10 space-y-2">
                 <h4 className="text-xs font-black uppercase tracking-wider text-dark">Interactive Whiteboard</h4>
@@ -832,7 +875,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 </p>
                 <Button
                   onClick={handleToggleWhiteboard}
-                  className="w-full bg-yellow border-[2px] border-dark text-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                  className="w-full bg-white hover:bg-slate-50 border-[2px] border-dark text-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
                 >
                   <Presentation className="w-4 h-4 mr-1.5" />
                   <span>Launch Whiteboard Stage</span>
@@ -884,7 +927,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   </div>
                 ) : (
                   <p className="text-xs font-bold text-dark/50 italic p-3 bg-slate-50 rounded-xl border border-dark/10">
-                    No preloaded worksheets found. Upload above or assign from Tutor Builder.
+                    No preloaded worksheets found. Upload above or generate with AI.
                   </p>
                 )}
               </div>
@@ -915,7 +958,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       </main>
 
       {/* ============================================================
-          FLOATING MINIMALIST BOTTOM DOCK (EXACT GOOGLE MEET DESIGN)
+          FLOATING MINIMALIST BOTTOM DOCK (CLEAN - NO GOOGLE MEET BUTTON)
           ============================================================ */}
       <footer className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
         <div className="bg-[#1e1e1e]/95 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2 sm:gap-3 transition-all">
@@ -961,7 +1004,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <ScreenShare className="w-5 h-5" />
           </button>
 
-          {/* Whiteboard Toggle (Opens Whiteboard in Main Stage & Shrinks Video to Right!) */}
+          {/* Whiteboard Toggle (Opens Whiteboard in Main Stage) */}
           <button
             onClick={handleToggleWhiteboard}
             className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
@@ -998,20 +1041,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <BookOpen className="w-5 h-5" />
           </button>
 
-          {/* Switch to Google Meet (Same Tab) */}
-          <button
-            onClick={() => {
-              if (confirm('Switch directly to Google Meet for this lesson in this tab?')) {
-                window.location.href = effectiveGoogleMeetUrl;
-              }
-            }}
-            className="px-3.5 h-11 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
-            title="Switch directly to Google Meet in this tab"
-          >
-            <ExternalLink className="w-4 h-4" />
-            <span className="hidden sm:inline">Google Meet</span>
-          </button>
-
           {/* Red Hangup Button */}
           <button
             onClick={handleLeaveCall}
@@ -1023,6 +1052,15 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           </button>
         </div>
       </footer>
+
+      {/* AI Worksheet Studio Modal (Canva Style) */}
+      <AIWorksheetModal
+        isOpen={showAiWorksheetModal}
+        onClose={() => setShowAiWorksheetModal(false)}
+        onPresentOnWhiteboard={handlePresentAiWorksheet}
+        pupilName={studentDisplayName || 'Pupil'}
+        gradeLevel={gradeDisplayName}
+      />
     </div>
   );
 }
