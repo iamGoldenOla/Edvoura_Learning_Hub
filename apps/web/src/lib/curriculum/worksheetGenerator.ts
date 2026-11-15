@@ -1,19 +1,32 @@
 /**
  * ══════════════════════════════════════════════════════════════════════════════
- * EDVOURA CURRICULUM WORKSHEET GENERATOR ENGINE
+ * EDVOURA CURRICULUM WORKSHEET GENERATOR ENGINE (V2 ENHANCED)
  * ══════════════════════════════════════════════════════════════════════════════
- * Generates authentic, rigorous, curriculum-aligned printable & annotatable
- * worksheets with REAL questions, real numbers, concrete word problems, and
- * full step-by-step teacher answer keys.
+ * Inspired by open-source educational engines (Worksheetinator, EduTex, wsMath,
+ * OpenWorksheets, AI Quiz Generator).
+ * 
+ * Features:
+ * - Algorithmic and AI-driven authentic problem generation
+ * - Vertical column math drill formatting for column multiplication & regrouping
+ * - Real-world contextual word problems with localized student names
+ * - Step-by-step teacher answer keys with grading notes
+ * - Twemoji / kid-friendly achievement badges
  */
 
 export interface WorksheetQuestion {
   number: number;
   question: string;
+  badge?: string; // 🔢 Drill, 🍎 Word Problem, 🚀 Speed, 🌟 Challenge
+  columnFormat?: {
+    topNumber: string;
+    bottomNumber: string;
+    operator: string;
+  };
   hint?: string;
   answerSpaceLines: number;
   options?: string[];
   answer: string;
+  studentAnswer?: string;
 }
 
 export interface GeneratedWorksheet {
@@ -35,7 +48,6 @@ interface GeneratorParams {
   pupilName?: string;
 }
 
-// Helper random choice & range
 function randInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -46,10 +58,6 @@ function randPick<T>(arr: T[]): T {
 
 const STUDENT_NAMES = ['Titomi', 'Kendrick', 'David', 'Amara', 'Fatima', 'Michael', 'Chloe', 'Zainab', 'Kemi', 'Tariq'];
 
-/**
- * Procedurally generates authentic, curriculum-grade questions
- * based on subject and topic keywords.
- */
 export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedWorksheet {
   const { topic, subject, gradeLevel, difficulty, questionCount, pupilName } = params;
   const name = pupilName && pupilName !== 'Pupil' ? pupilName : randPick(STUDENT_NAMES);
@@ -59,18 +67,23 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
   const answerKey: string[] = [];
 
   // =========================================================================
-  // 1. MATHEMATICS
+  // 1. MATHEMATICS (Long Multiplication, Division, Fractions, Word Problems)
   // =========================================================================
-  if (subject.toLowerCase().includes('math') || normalizedTopic.includes('multipli') || normalizedTopic.includes('fraction') || normalizedTopic.includes('divis')) {
-    
+  if (
+    subject.toLowerCase().includes('math') ||
+    normalizedTopic.includes('multipli') ||
+    normalizedTopic.includes('fraction') ||
+    normalizedTopic.includes('divis') ||
+    normalizedTopic.includes('calculat')
+  ) {
     // -----------------------------------------------------------------------
-    // A. Long Multiplication & Word Problems
+    // A. Multiplication & Column Math Drills (Worksheetinator / wsMath Style)
     // -----------------------------------------------------------------------
     if (normalizedTopic.includes('multipli') || normalizedTopic.includes('product') || normalizedTopic.includes('times')) {
       const calcCount = Math.ceil(questionCount / 2);
       const wordCount = questionCount - calcCount;
 
-      // Pure Calculation Problems
+      // Vertical Column Calculation Problems
       for (let i = 0; i < calcCount; i++) {
         let num1 = 0;
         let num2 = 0;
@@ -91,10 +104,16 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
         const qNum = i + 1;
         questions.push({
           number: qNum,
-          question: `Calculate: ${num1.toLocaleString()} × ${num2}. Show your column multiplication steps clearly with regrouping.`,
-          hint: `Multiply by the units digit first (${num1} × ${num2 % 10}), then multiply by the tens digit (${num1} × ${Math.floor(num2 / 10) * 10}), then add the two partial products.`,
+          badge: '🔢 Column Drill',
+          question: `Calculate ${num1.toLocaleString()} × ${num2}. Show your column multiplication steps clearly with regrouping.`,
+          columnFormat: {
+            topNumber: num1.toLocaleString(),
+            bottomNumber: num2.toString(),
+            operator: '×',
+          },
+          hint: `Multiply by the units digit first (${num1} × ${num2 % 10}), then multiply by the tens digit (${num1} × ${Math.floor(num2 / 10) * 10}), then add both partial products.`,
           answerSpaceLines: 4,
-          answer: `${product.toLocaleString()} (Steps: ${num1} × ${num2 % 10} = ${(num1 * (num2 % 10)).toLocaleString()}; ${num1} × ${Math.floor(num2 / 10) * 10} = ${(num1 * (Math.floor(num2 / 10) * 10)).toLocaleString()}; Total = ${product.toLocaleString()})`,
+          answer: `${product.toLocaleString()} (Step 1: ${num1} × ${num2 % 10} = ${(num1 * (num2 % 10)).toLocaleString()}; Step 2: ${num1} × ${Math.floor(num2 / 10) * 10} = ${(num1 * (Math.floor(num2 / 10) * 10)).toLocaleString()}; Total = ${product.toLocaleString()})`,
         });
         answerKey.push(`Q${qNum}: ${num1} × ${num2} = ${product.toLocaleString()}`);
       }
@@ -168,6 +187,7 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
         const qNum = calcCount + j + 1;
         questions.push({
           number: qNum,
+          badge: '🍎 Word Problem',
           question: template.q,
           hint: template.hint,
           answerSpaceLines: 4,
@@ -182,14 +202,14 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
     // -----------------------------------------------------------------------
     else if (normalizedTopic.includes('fraction') || normalizedTopic.includes('decimal')) {
       const fractionPairs = [
-        { q: `Calculate: 2/5 + 1/3. Give your answer as a simplified fraction.`, ans: `11/15 (LCM of 5 and 3 is 15. 6/15 + 5/15 = 11/15)` },
-        { q: `Calculate: 3/4 - 2/7. Show common denominator working.`, ans: `13/28 (LCM of 4 and 7 is 28. 21/28 - 8/28 = 13/28)` },
-        { q: `Find 3/8 of £240. Show your working.`, ans: `£90 (Divide £240 by 8 = £30. Then multiply £30 × 3 = £90)` },
-        { q: `Convert the fraction 7/20 into both a decimal and a percentage.`, ans: `Decimal: 0.35; Percentage: 35% (7/20 = 35/100 = 0.35 = 35%)` },
-        { q: `${name} has a ribbon of length 4 1/2 metres. If ${name} cuts off 1 3/4 metres for an art project, how much ribbon remains?`, ans: `2 3/4 metres (4 2/4 - 1 3/4 = 2 3/4 m)` },
-        { q: `Order these fractions from smallest to largest: 1/2, 3/5, 4/10, 7/10.`, ans: `4/10, 1/2 (5/10), 3/5 (6/10), 7/10` },
-        { q: `Calculate: 5/6 × 2/3. Simplify your answer.`, ans: `5/9 (10/18 simplifies to 5/9 by dividing top and bottom by 2)` },
-        { q: `In a class of 30 pupils, 2/5 walk to school and 1/3 take the bus. The rest travel by car. How many pupils travel by car?`, ans: `8 pupils (Walk: 12, Bus: 10. Total 22. Car = 30 - 22 = 8)` },
+        { q: `Calculate: 2/5 + 1/3. Give your answer as a simplified fraction.`, ans: `11/15 (LCM of 5 and 3 is 15. 6/15 + 5/15 = 11/15)`, hint: 'Find the lowest common denominator first.' },
+        { q: `Calculate: 3/4 - 2/7. Show common denominator working.`, ans: `13/28 (LCM of 4 and 7 is 28. 21/28 - 8/28 = 13/28)`, hint: 'Convert both fractions to 28ths.' },
+        { q: `Find 3/8 of £240. Show your step-by-step working.`, ans: `£90 (Divide £240 by 8 = £30. Then multiply £30 × 3 = £90)`, hint: 'Divide by denominator, multiply by numerator.' },
+        { q: `Convert the fraction 7/20 into both a decimal and a percentage.`, ans: `Decimal: 0.35; Percentage: 35% (7/20 = 35/100 = 0.35 = 35%)`, hint: 'Make the denominator 100.' },
+        { q: `${name} has a ribbon of length 4 1/2 metres. If ${name} cuts off 1 3/4 metres for an art project, how much ribbon remains?`, ans: `2 3/4 metres (4 2/4 - 1 3/4 = 2 3/4 m)`, hint: 'Convert mixed numbers to common denominators.' },
+        { q: `Order these fractions from smallest to largest: 1/2, 3/5, 4/10, 7/10.`, ans: `4/10, 1/2 (5/10), 3/5 (6/10), 7/10`, hint: 'Convert all to tenths.' },
+        { q: `Calculate: 5/6 × 2/3. Simplify your answer.`, ans: `5/9 (10/18 simplifies to 5/9)`, hint: 'Multiply numerators together, then denominators.' },
+        { q: `In a class of 30 pupils, 2/5 walk to school and 1/3 take the bus. The rest travel by car. How many pupils travel by car?`, ans: `8 pupils (Walk: 12, Bus: 10. Total 22. Car = 30 - 22 = 8)`, hint: 'Find the number of pupils in each group first.' },
       ];
 
       for (let i = 0; i < Math.min(questionCount, fractionPairs.length); i++) {
@@ -197,7 +217,9 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
         const qNum = i + 1;
         questions.push({
           number: qNum,
+          badge: '🍰 Fractions',
           question: item.q,
+          hint: item.hint,
           answerSpaceLines: 4,
           answer: item.ans,
         });
@@ -206,18 +228,18 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
     }
 
     // -----------------------------------------------------------------------
-    // C. General Math & Word Problems Fallback
+    // C. General Math & Word Problems
     // -----------------------------------------------------------------------
     else {
       const generalMath = [
-        { q: `Solve: 548 + 389. Show your column addition with carrying.`, ans: `937` },
-        { q: `Calculate: 800 - 347. Show your borrowing/regrouping across zeros.`, ans: `453` },
-        { q: `A train departs at 09:45 and arrives at its destination at 12:20. How long did the journey take in hours and minutes?`, ans: `2 hours and 35 minutes` },
-        { q: `A rectangular playground has a length of 24 metres and a width of 15 metres. Calculate: (a) Its perimeter (b) Its area.`, ans: `(a) Perimeter = 2 × (24 + 15) = 78m; (b) Area = 24 × 15 = 360m²` },
-        { q: `${name} bought 4 books at £7.50 each and a pencil case for £4.25. How much change does ${name} get from a £50 note?`, ans: `£15.75 (Books: £30. Total spent: £34.25. Change: £50 - £34.25 = £15.75)` },
-        { q: `Divide 432 by 6 using short division. Show the remainder if any.`, ans: `72 with no remainder` },
-        { q: `Round 34,862 to: (a) The nearest ten (b) The nearest hundred (c) The nearest thousand.`, ans: `(a) 34,860; (b) 34,900; (c) 35,000` },
-        { q: `Find the value of x in the algebraic equation: 3x + 14 = 41.`, ans: `x = 9 (3x = 41 - 14 = 27; x = 27 ÷ 3 = 9)` },
+        { q: `Solve: 548 + 389. Show your column addition with carrying.`, ans: `937`, badge: '➕ Addition' },
+        { q: `Calculate: 800 - 347. Show your borrowing/regrouping across zeros.`, ans: `453`, badge: '➖ Subtraction' },
+        { q: `A train departs at 09:45 and arrives at its destination at 12:20. How long did the journey take in hours and minutes?`, ans: `2 hours and 35 minutes`, badge: '⏰ Time' },
+        { q: `A rectangular playground has a length of 24 metres and a width of 15 metres. Calculate: (a) Its perimeter (b) Its area.`, ans: `(a) Perimeter = 2 × (24 + 15) = 78m; (b) Area = 24 × 15 = 360m²`, badge: '📐 Geometry' },
+        { q: `${name} bought 4 books at £7.50 each and a pencil case for £4.25. How much change does ${name} get from a £50 note?`, ans: `£15.75 (Books: £30. Total spent: £34.25. Change: £50 - £34.25 = £15.75)`, badge: '💷 Money' },
+        { q: `Divide 432 by 6 using short division. Show the remainder if any.`, ans: `72 with no remainder`, badge: '➗ Division' },
+        { q: `Round 34,862 to: (a) The nearest ten (b) The nearest hundred (c) The nearest thousand.`, ans: `(a) 34,860; (b) 34,900; (c) 35,000`, badge: '🎯 Rounding' },
+        { q: `Find the value of x in the algebraic equation: 3x + 14 = 41.`, ans: `x = 9 (3x = 41 - 14 = 27; x = 27 ÷ 3 = 9)`, badge: '🧩 Algebra' },
       ];
 
       for (let i = 0; i < Math.min(questionCount, generalMath.length); i++) {
@@ -225,6 +247,7 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
         const qNum = i + 1;
         questions.push({
           number: qNum,
+          badge: item.badge,
           question: item.q,
           answerSpaceLines: 4,
           answer: item.ans,
@@ -247,39 +270,47 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
   // =========================================================================
   // 2. ENGLISH & PHONICS
   // =========================================================================
-  if (subject.toLowerCase().includes('english') || subject.toLowerCase().includes('phonic') || normalizedTopic.includes('comprehension') || normalizedTopic.includes('grammar')) {
+  if (
+    subject.toLowerCase().includes('english') ||
+    subject.toLowerCase().includes('phonic') ||
+    normalizedTopic.includes('comprehension') ||
+    normalizedTopic.includes('grammar')
+  ) {
     const englishQuestions = [
       {
+        badge: '🔍 Grammar',
         q: `Identify and underline the ADVERB in this sentence, then state what verb it describes:\n"The brilliant young mathematician solved the puzzle effortlessly."`,
         ans: `Adverb: effortlessly. It describes the verb: solved.`,
       },
       {
+        badge: '✏️ Punctuation',
         q: `Rewrite the following sentence with correct punctuation and capital letters:\n"titomi shouted watch out for the falling ball"`,
         ans: `Titomi shouted, "Watch out for the falling ball!"`,
       },
       {
+        badge: '🎨 Creative',
         q: `Complete each sentence by adding a suitable SIMILE:\n(a) The sprinter ran as fast as _______________.\n(b) Her smile was as bright as _______________.`,
         ans: `(a) lightning / the wind; (b) the morning sun / a diamond.`,
       },
       {
+        badge: '🔤 Vocabulary',
         q: `Choose the correct homophone for each sentence:\n(a) We need to buy [there / their / they're] tickets today.\n(b) The ship sailed across the stormy [sea / see].`,
         ans: `(a) their; (b) sea.`,
       },
       {
+        badge: '📖 Sentence Structure',
         q: `Write two complex sentences using the conjunctions "although" and "because". Underline the subordinate clause in each.`,
         ans: `Example: "Although it was raining heavily, the students continued their football practice."`,
       },
       {
+        badge: '🧩 Prefixes',
         q: `Add the prefix 'un-', 'dis-', or 'mis-' to each root word to create its opposite:\n(a) honest → _________\n(b) understand → _________\n(c) certain → _________`,
         ans: `(a) dishonest; (b) misunderstand; (c) uncertain.`,
       },
       {
+        badge: '📚 Comprehension',
         q: `Read this short passage: "The antique clock chimed twelve solemn times. Outside, a branch scratched against the glass like tapping fingers."\nWhat mood does the author create, and which words show this?`,
         ans: `Eerie / suspenseful / mysterious mood. Words: "solemn", "scratched", "tapping fingers".`,
-      },
-      {
-        q: `Write a powerful 4-line description of an erupting volcano using at least one metaphor and one piece of alliteration.`,
-        ans: `Sample: "The fiery mountain was an angry dragon spitting molten gold. Sizzling smoke swept silently into the darkened sky."`,
       },
     ];
 
@@ -288,6 +319,7 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
       const qNum = i + 1;
       questions.push({
         number: qNum,
+        badge: item.badge,
         question: item.q,
         answerSpaceLines: 4,
         answer: item.ans,
@@ -311,26 +343,32 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
   // =========================================================================
   const scienceQuestions = [
     {
+      badge: '🧪 Matter',
       q: `Name the three main states of matter and describe how the particles are arranged in each state.`,
       ans: `Solid (particles tightly packed in fixed pattern), Liquid (particles close together but free to slide past one another), Gas (particles far apart moving rapidly in all directions).`,
     },
     {
+      badge: '💧 Water Cycle',
       q: `Explain what happens during the process of EVAPORATION, and give one real-life example you observe at home.`,
       ans: `Evaporation is the transition of a liquid into a gas when heated. Real-life example: Puddles drying up in the sun or wet clothes drying on a washing line.`,
     },
     {
+      badge: '🌱 Botany',
       q: `What is the primary role of chlorophyll in green leaves during photosynthesis?`,
       ans: `Chlorophyll traps light energy from the sun, which the plant uses to convert carbon dioxide and water into glucose (food) and oxygen.`,
     },
     {
+      badge: '⚡ Forces',
       q: `Describe the difference between FRICTION and GRAVITY, and explain why friction is helpful when walking on ice versus concrete.`,
       ans: `Gravity pulls objects toward the centre of the Earth. Friction opposes motion between two surfaces in contact. Concrete provides high friction so shoes do not slip; ice has low friction causing slipping.`,
     },
     {
+      badge: '🔋 Electricity',
       q: `In an electric circuit, what is the function of: (a) The battery (b) The switch (c) The wire?`,
       ans: `(a) Battery provides electrical energy/voltage; (b) Switch opens or closes the circuit to control current; (c) Wires conduct electric charge.`,
     },
     {
+      badge: '🪐 Astronomy',
       q: `Name the four inner rocky planets of our Solar System in order of distance from the Sun.`,
       ans: `Mercury, Venus, Earth, Mars.`,
     },
@@ -341,6 +379,7 @@ export function generateCurriculumWorksheet(params: GeneratorParams): GeneratedW
     const qNum = i + 1;
     questions.push({
       number: qNum,
+      badge: item.badge,
       question: item.q,
       answerSpaceLines: 4,
       answer: item.ans,

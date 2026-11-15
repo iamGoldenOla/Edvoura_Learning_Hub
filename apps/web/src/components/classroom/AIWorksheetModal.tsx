@@ -12,7 +12,7 @@ import {
   Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { generateCurriculumWorksheet, GeneratedWorksheet } from '@/lib/curriculum/worksheetGenerator';
+import { generateCurriculumWorksheet, GeneratedWorksheet, WorksheetQuestion } from '@/lib/curriculum/worksheetGenerator';
 
 interface AIWorksheetModalProps {
   isOpen: boolean;
@@ -38,12 +38,14 @@ export function AIWorksheetModal({
   const [generatedWorksheet, setGeneratedWorksheet] = useState<GeneratedWorksheet | null>(null);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [studentAnswers, setStudentAnswers] = useState<Record<number, string>>({});
 
   if (!isOpen) return null;
 
   const handleGenerate = async () => {
     setIsGenerating(true);
     setGeneratedWorksheet(null);
+    setStudentAnswers({});
 
     try {
       const response = await fetch('/api/ai/worksheet', {
@@ -68,7 +70,7 @@ export function AIWorksheetModal({
         }
       }
 
-      // Curriculum-Grade fallback (Guaranteed 100% concrete, authentic math & English questions)
+      // High-quality curriculum generator fallback (Guaranteed concrete math & word problems)
       const fallbackWorksheet = generateCurriculumWorksheet({
         topic,
         subject,
@@ -121,7 +123,7 @@ export function AIWorksheetModal({
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150 font-sans">
       <div className="bg-white border-[3px] border-dark rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[8px_8px_0px_#060E1C] overflow-hidden">
         {/* Header */}
-        <div className="h-16 px-6 bg-yellow/30 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
+        <div className="h-16 px-6 bg-yellow/30 border-b-[2.5px] border-dark flex items-center justify-between shrink-0 print:hidden">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-yellow border-2 border-dark flex items-center justify-center shadow-[1.5px_1.5px_0px_#060E1C]">
               <Sparkles className="w-5 h-5 text-dark" />
@@ -147,7 +149,7 @@ export function AIWorksheetModal({
         {/* Body */}
         <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
           {/* Controls Left Column */}
-          <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r-[2.5px] border-dark p-5 space-y-4 overflow-y-auto shrink-0">
+          <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r-[2.5px] border-dark p-5 space-y-4 overflow-y-auto shrink-0 print:hidden">
             {/* Subject */}
             <div className="space-y-1">
               <label className="text-[11px] font-black text-dark uppercase tracking-wider">Subject</label>
@@ -291,7 +293,7 @@ export function AIWorksheetModal({
                       title="Print or Save as PDF"
                     >
                       <Printer className="w-3.5 h-3.5 mr-1" />
-                      <span className="hidden sm:inline">Print</span>
+                      <span className="hidden sm:inline">Print / PDF</span>
                     </Button>
 
                     <Button
@@ -335,27 +337,58 @@ export function AIWorksheetModal({
                     <span>{generatedWorksheet.instructions}</span>
                   </div>
 
-                  {/* Questions Grid */}
+                  {/* Questions Grid with Column Math & Interactive Answers */}
                   <div className="space-y-6">
                     {generatedWorksheet.questions.map((q) => (
-                      <div key={q.number} className="p-4 rounded-xl border-2 border-dark/20 bg-slate-50/50 space-y-3">
-                        <div className="flex items-start gap-2.5">
-                          <span className="w-6 h-6 rounded-lg bg-dark text-white text-xs font-black flex items-center justify-center shrink-0">
-                            {q.number}
-                          </span>
-                          <div className="space-y-1">
-                            <p className="text-sm font-black text-dark leading-snug whitespace-pre-line">{q.question}</p>
-                            {q.hint && (
-                              <p className="text-xs font-bold text-dark/50 italic">Tip: {q.hint}</p>
-                            )}
+                      <div key={q.number} className="p-5 rounded-2xl border-2 border-dark/20 bg-slate-50/50 space-y-3 print:border-dark/30 print:p-3 print:break-inside-avoid">
+                        <div className="flex items-start justify-between gap-2.5">
+                          <div className="flex items-start gap-2.5">
+                            <span className="w-6 h-6 rounded-lg bg-dark text-white text-xs font-black flex items-center justify-center shrink-0">
+                              {q.number}
+                            </span>
+                            <div className="space-y-1">
+                              {q.badge && (
+                                <span className="inline-block px-2 py-0.5 rounded-md bg-white border border-dark/20 text-[10px] font-black uppercase text-dark/70 shadow-sm mr-2">
+                                  {q.badge}
+                                </span>
+                              )}
+                              <p className="text-sm font-black text-dark leading-snug whitespace-pre-line inline">{q.question}</p>
+                              {q.hint && (
+                                <p className="text-xs font-bold text-dark/50 italic pt-1">Tip: {q.hint}</p>
+                              )}
+                            </div>
                           </div>
+
+                          {/* Column Math Format Box (Worksheetinator / wsMath style) */}
+                          {q.columnFormat && (
+                            <div className="bg-white border-2 border-dark rounded-xl p-3 font-mono text-sm font-black text-dark text-right min-w-[110px] shadow-[2px_2px_0px_#060E1C] shrink-0">
+                              <div className="tracking-widest">{q.columnFormat.topNumber}</div>
+                              <div className="tracking-widest border-b-2 border-dark flex items-center justify-between">
+                                <span className="text-xs font-bold">{q.columnFormat.operator}</span>
+                                <span>{q.columnFormat.bottomNumber}</span>
+                              </div>
+                              <div className="h-6" />
+                            </div>
+                          )}
                         </div>
 
                         {/* Working space lines */}
-                        <div className="pl-8 space-y-2 pt-1">
+                        <div className="pl-8 space-y-2 pt-1 print:pl-4">
                           {Array.from({ length: q.answerSpaceLines || 3 }).map((_, i) => (
                             <div key={i} className="border-b border-dark/20 h-5" />
                           ))}
+                        </div>
+
+                        {/* Interactive Digital Student Answer Blank */}
+                        <div className="pl-8 pt-1 flex items-center gap-2 print:hidden">
+                          <span className="text-xs font-black uppercase text-dark/60">Your Answer:</span>
+                          <input
+                            type="text"
+                            placeholder="Type answer here..."
+                            value={studentAnswers[q.number] || ''}
+                            onChange={(e) => setStudentAnswers({ ...studentAnswers, [q.number]: e.target.value })}
+                            className="px-3 py-1 text-xs font-bold border-2 border-dark/30 rounded-lg outline-none focus:border-dark bg-white max-w-[200px]"
+                          />
                         </div>
                       </div>
                     ))}
@@ -363,32 +396,38 @@ export function AIWorksheetModal({
 
                   {/* Bonus Challenge */}
                   {generatedWorksheet.bonusChallenge && (
-                    <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50 text-xs font-bold text-amber-950 space-y-1">
+                    <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50 text-xs font-bold text-amber-950 space-y-1 print:break-inside-avoid">
                       <p className="font-black text-amber-900 uppercase">Bonus Challenge:</p>
                       <p>{generatedWorksheet.bonusChallenge}</p>
                     </div>
                   )}
 
-                  {/* Answer Key Toggle */}
+                  {/* Teacher Answer Key (Printable on Page 2 or toggled on screen) */}
                   {generatedWorksheet.answerKey && generatedWorksheet.answerKey.length > 0 && (
-                    <div className="pt-4 border-t-2 border-dashed border-dark/20 print:hidden">
+                    <div className="pt-4 border-t-2 border-dashed border-dark/20">
                       <button
                         onClick={() => setShowAnswerKey(!showAnswerKey)}
-                        className="text-xs font-black text-dark/70 hover:text-dark uppercase underline tracking-wider"
+                        className="text-xs font-black text-dark/70 hover:text-dark uppercase underline tracking-wider print:hidden"
                       >
                         {showAnswerKey ? 'Hide Teacher Answer Key' : 'Show Teacher Answer Key'}
                       </button>
 
-                      {showAnswerKey && (
-                        <div className="mt-3 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl space-y-1.5 animate-in fade-in duration-150">
-                          <p className="text-xs font-black text-emerald-950 uppercase">Teacher Answer Key:</p>
-                          <ul className="text-xs font-semibold text-emerald-900 space-y-1">
-                            {generatedWorksheet.answerKey.map((ans, idx) => (
-                              <li key={idx}>• {ans}</li>
-                            ))}
-                          </ul>
+                      <div className={`mt-3 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl space-y-1.5 ${showAnswerKey ? 'block' : 'hidden print:block print:break-before-page'}`}>
+                        <div className="flex items-center justify-between pb-2 border-b border-emerald-300">
+                          <p className="text-xs font-black text-emerald-950 uppercase">
+                            Teacher Marking &amp; Answer Key ({generatedWorksheet.title})
+                          </p>
+                          <span className="text-[10px] font-bold text-emerald-800 uppercase">Official Edvoura Rubric</span>
                         </div>
-                      )}
+                        <ul className="text-xs font-semibold text-emerald-900 space-y-1.5 pt-1">
+                          {generatedWorksheet.answerKey.map((ans, idx) => (
+                            <li key={idx} className="flex items-start gap-1.5">
+                              <span className="font-bold shrink-0">✓</span>
+                              <span>{ans}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   )}
                 </div>
