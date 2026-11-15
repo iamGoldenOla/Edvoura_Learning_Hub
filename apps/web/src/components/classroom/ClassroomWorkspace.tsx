@@ -12,7 +12,6 @@ import {
   Minimize2,
   Presentation,
   BookOpen,
-  FileText,
   Users,
   PhoneOff,
   Sparkles,
@@ -22,10 +21,11 @@ import {
   Check,
   X,
   ArrowLeft,
-  ChevronRight,
-  ChevronLeft,
   Eye,
   EyeOff,
+  CheckCircle2,
+  Home,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -40,7 +40,6 @@ interface ClassroomWorkspaceProps {
 }
 
 type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks';
-type VideoServer = 'open-webrtc' | 'jitsi-public';
 
 interface ClassResource {
   id: string;
@@ -58,15 +57,13 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [showAiWorksheetModal, setShowAiWorksheetModal] = useState(false);
+  const [isSessionEnded, setIsSessionEnded] = useState(false);
 
   const [lesson, setLesson] = useState<any>(null);
   const [studentDisplayName, setStudentDisplayName] = useState<string>('');
   const [gradeDisplayName, setGradeDisplayName] = useState<string>('Grade 4');
   const [loading, setLoading] = useState(true);
   const [availableResources, setAvailableResources] = useState<ClassResource[]>([]);
-
-  // Video Server Engine
-  const [videoServer] = useState<VideoServer>('open-webrtc');
 
   // Selected PDF state
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
@@ -86,10 +83,11 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const jitsiApiRef = useRef<any>(null);
   const channelRef = useRef<any>(null);
 
-  const currentDomain = videoServer === 'open-webrtc' ? 'fairmeeting.net' : 'meet.jit.si';
+  // Use official 8x8 Jitsi infrastructure (Zero donation popups or fairmeeting pages)
+  const currentDomain = 'meet.jit.si';
   const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
   // Strictly stripped out all watermarks, logos, and donate popups
-  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false&interfaceConfig.DEFAULT_LOGO_URL=""&interfaceConfig.JITSI_WATERMARK_LINK=""&interfaceConfig.BRAND_WATERMARK_LINK=""`;
+  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.enableClosePage=false&config.enableWelcomePage=false&config.disableDeepLinking=true&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false&interfaceConfig.DEFAULT_LOGO_URL=""&interfaceConfig.JITSI_WATERMARK_LINK=""&interfaceConfig.BRAND_WATERMARK_LINK=""`;
 
   // Initialize Supabase & lesson metadata
   useEffect(() => {
@@ -227,9 +225,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   // Mount WebRTC Meeting API with strict anti-watermark and anti-redirect configurations
   useEffect(() => {
     let isMounted = true;
+    if (isSessionEnded) return;
 
     const initJitsi = () => {
-      if (!isMounted || !videoMountRef.current) return;
+      if (!isMounted || !videoMountRef.current || isSessionEnded) return;
       if (!(window as any).JitsiMeetExternalAPI) return;
 
       if (jitsiApiRef.current) {
@@ -259,13 +258,13 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             enableLobby: false,
             requireDisplayName: false,
             p2p: { enabled: true },
+            // Removed internal 'hangup' button so only Edvoura's branded hangup is used
             toolbarButtons: [
               'microphone',
               'camera',
               'closedcaptions',
               'fullscreen',
               'fodeviceselection',
-              'hangup',
               'chat',
               'raisehand',
               'videoquality',
@@ -300,11 +299,19 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           },
           videoConferenceLeft: () => {
             try { api.dispose(); } catch (_) {}
-            window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
+            jitsiApiRef.current = null;
+            if (videoMountRef.current) {
+              videoMountRef.current.innerHTML = '';
+            }
+            setIsSessionEnded(true);
           },
           readyToClose: () => {
             try { api.dispose(); } catch (_) {}
-            window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
+            jitsiApiRef.current = null;
+            if (videoMountRef.current) {
+              videoMountRef.current.innerHTML = '';
+            }
+            setIsSessionEnded(true);
           },
         });
       } catch (err) {
@@ -337,7 +344,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         jitsiApiRef.current = null;
       }
     };
-  }, [cleanRoom, currentDomain, userName, role]);
+  }, [cleanRoom, currentDomain, userName, isSessionEnded]);
 
   // Realtime Supabase Channel for PDF & Whiteboard synchronization
   useEffect(() => {
@@ -439,8 +446,9 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
+  // Clean Leave Session: Destroys Jitsi completely and shows Edvoura Branded Summary screen
   const handleLeaveCall = () => {
-    if (confirm('Leave the active classroom session?')) {
+    if (confirm('End the active classroom session?')) {
       if (jitsiApiRef.current) {
         try {
           jitsiApiRef.current.executeCommand('hangup');
@@ -451,7 +459,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       if (videoMountRef.current) {
         videoMountRef.current.innerHTML = '';
       }
-      window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
+      setIsSessionEnded(true);
     }
   };
 
@@ -549,6 +557,59 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         <Loader2 className="h-12 w-12 animate-spin text-yellow mb-4" />
         <h3 className="text-xl font-black">Launching Edvoura Classroom Stage...</h3>
         <p className="text-xs text-white/60 mt-1">Connecting 100% widescreen video and interactive studio</p>
+      </div>
+    );
+  }
+
+  // ============================================================
+  // EDVOURA BRANDED SESSION COMPLETED SCREEN
+  // Replaces the viewport when tutor or student leaves the session.
+  // 100% eliminates any third-party donation or fairmeeting exit pages!
+  // ============================================================
+  if (isSessionEnded) {
+    return (
+      <div className="fixed inset-0 z-50 bg-[#070D18] text-white flex flex-col items-center justify-center p-6 select-none font-sans">
+        <div className="bg-[#0f172a] border-[3px] border-yellow/60 rounded-3xl p-8 sm:p-10 max-w-lg w-full text-center shadow-[10px_10px_0px_#060E1C] space-y-6 animate-in zoom-in-95 duration-200">
+          <div className="w-16 h-16 rounded-2xl bg-yellow border-2 border-dark mx-auto flex items-center justify-center shadow-[3px_3px_0px_#060E1C]">
+            <CheckCircle2 className="w-10 h-10 text-dark" />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
+              Lesson Session Completed
+            </h2>
+            <p className="text-sm font-bold text-white/70">
+              {studentDisplayName ? `Session with ${studentDisplayName}` : lesson?.title || 'Interactive Lesson'}
+            </p>
+            <p className="text-xs text-white/50">
+              Whiteboard notes, completed exercises, and participation data have been logged to your dashboard.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <Button
+              onClick={() => {
+                window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
+              }}
+              className="w-full h-12 bg-yellow hover:bg-yellow/90 border-2 border-dark text-dark font-black text-sm uppercase shadow-[3px_3px_0px_#060E1C] active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              <span>Return to {role === 'tutor' ? 'Tutor Dashboard' : 'Student Hub'}</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSessionEnded(false);
+                setIsJitsiReady(false);
+              }}
+              className="w-full h-11 border-2 border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase transition-all flex items-center justify-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Rejoin Classroom Session</span>
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1041,12 +1102,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <BookOpen className="w-5 h-5" />
           </button>
 
-          {/* Red Hangup Button */}
+          {/* Red Hangup Button (Only Hangup Button on Screen - Triggers Branded Exit Screen) */}
           <button
             onClick={handleLeaveCall}
             className="w-14 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
-            title="Leave classroom"
-            aria-label="Leave Classroom"
+            title="End classroom session"
+            aria-label="End Classroom Session"
           >
             <PhoneOff className="w-5 h-5" />
           </button>

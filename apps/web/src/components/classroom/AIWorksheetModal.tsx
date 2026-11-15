@@ -9,11 +9,10 @@ import {
   Presentation,
   CheckCircle2,
   Loader2,
-  BookOpen,
   Copy,
-  Download,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { generateCurriculumWorksheet, GeneratedWorksheet } from '@/lib/curriculum/worksheetGenerator';
 
 interface AIWorksheetModalProps {
   isOpen: boolean;
@@ -23,38 +22,18 @@ interface AIWorksheetModalProps {
   gradeLevel?: string;
 }
 
-interface WorksheetQuestion {
-  number: number;
-  question: string;
-  hint?: string;
-  answerSpaceLines?: number;
-  options?: string[];
-  answer?: string;
-}
-
-interface GeneratedWorksheet {
-  title: string;
-  subject: string;
-  grade: string;
-  instructions: string;
-  questions: WorksheetQuestion[];
-  bonusChallenge?: string;
-  answerKey?: string[];
-}
-
 export function AIWorksheetModal({
   isOpen,
   onClose,
   onPresentOnWhiteboard,
   pupilName = 'Pupil',
-  gradeLevel = 'Primary 4',
+  gradeLevel = 'Grade 4',
 }: AIWorksheetModalProps) {
   const [topic, setTopic] = useState('Long Multiplication & Word Problems');
   const [subject, setSubject] = useState('Mathematics');
   const [selectedGrade, setSelectedGrade] = useState(gradeLevel || 'Grade 4');
   const [difficulty, setDifficulty] = useState<'Standard' | 'Foundation' | 'Advanced'>('Standard');
   const [questionCount, setQuestionCount] = useState<number>(6);
-  const [worksheetStyle, setWorksheetStyle] = useState<'exercises' | 'multiple_choice' | 'story_comprehension'>('exercises');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedWorksheet, setGeneratedWorksheet] = useState<GeneratedWorksheet | null>(null);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
@@ -76,48 +55,40 @@ export function AIWorksheetModal({
           gradeLevel: selectedGrade,
           difficulty,
           questionCount,
-          style: worksheetStyle,
           pupilName,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data?.worksheet) {
+        if (data?.worksheet && Array.isArray(data.worksheet.questions) && data.worksheet.questions.length > 0) {
           setGeneratedWorksheet(data.worksheet);
           setIsGenerating(false);
           return;
         }
       }
 
-      // High-quality client fallback if API is unreachable
-      const fallbackWorksheet: GeneratedWorksheet = {
-        title: `${topic} - Practice Worksheet`,
+      // Curriculum-Grade fallback (Guaranteed 100% concrete, authentic math & English questions)
+      const fallbackWorksheet = generateCurriculumWorksheet({
+        topic,
         subject,
-        grade: selectedGrade,
-        instructions: 'Read each question carefully. Show your working in the space provided.',
-        questions: [
-          { number: 1, question: `Solve: 348 × 6`, answerSpaceLines: 3, answer: '2,088' },
-          { number: 2, question: `A school library ordered 24 boxes of books. Each box contains 15 books. How many books were ordered in total?`, answerSpaceLines: 4, answer: '360 books' },
-          { number: 3, question: `Calculate: 895 × 23`, answerSpaceLines: 4, answer: '20,585' },
-          { number: 4, question: `Find the product of 412 and 18.`, answerSpaceLines: 3, answer: '7,416' },
-          { number: 5, question: `Titomi saves £45 every week for 12 weeks. How much money does she have in total?`, answerSpaceLines: 4, answer: '£540' },
-          { number: 6, question: `Solve: 764 × 39`, answerSpaceLines: 4, answer: '29,796' },
-        ],
-        bonusChallenge: '🌟 Bonus Brain Teaser: If 5 pens cost £15, how much will 18 pens cost?',
-        answerKey: [
-          'Q1: 2,088',
-          'Q2: 360 books (24 × 15 = 360)',
-          'Q3: 20,585',
-          'Q4: 7,416',
-          'Q5: £540 (45 × 12 = 540)',
-          'Q6: 29,796',
-          'Bonus: £54 (£15 ÷ 5 = £3 per pen; £3 × 18 = £54)',
-        ],
-      };
+        gradeLevel: selectedGrade,
+        difficulty,
+        questionCount,
+        pupilName,
+      });
       setGeneratedWorksheet(fallbackWorksheet);
     } catch (err) {
-      console.warn('AI worksheet error:', err);
+      console.warn('AI worksheet fetch error, applying curriculum generator:', err);
+      const fallbackWorksheet = generateCurriculumWorksheet({
+        topic,
+        subject,
+        gradeLevel: selectedGrade,
+        difficulty,
+        questionCount,
+        pupilName,
+      });
+      setGeneratedWorksheet(fallbackWorksheet);
     } finally {
       setIsGenerating(false);
     }
@@ -200,7 +171,7 @@ export function AIWorksheetModal({
                 type="text"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g. Long Multiplication, Fractions, Similes"
+                placeholder="e.g. Long Multiplication & Word Problems"
                 className="w-full h-9 px-3 rounded-xl border-2 border-dark bg-white text-xs font-bold text-dark outline-none shadow-[1.5px_1.5px_0px_#060E1C]"
               />
             </div>
@@ -372,7 +343,12 @@ export function AIWorksheetModal({
                           <span className="w-6 h-6 rounded-lg bg-dark text-white text-xs font-black flex items-center justify-center shrink-0">
                             {q.number}
                           </span>
-                          <p className="text-sm font-black text-dark leading-snug">{q.question}</p>
+                          <div className="space-y-1">
+                            <p className="text-sm font-black text-dark leading-snug whitespace-pre-line">{q.question}</p>
+                            {q.hint && (
+                              <p className="text-xs font-bold text-dark/50 italic">Tip: {q.hint}</p>
+                            )}
+                          </div>
                         </div>
 
                         {/* Working space lines */}
