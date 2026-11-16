@@ -83,8 +83,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const jitsiApiRef = useRef<any>(null);
   const channelRef = useRef<any>(null);
 
-  // Use official 8x8 Jitsi infrastructure (Zero donation popups or fairmeeting pages)
-  const currentDomain = 'meet.jit.si';
+  // Open WebRTC Meeting Infrastructure (Zero Moderator Login Wall, Instant Classroom Join)
+  const currentDomain = 'fairmeeting.net';
   const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
   // Strictly stripped out all watermarks, logos, and donate popups
   const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.enableClosePage=false&config.enableWelcomePage=false&config.disableDeepLinking=true&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false&interfaceConfig.DEFAULT_LOGO_URL=""&interfaceConfig.JITSI_WATERMARK_LINK=""&interfaceConfig.BRAND_WATERMARK_LINK=""`;
@@ -1121,6 +1121,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         onPresentOnWhiteboard={handlePresentAiWorksheet}
         pupilName={studentDisplayName || 'Pupil'}
         gradeLevel={gradeDisplayName}
+        lessonId={lessonId}
       />
     </div>
   );

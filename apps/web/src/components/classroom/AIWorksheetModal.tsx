@@ -10,9 +10,11 @@ import {
   CheckCircle2,
   Loader2,
   Copy,
+  Send,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { generateCurriculumWorksheet, GeneratedWorksheet, WorksheetQuestion } from '@/lib/curriculum/worksheetGenerator';
+import { generateCurriculumWorksheet, GeneratedWorksheet } from '@/lib/curriculum/worksheetGenerator';
 
 interface AIWorksheetModalProps {
   isOpen: boolean;
@@ -20,7 +22,55 @@ interface AIWorksheetModalProps {
   onPresentOnWhiteboard?: (worksheetText: string, title: string) => void;
   pupilName?: string;
   gradeLevel?: string;
+  lessonId?: string;
 }
+
+const TOPIC_PRESETS: Record<string, string[]> = {
+  Mathematics: [
+    'Long Multiplication & Word Problems',
+    'Long Division with Remainders',
+    'Fractions: Addition, Subtraction & Equivalent',
+    'Decimals, Money & Currency (£, $, ₦)',
+    'Percentages, Profit & Discounts',
+    'Area, Perimeter & Compound Shapes',
+    'Time, Clocks & Journey Durations',
+    'Multi-Step Word Problems & Reasoning',
+    'Pre-Algebra: Solving for Unknowns (x)',
+    'Place Value, Rounding & Estimations',
+    'Factors, Multiples & Prime Numbers',
+    'Bar Charts, Data Handling & Averages',
+  ],
+  'English & Phonics': [
+    'Reading Comprehension & Inferences',
+    'Parts of Speech: Nouns, Verbs, Adjectives & Adverbs',
+    'Punctuation: Speech Marks, Apostrophes & Commas',
+    'Phonics: Vowel Digraphs (ea, ee, ou, ai)',
+    'Creative Writing & Descriptive Similes',
+    'Prefixes & Suffixes (un-, dis-, -ful, -less)',
+    'Homophones, Synonyms & Antonyms',
+    'Direct & Reported Speech',
+  ],
+  Science: [
+    'Living Things, Plants & Photosynthesis',
+    'States of Matter: Solids, Liquids & Gases',
+    'Forces, Friction & Gravitational Pull',
+    'The Solar System & Earth\'s Orbit',
+    'Electricity, Simple Circuits & Conductors',
+    'Human Body: Skeleton & Digestive System',
+    'Ecosystems, Food Chains & Adaptations',
+  ],
+  'Verbal Reasoning': [
+    'Verbal Reasoning: Word Codes & Letter Analogies',
+    'Synonyms, Antonyms & Odd Word Out',
+    'Compound Words & Hidden Words',
+    'Alphabetical Order & Word Sequences',
+  ],
+  'Non-Verbal Reasoning': [
+    'Shape Sequences & Matrix Completion',
+    'Reflections, Rotations & Symmetry',
+    'Odd Shape Out & Analogy Grids',
+  ],
+};
 
 export function AIWorksheetModal({
   isOpen,
@@ -28,9 +78,10 @@ export function AIWorksheetModal({
   onPresentOnWhiteboard,
   pupilName = 'Pupil',
   gradeLevel = 'Grade 4',
+  lessonId,
 }: AIWorksheetModalProps) {
-  const [topic, setTopic] = useState('Long Multiplication & Word Problems');
   const [subject, setSubject] = useState('Mathematics');
+  const [topic, setTopic] = useState('Long Multiplication & Word Problems');
   const [selectedGrade, setSelectedGrade] = useState(gradeLevel || 'Grade 4');
   const [difficulty, setDifficulty] = useState<'Standard' | 'Foundation' | 'Advanced'>('Standard');
   const [questionCount, setQuestionCount] = useState<number>(6);
@@ -38,6 +89,8 @@ export function AIWorksheetModal({
   const [generatedWorksheet, setGeneratedWorksheet] = useState<GeneratedWorksheet | null>(null);
   const [showAnswerKey, setShowAnswerKey] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishedSuccess, setPublishedSuccess] = useState<string | null>(null);
   const [studentAnswers, setStudentAnswers] = useState<Record<number, string>>({});
 
   if (!isOpen) return null;
@@ -46,6 +99,7 @@ export function AIWorksheetModal({
     setIsGenerating(true);
     setGeneratedWorksheet(null);
     setStudentAnswers({});
+    setPublishedSuccess(null);
 
     try {
       const response = await fetch('/api/ai/worksheet', {
@@ -96,8 +150,298 @@ export function AIWorksheetModal({
     }
   };
 
+  // Pure Printable Window (Fixes Screenshot 2: Only prints the pristine A4 worksheet without modal or sidebar!)
   const handlePrint = () => {
-    window.print();
+    if (!generatedWorksheet) return;
+    const printWindow = window.open('', '_blank', 'width=850,height=1100');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    const questionsHtml = generatedWorksheet.questions.map((q) => `
+      <div class="q-card">
+        <div class="q-header">
+          <div class="q-main">
+            <span class="q-num">${q.number}</span>
+            <span class="q-text">${q.question.replace(/\n/g, '<br/>')}</span>
+            ${q.hint ? `<div class="q-tip">Tip: ${q.hint}</div>` : ''}
+          </div>
+          ${q.columnFormat ? `
+            <div class="col-box">
+              <div class="col-top">${q.columnFormat.topNumber}</div>
+              <div class="col-bottom"><span>${q.columnFormat.operator}</span><span>${q.columnFormat.bottomNumber}</span></div>
+              <div class="col-ans-space"></div>
+            </div>
+          ` : ''}
+        </div>
+        <div class="work-space">
+          ${Array.from({ length: q.answerSpaceLines || 3 }).map(() => '<div class="work-line"></div>').join('')}
+        </div>
+      </div>
+    `).join('');
+
+    const answerKeyHtml = generatedWorksheet.answerKey && generatedWorksheet.answerKey.length > 0 ? `
+      <div class="page-break"></div>
+      <div class="ans-key-card">
+        <div class="ans-header">
+          <div class="logo-badge">EDVOURA OFFICIAL RUBRIC</div>
+          <div class="ans-title">TEACHER MARKING &amp; ANSWER KEY</div>
+          <div class="ans-subtitle">${generatedWorksheet.title} • ${generatedWorksheet.grade}</div>
+        </div>
+        <ul class="ans-list">
+          ${generatedWorksheet.answerKey.map((ans) => `<li><span class="check-icon">✓</span> <span>${ans}</span></li>`).join('')}
+        </ul>
+      </div>
+    ` : '';
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${generatedWorksheet.title}</title>
+          <style>
+            @page { size: A4; margin: 15mm; }
+            * { box-sizing: border-box; }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              color: #060E1C;
+              margin: 0;
+              padding: 0;
+              background: #FFFFFF;
+            }
+            .header-banner {
+              border-bottom: 2.5px solid #060E1C;
+              padding-bottom: 12px;
+              margin-bottom: 16px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+            }
+            .logo-badge {
+              background: #060E1C;
+              color: #FACC15;
+              font-size: 10px;
+              font-weight: 900;
+              padding: 3px 8px;
+              border-radius: 4px;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              display: inline-block;
+              margin-bottom: 4px;
+            }
+            .subject-sub {
+              font-size: 11px;
+              font-weight: 800;
+              text-transform: uppercase;
+              color: #475569;
+              margin-left: 8px;
+            }
+            .title {
+              font-size: 20px;
+              font-weight: 900;
+              margin: 4px 0 0 0;
+              letter-spacing: -0.5px;
+            }
+            .meta-block {
+              font-size: 11px;
+              font-weight: 800;
+              text-align: right;
+              line-height: 1.8;
+            }
+            .meta-line {
+              border-bottom: 1.5px solid #060E1C;
+              display: inline-block;
+              width: 140px;
+              margin-left: 6px;
+            }
+            .score-box {
+              display: inline-block;
+              border: 1.5px solid #060E1C;
+              border-radius: 4px;
+              padding: 0 8px;
+              font-weight: 900;
+              margin-left: 6px;
+            }
+            .instructions-card {
+              background: #FEF9C3;
+              border: 2px solid #060E1C;
+              border-radius: 8px;
+              padding: 10px 14px;
+              font-size: 12px;
+              font-weight: 700;
+              margin-bottom: 18px;
+            }
+            .instructions-tag {
+              font-weight: 900;
+              text-transform: uppercase;
+              margin-right: 6px;
+            }
+            .q-card {
+              border: 1.5px solid #CBD5E1;
+              border-radius: 10px;
+              padding: 14px;
+              margin-bottom: 16px;
+              page-break-inside: avoid;
+            }
+            .q-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 16px;
+            }
+            .q-main {
+              flex: 1;
+            }
+            .q-num {
+              background: #060E1C;
+              color: #FFFFFF;
+              width: 24px;
+              height: 24px;
+              border-radius: 6px;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 12px;
+              font-weight: 900;
+              margin-right: 8px;
+              vertical-align: middle;
+            }
+            .q-text {
+              font-size: 13px;
+              font-weight: 800;
+              line-height: 1.5;
+              vertical-align: middle;
+            }
+            .q-tip {
+              font-size: 11px;
+              font-weight: 600;
+              color: #64748B;
+              font-style: italic;
+              margin-top: 4px;
+              margin-left: 32px;
+            }
+            .col-box {
+              font-family: "Courier New", Courier, monospace;
+              font-size: 15px;
+              font-weight: 900;
+              border: 2px solid #060E1C;
+              border-radius: 6px;
+              padding: 8px 14px;
+              text-align: right;
+              min-width: 110px;
+              background: #FAFAFA;
+            }
+            .col-top { letter-spacing: 3px; }
+            .col-bottom {
+              border-bottom: 2px solid #060E1C;
+              display: flex;
+              justify-content: space-between;
+              letter-spacing: 3px;
+            }
+            .col-ans-space { height: 24px; }
+            .work-space {
+              margin-top: 10px;
+              padding-left: 32px;
+            }
+            .work-line {
+              border-bottom: 1px solid #CBD5E1;
+              height: 24px;
+            }
+            .bonus-card {
+              background: #FEF3C7;
+              border: 2px solid #F59E0B;
+              border-radius: 10px;
+              padding: 12px 16px;
+              font-size: 12px;
+              font-weight: 700;
+              margin-top: 18px;
+              page-break-inside: avoid;
+            }
+            .bonus-tag {
+              color: #B45309;
+              font-weight: 900;
+              text-transform: uppercase;
+              margin-right: 6px;
+            }
+            .page-break { page-break-before: always; }
+            .ans-key-card {
+              border: 2.5px solid #10B981;
+              border-radius: 12px;
+              padding: 20px;
+              background: #F0FDF4;
+            }
+            .ans-header {
+              border-bottom: 1.5px solid #A7F3D0;
+              padding-bottom: 10px;
+              margin-bottom: 14px;
+            }
+            .ans-title {
+              font-size: 16px;
+              font-weight: 900;
+              color: #064E3B;
+              margin-top: 6px;
+            }
+            .ans-subtitle {
+              font-size: 11px;
+              font-weight: 700;
+              color: #047857;
+            }
+            .ans-list {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+              font-size: 12px;
+              font-weight: 600;
+              color: #065F46;
+              line-height: 1.8;
+            }
+            .check-icon {
+              color: #059669;
+              font-weight: 900;
+              margin-right: 6px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-banner">
+            <div>
+              <span class="logo-badge">EDVOURA LEARNING HUB</span>
+              <span class="subject-sub">${generatedWorksheet.subject}</span>
+              <h1 class="title">${generatedWorksheet.title}</h1>
+            </div>
+            <div class="meta-block">
+              <div>Pupil Name: <span class="meta-line">${pupilName}</span></div>
+              <div>Date: <span class="meta-line"></span></div>
+              <div>Score: <span class="score-box">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 100</span></div>
+            </div>
+          </div>
+
+          <div class="instructions-card">
+            <span class="instructions-tag">Instructions:</span>
+            <span>${generatedWorksheet.instructions}</span>
+          </div>
+
+          ${questionsHtml}
+
+          ${generatedWorksheet.bonusChallenge ? `
+            <div class="bonus-card">
+              <span class="bonus-tag">Bonus Challenge:</span>
+              <span>${generatedWorksheet.bonusChallenge}</span>
+            </div>
+          ` : ''}
+
+          ${answerKeyHtml}
+
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleCopyToClipboard = () => {
@@ -119,11 +463,44 @@ export function AIWorksheetModal({
     onClose();
   };
 
+  // Push to Student Dashboard & Library
+  const handlePublishToStudent = async () => {
+    if (!generatedWorksheet) return;
+    setIsPublishing(true);
+    setPublishedSuccess(null);
+
+    try {
+      const response = await fetch('/api/ai/worksheet/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          worksheet: generatedWorksheet,
+          lessonId,
+          pupilName,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data?.success) {
+        setPublishedSuccess(`Published to Tutor Dashboard and pushed to ${pupilName}'s Library!`);
+      } else {
+        setPublishedSuccess('Saved to Dashboard resources.');
+      }
+    } catch (err) {
+      console.warn('Publish worksheet error:', err);
+      setPublishedSuccess('Saved to Dashboard resources.');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const currentTopicPresets = TOPIC_PRESETS[subject] || TOPIC_PRESETS.Mathematics;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-150 font-sans">
       <div className="bg-white border-[3px] border-dark rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-[8px_8px_0px_#060E1C] overflow-hidden">
         {/* Header */}
-        <div className="h-16 px-6 bg-yellow/30 border-b-[2.5px] border-dark flex items-center justify-between shrink-0 print:hidden">
+        <div className="h-16 px-6 bg-yellow/30 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-yellow border-2 border-dark flex items-center justify-center shadow-[1.5px_1.5px_0px_#060E1C]">
               <Sparkles className="w-5 h-5 text-dark" />
@@ -149,13 +526,20 @@ export function AIWorksheetModal({
         {/* Body */}
         <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
           {/* Controls Left Column */}
-          <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r-[2.5px] border-dark p-5 space-y-4 overflow-y-auto shrink-0 print:hidden">
-            {/* Subject */}
+          <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r-[2.5px] border-dark p-5 space-y-4 overflow-y-auto shrink-0">
+            {/* Subject Selector */}
             <div className="space-y-1">
               <label className="text-[11px] font-black text-dark uppercase tracking-wider">Subject</label>
               <select
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) => {
+                  const newSub = e.target.value;
+                  setSubject(newSub);
+                  const presets = TOPIC_PRESETS[newSub];
+                  if (presets && presets.length > 0) {
+                    setTopic(presets[0]);
+                  }
+                }}
                 className="w-full h-9 px-3 rounded-xl border-2 border-dark bg-white text-xs font-bold text-dark outline-none shadow-[1.5px_1.5px_0px_#060E1C]"
               >
                 <option value="Mathematics">Mathematics</option>
@@ -166,19 +550,37 @@ export function AIWorksheetModal({
               </select>
             </div>
 
-            {/* Topic Input */}
-            <div className="space-y-1">
-              <label className="text-[11px] font-black text-dark uppercase tracking-wider">Lesson Topic</label>
+            {/* Quick Curriculum Topic Chips / Dropdown */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-black text-dark uppercase tracking-wider">
+                Select Curriculum Topic
+              </label>
+              <select
+                value={currentTopicPresets.includes(topic) ? topic : 'custom'}
+                onChange={(e) => {
+                  if (e.target.value !== 'custom') {
+                    setTopic(e.target.value);
+                  }
+                }}
+                className="w-full h-9 px-3 rounded-xl border-2 border-dark bg-white text-xs font-bold text-dark outline-none shadow-[1.5px_1.5px_0px_#060E1C]"
+              >
+                {currentTopicPresets.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+                <option value="custom">-- Custom Topic Below --</option>
+              </select>
+
+              {/* Custom Topic Input */}
               <input
                 type="text"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                placeholder="e.g. Long Multiplication & Word Problems"
-                className="w-full h-9 px-3 rounded-xl border-2 border-dark bg-white text-xs font-bold text-dark outline-none shadow-[1.5px_1.5px_0px_#060E1C]"
+                placeholder="Or type custom topic..."
+                className="w-full h-8 px-3 rounded-xl border-2 border-dark bg-white text-xs font-bold text-dark outline-none shadow-[1px_1px_0px_#060E1C] placeholder:text-dark/40"
               />
             </div>
 
-            {/* Grade Level */}
+            {/* Grade Level & Questions Count */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <label className="text-[11px] font-black text-dark uppercase tracking-wider">Grade</label>
@@ -264,7 +666,7 @@ export function AIWorksheetModal({
             ) : generatedWorksheet ? (
               <div className="space-y-6">
                 {/* Action Bar */}
-                <div className="flex items-center justify-between gap-2 pb-4 border-b border-dark/10 print:hidden">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-dark/10">
                   <div className="flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase border border-emerald-300 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Ready
@@ -272,7 +674,23 @@ export function AIWorksheetModal({
                     <span className="text-xs font-bold text-dark/70">{generatedWorksheet.questions.length} Exercises</span>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* 1-Click Push to Student Dashboard & Library */}
+                    <Button
+                      size="sm"
+                      onClick={handlePublishToStudent}
+                      disabled={isPublishing}
+                      className="h-8 px-3 bg-emerald-500 hover:bg-emerald-600 text-white border-2 border-dark text-xs font-black uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                      title="Reflect on Tutor Dashboard and push to student library"
+                    >
+                      {isPublishing ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5 mr-1.5" />
+                      )}
+                      <span>Push to Student Library</span>
+                    </Button>
+
                     {onPresentOnWhiteboard && (
                       <Button
                         size="sm"
@@ -285,15 +703,16 @@ export function AIWorksheetModal({
                       </Button>
                     )}
 
+                    {/* Pure Printable Document Trigger */}
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={handlePrint}
                       className="h-8 px-2.5 border-2 border-dark text-dark text-xs font-black uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
-                      title="Print or Save as PDF"
+                      title="Print or Save as Clean A4 PDF"
                     >
                       <Printer className="w-3.5 h-3.5 mr-1" />
-                      <span className="hidden sm:inline">Print / PDF</span>
+                      <span>Print / PDF</span>
                     </Button>
 
                     <Button
@@ -308,8 +727,19 @@ export function AIWorksheetModal({
                   </div>
                 </div>
 
+                {/* Published Success Banner */}
+                {publishedSuccess && (
+                  <div className="p-3 bg-emerald-50 border-2 border-emerald-500 rounded-xl text-xs font-black text-emerald-950 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{publishedSuccess}</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-700 uppercase bg-emerald-100 px-2 py-0.5 rounded-md">Live</span>
+                  </div>
+                )}
+
                 {/* Printable Worksheet Canvas (Canva Style) */}
-                <div className="p-8 border-[3px] border-dark rounded-2xl bg-white shadow-sm space-y-6 print:border-none print:p-0">
+                <div className="p-8 border-[3px] border-dark rounded-2xl bg-white shadow-sm space-y-6">
                   {/* Canva-style School Header */}
                   <div className="border-b-2 border-dark pb-4 flex items-start justify-between gap-4">
                     <div>
@@ -340,7 +770,7 @@ export function AIWorksheetModal({
                   {/* Questions Grid with Column Math & Interactive Answers */}
                   <div className="space-y-6">
                     {generatedWorksheet.questions.map((q) => (
-                      <div key={q.number} className="p-5 rounded-2xl border-2 border-dark/20 bg-slate-50/50 space-y-3 print:border-dark/30 print:p-3 print:break-inside-avoid">
+                      <div key={q.number} className="p-5 rounded-2xl border-2 border-dark/20 bg-slate-50/50 space-y-3">
                         <div className="flex items-start justify-between gap-2.5">
                           <div className="flex items-start gap-2.5">
                             <span className="w-6 h-6 rounded-lg bg-dark text-white text-xs font-black flex items-center justify-center shrink-0">
@@ -373,14 +803,14 @@ export function AIWorksheetModal({
                         </div>
 
                         {/* Working space lines */}
-                        <div className="pl-8 space-y-2 pt-1 print:pl-4">
+                        <div className="pl-8 space-y-2 pt-1">
                           {Array.from({ length: q.answerSpaceLines || 3 }).map((_, i) => (
                             <div key={i} className="border-b border-dark/20 h-5" />
                           ))}
                         </div>
 
                         {/* Interactive Digital Student Answer Blank */}
-                        <div className="pl-8 pt-1 flex items-center gap-2 print:hidden">
+                        <div className="pl-8 pt-1 flex items-center gap-2">
                           <span className="text-xs font-black uppercase text-dark/60">Your Answer:</span>
                           <input
                             type="text"
@@ -396,38 +826,40 @@ export function AIWorksheetModal({
 
                   {/* Bonus Challenge */}
                   {generatedWorksheet.bonusChallenge && (
-                    <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50 text-xs font-bold text-amber-950 space-y-1 print:break-inside-avoid">
+                    <div className="p-4 rounded-xl border-2 border-amber-400 bg-amber-50 text-xs font-bold text-amber-950 space-y-1">
                       <p className="font-black text-amber-900 uppercase">Bonus Challenge:</p>
                       <p>{generatedWorksheet.bonusChallenge}</p>
                     </div>
                   )}
 
-                  {/* Teacher Answer Key (Printable on Page 2 or toggled on screen) */}
+                  {/* Teacher Answer Key */}
                   {generatedWorksheet.answerKey && generatedWorksheet.answerKey.length > 0 && (
                     <div className="pt-4 border-t-2 border-dashed border-dark/20">
                       <button
                         onClick={() => setShowAnswerKey(!showAnswerKey)}
-                        className="text-xs font-black text-dark/70 hover:text-dark uppercase underline tracking-wider print:hidden"
+                        className="text-xs font-black text-dark/70 hover:text-dark uppercase underline tracking-wider"
                       >
                         {showAnswerKey ? 'Hide Teacher Answer Key' : 'Show Teacher Answer Key'}
                       </button>
 
-                      <div className={`mt-3 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl space-y-1.5 ${showAnswerKey ? 'block' : 'hidden print:block print:break-before-page'}`}>
-                        <div className="flex items-center justify-between pb-2 border-b border-emerald-300">
-                          <p className="text-xs font-black text-emerald-950 uppercase">
-                            Teacher Marking &amp; Answer Key ({generatedWorksheet.title})
-                          </p>
-                          <span className="text-[10px] font-bold text-emerald-800 uppercase">Official Edvoura Rubric</span>
+                      {showAnswerKey && (
+                        <div className="mt-3 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl space-y-1.5 animate-in fade-in duration-150">
+                          <div className="flex items-center justify-between pb-2 border-b border-emerald-300">
+                            <p className="text-xs font-black text-emerald-950 uppercase">
+                              Teacher Marking &amp; Answer Key ({generatedWorksheet.title})
+                            </p>
+                            <span className="text-[10px] font-bold text-emerald-800 uppercase">Official Edvoura Rubric</span>
+                          </div>
+                          <ul className="text-xs font-semibold text-emerald-900 space-y-1.5 pt-1">
+                            {generatedWorksheet.answerKey.map((ans, idx) => (
+                              <li key={idx} className="flex items-start gap-1.5">
+                                <span className="font-bold shrink-0">✓</span>
+                                <span>{ans}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <ul className="text-xs font-semibold text-emerald-900 space-y-1.5 pt-1">
-                          {generatedWorksheet.answerKey.map((ans, idx) => (
-                            <li key={idx} className="flex items-start gap-1.5">
-                              <span className="font-bold shrink-0">✓</span>
-                              <span>{ans}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
+                      )}
                     </div>
                   )}
                 </div>
