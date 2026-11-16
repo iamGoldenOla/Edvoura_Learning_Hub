@@ -275,6 +275,90 @@ export default function StudentBandClientWrapper({
                 )}
               </div>
 
+              {/* Offline 1-on-1 Class Activities & Notes Section */}
+              <div className="mt-8 space-y-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border-2 border-dark text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C]">
+                        1-on-1 Tutorial
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">
+                        Offline 1-on-1 Class Activities &amp; Notes
+                      </h2>
+                    </div>
+                    <p className="text-xs sm:text-sm font-bold text-dark/60 mt-1">
+                      Recap notes, worked solutions, and practice PDFs from offline tutorial sessions with your tutor.
+                    </p>
+                  </div>
+                  <Link href="/dash/student/notes" className="text-xs sm:text-sm font-black text-emerald-700 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    <span>All Notes</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+                  {dashboard.offlineClassNotes && dashboard.offlineClassNotes.length > 0 ? (
+                    dashboard.offlineClassNotes.map((res) => (
+                      <div key={res.id} className="bg-emerald-50/50 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] hover:translate-y-[-2px] transition-all flex flex-col min-w-0">
+                         <div className="flex items-center justify-between mb-2">
+                           <span className="text-[10px] font-black uppercase text-emerald-800 tracking-widest bg-emerald-200/80 px-2 py-0.5 rounded-md border border-dark/20">
+                             {res.className || '1-on-1 Tutorial'}
+                           </span>
+                           <span className="text-[10px] font-bold text-dark/40">
+                             {new Date(res.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                           </span>
+                         </div>
+                         <h3 className="text-base sm:text-lg font-black text-dark mb-1 break-words">{res.title}</h3>
+                         {res.description && (
+                           <p className="text-xs font-bold text-dark/60 mb-3 line-clamp-2">{res.description}</p>
+                         )}
+                         
+                         {res.files && res.files.length > 0 ? (
+                           <div className="space-y-2 mt-auto pt-2 border-t border-dark/10">
+                             {res.files.map((file) => {
+                               const isPdf = file.fileName.toLowerCase().endsWith('.pdf');
+                               return (
+                                 <div key={file.id} className="flex gap-2 items-center min-w-0 bg-white p-2 rounded-xl border-2 border-dark/20 shadow-sm">
+                                   <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+                                   <span className="text-xs font-bold text-dark truncate flex-1">{file.fileName}</span>
+                                   {isPdf && file.downloadUrl && (
+                                     <button
+                                       onClick={() => {
+                                         setActivePdfUrl(file.downloadUrl);
+                                         setActivePdfTitle(file.fileName);
+                                       }}
+                                       className="bg-yellow hover:bg-yellow-light border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase text-dark shrink-0 shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                                     >
+                                       View PDF
+                                     </button>
+                                   )}
+                                   {file.downloadUrl && (
+                                     <a
+                                       href={file.downloadUrl}
+                                       download
+                                       className="bg-white hover:bg-slate-50 border-[2px] border-dark rounded-lg px-2 py-1 text-[10px] font-black uppercase text-dark shrink-0 shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                                     >
+                                       Get
+                                     </a>
+                                   )}
+                                 </div>
+                               );
+                             })}
+                           </div>
+                         ) : (
+                           <p className="text-xs text-dark/40 italic mt-auto">No files attached.</p>
+                         )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[32px] p-6 text-center">
+                      <p className="font-bold text-dark/40 italic">No offline 1-on-1 class notes uploaded yet. Notes from your offline tutoring will appear here! 📝</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Classroom Resources Section */}
               <div className="mt-8 space-y-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -513,6 +597,90 @@ export default function StudentBandClientWrapper({
               <ArrowRight className="h-5 w-5" />
             </Link>
           </Panel>
+
+          {/* Offline 1-on-1 Class Activities & Notes Section */}
+          <div className="mt-8 space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border-2 border-dark text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0px_#060E1C]">
+                    1-on-1 Tutorial
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">
+                    Offline 1-on-1 Class Activities &amp; Notes
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm font-bold text-dark/60 mt-1">
+                  Recap notes, worked solutions, and practice PDFs from offline tutorial sessions with your tutor.
+                </p>
+              </div>
+              <Link href="/dash/student/notes" className="text-xs sm:text-sm font-black text-emerald-700 uppercase tracking-widest hover:underline flex items-center gap-1">
+                <span>All Notes</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
+              {dashboard.offlineClassNotes && dashboard.offlineClassNotes.length > 0 ? (
+                dashboard.offlineClassNotes.map((res) => (
+                  <div key={res.id} className="bg-emerald-50/50 border-[3px] sm:border-[4px] border-dark rounded-[24px] sm:rounded-[32px] p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] hover:translate-y-[-2px] transition-all flex flex-col min-w-0">
+                     <div className="flex items-center justify-between mb-2">
+                       <span className="text-[10px] font-black uppercase text-emerald-800 tracking-widest bg-emerald-200/80 px-2 py-0.5 rounded-md border border-dark/20">
+                         {res.className || '1-on-1 Tutorial'}
+                       </span>
+                       <span className="text-[10px] font-bold text-dark/40">
+                         {new Date(res.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                       </span>
+                     </div>
+                     <h3 className="text-base sm:text-lg font-black text-dark mb-1 break-words">{res.title}</h3>
+                     {res.description && (
+                       <p className="text-xs font-bold text-dark/60 mb-3 line-clamp-2">{res.description}</p>
+                     )}
+                     
+                     {res.files && res.files.length > 0 ? (
+                       <div className="space-y-2 mt-auto pt-2 border-t border-dark/10">
+                         {res.files.map((file) => {
+                           const isPdf = file.fileName.toLowerCase().endsWith('.pdf');
+                           return (
+                             <div key={file.id} className="flex gap-2 items-center min-w-0 bg-white p-2 rounded-xl border-2 border-dark/20 shadow-sm">
+                               <FileText className="w-4 h-4 text-emerald-600 shrink-0" />
+                               <span className="text-xs font-bold text-dark truncate flex-1">{file.fileName}</span>
+                               {isPdf && file.downloadUrl && (
+                                 <button
+                                   onClick={() => {
+                                     setActivePdfUrl(file.downloadUrl);
+                                     setActivePdfTitle(file.fileName);
+                                   }}
+                                   className="bg-yellow hover:bg-yellow-light border-[2px] border-dark rounded-lg px-2.5 py-1 text-[10px] font-black uppercase text-dark shrink-0 shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                                 >
+                                   View PDF
+                                 </button>
+                               )}
+                               {file.downloadUrl && (
+                                 <a
+                                   href={file.downloadUrl}
+                                   download
+                                   className="bg-white hover:bg-slate-50 border-[2px] border-dark rounded-lg px-2 py-1 text-[10px] font-black uppercase text-dark shrink-0 shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                                 >
+                                   Get
+                                 </a>
+                               )}
+                             </div>
+                           );
+                         })}
+                       </div>
+                     ) : (
+                       <p className="text-xs text-dark/40 italic mt-auto">No files attached.</p>
+                     )}
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full bg-white border-[3px] sm:border-[4px] border-dashed border-dark/20 rounded-[24px] sm:rounded-[32px] p-6 text-center">
+                  <p className="font-bold text-dark/40 italic">No offline 1-on-1 class notes uploaded yet. Notes from your offline tutoring will appear here! 📝</p>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Classroom Resources Section */}
           <div className="mt-8 space-y-6">

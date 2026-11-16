@@ -216,19 +216,21 @@ export async function createQuizOrResource(formData: FormData) {
     });
 
     return { success: true, id: data.id };
-  } else if (type === 'resource' || type === 'resources') {
-    // Resources are primarily events, but if they have files, they need a backing assignment
+  } else if (type === 'offline_class_notes' || type === 'offline-activity' || type === 'resource' || type === 'resources') {
+    // Offline 1-on-1 class notes or general class resources
+    const isOfflineNote = type === 'offline_class_notes' || type === 'offline-activity' || formData.get('isOfflineNote') === 'true';
     const description = formData.get('description') as string;
     
-    // Create a "Resource" assignment (non-graded/published)
+    // Create a backing record for file attachment with status 'offline_resource' and points_possible: 0
+    // so it NEVER leaks into the student's homework/assignment submission queue.
     const { data: assignment, error: assignError } = await supabaseAdmin
       .from('assignments')
       .insert({
         class_id: tutorClass!.id,
         title: title.trim(),
         instructions: description?.trim() || null,
-        status: 'published',
-        points_possible: 0, // Resource, not for points
+        status: isOfflineNote ? 'offline_resource' : 'published',
+        points_possible: 0, // Resource/offline note, not a graded homework assignment
         created_by_user_id: tutorId,
         due_at: null
       })
@@ -248,6 +250,8 @@ export async function createQuizOrResource(formData: FormData) {
           title: title.trim(),
           description: description?.trim() || null,
           target_student_id: targetStudentId || null,
+          resource_category: isOfflineNote ? 'offline_class_notes' : 'general_resource',
+          is_offline_activity: isOfflineNote,
         }
       });
 
@@ -256,15 +260,18 @@ export async function createQuizOrResource(formData: FormData) {
     await notifyParentsOfClassroomPublication({
       actorUserId: tutorId,
       classId: tutorClass!.id,
-      title: 'New lesson resource published',
-      body: `${title.trim()} is now available on your child dashboard.`,
+      title: isOfflineNote ? 'New offline 1-on-1 class notes uploaded' : 'New lesson resource published',
+      body: isOfflineNote
+        ? `${title.trim()} notes and worked examples from your 1-on-1 tutorial session are now available on your child's Off-Class Activities & Notes page.`
+        : `${title.trim()} is now available on your child dashboard.`,
       data: {
-        route: '/dash/student/library',
+        route: isOfflineNote ? '/dash/student/notes' : '/dash/student/library',
         resourceTitle: title.trim(),
       },
     });
 
     revalidatePath('/dash/tutor/builder');
+    revalidatePath('/dash/student');
     revalidatePath('/dash/student/library');
     revalidatePath('/dash/student/notes');
     revalidatePath('/dash/student/homework');

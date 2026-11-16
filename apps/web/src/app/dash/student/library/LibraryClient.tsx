@@ -29,6 +29,19 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
   const [activeStory, setActiveStory] = useState<StoryContent | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'offline' | 'story' | 'quiz' | 'resource'>('all');
+
+  const filteredResources = resources.filter((resource) => {
+    const isOffline = (resource.payload as any)?.resource_category === 'offline_class_notes' || (resource.payload as any)?.is_offline_activity || resource.payload.title?.toLowerCase().includes('offline');
+    const isStory = resource.content_type === 'story' || resource.payload.content_type === 'story' || resource.payload.title?.toLowerCase().includes('story') || resource.payload.title?.toLowerCase().includes('lion');
+    const isQuiz = resource.content_type === 'quiz' || resource.payload.content_type === 'quiz' || resource.payload.title?.toLowerCase().includes('quiz') || resource.payload.title?.toLowerCase().includes('test');
+
+    if (activeFilter === 'offline') return isOffline;
+    if (activeFilter === 'story') return isStory;
+    if (activeFilter === 'quiz') return isQuiz;
+    if (activeFilter === 'resource') return !isOffline && !isStory && !isQuiz;
+    return true;
+  });
 
   const handleOpenPdf = (url: string, title: string) => {
     setActivePdfUrl(url);
@@ -71,9 +84,55 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        {[
+          { id: 'all', label: '🌟 All Resources', count: resources.length },
+          {
+            id: 'offline',
+            label: '📝 Offline 1-on-1 Class Activities',
+            count: resources.filter((r) => (r.payload as any)?.resource_category === 'offline_class_notes' || (r.payload as any)?.is_offline_activity || r.payload.title?.toLowerCase().includes('offline')).length,
+          },
+          {
+            id: 'story',
+            label: '📖 Stories & Readers',
+            count: resources.filter((r) => r.content_type === 'story' || r.payload.content_type === 'story' || r.payload.title?.toLowerCase().includes('story') || r.payload.title?.toLowerCase().includes('lion')).length,
+          },
+          {
+            id: 'quiz',
+            label: '🎯 Practice & Quizzes',
+            count: resources.filter((r) => r.content_type === 'quiz' || r.payload.content_type === 'quiz' || r.payload.title?.toLowerCase().includes('quiz') || r.payload.title?.toLowerCase().includes('test')).length,
+          },
+        ].map((tab) => {
+          const isActive = activeFilter === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveFilter(tab.id as any)}
+              className={`px-3.5 py-2 rounded-xl border-[2.5px] border-dark text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 ${
+                isActive
+                  ? 'bg-yellow text-dark shadow-[3px_3px_0px_#060E1C] scale-105'
+                  : 'bg-white hover:bg-slate-100 text-dark/70 shadow-[2px_2px_0px_#060E1C]'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`px-1.5 py-0.5 rounded-md border border-dark text-[9px] font-black ${isActive ? 'bg-dark text-yellow' : 'bg-slate-100 text-dark'}`}>
+                {tab.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="space-y-4">
-        {resources.length > 0 ? (
-          resources.map((resource) => {
+        {filteredResources.length > 0 ? (
+          filteredResources.map((resource) => {
+            const isOffline =
+              (resource.payload as any)?.resource_category === 'offline_class_notes' ||
+              (resource.payload as any)?.is_offline_activity ||
+              resource.payload.title?.toLowerCase().includes('offline');
+
             const isStory = 
               resource.content_type === 'story' || 
               resource.payload.content_type === 'story' ||
@@ -96,6 +155,11 @@ export default function LibraryClient({ resources }: LibraryClientProps) {
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-3">
                         <h3 className="text-xl font-black text-dark truncate">{resource.payload.title}</h3>
+                        {isOffline && (
+                          <span className="inline-flex rounded-xl border-[2px] border-dark bg-emerald-200 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-950 shadow-[2px_2px_0px_#060E1C]">
+                            📝 1-on-1 Offline Class Activity
+                          </span>
+                        )}
                         {isQuiz && (
                           <span className="inline-flex rounded-xl border-[2px] border-dark bg-purple-200 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-dark shadow-[2px_2px_0px_#060E1C]">
                             Assessment

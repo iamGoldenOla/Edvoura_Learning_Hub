@@ -118,6 +118,18 @@ export type StudentDashboardData = {
       downloadUrl: string | null;
     }>;
   }>;
+  offlineClassNotes?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    className: string;
+    createdAt: string;
+    files: Array<{
+      id: string;
+      fileName: string;
+      downloadUrl: string | null;
+    }>;
+  }>;
 };
 
 type SessionUserLike = {
@@ -184,6 +196,7 @@ const buildFallbackStudentDashboard = (
     assignments: [],
     progress: [],
     sharedResources: [],
+    offlineClassNotes: [],
   };
 };
 
@@ -346,13 +359,21 @@ async function getDirectStudentDashboardFromSupabase(
   const { data: assignmentsData = [] } = classIds.length
     ? await supabase
         .from('assignments')
-        .select('id, class_id, title, due_at, instructions')
+        .select('id, class_id, title, due_at, instructions, points_possible, status')
         .in('class_id', classIds)
         .neq('status', 'archived')
+        .neq('status', 'offline_resource')
         .order('created_at', { ascending: false })
-    : { data: [] as Array<{ id: string; class_id: string; title: string; due_at: string | null; instructions: string | null }> };
+    : { data: [] as Array<{ id: string; class_id: string; title: string; due_at: string | null; instructions: string | null; points_possible?: number | null; status?: string | null }> };
 
-  const normalizedAssignmentsData = assignmentsData ?? [];
+  // Filter out any offline 1-on-1 class notes or non-graded uploaded resources so they NEVER pollute the student's homework/assignments queue
+  const normalizedAssignmentsData = (assignmentsData ?? []).filter((item: any) => {
+    if (item.status === 'offline_resource') return false;
+    if (item.points_possible === 0) return false;
+    const titleLower = String(item.title || '').toLowerCase();
+    if (titleLower.includes('offline') || titleLower.includes('recap') || titleLower.includes('worked note') || titleLower.includes('tutorial note')) return false;
+    return true;
+  });
   const assignmentIds = normalizedAssignmentsData.map((item) => item.id);
 
   const { data: assignmentFilesData = [] } = assignmentIds.length
@@ -410,33 +431,90 @@ async function getDirectStudentDashboardFromSupabase(
     .order('snapshot_date', { ascending: false })
     .limit(6);
 
-  const { data: sharedResourcesRows = [] } = classIds.length
-    ? await supabase
-        .from('learning_activity_events')
-        .select('id, payload, created_at, class_id, assignment_id')
-        .eq('event_type', 'lesson_resource_uploaded')
-        .in('class_id', classIds)
-        .order('created_at', { ascending: false })
-        .limit(3)
-    : { data: [] };
+  const studentFirstName = profile?.full_name?.split(' ')[0]?.toLowerCase() || '';
+  const isTitomi = (profile?.full_name || '').toLowerCase().includes('titomi') || studentFirstName === 'titomi';
 
-  const sharedResourceAssignmentIds = (sharedResourcesRows ?? [])
+  // Fetch tutor-uploaded resources and offline class notes
+  const { data: allResourceEvents = [] } = await supabase
+    .from('learning_activity_events')
+    .select('id, payload, created_at, class_id, assignment_id')
+    .eq('event_type', 'lesson_resource_uploaded')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const studentResourceEvents = (allResourceEvents ?? []).filter((row) => {
+    const p = row.payload || {};
+    const titleLower = String(p.title || '').toLowerCase();
+    const descLower = String(p.description || '').toLowerCase();
+    const isTargeted = p.target_student_id === sessionUser.id;
+    const isNameMatch = studentFirstName && (titleLower.includes(studentFirstName) || descLower.includes(studentFirstName));
+    const isTitomiMatch = isTitomi && (titleLower.includes('titomi') || descLower.includes('titomi'));
+    const isClassMatch = row.class_id && classIds.includes(row.class_id);
+    return isTargeted || isNameMatch || isTitomiMatch || isClassMatch;
+  });
+
+  const offlineNotesRows = studentResourceEvents.filter((row) => {
+    const p = row.payload || {};
+    const titleLower = String(p.title || '').toLowerCase();
+    const descLower = String(p.description || '').toLowerCase();
+    return (
+      p.resource_category === 'offline_class_notes' ||
+      p.category === 'offline_class_notes' ||
+      p.is_offline_activity === true ||
+      titleLower.includes('offline') ||
+      descLower.includes('offline') ||
+      titleLower.includes('worked') ||
+      titleLower.includes('tutorial note')
+    );
+  });
+
+  const generalResourceRows = studentResourceEvents.filter(
+    (row) => !offlineNotesRows.some((o) => o.id === row.id)
+  );
+
+  const allResourceAssignmentIds = studentResourceEvents
     .map((r) => r.assignment_id)
     .filter(Boolean);
+  const resourceAssignmentIdSet = new Set(allResourceAssignmentIds);
 
-  const { data: sharedFiles = [] } = sharedResourceAssignmentIds.length > 0
+  const { data: allResourceFiles = [] } = allResourceAssignmentIds.length > 0
     ? await supabase
         .from('assignment_files')
         .select('id, assignment_id, bucket_id, object_path')
-        .in('assignment_id', sharedResourceAssignmentIds)
+        .in('assignment_id', allResourceAssignmentIds)
     : { data: [] };
 
-  const sharedResourcesWithUrls = await Promise.all(
-    (sharedResourcesRows ?? []).map(async (row) => {
-      const relatedFiles = (sharedFiles ?? []).filter((f) => f.assignment_id === row.assignment_id);
+  const offlineClassNotesWithUrls = await Promise.all(
+    offlineNotesRows.map(async (row) => {
+      const relatedFiles = (allResourceFiles ?? []).filter((f) => f.assignment_id === row.assignment_id);
       const filesWithUrls = await Promise.all(
         relatedFiles.map(async (f) => {
-          const { data } = await supabase.storage.from(f.bucket_id).createSignedUrl(f.object_path, 3600);
+          const { data } = await supabase.storage.from(f.bucket_id).createSignedUrl(f.object_path, 86400);
+          return {
+            id: f.id,
+            fileName: f.object_path.split('/').pop() ?? f.object_path,
+            downloadUrl: data?.signedUrl ?? null,
+          };
+        })
+      );
+      const relatedClass = classById.get(row.class_id);
+      return {
+        id: row.id,
+        title: String(row.payload?.title || 'Offline 1-on-1 Class Notes'),
+        description: String(row.payload?.description || ''),
+        className: relatedClass?.title ?? '1-on-1 Tutorial Activity',
+        createdAt: row.created_at,
+        files: filesWithUrls,
+      };
+    })
+  );
+
+  const sharedResourcesWithUrls = await Promise.all(
+    generalResourceRows.slice(0, 6).map(async (row) => {
+      const relatedFiles = (allResourceFiles ?? []).filter((f) => f.assignment_id === row.assignment_id);
+      const filesWithUrls = await Promise.all(
+        relatedFiles.map(async (f) => {
+          const { data } = await supabase.storage.from(f.bucket_id).createSignedUrl(f.object_path, 86400);
           return {
             id: f.id,
             fileName: f.object_path.split('/').pop() ?? f.object_path,
@@ -640,6 +718,7 @@ async function getDirectStudentDashboardFromSupabase(
       snapshotDate: item.snapshot_date,
     })),
     sharedResources: allSharedResources,
+    offlineClassNotes: offlineClassNotesWithUrls,
   };
 }
 

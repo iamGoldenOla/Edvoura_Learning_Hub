@@ -136,6 +136,7 @@ type ResourceCard = {
 
 const TOOL_OPTIONS = [
   "assignment",
+  "offline-activity",
   "quiz",
   "resources",
   "spelling-bee",
@@ -577,13 +578,15 @@ export default function TutorBuilderPage() {
   const livePanelTitle =
     activeTool === "assignment"
       ? "Live Assignment Builder"
-      : activeTool === "quiz"
-        ? "Quiz & Test Builder"
-        : activeTool === "resources"
-          ? "Lesson Resource Library"
-          : activeTool === "spelling-bee"
-            ? "Spelling Bee Challenge"
-            : "Edvoura AI Generator";
+      : activeTool === "offline-activity"
+        ? "Offline 1-on-1 Class Notes & Activities"
+        : activeTool === "quiz"
+          ? "Quiz & Test Builder"
+          : activeTool === "resources"
+            ? "Lesson Resource Library"
+            : activeTool === "spelling-bee"
+              ? "Spelling Bee Challenge"
+              : "Edvoura AI Generator";
   const standardAssignments = assignments.filter(
     (item) => !item.title.startsWith("Spelling Bee:"),
   );
@@ -619,7 +622,17 @@ export default function TutorBuilderPage() {
             </section>
           ) : null}
 
-          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 min-w-0">
+          <section className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-4 min-w-0">
+            <ToolCard
+              title="Offline 1-on-1 Notes"
+              subtitle="Recaps & worked PDFs for pupils"
+              icon={NotebookPen}
+              active={activeTool === "offline-activity"}
+              onClick={() => {
+                setActiveTool("offline-activity");
+                setShowAssignmentForm(true);
+              }}
+            />
             <ToolCard
               title="Assignments"
               subtitle="Send tasks to students"
@@ -713,25 +726,27 @@ export default function TutorBuilderPage() {
                   {showCreateForm && showAssignmentForm ? (
                     <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-blue-50 p-5 sm:p-6 shadow-[4px_4px_0px_#060E1C] sm:shadow-[5px_5px_0px_#060E1C] min-w-0">
                       <h3 className="text-lg sm:text-xl font-black text-dark tracking-tight break-words">
-                        Create{" "}
-                        {activeTool === "assignment"
-                          ? "Assignment"
-                          : activeTool === "quiz"
-                            ? "Quiz"
-                            : activeTool === "resources"
-                              ? "Resource"
-                              : "Spelling Bee Challenge"}
+                        {activeTool === "offline-activity"
+                          ? "Upload Offline 1-on-1 Class Notes & Worked Solutions"
+                          : `Create ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Spelling Bee Challenge"}`}
                       </h3>
+                      {activeTool === "offline-activity" && (
+                        <p className="text-xs font-bold text-dark/70 mt-1 mb-2">
+                          Upload lesson recaps, worked solutions, and PDF materials from offline tutoring sessions with Titomi or other pupils. This goes directly to the pupil&apos;s Off-Class Activities &amp; Notes page (NOT homework).
+                        </p>
+                      )}
                       <div className="mt-6 space-y-4">
                         <input
                           value={formTitle}
                           onChange={(event) => setFormTitle(event.target.value)}
                           placeholder={
-                            activeTool === "quiz"
-                              ? "Quiz title"
-                              : activeTool === "resources"
-                                ? "Resource bundle name"
-                                : "Assignment title"
+                            activeTool === "offline-activity"
+                              ? "e.g. Titomi's Offline Class Recap: Long Division & Word Problems"
+                              : activeTool === "quiz"
+                                ? "Quiz title"
+                                : activeTool === "resources"
+                                  ? "Resource bundle name"
+                                  : "Assignment title"
                           }
                           className="w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
@@ -823,9 +838,11 @@ export default function TutorBuilderPage() {
                             setFormInstructions(event.target.value)
                           }
                           placeholder={
-                            activeTool === "resources"
-                              ? "Resource description"
-                              : "Instructions for students"
+                            activeTool === "offline-activity"
+                              ? "Tutor notes, recap summary, and worked instructions from the offline lesson..."
+                              : activeTool === "resources"
+                                ? "Resource description"
+                                : "Instructions for students"
                           }
                           className="min-h-28 w-full rounded-xl border-[3px] border-dark bg-white px-4 py-3 text-sm font-bold text-dark outline-none transition-all focus:border-yellow"
                         />
@@ -918,7 +935,11 @@ export default function TutorBuilderPage() {
                               try {
                                 if (activeTool !== "assignment") {
                                   const formData = new FormData();
-                                  formData.append("type", activeTool);
+                                  const toolType = activeTool === "offline-activity" ? "offline_class_notes" : activeTool;
+                                  formData.append("type", toolType);
+                                  if (activeTool === "offline-activity") {
+                                    formData.append("isOfflineNote", "true");
+                                  }
                                   formData.append("title", safeTitle);
                                   formData.append("subjectName", formSubject);
                                   formData.append("gradeCode", formGradeCode);
@@ -1104,7 +1125,9 @@ export default function TutorBuilderPage() {
                           >
                             {isSavingAssignment
                               ? "Publishing..."
-                              : `Publish ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Challenge"}`}
+                              : activeTool === "offline-activity"
+                                ? "Upload to Pupil's Off-Class Activities"
+                                : `Publish ${activeTool === "assignment" ? "Assignment" : activeTool === "quiz" ? "Quiz" : activeTool === "resources" ? "Resource" : "Challenge"}`}
                           </Button>
                         </div>
                       </div>
@@ -1274,13 +1297,13 @@ export default function TutorBuilderPage() {
                         one above and it will appear here only.
                       </div>
                     )
-                  ) : activeTool === "resources" ? (
+                  ) : activeTool === "resources" || activeTool === "offline-activity" ? (
                     resources.length > 0 ? (
                       <div className="grid gap-4">
                         {resources.map((item) => (
                           <div
                             key={item.id}
-                            className="rounded-2xl border-[3px] border-dark bg-amber-50 p-5 shadow-[4px_4px_0px_#060E1C]"
+                            className={`rounded-2xl border-[3px] border-dark p-5 shadow-[4px_4px_0px_#060E1C] ${activeTool === "offline-activity" ? "bg-emerald-50" : "bg-amber-50"}`}
                           >
                             <div className="flex flex-col sm:flex-row items-start justify-between gap-3 min-w-0">
                               <div className="space-y-2 min-w-0">
@@ -1371,8 +1394,9 @@ export default function TutorBuilderPage() {
                       </div>
                     ) : (
                       <div className="rounded-2xl border-[3px] border-dashed border-dark/20 bg-slate-50 p-8 text-center text-sm font-semibold text-dark/60">
-                        No lesson resources have been shared yet. Upload one
-                        above and it will appear here only.
+                        {activeTool === "offline-activity"
+                          ? "No offline 1-on-1 class notes uploaded yet. Upload recap notes or worked solution PDFs above and they will appear directly in the pupil's Off-Class Activities."
+                          : "No lesson resources have been shared yet. Upload one above and it will appear here only."}
                       </div>
                     )
                   ) : null}

@@ -163,20 +163,30 @@ export function AIWorksheetModal({
       <div class="q-card">
         <div class="q-header">
           <div class="q-main">
-            <span class="q-num">${q.number}</span>
-            <span class="q-text">${q.question.replace(/\n/g, '<br/>')}</span>
-            ${q.hint ? `<div class="q-tip">Tip: ${q.hint}</div>` : ''}
+            <div class="q-badge-row">
+              <span class="q-num">${q.number}</span>
+              ${q.badge ? `<span class="q-badge-pill">${q.badge}</span>` : ''}
+            </div>
+            <div class="q-text">${q.question.replace(/\n/g, '<br/>')}</div>
+            ${q.hint ? `<div class="q-tip">💡 Hint: ${q.hint}</div>` : ''}
           </div>
           ${q.columnFormat ? `
-            <div class="col-box">
-              <div class="col-top">${q.columnFormat.topNumber}</div>
-              <div class="col-bottom"><span>${q.columnFormat.operator}</span><span>${q.columnFormat.bottomNumber}</span></div>
-              <div class="col-ans-space"></div>
+            <div class="col-container">
+              <div class="col-box">
+                <div class="col-top">${q.columnFormat.topNumber}</div>
+                <div class="col-bottom"><span>${q.columnFormat.operator}</span><span>${q.columnFormat.bottomNumber}</span></div>
+                <div class="col-ans-space"></div>
+              </div>
+              <div class="col-grid-scratch">Working Grid</div>
             </div>
           ` : ''}
         </div>
         <div class="work-space">
           ${Array.from({ length: q.answerSpaceLines || 3 }).map(() => '<div class="work-line"></div>').join('')}
+        </div>
+        <div class="ans-blank-row">
+          <span class="ans-label">✍️ Your Answer:</span>
+          <span class="ans-line"></span>
         </div>
       </div>
     `).join('');
@@ -186,7 +196,7 @@ export function AIWorksheetModal({
       <div class="ans-key-card">
         <div class="ans-header">
           <div class="logo-badge">EDVOURA OFFICIAL RUBRIC</div>
-          <div class="ans-title">TEACHER MARKING &amp; ANSWER KEY</div>
+          <div class="ans-title">TEACHER MARKING &amp; STEP-BY-STEP ANSWER KEY</div>
           <div class="ans-subtitle">${generatedWorksheet.title} • ${generatedWorksheet.grade}</div>
         </div>
         <ul class="ans-list">
@@ -201,7 +211,7 @@ export function AIWorksheetModal({
         <head>
           <title>${generatedWorksheet.title}</title>
           <style>
-            @page { size: A4; margin: 15mm; }
+            @page { size: A4 portrait; margin: 12mm 14mm; }
             * { box-sizing: border-box; }
             body {
               font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -209,22 +219,27 @@ export function AIWorksheetModal({
               margin: 0;
               padding: 0;
               background: #FFFFFF;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
             .header-banner {
-              border-bottom: 2.5px solid #060E1C;
-              padding-bottom: 12px;
-              margin-bottom: 16px;
+              border: 2.5px solid #060E1C;
+              border-radius: 14px;
+              padding: 14px 18px;
+              margin-bottom: 14px;
+              background: #FFFBEB;
               display: flex;
               justify-content: space-between;
-              align-items: flex-start;
+              align-items: center;
+              gap: 16px;
             }
             .logo-badge {
               background: #060E1C;
               color: #FACC15;
               font-size: 10px;
               font-weight: 900;
-              padding: 3px 8px;
-              border-radius: 4px;
+              padding: 3px 10px;
+              border-radius: 6px;
               text-transform: uppercase;
               letter-spacing: 1.5px;
               display: inline-block;
@@ -238,51 +253,56 @@ export function AIWorksheetModal({
               margin-left: 8px;
             }
             .title {
-              font-size: 20px;
+              font-size: 19px;
               font-weight: 900;
               margin: 4px 0 0 0;
               letter-spacing: -0.5px;
+              color: #060E1C;
             }
             .meta-block {
               font-size: 11px;
               font-weight: 800;
-              text-align: right;
+              border: 2px solid #060E1C;
+              background: #FFFFFF;
+              border-radius: 10px;
+              padding: 8px 12px;
               line-height: 1.8;
+              min-width: 220px;
             }
             .meta-line {
               border-bottom: 1.5px solid #060E1C;
               display: inline-block;
-              width: 140px;
-              margin-left: 6px;
-            }
-            .score-box {
-              display: inline-block;
-              border: 1.5px solid #060E1C;
-              border-radius: 4px;
-              padding: 0 8px;
+              width: 110px;
+              margin-left: 4px;
               font-weight: 900;
-              margin-left: 6px;
+              color: #1E293B;
+            }
+            .stars-target {
+              color: #F59E0B;
+              font-size: 12px;
             }
             .instructions-card {
               background: #FEF9C3;
               border: 2px solid #060E1C;
-              border-radius: 8px;
+              border-radius: 10px;
               padding: 10px 14px;
               font-size: 12px;
               font-weight: 700;
-              margin-bottom: 18px;
+              margin-bottom: 16px;
             }
             .instructions-tag {
               font-weight: 900;
               text-transform: uppercase;
               margin-right: 6px;
+              color: #854D0E;
             }
             .q-card {
-              border: 1.5px solid #CBD5E1;
-              border-radius: 10px;
-              padding: 14px;
-              margin-bottom: 16px;
+              border: 2px solid #060E1C;
+              border-radius: 12px;
+              padding: 14px 16px;
+              margin-bottom: 14px;
               page-break-inside: avoid;
+              background: #FFFFFF;
             }
             .q-header {
               display: flex;
@@ -293,9 +313,15 @@ export function AIWorksheetModal({
             .q-main {
               flex: 1;
             }
+            .q-badge-row {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-bottom: 6px;
+            }
             .q-num {
               background: #060E1C;
-              color: #FFFFFF;
+              color: #FACC15;
               width: 24px;
               height: 24px;
               border-radius: 6px;
@@ -304,32 +330,48 @@ export function AIWorksheetModal({
               justify-content: center;
               font-size: 12px;
               font-weight: 900;
-              margin-right: 8px;
-              vertical-align: middle;
+            }
+            .q-badge-pill {
+              background: #EEF2FF;
+              border: 1px solid #6366F1;
+              color: #3730A3;
+              font-size: 10px;
+              font-weight: 900;
+              padding: 2px 7px;
+              border-radius: 6px;
+              text-transform: uppercase;
             }
             .q-text {
-              font-size: 13px;
+              font-size: 13.5px;
               font-weight: 800;
               line-height: 1.5;
-              vertical-align: middle;
+              color: #060E1C;
             }
             .q-tip {
               font-size: 11px;
               font-weight: 600;
-              color: #64748B;
+              color: #475569;
               font-style: italic;
-              margin-top: 4px;
-              margin-left: 32px;
+              margin-top: 5px;
+              padding: 3px 8px;
+              background: #F1F5F9;
+              border-radius: 6px;
+              display: inline-block;
+            }
+            .col-container {
+              display: flex;
+              gap: 10px;
+              align-items: flex-start;
             }
             .col-box {
               font-family: "Courier New", Courier, monospace;
-              font-size: 15px;
+              font-size: 16px;
               font-weight: 900;
               border: 2px solid #060E1C;
-              border-radius: 6px;
+              border-radius: 8px;
               padding: 8px 14px;
               text-align: right;
-              min-width: 110px;
+              min-width: 100px;
               background: #FAFAFA;
             }
             .col-top { letter-spacing: 3px; }
@@ -339,23 +381,53 @@ export function AIWorksheetModal({
               justify-content: space-between;
               letter-spacing: 3px;
             }
-            .col-ans-space { height: 24px; }
+            .col-ans-space { height: 26px; }
+            .col-grid-scratch {
+              border: 1.5px dashed #CBD5E1;
+              border-radius: 8px;
+              width: 80px;
+              height: 75px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 9px;
+              color: #94A3B8;
+              font-weight: 800;
+              text-transform: uppercase;
+              text-align: center;
+              padding: 4px;
+            }
             .work-space {
               margin-top: 10px;
               padding-left: 32px;
             }
             .work-line {
-              border-bottom: 1px solid #CBD5E1;
-              height: 24px;
+              border-bottom: 1px dashed #CBD5E1;
+              height: 22px;
+            }
+            .ans-blank-row {
+              margin-top: 8px;
+              padding-left: 32px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 12px;
+              font-weight: 900;
+            }
+            .ans-label { color: #060E1C; }
+            .ans-line {
+              border-bottom: 2px solid #060E1C;
+              display: inline-block;
+              width: 160px;
             }
             .bonus-card {
               background: #FEF3C7;
               border: 2px solid #F59E0B;
-              border-radius: 10px;
+              border-radius: 12px;
               padding: 12px 16px;
               font-size: 12px;
               font-weight: 700;
-              margin-top: 18px;
+              margin-top: 16px;
               page-break-inside: avoid;
             }
             .bonus-tag {
@@ -364,16 +436,38 @@ export function AIWorksheetModal({
               text-transform: uppercase;
               margin-right: 6px;
             }
+            .motto-banner {
+              margin-top: 18px;
+              border-top: 2px dashed #CBD5E1;
+              padding-top: 12px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 11px;
+              font-weight: 800;
+              color: #475569;
+              page-break-inside: avoid;
+            }
+            .teacher-stamp-box {
+              border: 2px dashed #060E1C;
+              border-radius: 8px;
+              padding: 6px 14px;
+              font-size: 10px;
+              font-weight: 900;
+              text-transform: uppercase;
+              color: #060E1C;
+              background: #FAFAFA;
+            }
             .page-break { page-break-before: always; }
             .ans-key-card {
               border: 2.5px solid #10B981;
-              border-radius: 12px;
-              padding: 20px;
+              border-radius: 14px;
+              padding: 22px;
               background: #F0FDF4;
             }
             .ans-header {
-              border-bottom: 1.5px solid #A7F3D0;
-              padding-bottom: 10px;
+              border-bottom: 2px solid #A7F3D0;
+              padding-bottom: 12px;
               margin-bottom: 14px;
             }
             .ans-title {
@@ -394,7 +488,7 @@ export function AIWorksheetModal({
               font-size: 12px;
               font-weight: 600;
               color: #065F46;
-              line-height: 1.8;
+              line-height: 2;
             }
             .check-icon {
               color: #059669;
@@ -407,18 +501,19 @@ export function AIWorksheetModal({
           <div class="header-banner">
             <div>
               <span class="logo-badge">EDVOURA LEARNING HUB</span>
-              <span class="subject-sub">${generatedWorksheet.subject}</span>
+              <span class="subject-sub">${generatedWorksheet.subject} • ${selectedGrade}</span>
               <h1 class="title">${generatedWorksheet.title}</h1>
             </div>
             <div class="meta-block">
-              <div>Pupil Name: <span class="meta-line">${pupilName}</span></div>
+              <div>Pupil: <span class="meta-line">${pupilName}</span></div>
               <div>Date: <span class="meta-line"></span></div>
-              <div>Score: <span class="score-box">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 100</span></div>
+              <div>Score: <span class="meta-line">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/ 100</span></div>
+              <div>Target: <span class="stars-target">⭐⭐⭐⭐⭐</span></div>
             </div>
           </div>
 
           <div class="instructions-card">
-            <span class="instructions-tag">Instructions:</span>
+            <span class="instructions-tag">🌟 Teacher's Instructions:</span>
             <span>${generatedWorksheet.instructions}</span>
           </div>
 
@@ -426,10 +521,15 @@ export function AIWorksheetModal({
 
           ${generatedWorksheet.bonusChallenge ? `
             <div class="bonus-card">
-              <span class="bonus-tag">Bonus Challenge:</span>
+              <span class="bonus-tag">🚀 Star Explorer Bonus Challenge:</span>
               <span>${generatedWorksheet.bonusChallenge}</span>
             </div>
           ` : ''}
+
+          <div class="motto-banner">
+            <span>🌟 "Every champion was once a learner who refused to give up!" Excellent effort, ${pupilName}! 🏆</span>
+            <div class="teacher-stamp-box">🏅 Tutor Stamp &amp; Star Award</div>
+          </div>
 
           ${answerKeyHtml}
 
@@ -738,90 +838,135 @@ export function AIWorksheetModal({
                   </div>
                 )}
 
-                {/* Printable Worksheet Canvas (Canva Style) */}
-                <div className="p-8 border-[3px] border-dark rounded-2xl bg-white shadow-sm space-y-6">
-                  {/* Canva-style School Header */}
-                  <div className="border-b-2 border-dark pb-4 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded bg-dark text-yellow text-[10px] font-black uppercase tracking-wider">
-                          EDVOURA LEARNING HUB
-                        </span>
-                        <span className="text-xs font-black text-dark/60 uppercase">{generatedWorksheet.subject}</span>
+                {/* Printable Worksheet Canvas (Canva & Twinkl Kids Style) */}
+                <div className="border-[3px] border-dark rounded-3xl bg-white shadow-[6px_6px_0px_#060E1C] overflow-hidden space-y-6">
+                  {/* Decorative Playful Top Ribbon */}
+                  <div className="h-3 bg-gradient-to-r from-amber-400 via-rose-400 via-teal-400 to-indigo-500 w-full" />
+
+                  <div className="p-6 sm:p-8 space-y-6">
+                    {/* Canva-style School Header */}
+                    <div className="border-[2.5px] border-dark rounded-2xl bg-amber-50/60 p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-[3px_3px_0px_#060E1C]">
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="px-2.5 py-0.5 rounded-md bg-dark text-yellow text-[10px] font-black uppercase tracking-wider">
+                            EDVOURA LEARNING HUB
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-md bg-white border border-dark text-[10px] font-black text-indigo-700 uppercase">
+                            {generatedWorksheet.subject} • {selectedGrade}
+                          </span>
+                        </div>
+                        <h2 className="text-xl sm:text-2xl font-black text-dark tracking-tight leading-tight">
+                          {generatedWorksheet.title}
+                        </h2>
                       </div>
-                      <h2 className="text-xl sm:text-2xl font-black text-dark mt-1 tracking-tight">
-                        {generatedWorksheet.title}
-                      </h2>
+
+                      <div className="bg-white border-2 border-dark rounded-xl p-3 text-xs font-bold text-dark space-y-1 min-w-[210px] shrink-0 shadow-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-dark/60 font-black uppercase text-[10px]">Pupil:</span>
+                          <span className="font-black text-dark border-b border-dark px-1">{pupilName}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-dark/60 font-black uppercase text-[10px]">Date:</span>
+                          <span className="text-dark/70 border-b border-dark/40 px-1 text-[11px]">{new Date().toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-dark/60 font-black uppercase text-[10px]">Star Target:</span>
+                          <span className="text-amber-500 text-[11px]">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-0.5 border-t border-dark/10">
+                          <span className="text-dark/60 font-black uppercase text-[10px]">Score:</span>
+                          <span className="font-black text-dark bg-yellow/40 px-2 py-0.5 rounded border border-dark text-[10px]">_____ / 100</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="text-right space-y-1 text-xs font-bold text-dark/70 shrink-0">
-                      <div>Name: <span className="inline-block border-b-2 border-dark w-28 sm:w-36 text-left pl-1">{pupilName}</span></div>
-                      <div>Date: <span className="inline-block border-b-2 border-dark w-28 sm:w-36" /></div>
-                      <div>Score: <span className="inline-block border-b-2 border-dark w-16 text-center">_____ / 100</span></div>
+                    {/* Instructions Banner with mascot hint */}
+                    <div className="p-3.5 bg-yellow/20 border-2 border-dark rounded-xl text-xs font-bold text-dark flex items-center gap-2.5 shadow-[2px_2px_0px_#060E1C]">
+                      <span className="text-lg shrink-0">💡</span>
+                      <div>
+                        <span className="font-black uppercase tracking-wide mr-1.5 text-yellow-900">Teacher&apos;s Guidance:</span>
+                        <span>{generatedWorksheet.instructions}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Instructions */}
-                  <div className="p-3 bg-yellow/15 border-2 border-dark rounded-xl text-xs font-bold text-dark">
-                    <span className="font-black uppercase tracking-wide mr-1.5">Instructions:</span>
-                    <span>{generatedWorksheet.instructions}</span>
-                  </div>
-
-                  {/* Questions Grid with Column Math & Interactive Answers */}
-                  <div className="space-y-6">
-                    {generatedWorksheet.questions.map((q) => (
-                      <div key={q.number} className="p-5 rounded-2xl border-2 border-dark/20 bg-slate-50/50 space-y-3">
-                        <div className="flex items-start justify-between gap-2.5">
-                          <div className="flex items-start gap-2.5">
-                            <span className="w-6 h-6 rounded-lg bg-dark text-white text-xs font-black flex items-center justify-center shrink-0">
-                              {q.number}
-                            </span>
-                            <div className="space-y-1">
-                              {q.badge && (
-                                <span className="inline-block px-2 py-0.5 rounded-md bg-white border border-dark/20 text-[10px] font-black uppercase text-dark/70 shadow-sm mr-2">
-                                  {q.badge}
+                    {/* Questions Grid with Column Math & Interactive Answers */}
+                    <div className="space-y-5">
+                      {generatedWorksheet.questions.map((q) => (
+                        <div key={q.number} className="p-5 rounded-2xl border-2 border-dark bg-slate-50/60 shadow-[3px_3px_0px_#060E1C] space-y-3">
+                          <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                            <div className="space-y-1.5 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="w-7 h-7 rounded-lg bg-dark text-yellow text-xs font-black flex items-center justify-center shrink-0 shadow-sm">
+                                  {q.number}
                                 </span>
-                              )}
-                              <p className="text-sm font-black text-dark leading-snug whitespace-pre-line inline">{q.question}</p>
+                                {q.badge && (
+                                  <span className="inline-block px-2.5 py-0.5 rounded-md bg-white border border-dark text-[10px] font-black uppercase text-indigo-700 shadow-sm">
+                                    {q.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm sm:text-base font-black text-dark leading-snug whitespace-pre-line pt-1">{q.question}</p>
                               {q.hint && (
-                                <p className="text-xs font-bold text-dark/50 italic pt-1">Tip: {q.hint}</p>
+                                <p className="text-xs font-bold text-dark/60 italic bg-white/80 border border-dark/10 rounded-lg px-2.5 py-1 inline-block">
+                                  💡 Hint: {q.hint}
+                                </p>
                               )}
                             </div>
+
+                            {/* Column Math Format Box (Worksheetinator / wsMath style) */}
+                            {q.columnFormat && (
+                              <div className="flex gap-2 items-center self-end sm:self-auto shrink-0">
+                                <div className="bg-white border-2 border-dark rounded-xl p-3 font-mono text-base font-black text-dark text-right min-w-[110px] shadow-[2px_2px_0px_#060E1C]">
+                                  <div className="tracking-widest">{q.columnFormat.topNumber}</div>
+                                  <div className="tracking-widest border-b-2 border-dark flex items-center justify-between">
+                                    <span className="text-xs font-bold mr-2">{q.columnFormat.operator}</span>
+                                    <span>{q.columnFormat.bottomNumber}</span>
+                                  </div>
+                                  <div className="h-6" />
+                                </div>
+                                <div className="hidden sm:flex border-2 border-dashed border-dark/20 rounded-xl w-16 h-20 items-center justify-center text-[9px] font-black text-dark/30 uppercase text-center p-1">
+                                  Scratch Pad
+                                </div>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Column Math Format Box (Worksheetinator / wsMath style) */}
-                          {q.columnFormat && (
-                            <div className="bg-white border-2 border-dark rounded-xl p-3 font-mono text-sm font-black text-dark text-right min-w-[110px] shadow-[2px_2px_0px_#060E1C] shrink-0">
-                              <div className="tracking-widest">{q.columnFormat.topNumber}</div>
-                              <div className="tracking-widest border-b-2 border-dark flex items-center justify-between">
-                                <span className="text-xs font-bold">{q.columnFormat.operator}</span>
-                                <span>{q.columnFormat.bottomNumber}</span>
-                              </div>
-                              <div className="h-6" />
-                            </div>
-                          )}
-                        </div>
+                          {/* Working space lines */}
+                          <div className="pl-4 sm:pl-9 space-y-2 pt-1">
+                            {Array.from({ length: q.answerSpaceLines || 3 }).map((_, i) => (
+                              <div key={i} className="border-b border-dashed border-dark/20 h-5" />
+                            ))}
+                          </div>
 
-                        {/* Working space lines */}
-                        <div className="pl-8 space-y-2 pt-1">
-                          {Array.from({ length: q.answerSpaceLines || 3 }).map((_, i) => (
-                            <div key={i} className="border-b border-dark/20 h-5" />
-                          ))}
+                          {/* Interactive Digital Student Answer Blank */}
+                          <div className="pl-4 sm:pl-9 pt-1 flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-black uppercase text-dark/70">✍️ Your Answer:</span>
+                            <input
+                              type="text"
+                              placeholder="Type answer here..."
+                              value={studentAnswers[q.number] || ''}
+                              onChange={(e) => setStudentAnswers({ ...studentAnswers, [q.number]: e.target.value })}
+                              className="px-3 py-1.5 text-xs font-bold border-2 border-dark rounded-xl outline-none focus:border-indigo-600 bg-white min-w-[180px] shadow-sm"
+                            />
+                            {studentAnswers[q.number] && (
+                              <span className="text-[10px] font-black uppercase text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300">
+                                Recorded
+                              </span>
+                            )}
+                          </div>
                         </div>
+                      ))}
+                    </div>
 
-                        {/* Interactive Digital Student Answer Blank */}
-                        <div className="pl-8 pt-1 flex items-center gap-2">
-                          <span className="text-xs font-black uppercase text-dark/60">Your Answer:</span>
-                          <input
-                            type="text"
-                            placeholder="Type answer here..."
-                            value={studentAnswers[q.number] || ''}
-                            onChange={(e) => setStudentAnswers({ ...studentAnswers, [q.number]: e.target.value })}
-                            className="px-3 py-1 text-xs font-bold border-2 border-dark/30 rounded-lg outline-none focus:border-dark bg-white max-w-[200px]"
-                          />
-                        </div>
+                    {/* Motivational Footer Ribbon */}
+                    <div className="p-4 border-2 border-dashed border-dark/30 rounded-2xl bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+                      <p className="text-xs font-black text-dark/80">
+                        🌟 &ldquo;Every champion was once a learner who refused to give up!&rdquo; Brilliant effort, {pupilName}! 🏆
+                      </p>
+                      <div className="px-3 py-1 rounded-lg border-2 border-dark bg-yellow text-[10px] font-black uppercase text-dark shrink-0 shadow-[2px_2px_0px_#060E1C]">
+                        🏅 Tutor Award Stamp
                       </div>
-                    ))}
+                    </div>
                   </div>
 
                   {/* Bonus Challenge */}

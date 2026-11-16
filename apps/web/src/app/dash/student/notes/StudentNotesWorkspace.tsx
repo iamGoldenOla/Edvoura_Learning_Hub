@@ -226,9 +226,16 @@ function StudentLessonNoteView({ note, onOpenPdf, studentGradeCode }: { note: AI
         className="flex w-full items-start justify-between gap-3 p-4 text-left transition-colors hover:bg-off-white/50 sm:p-5"
       >
         <div className="flex-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">
-            {note.subject} · {note.grade}
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-dark/40">
+              {note.subject} · {note.grade}
+            </span>
+            {(note.id.startsWith('tutor_res_') || Boolean((note.content as any)?.is_offline_activity) || note.title.toLowerCase().includes('offline')) && (
+              <span className="px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-400 text-[10px] font-black uppercase text-emerald-800 tracking-wider shadow-sm">
+                📝 1-on-1 Offline Class Note
+              </span>
+            )}
+          </div>
           <h3 className="mt-1 text-base font-black text-dark break-words sm:text-lg">{note.title}</h3>
           {lessonSummary ? (
             <p className="mt-1 text-sm font-semibold text-dark/60 line-clamp-2">{lessonSummary}</p>
@@ -512,7 +519,7 @@ export default function StudentNotesWorkspace({
   const [activePdfUrl, setActivePdfUrl] = useState<string | null>(null);
   const [activePdfTitle, setActivePdfTitle] = useState<string>('');
   const [publishedOfficialIds, setPublishedOfficialIds] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState<'all' | 'pdf_master' | 'quizzes' | 'stories' | 'guides'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'offline_tutorial' | 'pdf_master' | 'quizzes' | 'stories' | 'guides'>('all');
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -545,7 +552,9 @@ export default function StudentNotesWorkspace({
 
       const isQuiz = titleLower.includes('quiz') || Array.isArray(note.content.quiz_data) || Array.isArray(note.content.questions);
       const isStory = titleLower.includes('lion') || titleLower.includes('story') || titleLower.includes('fable') || Boolean(note.content.story_content);
+      const isOffline = note.id.startsWith('tutor_res_') || Boolean((note.content as any)?.is_offline_activity) || titleLower.includes('offline') || (note.topic && note.topic.toLowerCase().includes('offline'));
 
+      if (activeCategory === 'offline_tutorial') return isOffline;
       if (activeCategory === 'pdf_master') return Boolean(hasPdf);
       if (activeCategory === 'quizzes') return isQuiz;
       if (activeCategory === 'stories') return isStory;
@@ -591,6 +600,12 @@ export default function StudentNotesWorkspace({
         <div className="flex flex-wrap items-center gap-2.5">
           {[
             { id: 'all', label: '🌟 All Notes', icon: '✨', count: aiLessonNotes.length },
+            {
+              id: 'offline_tutorial',
+              label: '📝 Offline 1-on-1 Class Activities',
+              icon: '📝',
+              count: aiLessonNotes.filter(n => n.id.startsWith('tutor_res_') || Boolean((n.content as any)?.is_offline_activity) || n.title.toLowerCase().includes('offline') || (n.topic && n.topic.toLowerCase().includes('offline'))).length
+            },
             {
               id: 'pdf_master',
               label: '📚 Master PDF Notes',

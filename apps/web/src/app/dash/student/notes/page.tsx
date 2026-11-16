@@ -92,16 +92,21 @@ export default async function NotesPage() {
         const rawName = file.object_path.split('/').pop() || 'Tutor Resource';
         const cleanName = rawName.replace(/^\d+[-_]/, '').replace(/\.{2,}/g, '.');
 
+        const isOffline = (res.payload as any)?.resource_category === 'offline_class_notes' || (res.payload as any)?.is_offline_activity || String(res.payload?.title || '').toLowerCase().includes('offline') || String(res.payload?.description || '').toLowerCase().includes('offline');
+
         filteredNotes.unshift({
           id: `tutor_res_file_${file.id}`,
           title: cleanName,
           subject: 'Mathematics',
-          topic: res.payload?.title || 'Tutor Lesson Tutorial',
+          topic: res.payload?.title || (isOffline ? 'Offline 1-on-1 Class Notes' : 'Tutor Lesson Tutorial'),
           grade: studentGradeCode,
           content_json: {
-            lesson_summary: `Personalized tutorial worksheet uploaded by your tutor for review and practice.`,
+            lesson_summary: isOffline
+              ? `Personalized offline 1-on-1 tutorial notes and worked examples uploaded by your tutor.`
+              : `Personalized tutorial worksheet uploaded by your tutor for review and practice.`,
             official_file_url: signed?.signedUrl,
             file_name: cleanName,
+            is_offline_activity: isOffline,
           },
           created_at: res.created_at,
         });
