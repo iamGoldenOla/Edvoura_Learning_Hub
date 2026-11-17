@@ -34,6 +34,8 @@ import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
 import { StudentDeskManager } from './StudentDeskManager';
 import { PDFAnnotator } from './PDFAnnotator';
 import { AIWorksheetModal } from './AIWorksheetModal';
+import { VRLabExplorer } from './VRLabExplorer';
+import { Glasses } from 'lucide-react';
 
 interface ClassroomWorkspaceProps {
   lessonId: string;
@@ -41,7 +43,7 @@ interface ClassroomWorkspaceProps {
   userName: string;
 }
 
-type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks' | 'youtube';
+type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks' | 'youtube' | 'vrlab';
 
 
 function getYouTubeVideoId(url: string): string | null {
@@ -915,6 +917,28 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   </button>
                 )}
 
+                <button
+                  onClick={() => {
+                    setPresentationMode('vrlab');
+                    if (channelRef.current && role === 'tutor') {
+                      channelRef.current.send({
+                        type: 'broadcast',
+                        event: 'present-mode',
+                        payload: { mode: 'vrlab' },
+                      });
+                    }
+                  }}
+                  className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                    presentationMode === 'vrlab'
+                      ? 'bg-purple-600 text-white shadow-[1px_1px_0px_#060E1C]'
+                      : 'bg-white text-dark/70 hover:bg-slate-50'
+                  }`}
+                  title="Launch 3D & Virtual Reality Lab (Solar System, Heart, Geometry, Volcano)"
+                >
+                  <Glasses className="w-3.5 h-3.5 text-purple-600" />
+                  <span>3D/VR Lab</span>
+                </button>
+
                 {/* Collapsed Video Quick Expand Pill */}
                 {isVideoCollapsed && (
                   <button
@@ -993,6 +1017,13 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     />
                   </div>
                 </div>
+              )}
+
+              {presentationMode === 'vrlab' && (
+                <VRLabExplorer
+                  lessonId={lessonId}
+                  role={role}
+                />
               )}
 
               {/* Floating Arrow Tab to slide Video back out when tucked in */}
@@ -1160,6 +1191,36 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   </Button>
                 </div>
               )}
+
+              {/* 3D & Virtual Reality Lab Card */}
+              <div className="p-4 rounded-2xl border-[2.5px] border-dark bg-purple-50 space-y-2 shadow-[2px_2px_0px_#060E1C]">
+                <div className="flex items-center gap-2">
+                  <Glasses className="w-4 h-4 text-purple-700" />
+                  <h4 className="text-xs font-black uppercase tracking-wider text-dark">
+                    3D &amp; Virtual Reality Lab
+                  </h4>
+                </div>
+                <p className="text-xs text-dark/80 font-bold leading-relaxed">
+                  Interactive 3D Solar System, Human Heart &amp; Anatomy, 3D Geometry, and Earth Volcano with Gyroscope &amp; VR support.
+                </p>
+                <Button
+                  onClick={() => {
+                    setIsToolsOpen(false);
+                    setPresentationMode('vrlab');
+                    if (channelRef.current && role === 'tutor') {
+                      channelRef.current.send({
+                        type: 'broadcast',
+                        event: 'present-mode',
+                        payload: { mode: 'vrlab' },
+                      });
+                    }
+                  }}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white border-[2px] border-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                >
+                  <Glasses className="w-4 h-4 mr-1.5" />
+                  <span>Launch 3D / VR Lab Stage</span>
+                </Button>
+              </div>
 
               {/* Share YouTube Educational Video Card */}
               {role === 'tutor' && (
