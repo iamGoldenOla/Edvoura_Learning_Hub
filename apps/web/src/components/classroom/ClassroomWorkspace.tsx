@@ -245,56 +245,88 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Mount WebRTC Meeting API with rock-solid camera acquisition, Tile View, and clean cleanup
+  // Mount WebRTC Meeting API with rock-solid camera acquisition, Tile View, and direct-iframe failsafe
   useEffect(() => {
     let isMounted = true;
     let observer: MutationObserver | null = null;
-    if (isSessionEnded) return;
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
+    let hasMountedVideo = false;
+    if (loading || isSessionEnded) return;
 
-    // Only prime camera permissions if not yet granted; if we do open a test stream,
-    // wait 500ms after stopping tracks so Windows/Opera GX fully releases the webcam lock
-    // before Jitsi calls getUserMedia (prevents black/dark video race condition).
+    // Direct iframe failsafe if external_api.js is blocked (e.g., Opera GX tracker blocker) or slow
+    const mountDirectIframeFallback = () => {
+      if (!isMounted || hasMountedVideo || !videoMountRef.current || isSessionEnded) return;
+      hasMountedVideo = true;
+      videoMountRef.current.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableDeepLinking=true&config.enableWelcomePage=false&config.enableClosePage=false&config.disableFilmstrip=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false`;
+      iframe.allow = 'camera *; microphone *; display-capture *; autoplay *; clipboard-write *; fullscreen *';
+      iframe.allowFullscreen = true;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = '0';
+      videoMountRef.current.appendChild(iframe);
+      setIsJitsiReady(true);
+    };
+
+    // Only prime camera permissions if not yet granted; strict 2.5s timeout so it NEVER hangs startup.
     const primeMediaDevices = async () => {
       if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return;
-      try {
-        let alreadyGranted = false;
-        if (navigator.permissions?.query) {
-          try {
-            const camPerm = await navigator.permissions.query({ name: 'camera' as PermissionName });
-            const micPerm = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-            if (camPerm.state === 'granted' && micPerm.state === 'granted') {
-              alreadyGranted = true;
-            } else if (camPerm.state === 'denied') {
-              setCameraErrorMsg('Camera permission is blocked in your browser. Click the camera/lock icon in your address bar to Allow camera, then click Reconnect Video.');
-              return;
+      const runCheck = async () => {
+        try {
+          let alreadyGranted = false;
+          if (navigator.permissions?.query) {
+            try {
+              const camPerm = await navigator.permissions.query({ name: 'camera' as PermissionName });
+              const micPerm = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+              if (camPerm.state === 'granted' && micPerm.state === 'granted') {
+                alreadyGranted = true;
+              } else if (camPerm.state === 'denied') {
+                setCameraErrorMsg('Camera permission is blocked in your browser. Click the camera/lock icon in your address bar to Allow camera, then click Reconnect Video.');
+                return;
+              }
+            } catch (_) {
+              // Safari / some browsers don't support permissions.query('camera')
             }
-          } catch (_) {
-            // Safari / some browsers don't support permissions.query('camera')
+          }
+
+          if (!alreadyGranted) {
+            const testStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            testStream.getTracks().forEach((track) => track.stop());
+            // Hardware release cooldown for Windows DirectShow / MediaFoundation webcams
+            await new Promise((resolve) => setTimeout(resolve, 450));
+          }
+          setCameraErrorMsg(null);
+        } catch (err: any) {
+          console.warn('Initial camera prime check:', err);
+          if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+            setCameraErrorMsg('Camera access was blocked. Allow camera permission in your browser bar, then click Reconnect.');
+          } else if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
+            setCameraErrorMsg('Your camera is currently in use by another app or tab (close any other open fairmeeting/video tab), then click Reconnect.');
+          } else if (err?.name === 'NotFoundError') {
+            setCameraErrorMsg('No camera device detected on this device.');
           }
         }
+      };
 
-        if (!alreadyGranted) {
-          const testStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          testStream.getTracks().forEach((track) => track.stop());
-          // Critical hardware release cooldown for Windows DirectShow / MediaFoundation webcams
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-        setCameraErrorMsg(null);
-      } catch (err: any) {
-        console.warn('Initial camera prime check:', err);
-        if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-          setCameraErrorMsg('Camera access was blocked. Allow camera permission in your browser bar, then click Reconnect.');
-        } else if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
-          setCameraErrorMsg('Your camera is currently in use by another app or tab. Close other video apps, then click Reconnect.');
-        } else if (err?.name === 'NotFoundError') {
-          setCameraErrorMsg('No camera device detected on this device.');
-        }
-      }
+      await Promise.race([
+        runCheck(),
+        new Promise<void>((resolve) => setTimeout(resolve, 2500)),
+      ]);
     };
 
     const initJitsi = () => {
-      if (!isMounted || !videoMountRef.current || isSessionEnded) return;
-      if (!(window as any).JitsiMeetExternalAPI) return;
+      if (!isMounted || hasMountedVideo || !videoMountRef.current || isSessionEnded) return;
+      if (!(window as any).JitsiMeetExternalAPI) {
+        mountDirectIframeFallback();
+        return;
+      }
+
+      hasMountedVideo = true;
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+      }
 
       if (jitsiApiRef.current) {
         try {
@@ -496,34 +528,59 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           },
         });
       } catch (err) {
-        console.warn('Jitsi External API mount error:', err);
+        console.warn('Jitsi External API mount error, falling back to direct iframe:', err);
+        hasMountedVideo = false;
+        mountDirectIframeFallback();
       }
     };
 
-    const scriptId = `webrtc-script-${currentDomain.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    const existingScript = document.getElementById(scriptId);
-
-    if (existingScript && (window as any).JitsiMeetExternalAPI) {
+    const launchAfterPrime = () => {
       void primeMediaDevices().finally(() => {
         if (isMounted) initJitsi();
       });
+    };
+
+    // Guaranteed failsafe: never spin forever even if external_api.js is slow or blocked
+    fallbackTimer = setTimeout(() => {
+      if (isMounted && !hasMountedVideo) {
+        mountDirectIframeFallback();
+      }
+    }, 5500);
+
+    const scriptId = `webrtc-script-${currentDomain.replace(/[^a-zA-Z0-9]/g, '-')}`;
+    const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    if ((window as any).JitsiMeetExternalAPI) {
+      launchAfterPrime();
+    } else if (existingScript) {
+      const onExistingLoad = () => {
+        if (isMounted) launchAfterPrime();
+      };
+      const onExistingError = () => {
+        if (isMounted) mountDirectIframeFallback();
+      };
+      existingScript.addEventListener('load', onExistingLoad, { once: true });
+      existingScript.addEventListener('error', onExistingError, { once: true });
     } else {
       const script = document.createElement('script');
       script.id = scriptId;
       script.src = `https://${currentDomain}/external_api.js`;
       script.async = true;
       script.onload = () => {
-        if (isMounted) {
-          void primeMediaDevices().finally(() => {
-            if (isMounted) initJitsi();
-          });
-        }
+        if (isMounted) launchAfterPrime();
+      };
+      script.onerror = () => {
+        if (isMounted) mountDirectIframeFallback();
       };
       document.body.appendChild(script);
     }
 
     return () => {
       isMounted = false;
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = null;
+      }
       if (observer) {
         observer.disconnect();
         observer = null;
@@ -535,7 +592,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         jitsiApiRef.current = null;
       }
     };
-  }, [cleanRoom, currentDomain, userName, isSessionEnded, videoReconnectNonce]);
+  }, [loading, cleanRoom, currentDomain, userName, isSessionEnded, videoReconnectNonce]);
 
   // Realtime Supabase Channel for PDF & Whiteboard synchronization
   useEffect(() => {
