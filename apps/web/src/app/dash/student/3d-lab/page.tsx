@@ -51,6 +51,34 @@ export default function StudentVRLabPage() {
       desc: 'Peel back the Earth’s crust down to the scorching 6,000°C inner core.',
       color: 'bg-sky-100 text-sky-900 border-sky-500',
     },
+    {
+      id: 'dna-helix' as VRModuleId,
+      title: '🧬 DNA Double Helix',
+      badge: 'Genetics & Life',
+      desc: 'Inspect the twisted ladder of life, base pairs, and genetic coding.',
+      color: 'bg-cyan-100 text-cyan-900 border-cyan-500',
+    },
+    {
+      id: 'plant-cell' as VRModuleId,
+      title: '🌿 Plant Cell Anatomy',
+      badge: 'Biology & Botany',
+      desc: 'Explore chloroplasts, rigid cell wall, and central vacuole.',
+      color: 'bg-emerald-100 text-emerald-900 border-emerald-500',
+    },
+    {
+      id: 'bohr-atom' as VRModuleId,
+      title: '⚛️ Bohr Quantum Atom',
+      badge: 'Chemistry & Physics',
+      desc: 'Observe the proton-neutron nucleus and orbiting electron quantum shells.',
+      color: 'bg-indigo-100 text-indigo-900 border-indigo-500',
+    },
+    {
+      id: 'ancient-pyramid' as VRModuleId,
+      title: '🏛️ Ancient Pyramids',
+      badge: 'World History',
+      desc: 'Step into ancient world wonders, limestone casing, and architectural geometry.',
+      color: 'bg-amber-100 text-amber-900 border-amber-500',
+    },
   ];
 
   return (
