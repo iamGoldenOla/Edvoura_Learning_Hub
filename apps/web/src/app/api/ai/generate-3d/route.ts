@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { z } from 'zod';
@@ -57,7 +56,12 @@ function getGeminiKeys(): string[] {
     .filter(([k, v]) => /^GEMINI_API_KEY_\d+$/.test(k) && typeof v === 'string' && v.trim())
     .sort(([a], [b]) => Number(a.replace('GEMINI_API_KEY_', '')) - Number(b.replace('GEMINI_API_KEY_', '')))
     .map(([, v]) => v!.trim());
-  const primary = [process.env.GEMINI_API_KEY]
+  const primary = [
+    process.env.GEMINI_API_KEY,
+    process.env.GOOGLE_AI_API_KEY,
+    process.env.GOOGLE_API_KEY,
+    process.env.VERTEX_API_KEY,
+  ]
     .filter((v): v is string => typeof v === 'string' && v.trim().length > 0)
     .map((v) => v.trim());
   return [...new Set([...primary, ...numbered])];
@@ -264,23 +268,53 @@ export async function POST(request: NextRequest) {
 
     const promptText = build3DPrompt(topic, gradeLevel);
 
-    // 1. Try Gemini first (fastest + highest spatial JSON accuracy for Three.js coordinates)
+    // 1. Try Gemini REST v1beta directly (supports BOTH AQ.* and AIza* Google AI keys + latest models)
     const geminiKeys = getGeminiKeys();
-    const geminiModels = [process.env.GEMINI_MODEL || 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    const geminiModels = [
+      process.env.GEMINI_MODEL,
+      'gemini-flash-latest',
+      'gemini-3.1-flash-lite',
+      'gemini-flash-lite-latest',
+      'gemini-3-flash-preview',
+      'gemini-2.5-flash-lite',
+      'gemini-2.5-flash',
+    ].filter((m): m is string => typeof m === 'string' && m.trim().length > 0);
 
     for (const key of geminiKeys) {
-      const genAI = new GoogleGenerativeAI(key);
       for (const modelName of [...new Set(geminiModels)]) {
         try {
-          const model = genAI.getGenerativeModel({
-            model: modelName,
-            generationConfig: {
-              temperature: 0.4,
-              responseMimeType: 'application/json',
-            },
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 12000);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+            modelName,
+          )}:generateContent?key=${encodeURIComponent(key)}`;
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: promptText }] }],
+              generationConfig: {
+                temperature: 0.4,
+                responseMimeType: 'application/json',
+              },
+            }),
           });
-          const res = await model.generateContent(promptText);
-          const raw = res.response.text();
+          clearTimeout(timer);
+
+          if (!resp.ok) {
+            const errTxt = await resp.text().catch(() => '');
+            console.warn(`3D Gen Gemini (${modelName}) HTTP ${resp.status}:`, errTxt.slice(0, 180));
+            continue;
+          }
+
+          const payload = await resp.json();
+          const raw =
+            payload?.candidates?.[0]?.content?.parts
+              ?.map((p: any) => p?.text || '')
+              .join('') || '';
+          if (!raw) continue;
+
           const parsed = extractJsonPayload(raw);
           const validated = BlueprintSchema.parse(parsed);
           return NextResponse.json({ blueprint: validated, provider: `gemini:${modelName}` });
