@@ -43,7 +43,20 @@ export type VRModuleId =
   | 'dna-helix'
   | 'plant-cell'
   | 'bohr-atom'
-  | 'ancient-pyramid';
+  | 'ancient-pyramid'
+  | 'ai-custom';
+
+export type GeometryShapeId =
+  | 'cube'
+  | 'cuboid'
+  | 'cylinder'
+  | 'pyramid'
+  | 'cone'
+  | 'prism'
+  | 'sphere'
+  | 'torus';
+
+export type CustomAiSceneKind = 'rocket' | 'castle' | 'water-molecule' | 'tree' | 'crystal';
 
 export type VRDisplayMode = 'desktop' | 'gyro' | 'split-vr';
 
@@ -244,15 +257,18 @@ export function VRLabExplorer({
   const gazeTargetRef = useRef<string | null>(null);
   const gazeTimerRef = useRef<number>(0);
 
-  // oculus-samples: Native WebXR Session State
+  // oculus-samples: Native WebXR Session State + Laptop Browser VR Fallback Banner
   const [webXRSupported, setWebXRSupported] = useState<boolean>(false);
   const [isWebXRPresenting, setIsWebXRPresenting] = useState<boolean>(false);
+  const [vrStatusBanner, setVrStatusBanner] = useState<string | null>(null);
 
   // ruslanmv/GenAI-3D: Generative AI 3D Prompting
   const [aiPromptOpen, setAiPromptOpen] = useState<boolean>(false);
   const [aiPromptText, setAiPromptText] = useState<string>('');
   const [isAiGenerating, setIsAiGenerating] = useState<boolean>(false);
   const [customAiModelTitle, setCustomAiModelTitle] = useState<string>('');
+  const [customAiKind, setCustomAiKind] = useState<CustomAiSceneKind>('rocket');
+  const [customAiDescription, setCustomAiDescription] = useState<string>('');
 
   // Manim Motion Controls
   const [netUnfoldAmount, setNetUnfoldAmount] = useState<number>(0); // 0 = 3D folded, 1 = 2D flat net
@@ -260,7 +276,7 @@ export function VRLabExplorer({
 
   // Module Specific Sub-selections
   const [selectedHeartPart, setSelectedHeartPart] = useState<string>('Left Ventricle');
-  const [selectedShape, setSelectedShape] = useState<'cube' | 'cylinder' | 'pyramid' | 'sphere'>('cube');
+  const [selectedShape, setSelectedShape] = useState<GeometryShapeId>('cube');
   const [selectedLayer, setSelectedLayer] = useState<string>('Inner Core');
   const [selectedCellOrganelle, setSelectedCellOrganelle] = useState<string>('Chloroplast');
 
@@ -508,15 +524,43 @@ export function VRLabExplorer({
     setIsSpeaking(false);
   };
 
-  // Launch Native WebXR Session (oculus-samples)
+  // Launch Native WebXR Session on VR Headsets, OR seamlessly enter Browser Immersive VR Mode on Laptops/Tablets
   const launchNativeWebXR = async () => {
     const state = threeStateRef.current;
-    if (!state || !navigator || !(navigator as any).xr) {
-      alert('WebXR is not supported on this browser/device. Try Meta Quest Browser, Apple Vision Pro, or Chrome with WebXR extension.');
+
+    const activateBrowserImmersiveVR = () => {
+      const turningOn = displayMode !== 'split-vr';
+      if (turningOn) {
+        setDisplayMode('split-vr');
+        setGazeReticleEnabled(true);
+        setIsFullscreen(true);
+        setVrStatusBanner(
+          'Browser Immersive VR Mode active (360° Stereoscopic + Gaze). Connect a Meta Quest or Apple Vision Pro for native headset tracking.'
+        );
+        playSynthesizedSound('laser');
+      } else {
+        setDisplayMode('desktop');
+        setGazeReticleEnabled(false);
+        setIsFullscreen(false);
+        setVrStatusBanner(null);
+      }
+    };
+
+    if (!state || typeof navigator === 'undefined' || !(navigator as any).xr) {
+      activateBrowserImmersiveVR();
       return;
     }
 
     try {
+      const supported = await (navigator as any).xr
+        .isSessionSupported('immersive-vr')
+        .catch(() => false);
+
+      if (!supported) {
+        activateBrowserImmersiveVR();
+        return;
+      }
+
       const session = await (navigator as any).xr.requestSession('immersive-vr', {
         optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'],
       });
@@ -524,15 +568,17 @@ export function VRLabExplorer({
       state.renderer.xr.enabled = true;
       await state.renderer.xr.setSession(session);
       setIsWebXRPresenting(true);
+      setVrStatusBanner('Native WebXR Headset Session Active');
       playSynthesizedSound('laser');
 
       session.addEventListener('end', () => {
         setIsWebXRPresenting(false);
+        setVrStatusBanner(null);
         state.renderer.xr.enabled = false;
       });
-    } catch (err) {
-      console.warn('WebXR session launch failed:', err);
-      alert('Could not start WebXR session: ' + (err as any)?.message);
+    } catch (_) {
+      // No physical VR headset connected to this computer — gracefully switch to Browser Immersive VR Mode
+      activateBrowserImmersiveVR();
     }
   };
 
@@ -732,12 +778,13 @@ export function VRLabExplorer({
     const moduleZoomMap: Record<VRModuleId, { zoom: number; rotX: number; rotY: number }> = {
       'solar-system': { zoom: 42, rotX: 0.45, rotY: 0 },
       'human-heart': { zoom: 10.5, rotX: 0.15, rotY: 0.2 },
-      'geometry-volume': { zoom: 9.5, rotX: 0.35, rotY: 0.45 },
+      'geometry-volume': { zoom: 10.0, rotX: 0.35, rotY: 0.45 },
       'earth-volcano': { zoom: 12.5, rotX: 0.25, rotY: 0.4 },
       'dna-helix': { zoom: 15.5, rotX: 0.1, rotY: 0 },
       'plant-cell': { zoom: 12.5, rotX: 0.28, rotY: 0.35 },
       'bohr-atom': { zoom: 15.5, rotX: 0.32, rotY: 0.2 },
       'ancient-pyramid': { zoom: 16.5, rotX: 0.38, rotY: 0.5 },
+      'ai-custom': { zoom: 13.5, rotX: 0.28, rotY: 0.35 },
     };
     const camPreset = moduleZoomMap[activeModule] || { zoom: 15, rotX: 0.3, rotY: 0 };
     state.controls.zoom = camPreset.zoom;
@@ -1003,26 +1050,45 @@ export function VRLabExplorer({
         };
       } else {
         let geo;
-        if (selectedShape === 'cylinder') {
-          geo = new THREE.CylinderGeometry(1.8, 1.8, 3.6, 32);
+        let shapeColor = 0x2563eb;
+        if (selectedShape === 'cuboid') {
+          // 3D Rectangular Prism (Cuboid): clear length > depth > height ratio
+          geo = new THREE.BoxGeometry(4.4, 2.2, 2.8);
+          shapeColor = 0x0ea5e9;
+        } else if (selectedShape === 'cylinder') {
+          geo = new THREE.CylinderGeometry(1.7, 1.7, 3.6, 32);
+          shapeColor = 0x2563eb;
         } else if (selectedShape === 'pyramid') {
           geo = new THREE.ConeGeometry(2.4, 3.6, 4);
+          shapeColor = 0xd97706;
+        } else if (selectedShape === 'cone') {
+          geo = new THREE.ConeGeometry(2.0, 3.8, 32);
+          shapeColor = 0xe11d48;
+        } else if (selectedShape === 'prism') {
+          // Triangular Prism (3-sided cylinder)
+          geo = new THREE.CylinderGeometry(2.2, 2.2, 4.0, 3);
+          shapeColor = 0x10b981;
+        } else if (selectedShape === 'torus') {
+          geo = new THREE.TorusGeometry(2.0, 0.72, 24, 48);
+          shapeColor = 0x9333ea;
         } else {
           geo = new THREE.SphereGeometry(2.2, 32, 32);
+          shapeColor = 0x3b82f6;
         }
 
         const mat = new THREE.MeshStandardMaterial({
-          color: 0x2563eb,
+          color: shapeColor,
           roughness: 0.25,
           metalness: 0.2,
           transparent: true,
-          opacity: 0.85,
+          opacity: 0.88,
+          side: THREE.DoubleSide,
           clippingPlanes: [clippingPlane],
         });
 
         const mesh = new THREE.Mesh(geo, mat);
         const edges = new THREE.EdgesGeometry(geo);
-        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15, linewidth: 2 }));
+        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 }));
         mesh.add(line);
         group.add(mesh);
       }
@@ -1321,7 +1387,100 @@ export function VRLabExplorer({
       scene.add(pyrGroup);
       state.vaultMesh = pyrGroup;
     }
-  }, [activeModule, selectedShape]);
+
+    // 9. AI PROCEDURAL 3D LAB CUSTOM COMPOSER (Rocket, Castle, H2O Water Molecule, Tree, Crystal)
+    else if (activeModule === 'ai-custom') {
+      camera.position.set(0, 4, 14);
+      camera.lookAt(0, 0, 0);
+
+      const customGroup = new THREE.Group();
+      const std = (color: number, roughness = 0.35) =>
+        new THREE.MeshStandardMaterial({ color, roughness, clippingPlanes: [clippingPlane] });
+
+      if (customAiKind === 'rocket') {
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.2, 4.6, 24), std(0xf8fafc, 0.25));
+        customGroup.add(body);
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(1.0, 2.0, 24), std(0xef4444, 0.3));
+        nose.position.y = 3.3;
+        customGroup.add(nose);
+        const windowGlass = new THREE.Mesh(new THREE.SphereGeometry(0.45, 20, 20), std(0x38bdf8, 0.1));
+        windowGlass.position.set(0, 0.8, 0.85);
+        customGroup.add(windowGlass);
+        for (let i = 0; i < 4; i++) {
+          const fin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.6, 1.1), std(0xdc2626));
+          const angle = (i * Math.PI) / 2;
+          fin.position.set(Math.cos(angle) * 1.35, -1.7, Math.sin(angle) * 1.35);
+          fin.rotation.y = -angle;
+          customGroup.add(fin);
+        }
+        const flame = new THREE.Mesh(
+          new THREE.ConeGeometry(0.85, 2.2, 16),
+          new THREE.MeshBasicMaterial({ color: 0xf59e0b })
+        );
+        flame.rotation.x = Math.PI;
+        flame.position.y = -3.4;
+        customGroup.add(flame);
+      } else if (customAiKind === 'castle') {
+        const keep = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.2, 4.2), std(0x94a3b8, 0.7));
+        keep.position.y = -0.2;
+        customGroup.add(keep);
+        const gate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.8, 0.4), std(0x78350f, 0.8));
+        gate.position.set(0, -0.9, 2.05);
+        customGroup.add(gate);
+        const corners = [
+          [-2.2, -2.2],
+          [2.2, -2.2],
+          [-2.2, 2.2],
+          [2.2, 2.2],
+        ];
+        corners.forEach(([cx, cz]) => {
+          const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.8, 4.6, 16), std(0xcbd5e1, 0.65));
+          tower.position.set(cx, 0.5, cz);
+          customGroup.add(tower);
+          const roof = new THREE.Mesh(new THREE.ConeGeometry(0.95, 1.6, 16), std(0x2563eb, 0.4));
+          roof.position.set(cx, 3.6, cz);
+          customGroup.add(roof);
+        });
+      } else if (customAiKind === 'water-molecule') {
+        const oxygen = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), std(0xef4444, 0.25));
+        customGroup.add(oxygen);
+        const bondAngle = (104.5 * Math.PI) / 180 / 2;
+        const dist = 3.0;
+        [-1, 1].forEach((dir) => {
+          const hx = Math.sin(bondAngle) * dist * dir;
+          const hy = -Math.cos(bondAngle) * dist;
+          const hydrogen = new THREE.Mesh(new THREE.SphereGeometry(0.95, 24, 24), std(0xf8fafc, 0.2));
+          hydrogen.position.set(hx, hy, 0);
+          customGroup.add(hydrogen);
+          const bond = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, dist, 12), std(0x38bdf8, 0.2));
+          bond.position.set(hx / 2, hy / 2, 0);
+          bond.rotation.z = dir * bondAngle;
+          customGroup.add(bond);
+        });
+      } else if (customAiKind === 'tree') {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.85, 3.2, 16), std(0x92400e, 0.85));
+        trunk.position.y = -1.6;
+        customGroup.add(trunk);
+        [
+          { y: 0.4, r: 2.6, h: 2.4, c: 0x15803d },
+          { y: 1.9, r: 2.0, h: 2.2, c: 0x16a34a },
+          { y: 3.3, r: 1.3, h: 1.9, c: 0x22c55e },
+        ].forEach((tier) => {
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(tier.r, tier.h, 20), std(tier.c, 0.6));
+          cone.position.y = tier.y;
+          customGroup.add(cone);
+        });
+      } else {
+        const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(2.6, 0), std(0x8b5cf6, 0.15));
+        const edges = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(2.6, 0));
+        crystal.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 })));
+        customGroup.add(crystal);
+      }
+
+      scene.add(customGroup);
+      state.vaultMesh = customGroup;
+    }
+  }, [activeModule, selectedShape, customAiKind]);
 
   useEffect(() => {
     buildActiveScene();
@@ -1723,16 +1882,20 @@ export function VRLabExplorer({
     }
   };
 
-  const handleSelectShape = (shape: 'cube' | 'cylinder' | 'pyramid' | 'sphere') => {
+  const handleSelectShape = (shape: GeometryShapeId) => {
     setSelectedShape(shape);
     setNetUnfoldAmount(0);
     broadcastVRState({ selectedShape: shape, netUnfoldAmount: 0 });
     playSynthesizedSound('chime');
-    const texts: Record<string, string> = {
+    const texts: Record<GeometryShapeId, string> = {
       cube: 'This is a 3D Cube. A cube has 6 identical square faces, 12 straight edges, and 8 vertices. Its volume is side cubed, and its surface area is 6 times side squared. Slide Unfold Net to see its flat 2D pattern!',
+      cuboid: 'This is a 3D Rectangular Prism, also called a Cuboid! It has 6 rectangular faces, 12 edges, and 8 right-angle vertices. Its volume is length times width times height!',
       cylinder: 'This is a cylinder. It has two congruent circular bases connected by a smooth curved surface. Its volume formula is pi times radius squared times height!',
-      pyramid: 'This is a square pyramid. It has one square base and four triangular faces that converge at a single vertex. Its volume is one third times base area times height!',
+      pyramid: 'This is a square pyramid. It has one square base and four triangular faces that converge at a single apex. Its volume is one third times base area times height!',
+      cone: 'This is a 3D Cone. It has a flat circular base tapering smoothly to a single point called the apex. Its volume is one third times pi times radius squared times height!',
+      prism: 'This is a Triangular Prism! It has two identical triangular bases connected by three rectangular sides. Its volume is the area of the triangular base times length!',
       sphere: 'This is a sphere. Every point on its surface is the exact same distance from the center. Its volume is four thirds pi r cubed, and surface area is four pi r squared!',
+      torus: 'This is a 3D Torus, shaped like a geometric ring or donut! It is formed by revolving a circle in 3D space around a central axis.',
     };
     if (texts[shape] && autoNarrate) {
       speakNarration(texts[shape]);
@@ -1764,31 +1927,143 @@ export function VRLabExplorer({
     setTimeout(() => {
       setIsAiGenerating(false);
       setAiPromptOpen(false);
+      setShowInfoCard(true);
 
-      if (q.includes('dna') || q.includes('gene') || q.includes('genetic') || q.includes('helix')) {
+      // 1. Geometry Solids (Rectangle/Cuboid, Cube, Triangular Prism, Cone, Cylinder, Sphere, Torus)
+      if (q.includes('rectang') || q.includes('cuboid') || q.includes('box') || q.includes('brick')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('cuboid');
+        setCustomAiModelTitle('📦 Generated: 3D Rectangular Prism (Cuboid)');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cuboid' });
+        speakNarration('Generated a 3D Rectangular Prism! A rectangle in 3D is called a cuboid or rectangular prism. It has 6 rectangular faces, 12 edges, and 8 corners. Its volume is length times width times height!');
+      } else if (q.includes('cube') || q.includes('square')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('cube');
+        setNetUnfoldAmount(0);
+        setCustomAiModelTitle('🧊 Generated: 3D Cube (with Unfoldable Net)');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cube' });
+        speakNarration('Generated a 3D Cube! Drag the Manim Net Unfold slider to flatten this cube into a 2D cross net!');
+      } else if (q.includes('triang') || q.includes('prism')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('prism');
+        setCustomAiModelTitle('🔺 Generated: 3D Triangular Prism');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'prism' });
+        speakNarration('Generated a 3D Triangular Prism! Notice the two identical triangular ends connected by three rectangular faces.');
+      } else if (q.includes('cone') || q.includes('ice cream')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('cone');
+        setCustomAiModelTitle('🍦 Generated: 3D Geometric Cone');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cone' });
+        speakNarration('Generated a 3D Cone! Its circular base tapers up to a sharp apex point. Volume equals one third pi r squared times height.');
+      } else if (q.includes('cylinder') || q.includes('tube') || q.includes('can')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('cylinder');
+        setCustomAiModelTitle('🛢️ Generated: 3D Cylinder');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cylinder' });
+        speakNarration('Generated a 3D Cylinder with two parallel circular bases and a curved lateral surface.');
+      } else if (q.includes('sphere') || q.includes('ball') || q.includes('circle') || q.includes('globe')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('sphere');
+        setCustomAiModelTitle('🔵 Generated: 3D Sphere');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'sphere' });
+        speakNarration('Generated a 3D Sphere! Every point on its smooth surface is equidistant from the center.');
+      } else if (q.includes('torus') || q.includes('donut') || q.includes('ring')) {
+        setActiveModule('geometry-volume');
+        setSelectedShape('torus');
+        setCustomAiModelTitle('🍩 Generated: 3D Torus Ring');
+        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'torus' });
+        speakNarration('Generated a 3D Torus! This ring-shaped solid is created by revolving a circle around an axis in 3D space.');
+      }
+      // 2. Science, Anatomy, Space & History Worlds
+      else if (q.includes('dna') || q.includes('gene') || q.includes('genetic') || q.includes('helix')) {
         setActiveModule('dna-helix');
         setCustomAiModelTitle('🧬 Generated: DNA Double Helix Molecular Model');
-        speakNarration('Generating 3D simulation of DNA! DNA, or Deoxyribonucleic acid, contains the biological genetic blueprints for all living organisms. Notice the double helix twisted ladder with Adenine, Thymine, Guanine, and Cytosine base pairs!');
+        broadcastVRState({ activeModule: 'dna-helix' });
+        speakNarration('Generating 3D simulation of DNA! Notice the double helix twisted ladder with Adenine, Thymine, Guanine, and Cytosine base pairs!');
       } else if (q.includes('cell') || q.includes('plant') || q.includes('chloroplast') || q.includes('biology')) {
         setActiveModule('plant-cell');
         setCustomAiModelTitle('🌿 Generated: Eukaryotic Plant Cell Model');
-        speakNarration('Synthesizing 3D Plant Cell! Plant cells feature a protective rigid cell wall, a large water-filled central vacuole, and green chloroplasts that convert sunlight into chemical energy through photosynthesis.');
+        broadcastVRState({ activeModule: 'plant-cell' });
+        speakNarration('Synthesizing 3D Plant Cell! Plant cells feature a protective rigid cell wall, a large water-filled central vacuole, and green chloroplasts for photosynthesis.');
+      } else if (q.includes('water') || q.includes('h2o') || q.includes('molecule')) {
+        setCustomAiKind('water-molecule');
+        setActiveModule('ai-custom');
+        setCustomAiModelTitle('💧 Generated: Water Molecule (H₂O)');
+        setCustomAiDescription('One oxygen atom covalently bonded to two hydrogen atoms at a 104.5° bond angle — the polar molecule essential for all life on Earth.');
+        broadcastVRState({ activeModule: 'ai-custom' });
+        speakNarration('Synthesizing a 3D Water Molecule, H2O! One red oxygen atom bonds with two white hydrogen atoms at an angle of 104.5 degrees.');
       } else if (q.includes('atom') || q.includes('electron') || q.includes('proton') || q.includes('bohr') || q.includes('chemistry')) {
         setActiveModule('bohr-atom');
         setCustomAiModelTitle('⚛️ Generated: Bohr Quantum Atom Model');
-        speakNarration('Generating Bohr Atom model! At the center lies the dense nucleus of positively charged protons and neutral neutrons, surrounded by electrons in concentric quantum energy shells.');
-      } else if (q.includes('pyramid') || q.includes('egypt') || q.includes('history') || q.includes('ancient')) {
+        broadcastVRState({ activeModule: 'bohr-atom' });
+        speakNarration('Generating Bohr Atom model! Watch the electrons orbit the proton and neutron nucleus in concentric quantum energy shells.');
+      } else if (q.includes('heart') || q.includes('organ') || q.includes('blood') || q.includes('anatomy')) {
+        setActiveModule('human-heart');
+        setCustomAiModelTitle('🫀 Generated: 3D Beating Human Heart');
+        broadcastVRState({ activeModule: 'human-heart' });
+        speakNarration('Generating 3D Human Heart Anatomy! Watch the heart pump oxygenated red blood and deoxygenated blue blood in real time.');
+      } else if (q.includes('volcano') || q.includes('lava') || q.includes('crust') || q.includes('mantle') || q.includes('core')) {
+        setActiveModule('earth-volcano');
+        setCustomAiModelTitle('🌋 Generated: Earth Layers & Erupting Volcano');
+        broadcastVRState({ activeModule: 'earth-volcano' });
+        speakNarration('Generating Earth internal layers and erupting volcano! Use the Explode Layers slider to peel apart the crust, mantle, and core.');
+      } else if (
+        q.includes('solar') ||
+        q.includes('planet') ||
+        q.includes('sun') ||
+        q.includes('mars') ||
+        q.includes('saturn') ||
+        q.includes('jupiter') ||
+        q.includes('earth') ||
+        q.includes('mercury') ||
+        q.includes('venus') ||
+        q.includes('uranus') ||
+        q.includes('neptune')
+      ) {
+        setActiveModule('solar-system');
+        const matchedPlanet = PLANETS.find((p) => q.includes(p.name.toLowerCase()));
+        const focusName = matchedPlanet ? matchedPlanet.name : 'Earth';
+        setSelectedPin(focusName);
+        setCustomAiModelTitle(`🪐 Generated: Solar System (${focusName} Focus)`);
+        broadcastVRState({ activeModule: 'solar-system', selectedPin: focusName });
+        speakNarration(matchedPlanet ? matchedPlanet.speechText : 'Launching the 3D Solar System! Tap any planet to hear facts about it.');
+      } else if (q.includes('pyramid') || q.includes('egypt') || q.includes('giza') || q.includes('ancient')) {
         setActiveModule('ancient-pyramid');
         setCustomAiModelTitle('🏛️ Generated: Great Pyramid of Giza');
-        speakNarration('Synthesizing Ancient Egyptian Stepped Pyramid! Built as grand monumental tombs over 4,500 years ago, these marvels of engineering align precisely with the cardinal directions.');
-      } else {
-        // Fallback default custom model
-        setActiveModule('geometry-volume');
-        setSelectedShape('cylinder');
-        setCustomAiModelTitle(`✨ AI 3D Model: ${promptQuery}`);
-        speakNarration(`Generated 3D solid for ${promptQuery}! Rotate with your mouse or finger to inspect its spatial geometry, surface faces, and internal volume.`);
+        broadcastVRState({ activeModule: 'ancient-pyramid' });
+        speakNarration('Synthesizing Ancient Egyptian Stepped Pyramid! Built over 4,500 years ago as grand monumental architecture.');
       }
-    }, 900);
+      // 3. Procedural 3D Models (Rocket, Castle, Tree, Crystal)
+      else if (q.includes('rocket') || q.includes('spaceship') || q.includes('shuttle')) {
+        setCustomAiKind('rocket');
+        setActiveModule('ai-custom');
+        setCustomAiModelTitle('🚀 Generated: 3D Space Rocket');
+        setCustomAiDescription('Multi-stage orbital launch vehicle featuring an aerodynamic nose cone, pressurized cabin window, stabilizer fins, and thruster plume.');
+        broadcastVRState({ activeModule: 'ai-custom' });
+        speakNarration('Synthesizing a 3D Space Rocket! Rockets use Newtons third law of motion, pushing exhaust downward to blast upward into orbit.');
+      } else if (q.includes('castle') || q.includes('fort') || q.includes('house') || q.includes('tower') || q.includes('building')) {
+        setCustomAiKind('castle');
+        setActiveModule('ai-custom');
+        setCustomAiModelTitle('🏰 Generated: 3D Medieval Castle');
+        setCustomAiDescription('Fortified stone keep with four cylindrical watchtowers, conical roofs, and central arched gatehouse.');
+        broadcastVRState({ activeModule: 'ai-custom' });
+        speakNarration('Synthesizing a 3D Medieval Castle! Observe the central stone keep and four corner watchtowers built for medieval defense.');
+      } else if (q.includes('tree') || q.includes('forest') || q.includes('pine') || q.includes('wood')) {
+        setCustomAiKind('tree');
+        setActiveModule('ai-custom');
+        setCustomAiModelTitle('🌲 Generated: 3D Evergreen Tree');
+        setCustomAiDescription('Layered coniferous evergreen tree with woody trunk and tiered chlorophyll-rich needle canopy that produces oxygen.');
+        broadcastVRState({ activeModule: 'ai-custom' });
+        speakNarration('Synthesizing a 3D Evergreen Tree! Trees absorb carbon dioxide and release fresh oxygen through photosynthesis.');
+      } else {
+        setCustomAiKind('crystal');
+        setActiveModule('ai-custom');
+        setCustomAiModelTitle(`✨ AI 3D Model: ${promptQuery}`);
+        setCustomAiDescription(`Interactive 3D octahedron crystalline structure generated for "${promptQuery}". Drag to rotate 360° or activate the Slice Plane to dissect inside.`);
+        broadcastVRState({ activeModule: 'ai-custom' });
+        speakNarration(`Generated a 3D interactive model for ${promptQuery}! Drag to rotate 360 degrees, zoom in, or use the slicing plane to inspect inside.`);
+      }
+    }, 650);
   };
 
   const activePlanetInfo = PLANETS.find((p) => p.name === selectedPin) || PLANETS[3];
@@ -1851,18 +2126,30 @@ export function VRLabExplorer({
             <span className="hidden sm:inline">AI 3D Lab</span>
           </button>
 
-          {/* oculus-samples: Native WebXR Headset Button */}
+          {/* oculus-samples: Native WebXR Headset OR Seamless Browser Immersive VR */}
           <button
             onClick={launchNativeWebXR}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black transition-all border ${
-              isWebXRPresenting
+              isWebXRPresenting || displayMode === 'split-vr'
                 ? 'bg-emerald-500 text-white border-white animate-pulse'
                 : 'bg-sky-600 hover:bg-sky-500 text-white border-sky-400 shadow-sm'
             }`}
-            title="Launch Native WebXR for Meta Quest / Apple Vision Pro"
+            title={
+              webXRSupported
+                ? 'Launch Native WebXR Headset Mode (Meta Quest / Apple Vision Pro)'
+                : 'Enter Immersive 360° Stereoscopic VR Mode (works on any laptop, tablet, or Cardboard headset)'
+            }
           >
             <Glasses className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">{isWebXRPresenting ? 'VR Headset Active' : 'Enter WebXR'}</span>
+            <span className="hidden md:inline">
+              {isWebXRPresenting
+                ? 'VR Headset Active'
+                : displayMode === 'split-vr'
+                  ? 'Exit VR Mode'
+                  : webXRSupported
+                    ? 'Enter WebXR'
+                    : 'Enter VR Mode'}
+            </span>
           </button>
 
           {/* aframevr: Gaze Reticle Toggle */}
@@ -1944,7 +2231,7 @@ export function VRLabExplorer({
                 value={aiPromptText}
                 onChange={(e) => setAiPromptText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateAi3D(aiPromptText)}
-                placeholder="e.g. Plant cell, DNA helix, Bohr atom, Pyramid..."
+                placeholder="e.g. Rectangle, Rocket, Castle, Water H2O, DNA, Plant cell..."
                 className="w-full bg-slate-900/90 border border-purple-400/40 rounded-xl px-3 py-1 text-xs text-white placeholder-white/40 focus:outline-none focus:border-purple-400"
               />
             </div>
@@ -1962,10 +2249,13 @@ export function VRLabExplorer({
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
             <span className="text-[10px] text-white/50 font-bold shrink-0">Try:</span>
             {[
+              { label: '📦 Rectangle', query: 'Rectangle' },
+              { label: '🚀 Rocket', query: 'Space Rocket' },
+              { label: '💧 H₂O', query: 'Water Molecule' },
+              { label: '🏰 Castle', query: 'Medieval Castle' },
               { label: '🧬 DNA', query: 'DNA Double Helix' },
               { label: '🌿 Cell', query: 'Plant Cell' },
               { label: '⚛️ Atom', query: 'Bohr Atom' },
-              { label: '🏛️ Pyramid', query: 'Ancient Pyramid' },
             ].map((p) => (
               <button
                 key={p.label}
@@ -2159,6 +2449,39 @@ export function VRLabExplorer({
         onWheel={handleWheel}
       >
         <canvas ref={canvasRef} className="w-full h-full block" />
+
+        {/* Friendly Immersive VR Mode / AI Model Generated Status Banners */}
+        {(vrStatusBanner || customAiModelTitle) && (
+          <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 max-w-md pointer-events-auto">
+            {vrStatusBanner && (
+              <div className="bg-sky-950/95 border border-sky-400/60 px-3 py-2 rounded-xl text-[11px] font-bold text-sky-100 shadow-xl flex items-center justify-between gap-2">
+                <span>🥽 {vrStatusBanner}</span>
+                <button
+                  onClick={() => {
+                    setDisplayMode('desktop');
+                    setGazeReticleEnabled(false);
+                    setIsFullscreen(false);
+                    setVrStatusBanner(null);
+                  }}
+                  className="px-2 py-0.5 rounded-lg bg-yellow text-dark font-black text-[10px] uppercase shrink-0"
+                >
+                  Exit VR
+                </button>
+              </div>
+            )}
+            {customAiModelTitle && (
+              <div className="bg-purple-950/90 border border-purple-400/50 px-3 py-1.5 rounded-xl text-[11px] font-black text-purple-100 shadow-lg flex items-center justify-between gap-2">
+                <span>{customAiModelTitle}</span>
+                <button
+                  onClick={() => setCustomAiModelTitle('')}
+                  className="text-xs text-white/60 hover:text-white font-black"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {!threeLoaded && !threeError && (
           <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#060E1C] text-white gap-3">
@@ -2379,17 +2702,28 @@ export function VRLabExplorer({
             </div>
 
             <div className="grid grid-cols-4 gap-1 mb-3">
-              {(['cube', 'cylinder', 'pyramid', 'sphere'] as const).map((s) => (
+              {(
+                [
+                  { id: 'cube', label: 'Cube' },
+                  { id: 'cuboid', label: 'Rect' },
+                  { id: 'cylinder', label: 'Cyl' },
+                  { id: 'pyramid', label: 'Pyr' },
+                  { id: 'cone', label: 'Cone' },
+                  { id: 'prism', label: 'Prism' },
+                  { id: 'sphere', label: 'Sphere' },
+                  { id: 'torus', label: 'Torus' },
+                ] as { id: GeometryShapeId; label: string }[]
+              ).map((s) => (
                 <button
-                  key={s}
-                  onClick={() => handleSelectShape(s)}
-                  className={`py-1.5 rounded-xl border text-xs font-black uppercase transition-all ${
-                    selectedShape === s
+                  key={s.id}
+                  onClick={() => handleSelectShape(s.id)}
+                  className={`py-1.5 rounded-xl border text-[10px] font-black uppercase transition-all ${
+                    selectedShape === s.id
                       ? 'bg-yellow text-dark border-dark shadow-sm'
                       : 'bg-white/10 border-white/10 text-white/70 hover:bg-white/20'
                   }`}
                 >
-                  {s}
+                  {s.label}
                 </button>
               ))}
             </div>
@@ -2428,10 +2762,18 @@ export function VRLabExplorer({
                 <span className="font-black text-yellow">
                   {selectedShape === 'cube'
                     ? 'V = s³'
+                    : selectedShape === 'cuboid'
+                    ? 'V = l × w × h'
                     : selectedShape === 'cylinder'
                     ? 'V = π × r² × h'
                     : selectedShape === 'pyramid'
                     ? 'V = ⅓ × B × h'
+                    : selectedShape === 'cone'
+                    ? 'V = ⅓ × π × r² × h'
+                    : selectedShape === 'prism'
+                    ? 'V = ½ × b × h × L'
+                    : selectedShape === 'torus'
+                    ? 'V = 2π²Rr²'
                     : 'V = ⁴⁄₃ × π × r³'}
                 </span>
               </div>
@@ -2440,10 +2782,18 @@ export function VRLabExplorer({
                 <span className="font-black text-emerald-400">
                   {selectedShape === 'cube'
                     ? 'SA = 6s²'
+                    : selectedShape === 'cuboid'
+                    ? 'SA = 2(lw + lh + wh)'
                     : selectedShape === 'cylinder'
                     ? 'SA = 2πrh + 2πr²'
                     : selectedShape === 'pyramid'
                     ? 'SA = B + ½Ps'
+                    : selectedShape === 'cone'
+                    ? 'SA = πr(r + l)'
+                    : selectedShape === 'prism'
+                    ? 'SA = bh + (s₁+s₂+s₃)L'
+                    : selectedShape === 'torus'
+                    ? 'SA = 4π²Rr'
                     : 'SA = 4πr²'}
                 </span>
               </div>
@@ -2665,6 +3015,37 @@ export function VRLabExplorer({
                 <span className="text-[10px] text-amber-300 font-mono">True North within 0.05°</span>
               </div>
             </div>
+          </aside>
+        )}
+
+        {/* 9. AI CUSTOM GENERATED MODEL INFO CARD */}
+        {activeModule === 'ai-custom' && showInfoCard && (
+          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-purple-500/50 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+            <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <WandSparkles className="w-4 h-4 text-purple-400 shrink-0" />
+                <h3 className="font-black text-xs uppercase text-purple-300 truncate">
+                  {customAiModelTitle || 'AI 3D Generated Model'}
+                </h3>
+              </div>
+              <button
+                onClick={() => speakNarration(customAiDescription || customAiModelTitle || 'Interactive 3D Model')}
+                className="h-6 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 flex items-center gap-1 text-[10px] font-black border border-emerald-500/30 shrink-0"
+              >
+                <Volume2 className="w-3 h-3" />
+                <span>Listen</span>
+              </button>
+            </div>
+            <p className="text-xs text-white/80 font-medium leading-relaxed mb-3">
+              {customAiDescription || 'Drag to rotate 360°, scroll to zoom, or activate Slice Plane to inspect the internal 3D geometry.'}
+            </p>
+            <button
+              onClick={() => setAiPromptOpen(true)}
+              className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase flex items-center justify-center gap-1.5"
+            >
+              <WandSparkles className="w-3.5 h-3.5" />
+              <span>Generate Another 3D Model</span>
+            </button>
           </aside>
         )}
       </div>
