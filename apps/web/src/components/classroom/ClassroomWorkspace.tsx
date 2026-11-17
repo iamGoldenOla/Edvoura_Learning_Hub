@@ -41,7 +41,19 @@ interface ClassroomWorkspaceProps {
   userName: string;
 }
 
-type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks';
+type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks' | 'youtube';
+
+
+function getYouTubeVideoId(url: string): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return trimmed;
+  }
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = trimmed.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+}
 
 interface ClassResource {
   id: string;
@@ -60,6 +72,9 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [showAiWorksheetModal, setShowAiWorksheetModal] = useState(false);
   const [isSessionEnded, setIsSessionEnded] = useState(false);
+  const [sharedYoutubeId, setSharedYoutubeId] = useState<string | null>(null);
+  const [showYoutubeModal, setShowYoutubeModal] = useState<boolean>(false);
+  const [youtubeInputUrl, setYoutubeInputUrl] = useState<string>('');
 
   const [lesson, setLesson] = useState<any>(null);
   const [studentDisplayName, setStudentDisplayName] = useState<string>('');
@@ -229,6 +244,19 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     let isMounted = true;
     if (isSessionEnded) return;
 
+    // Pre-request/prime camera & microphone on top-level origin so Opera GX & Chromium
+    // allow iframe device capture without silently blocking or denying video feeds
+    const primeMediaDevices = async () => {
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+        try {
+          const testStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          testStream.getTracks().forEach((track) => track.stop());
+        } catch (err: any) {
+          console.warn('Initial camera prime check:', err);
+        }
+      }
+    };
+
     const initJitsi = () => {
       if (!isMounted || !videoMountRef.current || isSessionEnded) return;
       if (!(window as any).JitsiMeetExternalAPI) return;
@@ -251,6 +279,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           configOverwrite: {
             startWithAudioMuted: false,
             startWithVideoMuted: false,
+            disableInitialGUM: false,
             prejoinConfig: { enabled: false },
             prejoinPageEnabled: false,
             skipPrejoin: true,
@@ -317,14 +346,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             // Ensure camera & mic start active automatically
             setTimeout(() => {
               try {
-                api.isAudioMuted().then((muted: boolean) => {
-                  if (muted) api.executeCommand('toggleAudio');
-                }).catch(() => {});
-                api.isVideoMuted().then((muted: boolean) => {
-                  if (muted) api.executeCommand('toggleVideo');
-                }).catch(() => {});
+                if (typeof api.isVideoMuted === 'function') {
+                  api.isVideoMuted().then((muted: boolean) => {
+                    if (muted) api.executeCommand('toggleVideo');
+                    setCameraEnabled(!muted);
+                  }).catch(() => {});
+                }
+                if (typeof api.isAudioMuted === 'function') {
+                  api.isAudioMuted().then((muted: boolean) => {
+                    if (muted) api.executeCommand('toggleAudio');
+                    setMicEnabled(!muted);
+                  }).catch(() => {});
+                }
               } catch (_) {}
-            }, 600);
+            }, 800);
           },
           videoConferenceLeft: () => {
             try { api.dispose(); } catch (_) {}
@@ -352,14 +387,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     const existingScript = document.getElementById(scriptId);
 
     if (existingScript && (window as any).JitsiMeetExternalAPI) {
-      initJitsi();
+      void primeMediaDevices().finally(() => {
+        if (isMounted) initJitsi();
+      });
     } else {
       const script = document.createElement('script');
       script.id = scriptId;
       script.src = `https://${currentDomain}/external_api.js`;
       script.async = true;
       script.onload = () => {
-        if (isMounted) initJitsi();
+        if (isMounted) {
+          void primeMediaDevices().finally(() => {
+            if (isMounted) initJitsi();
+          });
+        }
       };
       document.body.appendChild(script);
     }
@@ -400,6 +441,17 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         if (payload?.mode) {
           setPresentationMode(payload.mode);
         }
+      })
+      .on('broadcast', { event: 'share-youtube' }, ({ payload }) => {
+        if (payload?.videoId) {
+          setSharedYoutubeId(payload.videoId);
+          setPresentationMode('youtube');
+          setIsToolsOpen(false);
+        }
+      })
+      .on('broadcast', { event: 'stop-youtube' }, () => {
+        setSharedYoutubeId(null);
+        setPresentationMode('none');
       })
       .subscribe();
 
@@ -465,13 +517,64 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  const handleToggleCamera = () => {
+  const handleToggleCamera = async () => {
     if (jitsiApiRef.current) {
       try {
+        if (!cameraEnabled && navigator.mediaDevices?.getUserMedia) {
+          try {
+            const s = await navigator.mediaDevices.getUserMedia({ video: true });
+            s.getTracks().forEach((t) => t.stop());
+          } catch (_) {}
+        }
         jitsiApiRef.current.executeCommand('toggleVideo');
       } catch (_) {}
     } else {
       setCameraEnabled(!cameraEnabled);
+    }
+  };
+
+  const handleStartShareYouTube = (url: string) => {
+    const videoId = getYouTubeVideoId(url);
+    if (!videoId) {
+      alert('Please enter a valid YouTube video URL (e.g., https://www.youtube.com/watch?v=...)');
+      return;
+    }
+    setSharedYoutubeId(videoId);
+    setPresentationMode('youtube');
+    setShowYoutubeModal(false);
+    setIsToolsOpen(false);
+
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'share-youtube',
+        payload: { videoId },
+      });
+    }
+
+    if (jitsiApiRef.current) {
+      try {
+        jitsiApiRef.current.executeCommand('startShareVideo', `https://www.youtube.com/watch?v=${videoId}`);
+      } catch (_) {}
+    }
+  };
+
+  const handleStopShareYouTube = () => {
+    setSharedYoutubeId(null);
+    setPresentationMode('none');
+
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'stop-youtube',
+        payload: {},
+      });
+    }
+
+    if (jitsiApiRef.current) {
+      try {
+        jitsiApiRef.current.executeCommand('stopShareVideo');
+      } catch (_) {}
     }
   };
 
@@ -566,9 +669,18 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
   const handleStopPresenting = () => {
     setPresentationMode('none');
+    setSelectedPdfUrl(null);
+    setSelectedPdfTitle('');
+    setSharedYoutubeId(null);
     if (channelRef.current && role === 'tutor') {
       channelRef.current.send({ type: 'broadcast', event: 'close-pdf' });
       channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'none' } });
+      channelRef.current.send({ type: 'broadcast', event: 'stop-youtube', payload: {} });
+    }
+    if (jitsiApiRef.current) {
+      try {
+        jitsiApiRef.current.executeCommand('stopShareVideo');
+      } catch (_) {}
     }
   };
 
@@ -788,6 +900,21 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   Desks
                 </button>
 
+                {role === 'tutor' && (
+                  <button
+                    onClick={() => setShowYoutubeModal(true)}
+                    className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                      presentationMode === 'youtube'
+                        ? 'bg-rose-600 text-white shadow-[1px_1px_0px_#060E1C]'
+                        : 'bg-white text-dark/70 hover:bg-slate-50'
+                    }`}
+                    title="Share YouTube Video for Pupils"
+                  >
+                    <Video className="w-3.5 h-3.5 text-rose-600" />
+                    <span>YouTube</span>
+                  </button>
+                )}
+
                 {/* Collapsed Video Quick Expand Pill */}
                 {isVideoCollapsed && (
                   <button
@@ -830,6 +957,42 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
               {presentationMode === 'desks' && (
                 <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
+              )}
+
+              {presentationMode === 'youtube' && sharedYoutubeId && (
+                <div className="w-full h-full flex flex-col bg-slate-950 relative">
+                  {/* Header */}
+                  <div className="h-10 px-4 bg-slate-900 border-b border-white/10 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                      <span className="text-xs font-black uppercase tracking-wider text-white">
+                        Streaming Educational YouTube Video
+                      </span>
+                    </div>
+
+                    {role === 'tutor' && (
+                      <button
+                        onClick={handleStopShareYouTube}
+                        className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase transition-all shadow-md active:scale-95 cursor-pointer"
+                        title="Stop sharing YouTube video"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Stop Video</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* YouTube Player */}
+                  <div className="flex-1 w-full relative bg-black flex items-center justify-center p-2 sm:p-4">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${sharedYoutubeId}?autoplay=1&enablejsapi=1&rel=0`}
+                      title="Edvoura Shared Educational Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="w-full h-full max-w-5xl rounded-2xl shadow-2xl border-2 border-white/10"
+                    />
+                  </div>
+                </div>
               )}
 
               {/* Floating Arrow Tab to slide Video back out when tucked in */}
@@ -901,13 +1064,28 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <div ref={videoMountRef} className="w-full h-full" />
 
             {!isJitsiReady && (
-              <iframe
-                src={jitsiUrl}
-                allow="camera; microphone; display-capture; autoplay; clipboard-write; screen-wake-lock; fullscreen"
-                allowFullScreen
-                className="w-full h-full border-none absolute inset-0"
-                title="Edvoura Live Video Meeting"
-              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060E1C] z-20 text-white gap-3 p-4 text-center">
+                <Loader2 className="w-10 h-10 animate-spin text-yellow" />
+                <p className="text-xs font-black uppercase tracking-wider text-white">
+                  Connecting Live Classroom Video...
+                </p>
+                <p className="text-[11px] text-white/50 font-semibold max-w-xs">
+                  Initializing camera and microphone stream
+                </p>
+              </div>
+            )}
+
+            {isJitsiReady && !cameraEnabled && (
+              <div className="absolute top-3 left-3 z-30">
+                <button
+                  onClick={handleToggleCamera}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600/95 hover:bg-rose-600 text-white text-xs font-black uppercase tracking-wide shadow-lg border border-white/20 transition-all active:scale-95 animate-pulse cursor-pointer"
+                  title="Click to turn on camera"
+                >
+                  <VideoOff className="w-3.5 h-3.5" />
+                  <span>Camera Off • Tap to Turn On</span>
+                </button>
+              </div>
             )}
 
             {/* Native Screen Share Overlay (Crystal Clear 1080p, 100% Free, NO Paywalls) */}
@@ -979,6 +1157,31 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   >
                     <Sparkles className="w-4 h-4 mr-1.5" />
                     <span>Open AI Worksheet Studio</span>
+                  </Button>
+                </div>
+              )}
+
+              {/* Share YouTube Educational Video Card */}
+              {role === 'tutor' && (
+                <div className="p-4 rounded-2xl border-[2.5px] border-dark bg-rose-50 space-y-2 shadow-[2px_2px_0px_#060E1C]">
+                  <div className="flex items-center gap-2">
+                    <Video className="w-4 h-4 text-rose-600" />
+                    <h4 className="text-xs font-black uppercase tracking-wider text-dark">
+                      Share Educational Video (YouTube)
+                    </h4>
+                  </div>
+                  <p className="text-xs text-dark/80 font-bold leading-relaxed">
+                    Stream synchronized educational YouTube songs, phonics, and math videos directly to your pupil.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setIsToolsOpen(false);
+                      setShowYoutubeModal(true);
+                    }}
+                    className="w-full bg-rose-600 hover:bg-rose-700 text-white border-[2px] border-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
+                  >
+                    <Video className="w-4 h-4 mr-1.5" />
+                    <span>Share YouTube Video</span>
                   </Button>
                 </div>
               )}
@@ -1178,6 +1381,79 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         gradeLevel={gradeDisplayName}
         lessonId={lessonId}
       />
+
+      {/* Share YouTube Video Modal */}
+      {showYoutubeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-lg bg-white border-[3px] border-dark rounded-3xl shadow-[8px_8px_0px_#060E1C] p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b-[2.5px] border-dark">
+              <div className="flex items-center gap-2">
+                <span className="p-2 bg-rose-100 rounded-xl border border-dark">
+                  <Video className="w-5 h-5 text-rose-600" />
+                </span>
+                <div>
+                  <h3 className="font-black text-sm uppercase text-dark">Share Educational YouTube Video</h3>
+                  <p className="text-[11px] font-semibold text-dark/60">Stream synchronized video directly to your student</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowYoutubeModal(false)}
+                className="w-8 h-8 rounded-xl border-[2px] border-dark bg-white hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center font-black cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase text-dark">Paste YouTube Video Link</label>
+              <input
+                type="text"
+                value={youtubeInputUrl}
+                onChange={(e) => setYoutubeInputUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                className="w-full h-11 px-3.5 bg-slate-50 border-[2px] border-dark rounded-xl font-bold text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-dark"
+              />
+            </div>
+
+            {/* Quick Educational Recommendations */}
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-black uppercase text-dark/60">Or Select a Popular Topic:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { title: 'Multiplication Tables Song', id: 'ScMzIvxBSi4' },
+                  { title: 'Phonics & Reading Drill', id: 'ffeZXPtTGC4' },
+                  { title: 'Solar System & Planets', id: 'libKVRa01L8' },
+                  { title: 'States of Matter Science', id: 'wclY8mW-UoQ' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setYoutubeInputUrl(`https://www.youtube.com/watch?v=${item.id}`)}
+                    className="text-left p-2 rounded-xl border-[1.5px] border-dark/30 hover:border-dark hover:bg-yellow/20 text-xs font-bold text-dark transition-all truncate cursor-pointer"
+                  >
+                    🎵 {item.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t-[2px] border-dark/15">
+              <Button
+                variant="outline"
+                onClick={() => setShowYoutubeModal(false)}
+                className="border-[2px] border-dark font-black text-xs uppercase"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => handleStartShareYouTube(youtubeInputUrl)}
+                className="bg-rose-600 hover:bg-rose-700 text-white border-[2px] border-dark font-black text-xs uppercase shadow-[2px_2px_0px_#060E1C] active:scale-95"
+              >
+                Start Sharing Video
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
