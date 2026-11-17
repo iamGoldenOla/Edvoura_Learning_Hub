@@ -290,20 +290,11 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             enableWelcomePage: false,
             enableLobby: false,
             requireDisplayName: false,
+            disableProfile: true,
             p2p: { enabled: true },
-            // Clean video conferencing: strip out confusing internal backgrounds and filmstrip modals
-            disableFilmstrip: true,
+            disableFilmstrip: false,
             filmStripOnly: false,
-            DISABLE_VIDEO_BACKGROUND: true,
-            SETTINGS_SECTIONS: [],
-            toolbarButtons: [
-              'microphone',
-              'camera',
-              'tileview',
-              'chat',
-              'fodeviceselection',
-              'fullscreen',
-            ],
+            toolbarButtons: [],
           },
           interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
@@ -315,11 +306,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             BRAND_WATERMARK_LINK: '',
             GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
             DISPLAY_WELCOME_PAGE_CONTENT: false,
-            TOOLBAR_ALWAYS_VISIBLE: false,
+            TOOLBAR_ALWAYS_VISIBLE: true,
             DEFAULT_BACKGROUND: '#060E1C',
             SETTINGS_SECTIONS: [],
-            FILM_STRIP_MAX_HEIGHT: 0,
-            DISABLE_VIDEO_BACKGROUND: true,
+            FILM_STRIP_MAX_HEIGHT: 120,
             ENABLE_FEEDBACK_ANIMATION: false,
           },
         });
@@ -327,8 +317,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         jitsiApiRef.current = api;
         setIsJitsiReady(true);
 
-        // Explicitly inject device and camera/mic permissions onto the iframe
-        setTimeout(() => {
+        // Explicitly inject device and camera/mic permissions onto the iframe immediately and watch for new iframes
+        const setIframeAllow = () => {
           if (videoMountRef.current) {
             const iframe = videoMountRef.current.querySelector('iframe');
             if (iframe) {
@@ -338,15 +328,27 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               );
             }
           }
-        }, 150);
+        };
+        setIframeAllow();
+        setTimeout(setIframeAllow, 50);
+        setTimeout(setIframeAllow, 200);
+
+        // Also observe DOM additions to catch iframe the exact instant it is attached
+        let observer: MutationObserver | null = null;
+        if (typeof MutationObserver !== 'undefined' && videoMountRef.current) {
+          observer = new MutationObserver(() => {
+            setIframeAllow();
+          });
+          observer.observe(videoMountRef.current, { childList: true, subtree: true });
+        }
 
         api.addEventListeners({
           audioMuteStatusChanged: (e: any) => setMicEnabled(!e.muted),
           videoMuteStatusChanged: (e: any) => setCameraEnabled(!e.muted),
           videoConferenceJoined: () => {
             api.executeCommand('setDisplayName', userName);
-            // Ensure camera & mic start active automatically
-            setTimeout(() => {
+            // Ensure camera & mic start active automatically with retries
+            const attemptUnmute = () => {
               try {
                 if (typeof api.isVideoMuted === 'function') {
                   api.isVideoMuted().then((muted: boolean) => {
@@ -361,7 +363,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   }).catch(() => {});
                 }
               } catch (_) {}
-            }, 800);
+            };
+
+            setTimeout(attemptUnmute, 2500);
+            setTimeout(attemptUnmute, 5000);
           },
           videoConferenceLeft: () => {
             try { api.dispose(); } catch (_) {}
@@ -762,12 +767,46 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       ref={containerRef}
       className="fixed inset-0 z-50 w-screen h-screen bg-[#070D18] flex flex-col overflow-hidden select-none font-sans"
     >
-      {/* Global CSS to strip any third-party watermarks/logos */}
+      {/* Global CSS to strip ALL third-party watermarks, toolbars, logos, and branding */}
       <style jsx global>{`
-        .watermark, .leftwatermark, .rightwatermark, [class*="watermark"], .jitsi-icon {
+        .watermark, .leftwatermark, .rightwatermark,
+        [class*="watermark"], [id*="watermark"],
+        .jitsi-icon,
+        a[href*="fairmeeting"], a[href*="jitsi"],
+        [class*="oLSXp"], [class*="oVjI3"], [class*="oX7"],
+        #oLSXp, #oVjI3,
+        .oLSXp, .oVjI3,
+        div[class*="oLSXp"], div[class*="oVjI3"],
+        .oX7rJl {
           display: none !important;
           opacity: 0 !important;
           visibility: hidden !important;
+          pointer-events: none !important;
+          width: 0 !important;
+          height: 0 !important;
+          overflow: hidden !important;
+        }
+        /* Hide Jitsi native bottom toolbar — Edvoura has its own controls */
+        #new-toolbox, .new-toolbox,
+        [id*="toolbox"], [class*="toolbox"],
+        .toolbox-content-items,
+        [class*="Toolbox"], [id*="Toolbox"] {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+          height: 0 !important;
+          pointer-events: none !important;
+        }
+        /* Hide Jitsi settings panel overlay */
+        [class*="settings-pane"], [class*="SettingsDialog"],
+        [class*="settingsView"], [id*="settings"],
+        .oLSXp .oVjI3 { 
+          display: none !important; 
+        }
+        /* Hide fairmeeting/Jitsi donate/powered-by footer */
+        [class*="oP4Fsg"], [class*="oP4F"],
+        [class*="oLSXp"] a, [class*="oVjI3"] a {
+          display: none !important;
         }
       `}</style>
 
