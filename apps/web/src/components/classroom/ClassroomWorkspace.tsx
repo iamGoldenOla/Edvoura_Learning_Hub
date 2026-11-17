@@ -35,7 +35,8 @@ import { StudentDeskManager } from './StudentDeskManager';
 import { PDFAnnotator } from './PDFAnnotator';
 import { AIWorksheetModal } from './AIWorksheetModal';
 import { VRLabExplorer } from './VRLabExplorer';
-import { Glasses } from 'lucide-react';
+import { NativeVideoStage } from './NativeVideoStage';
+import { Glasses, ExternalLink } from 'lucide-react';
 
 interface ClassroomWorkspaceProps {
   lessonId: string;
@@ -88,29 +89,23 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
   const [selectedPdfTitle, setSelectedPdfTitle] = useState<string>('');
 
-  // Hardware state
+  // Hardware state (100% Native Edvoura HD WebRTC — zero third-party.net!)
   const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
-  const [isJitsiReady, setIsJitsiReady] = useState(false);
   const [videoReconnectNonce, setVideoReconnectNonce] = useState(0);
   const [cameraErrorMsg, setCameraErrorMsg] = useState<string | null>(null);
   const [videoDevices, setVideoDevices] = useState<{ id: string; label: string }[]>([]);
   const [activeVideoDeviceId, setActiveVideoDeviceId] = useState<string>('');
   const [showCameraPicker, setShowCameraPicker] = useState(false);
   const [participantCount, setParticipantCount] = useState(1);
+  const [personalMeetUrl, setPersonalMeetUrl] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [screenShareNotification, setScreenShareNotification] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoMountRef = useRef<HTMLDivElement>(null);
-  const jitsiApiRef = useRef<any>(null);
   const channelRef = useRef<any>(null);
-
-  // Open WebRTC Meeting Infrastructure (Zero Moderator Login Wall, Instant Classroom Join)
-  const currentDomain = 'fairmeeting.net';
-  const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
 
   // Initialize Supabase & lesson metadata
   useEffect(() => {
@@ -143,6 +138,9 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             if (pupilName) {
               setStudentDisplayName(pupilName);
               title = `1-on-1 Lesson with ${pupilName}`;
+            }
+            if (stProfile?.personal_meet_url) {
+              setPersonalMeetUrl(stProfile.personal_meet_url);
             }
             if (stProfile?.grade_level) {
               gradeName = (stProfile.grade_level as any).display_name || gradeName;
@@ -245,355 +243,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Mount WebRTC Meeting API with rock-solid camera acquisition, Tile View, and direct-iframe failsafe
-  useEffect(() => {
-    let isMounted = true;
-    let observer: MutationObserver | null = null;
-    let fallbackTimer: ReturnType<typeof setTimeout> | null = null;
-    let hasMountedVideo = false;
-    if (loading || isSessionEnded) return;
-
-    // Direct iframe failsafe if external_api.js is blocked (e.g., Opera GX tracker blocker) or slow
-    const mountDirectIframeFallback = () => {
-      if (!isMounted || hasMountedVideo || !videoMountRef.current || isSessionEnded) return;
-      hasMountedVideo = true;
-      videoMountRef.current.innerHTML = '';
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.disableDeepLinking=true&config.enableWelcomePage=false&config.enableClosePage=false&config.disableFilmstrip=false&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false`;
-      iframe.allow = 'camera *; microphone *; display-capture *; autoplay *; clipboard-write *; fullscreen *';
-      iframe.allowFullscreen = true;
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = '0';
-      videoMountRef.current.appendChild(iframe);
-      setIsJitsiReady(true);
-    };
-
-    // Only prime camera permissions if not yet granted; strict 2.5s timeout so it NEVER hangs startup.
-    const primeMediaDevices = async () => {
-      if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return;
-      const runCheck = async () => {
-        try {
-          let alreadyGranted = false;
-          if (navigator.permissions?.query) {
-            try {
-              const camPerm = await navigator.permissions.query({ name: 'camera' as PermissionName });
-              const micPerm = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-              if (camPerm.state === 'granted' && micPerm.state === 'granted') {
-                alreadyGranted = true;
-              } else if (camPerm.state === 'denied') {
-                setCameraErrorMsg('Camera permission is blocked in your browser. Click the camera/lock icon in your address bar to Allow camera, then click Reconnect Video.');
-                return;
-              }
-            } catch (_) {
-              // Safari / some browsers don't support permissions.query('camera')
-            }
-          }
-
-          if (!alreadyGranted) {
-            const testStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            testStream.getTracks().forEach((track) => track.stop());
-            // Hardware release cooldown for Windows DirectShow / MediaFoundation webcams
-            await new Promise((resolve) => setTimeout(resolve, 450));
-          }
-          setCameraErrorMsg(null);
-        } catch (err: any) {
-          console.warn('Initial camera prime check:', err);
-          if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-            setCameraErrorMsg('Camera access was blocked. Allow camera permission in your browser bar, then click Reconnect.');
-          } else if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
-            setCameraErrorMsg('Your camera is currently in use by another app or tab (close any other open fairmeeting/video tab), then click Reconnect.');
-          } else if (err?.name === 'NotFoundError') {
-            setCameraErrorMsg('No camera device detected on this device.');
-          }
-        }
-      };
-
-      await Promise.race([
-        runCheck(),
-        new Promise<void>((resolve) => setTimeout(resolve, 2500)),
-      ]);
-    };
-
-    const initJitsi = () => {
-      if (!isMounted || hasMountedVideo || !videoMountRef.current || isSessionEnded) return;
-      if (!(window as any).JitsiMeetExternalAPI) {
-        mountDirectIframeFallback();
-        return;
-      }
-
-      hasMountedVideo = true;
-      if (fallbackTimer) {
-        clearTimeout(fallbackTimer);
-        fallbackTimer = null;
-      }
-
-      if (jitsiApiRef.current) {
-        try {
-          jitsiApiRef.current.dispose();
-        } catch (_) {}
-      }
-
-      videoMountRef.current.innerHTML = '';
-
-      try {
-        const api = new (window as any).JitsiMeetExternalAPI(currentDomain, {
-          roomName: cleanRoom,
-          parentNode: videoMountRef.current,
-          width: '100%',
-          height: '100%',
-          userInfo: { displayName: userName },
-          configOverwrite: {
-            startWithAudioMuted: false,
-            startWithVideoMuted: false,
-            disableInitialGUM: false,
-            prejoinConfig: { enabled: false },
-            prejoinPageEnabled: false,
-            skipPrejoin: true,
-            disableDeepLinking: true,
-            enableClosePage: false,
-            enableWelcomePage: false,
-            enableLobby: false,
-            requireDisplayName: false,
-            disableProfile: true,
-            disableSelfView: false,
-            disableSelfViewSettings: false,
-            disableTileView: false,
-            tileView: { numberOfVisibleTiles: 4 },
-            resolution: 720,
-            constraints: {
-              video: {
-                height: { ideal: 720, max: 720, min: 240 },
-              },
-            },
-            p2p: { enabled: true },
-            disableFilmstrip: false,
-            filmStripOnly: false,
-            hideConferenceSubject: true,
-            hideConferenceTimer: false,
-            // Keep camera/mic/device picker/tileview/chat/polls available on hover, strip hangup & settings bleed
-            toolbarButtons: [
-              'microphone',
-              'camera',
-              'tileview',
-              'chat',
-              'raisehand',
-              'fodeviceselection',
-            ],
-          },
-          interfaceConfigOverwrite: {
-            SHOW_JITSI_WATERMARK: false,
-            SHOW_WATERMARK_FOR_GUESTS: false,
-            SHOW_BRAND_WATERMARK: false,
-            SHOW_POWERED_BY: false,
-            DEFAULT_LOGO_URL: '',
-            JITSI_WATERMARK_LINK: '',
-            BRAND_WATERMARK_LINK: '',
-            GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
-            DISPLAY_WELCOME_PAGE_CONTENT: false,
-            HIDE_INVITE_MORE_HEADER: true,
-            TOOLBAR_ALWAYS_VISIBLE: false,
-            DEFAULT_BACKGROUND: '#060E1C',
-            SETTINGS_SECTIONS: [],
-            FILM_STRIP_MAX_HEIGHT: 140,
-            ENABLE_FEEDBACK_ANIMATION: false,
-          },
-        });
-
-        jitsiApiRef.current = api;
-        setIsJitsiReady(true);
-
-        // Immediately grant full camera/mic permissions to the iframe
-        const setIframeAllow = () => {
-          if (videoMountRef.current) {
-            const iframe = videoMountRef.current.querySelector('iframe');
-            if (iframe) {
-              iframe.setAttribute(
-                'allow',
-                'camera *; microphone *; display-capture *; autoplay *; clipboard-write *; fullscreen *'
-              );
-            }
-          }
-        };
-        setIframeAllow();
-        setTimeout(setIframeAllow, 50);
-        setTimeout(setIframeAllow, 250);
-
-        if (typeof MutationObserver !== 'undefined' && videoMountRef.current) {
-          observer = new MutationObserver(() => {
-            setIframeAllow();
-          });
-          observer.observe(videoMountRef.current, { childList: true, subtree: true });
-        }
-
-        const refreshDevices = async () => {
-          try {
-            if (typeof api.getAvailableDevices === 'function') {
-              const devices = await api.getAvailableDevices();
-              const cams = (devices?.videoInput || []).map((d: any) => ({
-                id: d.deviceId || d.id || '',
-                label: d.label || 'Camera',
-              }));
-              if (isMounted && cams.length > 0) {
-                setVideoDevices(cams);
-                // If current device is a virtual/black camera and a real physical webcam exists, auto-select physical webcam
-                const current = typeof api.getCurrentDevices === 'function' ? await api.getCurrentDevices().catch(() => null) : null;
-                const currentCam = current?.videoInput;
-                if (currentCam?.deviceId) {
-                  setActiveVideoDeviceId(currentCam.deviceId);
-                }
-                const isVirtual = (lbl: string) => /obs|virtual|snap|manycam|droidcam|iriun|nvidia broadcast/i.test(lbl);
-                if (currentCam && isVirtual(currentCam.label || '')) {
-                  const physicalCam = cams.find((c: { id: string; label: string }) => !isVirtual(c.label));
-                  if (physicalCam && typeof api.setVideoInputDevice === 'function') {
-                    api.setVideoInputDevice(physicalCam.label, physicalCam.id);
-                    setActiveVideoDeviceId(physicalCam.id);
-                  }
-                }
-              }
-            }
-          } catch (_) {}
-        };
-
-        api.addEventListeners({
-          audioMuteStatusChanged: (e: any) => setMicEnabled(!e.muted),
-          videoMuteStatusChanged: (e: any) => {
-            setCameraEnabled(!e.muted);
-            if (!e.muted) setCameraErrorMsg(null);
-          },
-          cameraError: (e: any) => {
-            console.warn('Jitsi cameraError:', e);
-            setCameraErrorMsg(
-              e?.message || 'Camera could not start. Select another camera or click Reconnect Video.'
-            );
-          },
-          participantJoined: () => {
-            try {
-              const count = typeof api.getNumberOfParticipants === 'function' ? api.getNumberOfParticipants() : 2;
-              setParticipantCount(Math.max(2, count));
-              api.executeCommand('setTileView', true);
-            } catch (_) {}
-          },
-          participantLeft: () => {
-            try {
-              const count = typeof api.getNumberOfParticipants === 'function' ? api.getNumberOfParticipants() : 1;
-              setParticipantCount(Math.max(1, count));
-            } catch (_) {}
-          },
-          videoConferenceJoined: () => {
-            api.executeCommand('setDisplayName', userName);
-            // Force Tile View so both tutor & student webcams are always clearly visible
-            try {
-              api.executeCommand('setTileView', true);
-            } catch (_) {}
-
-            void refreshDevices();
-
-            const attemptUnmuteAndTile = () => {
-              try {
-                api.executeCommand('setTileView', true);
-                if (typeof api.isVideoMuted === 'function') {
-                  api.isVideoMuted().then((muted: boolean) => {
-                    if (muted) api.executeCommand('toggleVideo');
-                    setCameraEnabled(!muted);
-                  }).catch(() => {});
-                }
-                if (typeof api.isAudioMuted === 'function') {
-                  api.isAudioMuted().then((muted: boolean) => {
-                    if (muted) api.executeCommand('toggleAudio');
-                    setMicEnabled(!muted);
-                  }).catch(() => {});
-                }
-              } catch (_) {}
-            };
-
-            setTimeout(attemptUnmuteAndTile, 1200);
-            setTimeout(attemptUnmuteAndTile, 3500);
-          },
-          videoConferenceLeft: () => {
-            try { api.dispose(); } catch (_) {}
-            jitsiApiRef.current = null;
-            if (videoMountRef.current) {
-              videoMountRef.current.innerHTML = '';
-            }
-            setIsSessionEnded(true);
-          },
-          readyToClose: () => {
-            try { api.dispose(); } catch (_) {}
-            jitsiApiRef.current = null;
-            if (videoMountRef.current) {
-              videoMountRef.current.innerHTML = '';
-            }
-            setIsSessionEnded(true);
-          },
-        });
-      } catch (err) {
-        console.warn('Jitsi External API mount error, falling back to direct iframe:', err);
-        hasMountedVideo = false;
-        mountDirectIframeFallback();
-      }
-    };
-
-    const launchAfterPrime = () => {
-      void primeMediaDevices().finally(() => {
-        if (isMounted) initJitsi();
-      });
-    };
-
-    // Guaranteed failsafe: never spin forever even if external_api.js is slow or blocked
-    fallbackTimer = setTimeout(() => {
-      if (isMounted && !hasMountedVideo) {
-        mountDirectIframeFallback();
-      }
-    }, 5500);
-
-    const scriptId = `webrtc-script-${currentDomain.replace(/[^a-zA-Z0-9]/g, '-')}`;
-    const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
-
-    if ((window as any).JitsiMeetExternalAPI) {
-      launchAfterPrime();
-    } else if (existingScript) {
-      const onExistingLoad = () => {
-        if (isMounted) launchAfterPrime();
-      };
-      const onExistingError = () => {
-        if (isMounted) mountDirectIframeFallback();
-      };
-      existingScript.addEventListener('load', onExistingLoad, { once: true });
-      existingScript.addEventListener('error', onExistingError, { once: true });
-    } else {
-      const script = document.createElement('script');
-      script.id = scriptId;
-      script.src = `https://${currentDomain}/external_api.js`;
-      script.async = true;
-      script.onload = () => {
-        if (isMounted) launchAfterPrime();
-      };
-      script.onerror = () => {
-        if (isMounted) mountDirectIframeFallback();
-      };
-      document.body.appendChild(script);
-    }
-
-    return () => {
-      isMounted = false;
-      if (fallbackTimer) {
-        clearTimeout(fallbackTimer);
-        fallbackTimer = null;
-      }
-      if (observer) {
-        observer.disconnect();
-        observer = null;
-      }
-      if (jitsiApiRef.current) {
-        try {
-          jitsiApiRef.current.dispose();
-        } catch (_) {}
-        jitsiApiRef.current = null;
-      }
-    };
-  }, [loading, cleanRoom, currentDomain, userName, isSessionEnded, videoReconnectNonce]);
-
   // Realtime Supabase Channel for PDF & Whiteboard synchronization
   useEffect(() => {
     const supabase = createClient();
@@ -686,42 +335,22 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   };
 
   const handleToggleMic = () => {
-    if (jitsiApiRef.current) {
-      try {
-        jitsiApiRef.current.executeCommand('toggleAudio');
-      } catch (_) {}
-    } else {
-      setMicEnabled(!micEnabled);
-    }
+    setMicEnabled((prev) => !prev);
   };
 
   const handleToggleCamera = () => {
     setCameraErrorMsg(null);
-    if (jitsiApiRef.current) {
-      try {
-        jitsiApiRef.current.executeCommand('toggleVideo');
-        jitsiApiRef.current.executeCommand('setTileView', true);
-      } catch (_) {}
-    } else {
-      setCameraEnabled(!cameraEnabled);
-    }
+    setCameraEnabled((prev) => !prev);
   };
 
   const handleSelectVideoDevice = (device: { id: string; label: string }) => {
     setActiveVideoDeviceId(device.id);
     setShowCameraPicker(false);
     setCameraErrorMsg(null);
-    if (jitsiApiRef.current && typeof jitsiApiRef.current.setVideoInputDevice === 'function') {
-      try {
-        jitsiApiRef.current.setVideoInputDevice(device.label, device.id);
-        jitsiApiRef.current.executeCommand('setTileView', true);
-      } catch (_) {}
-    }
   };
 
   const handleReconnectVideo = () => {
     setCameraErrorMsg(null);
-    setIsJitsiReady(false);
     setShowCameraPicker(false);
     setVideoReconnectNonce((n) => n + 1);
   };
@@ -756,11 +385,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       });
     }
 
-    if (jitsiApiRef.current) {
-      try {
-        jitsiApiRef.current.executeCommand('startShareVideo', `https://www.youtube.com/watch?v=${videoId}`);
-      } catch (_) {}
-    }
   };
 
   const handleStopShareYouTube = () => {
@@ -775,25 +399,14 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       });
     }
 
-    if (jitsiApiRef.current) {
-      try {
-        jitsiApiRef.current.executeCommand('stopShareVideo');
-      } catch (_) {}
-    }
   };
 
-  // Clean Leave Session: Destroys Jitsi completely and shows Edvoura Branded Summary screen
+  // Clean Leave Session: Stops tracks and shows Edvoura Branded Summary screen
   const handleLeaveCall = () => {
     if (confirm('End the active classroom session?')) {
-      if (jitsiApiRef.current) {
-        try {
-          jitsiApiRef.current.executeCommand('hangup');
-          jitsiApiRef.current.dispose();
-        } catch (_) {}
-        jitsiApiRef.current = null;
-      }
-      if (videoMountRef.current) {
-        videoMountRef.current.innerHTML = '';
+      if (screenStream) {
+        screenStream.getTracks().forEach((t) => t.stop());
+        setScreenStream(null);
       }
       setIsSessionEnded(true);
     }
@@ -881,11 +494,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'none' } });
       channelRef.current.send({ type: 'broadcast', event: 'stop-youtube', payload: {} });
     }
-    if (jitsiApiRef.current) {
-      try {
-        jitsiApiRef.current.executeCommand('stopShareVideo');
-      } catch (_) {}
-    }
   };
 
   const handlePresentAiWorksheet = (_worksheetText: string, title: string) => {
@@ -909,7 +517,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   // ============================================================
   // EDVOURA BRANDED SESSION COMPLETED SCREEN
   // Replaces the viewport when tutor or student leaves the session.
-  // 100% eliminates any third-party donation or fairmeeting exit pages!
+  // 100% eliminates any third-party donation or third-party exit pages!
   // ============================================================
   if (isSessionEnded) {
     return (
@@ -946,8 +554,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               variant="outline"
               onClick={() => {
                 setIsSessionEnded(false);
-                setIsJitsiReady(false);
-              }}
+                              }}
               className="w-full h-11 border-2 border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase transition-all flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
@@ -964,49 +571,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       ref={containerRef}
       className="fixed inset-0 z-50 w-screen h-screen bg-[#070D18] flex flex-col overflow-hidden select-none font-sans"
     >
-      {/* Global CSS to strip ALL third-party watermarks, toolbars, logos, and branding */}
-      <style jsx global>{`
-        .watermark, .leftwatermark, .rightwatermark,
-        [class*="watermark"], [id*="watermark"],
-        .jitsi-icon,
-        a[href*="fairmeeting"], a[href*="jitsi"],
-        [class*="oLSXp"], [class*="oVjI3"], [class*="oX7"],
-        #oLSXp, #oVjI3,
-        .oLSXp, .oVjI3,
-        div[class*="oLSXp"], div[class*="oVjI3"],
-        .oX7rJl {
-          display: none !important;
-          opacity: 0 !important;
-          visibility: hidden !important;
-          pointer-events: none !important;
-          width: 0 !important;
-          height: 0 !important;
-          overflow: hidden !important;
-        }
-        /* Hide Jitsi native bottom toolbar — Edvoura has its own controls */
-        #new-toolbox, .new-toolbox,
-        [id*="toolbox"], [class*="toolbox"],
-        .toolbox-content-items,
-        [class*="Toolbox"], [id*="Toolbox"] {
-          display: none !important;
-          opacity: 0 !important;
-          visibility: hidden !important;
-          height: 0 !important;
-          pointer-events: none !important;
-        }
-        /* Hide Jitsi settings panel overlay */
-        [class*="settings-pane"], [class*="SettingsDialog"],
-        [class*="settingsView"], [id*="settings"],
-        .oLSXp .oVjI3 { 
-          display: none !important; 
-        }
-        /* Hide fairmeeting/Jitsi donate/powered-by footer */
-        [class*="oP4Fsg"], [class*="oP4F"],
-        [class*="oLSXp"] a, [class*="oVjI3"] a {
-          display: none !important;
-        }
-      `}</style>
-
       {/* ============================================================
           TOP STATUS BAR (CLEAN, MINIMALIST - NO GOOGLE MEET BUTTON)
           ============================================================ */}
@@ -1070,18 +634,16 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     ))}
                   </div>
                 )}
-                <button
-                  onClick={() => {
-                    if (jitsiApiRef.current) {
-                      try { jitsiApiRef.current.executeCommand('setTileView', true); } catch (_) {}
-                    }
-                    setShowCameraPicker(false);
-                  }}
+                <a
+                  href={personalMeetUrl || 'https://meet.google.com/new'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setShowCameraPicker(false)}
                   className="w-full px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-1.5"
                 >
-                  <Users className="w-3.5 h-3.5 text-sky-400" />
-                  <span>Show Both Cameras (Tile View)</span>
-                </button>
+                  <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Open Google Meet (New Tab)</span>
+                </a>
                 <button
                   onClick={handleReconnectVideo}
                   className="w-full px-3 py-1.5 rounded-lg bg-yellow hover:bg-yellow/90 text-dark text-xs font-black flex items-center justify-center gap-1.5"
@@ -1345,7 +907,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 >
                   <ChevronLeft className="w-4 h-4 text-yellow group-hover:-translate-x-0.5 transition-transform" />
                   <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] tracking-wider uppercase font-black py-1 text-slate-200">
-                    Video & Polls
+                    Live Video
                   </span>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 </button>
@@ -1400,21 +962,28 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             </div>
           )}
 
-          {/* Persistent Live Video Mount (Never drops WebRTC connection) */}
-          <div className="flex-1 w-full relative bg-black flex items-center justify-center overflow-hidden">
-            <div ref={videoMountRef} className="w-full h-full" />
-
-            {!isJitsiReady && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#060E1C] z-20 text-white gap-3 p-4 text-center">
-                <Loader2 className="w-10 h-10 animate-spin text-yellow" />
-                <p className="text-xs font-black uppercase tracking-wider text-white">
-                  Connecting Live Classroom Video...
-                </p>
-                <p className="text-[11px] text-white/50 font-semibold max-w-xs">
-                  Initializing camera and microphone stream
-                </p>
-              </div>
-            )}
+          {/* Persistent Native Edvoura HD WebRTC Video Stage (Zero third-party, zero watermarks!) */}
+          <div className="flex-1 w-full relative bg-[#060E1C] flex items-center justify-center overflow-hidden">
+            <NativeVideoStage
+              lessonId={lessonId}
+              role={role}
+              userName={userName}
+              cameraEnabled={cameraEnabled}
+              micEnabled={micEnabled}
+              selectedVideoDeviceId={activeVideoDeviceId}
+              reconnectNonce={videoReconnectNonce}
+              screenStream={screenStream}
+              isSidebarMode={presentationMode !== 'none'}
+              onDevicesDetected={(devs, activeId) => {
+                setVideoDevices(devs);
+                if (activeId && !activeVideoDeviceId) setActiveVideoDeviceId(activeId);
+              }}
+              onCameraError={(msg) => setCameraErrorMsg(msg)}
+              onParticipantCountChange={(cnt) => setParticipantCount(cnt)}
+              onCopyInvite={handleCopyClassInvite}
+              copiedInvite={copiedInvite}
+              onReconnect={handleReconnectVideo}
+            />
 
             {cameraErrorMsg && (
               <div className="absolute top-3 left-3 right-3 z-30 bg-rose-950/95 border-2 border-rose-400 rounded-2xl p-3 text-white shadow-2xl space-y-2">
@@ -1446,7 +1015,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               </div>
             )}
 
-            {isJitsiReady && !cameraEnabled && !cameraErrorMsg && (
+            {!cameraEnabled && !cameraErrorMsg && (
               <div className="absolute top-3 left-3 z-30">
                 <button
                   onClick={handleToggleCamera}

@@ -58,6 +58,40 @@ export type GeometryShapeId =
 
 export type CustomAiSceneKind = 'rocket' | 'castle' | 'water-molecule' | 'tree' | 'crystal';
 
+export interface AI3DPartSpec {
+  name: string;
+  geometry:
+    | 'box'
+    | 'sphere'
+    | 'cylinder'
+    | 'cone'
+    | 'torus'
+    | 'octahedron'
+    | 'dodecahedron'
+    | 'ring'
+    | 'plane';
+  args: number[];
+  position: [number, number, number];
+  rotation: [number, number, number];
+  scale?: [number, number, number];
+  color: string;
+  emissive?: string;
+  opacity?: number;
+  roughness?: number;
+  metalness?: number;
+  wireframeEdges?: boolean;
+  animate?: 'none' | 'spinY' | 'spinZ' | 'spinX' | 'bob' | 'pulse';
+}
+
+export interface AI3DBlueprintSpec {
+  title: string;
+  category: string;
+  description: string;
+  narration: string;
+  facts: { label: string; value: string }[];
+  parts: AI3DPartSpec[];
+}
+
 export type VRDisplayMode = 'desktop' | 'gyro' | 'split-vr';
 
 export interface VRLabExplorerProps {
@@ -269,6 +303,8 @@ export function VRLabExplorer({
   const [customAiModelTitle, setCustomAiModelTitle] = useState<string>('');
   const [customAiKind, setCustomAiKind] = useState<CustomAiSceneKind>('rocket');
   const [customAiDescription, setCustomAiDescription] = useState<string>('');
+  const [aiBlueprint, setAiBlueprint] = useState<AI3DBlueprintSpec | null>(null);
+  const [aiGenError, setAiGenError] = useState<string | null>(null);
 
   // Manim Motion Controls
   const [netUnfoldAmount, setNetUnfoldAmount] = useState<number>(0); // 0 = 3D folded, 1 = 2D flat net
@@ -379,6 +415,11 @@ export function VRLabExplorer({
         if (payload.sliceHeight !== undefined) setSliceHeight(payload.sliceHeight);
         if (payload.isPlaying !== undefined) setIsPlaying(payload.isPlaying);
         if (payload.speedMultiplier !== undefined) setSpeedMultiplier(payload.speedMultiplier);
+        if (payload.aiBlueprint) {
+          setAiBlueprint(payload.aiBlueprint);
+          setCustomAiModelTitle(payload.aiBlueprint.title || 'AI 3D Model');
+          setCustomAiDescription(payload.aiBlueprint.description || '');
+        }
       })
       .subscribe();
 
@@ -1388,7 +1429,7 @@ export function VRLabExplorer({
       state.vaultMesh = pyrGroup;
     }
 
-    // 9. AI PROCEDURAL 3D LAB CUSTOM COMPOSER (Rocket, Castle, H2O Water Molecule, Tree, Crystal)
+    // 9. UNIVERSAL AI 3D BLUEPRINT COMPOSER (Generates ANY topic dynamically from Gemini/OpenRouter!)
     else if (activeModule === 'ai-custom') {
       camera.position.set(0, 4, 14);
       camera.lookAt(0, 0, 0);
@@ -1397,79 +1438,97 @@ export function VRLabExplorer({
       const std = (color: number, roughness = 0.35) =>
         new THREE.MeshStandardMaterial({ color, roughness, clippingPlanes: [clippingPlane] });
 
-      if (customAiKind === 'rocket') {
-        const body = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.2, 4.6, 24), std(0xf8fafc, 0.25));
-        customGroup.add(body);
-        const nose = new THREE.Mesh(new THREE.ConeGeometry(1.0, 2.0, 24), std(0xef4444, 0.3));
-        nose.position.y = 3.3;
-        customGroup.add(nose);
-        const windowGlass = new THREE.Mesh(new THREE.SphereGeometry(0.45, 20, 20), std(0x38bdf8, 0.1));
-        windowGlass.position.set(0, 0.8, 0.85);
-        customGroup.add(windowGlass);
-        for (let i = 0; i < 4; i++) {
-          const fin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.6, 1.1), std(0xdc2626));
-          const angle = (i * Math.PI) / 2;
-          fin.position.set(Math.cos(angle) * 1.35, -1.7, Math.sin(angle) * 1.35);
-          fin.rotation.y = -angle;
-          customGroup.add(fin);
+      if (aiBlueprint && Array.isArray(aiBlueprint.parts) && aiBlueprint.parts.length > 0) {
+        const makeGeo = (part: AI3DPartSpec) => {
+          const a = Array.isArray(part.args) ? part.args.map((n) => (Number.isFinite(n) ? n : 1)) : [1, 1, 1];
+          switch (part.geometry) {
+            case 'box':
+              return new THREE.BoxGeometry(a[0] || 1, a[1] || 1, a[2] || 1);
+            case 'sphere':
+              return new THREE.SphereGeometry(Math.max(0.05, a[0] || 1), Math.min(32, a[1] || 24), Math.min(32, a[2] || 24));
+            case 'cylinder':
+              return new THREE.CylinderGeometry(
+                Math.max(0, a[0] ?? 0.5),
+                Math.max(0, a[1] ?? 0.5),
+                Math.max(0.05, a[2] || 1),
+                Math.min(32, a[3] || 20)
+              );
+            case 'cone':
+              return new THREE.ConeGeometry(Math.max(0.05, a[0] || 1), Math.max(0.05, a[1] || 2), Math.min(32, a[2] || 20));
+            case 'torus':
+              return new THREE.TorusGeometry(
+                Math.max(0.1, a[0] || 1.5),
+                Math.max(0.03, a[1] || 0.3),
+                Math.min(24, a[2] || 16),
+                Math.min(48, a[3] || 32)
+              );
+            case 'octahedron':
+              return new THREE.OctahedronGeometry(Math.max(0.1, a[0] || 1.5), 0);
+            case 'dodecahedron':
+              return new THREE.DodecahedronGeometry(Math.max(0.1, a[0] || 1.5), 0);
+            case 'ring':
+              return new THREE.RingGeometry(Math.max(0.05, a[0] || 0.8), Math.max(0.2, a[1] || 1.5), 24);
+            case 'plane':
+              return new THREE.PlaneGeometry(Math.max(0.1, a[0] || 2), Math.max(0.1, a[1] || 2));
+            default:
+              return new THREE.BoxGeometry(1, 1, 1);
+          }
+        };
+
+        aiBlueprint.parts.forEach((part) => {
+          try {
+            const geo = makeGeo(part);
+            const opacity = typeof part.opacity === 'number' ? Math.max(0.15, Math.min(1, part.opacity)) : 1;
+            const mat = new THREE.MeshStandardMaterial({
+              color: new THREE.Color(part.color || '#3b82f6'),
+              emissive: part.emissive ? new THREE.Color(part.emissive) : new THREE.Color(0x000000),
+              emissiveIntensity: part.emissive ? 0.45 : 0,
+              roughness: typeof part.roughness === 'number' ? part.roughness : 0.4,
+              metalness: typeof part.metalness === 'number' ? part.metalness : 0.15,
+              transparent: opacity < 0.99,
+              opacity,
+              side: THREE.DoubleSide,
+              clippingPlanes: [clippingPlane],
+            });
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.name = part.name || 'AI Part';
+            const pos = Array.isArray(part.position) ? part.position : [0, 0, 0];
+            const rot = Array.isArray(part.rotation) ? part.rotation : [0, 0, 0];
+            mesh.position.set(pos[0] || 0, pos[1] || 0, pos[2] || 0);
+            mesh.rotation.set(rot[0] || 0, rot[1] || 0, rot[2] || 0);
+            if (Array.isArray(part.scale)) {
+              mesh.scale.set(part.scale[0] || 1, part.scale[1] || 1, part.scale[2] || 1);
+            }
+            if (part.wireframeEdges) {
+              const edges = new THREE.EdgesGeometry(geo);
+              mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 })));
+            }
+            mesh.userData = {
+              aiAnimate: part.animate || 'none',
+              baseY: pos[1] || 0,
+              baseScale: mesh.scale.clone(),
+            };
+            customGroup.add(mesh);
+          } catch (_) {}
+        });
+
+        // Auto-center and normalize bounding box so ANY AI-generated model frames cleanly!
+        const bbox = new THREE.Box3().setFromObject(customGroup);
+        if (!bbox.isEmpty()) {
+          const center = bbox.getCenter(new THREE.Vector3());
+          const size = bbox.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z, 1);
+          const normScale = 6.5 / maxDim;
+          customGroup.children.forEach((ch: any) => {
+            ch.position.sub(center);
+            ch.position.multiplyScalar(normScale);
+            ch.scale.multiplyScalar(normScale);
+            if (ch.userData) {
+              ch.userData.baseY = ch.position.y;
+              ch.userData.baseScale = ch.scale.clone();
+            }
+          });
         }
-        const flame = new THREE.Mesh(
-          new THREE.ConeGeometry(0.85, 2.2, 16),
-          new THREE.MeshBasicMaterial({ color: 0xf59e0b })
-        );
-        flame.rotation.x = Math.PI;
-        flame.position.y = -3.4;
-        customGroup.add(flame);
-      } else if (customAiKind === 'castle') {
-        const keep = new THREE.Mesh(new THREE.BoxGeometry(4.2, 3.2, 4.2), std(0x94a3b8, 0.7));
-        keep.position.y = -0.2;
-        customGroup.add(keep);
-        const gate = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.8, 0.4), std(0x78350f, 0.8));
-        gate.position.set(0, -0.9, 2.05);
-        customGroup.add(gate);
-        const corners = [
-          [-2.2, -2.2],
-          [2.2, -2.2],
-          [-2.2, 2.2],
-          [2.2, 2.2],
-        ];
-        corners.forEach(([cx, cz]) => {
-          const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.8, 4.6, 16), std(0xcbd5e1, 0.65));
-          tower.position.set(cx, 0.5, cz);
-          customGroup.add(tower);
-          const roof = new THREE.Mesh(new THREE.ConeGeometry(0.95, 1.6, 16), std(0x2563eb, 0.4));
-          roof.position.set(cx, 3.6, cz);
-          customGroup.add(roof);
-        });
-      } else if (customAiKind === 'water-molecule') {
-        const oxygen = new THREE.Mesh(new THREE.SphereGeometry(1.5, 32, 32), std(0xef4444, 0.25));
-        customGroup.add(oxygen);
-        const bondAngle = (104.5 * Math.PI) / 180 / 2;
-        const dist = 3.0;
-        [-1, 1].forEach((dir) => {
-          const hx = Math.sin(bondAngle) * dist * dir;
-          const hy = -Math.cos(bondAngle) * dist;
-          const hydrogen = new THREE.Mesh(new THREE.SphereGeometry(0.95, 24, 24), std(0xf8fafc, 0.2));
-          hydrogen.position.set(hx, hy, 0);
-          customGroup.add(hydrogen);
-          const bond = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, dist, 12), std(0x38bdf8, 0.2));
-          bond.position.set(hx / 2, hy / 2, 0);
-          bond.rotation.z = dir * bondAngle;
-          customGroup.add(bond);
-        });
-      } else if (customAiKind === 'tree') {
-        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.85, 3.2, 16), std(0x92400e, 0.85));
-        trunk.position.y = -1.6;
-        customGroup.add(trunk);
-        [
-          { y: 0.4, r: 2.6, h: 2.4, c: 0x15803d },
-          { y: 1.9, r: 2.0, h: 2.2, c: 0x16a34a },
-          { y: 3.3, r: 1.3, h: 1.9, c: 0x22c55e },
-        ].forEach((tier) => {
-          const cone = new THREE.Mesh(new THREE.ConeGeometry(tier.r, tier.h, 20), std(tier.c, 0.6));
-          cone.position.y = tier.y;
-          customGroup.add(cone);
-        });
       } else {
         const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(2.6, 0), std(0x8b5cf6, 0.15));
         const edges = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(2.6, 0));
@@ -1480,7 +1539,7 @@ export function VRLabExplorer({
       scene.add(customGroup);
       state.vaultMesh = customGroup;
     }
-  }, [activeModule, selectedShape, customAiKind]);
+  }, [activeModule, selectedShape, customAiKind, aiBlueprint]);
 
   useEffect(() => {
     buildActiveScene();
@@ -1653,15 +1712,28 @@ export function VRLabExplorer({
         }
       }
 
-      // 5. Vault Meshes (DNA, Cell, Atom, Pyramid) + Bohr Atom Orbiting Electrons
+      // 5. Vault Meshes (DNA, Cell, Atom, Pyramid, & Universal AI 3D Blueprints)
       else if (state.vaultMesh) {
         if (effectiveSpeed > 0) {
-          state.vaultMesh.rotation.y += 0.006 * effectiveSpeed;
+          state.vaultMesh.rotation.y += 0.005 * effectiveSpeed;
           if (lp.activeModule === 'bohr-atom' && state.atomElectrons.length > 0) {
             state.atomElectrons.forEach((el) => {
               el.angle += el.speed * effectiveSpeed;
               el.mesh.position.x = Math.cos(el.angle) * el.radius;
               el.mesh.position.z = Math.sin(el.angle) * el.radius;
+            });
+          } else if (lp.activeModule === 'ai-custom') {
+            state.vaultMesh.children.forEach((part: any) => {
+              const anim = part.userData?.aiAnimate;
+              if (anim === 'spinY') part.rotation.y += 0.025 * effectiveSpeed;
+              else if (anim === 'spinZ') part.rotation.z += 0.03 * effectiveSpeed;
+              else if (anim === 'spinX') part.rotation.x += 0.025 * effectiveSpeed;
+              else if (anim === 'bob' && typeof part.userData?.baseY === 'number') {
+                part.position.y = part.userData.baseY + Math.sin(time * 2.5 * effectiveSpeed) * 0.2;
+              } else if (anim === 'pulse' && part.userData?.baseScale) {
+                const p = 1 + Math.sin(time * 4 * effectiveSpeed) * 0.1;
+                part.scale.copy(part.userData.baseScale).multiplyScalar(p);
+              }
             });
           }
         }
@@ -1916,154 +1988,44 @@ export function VRLabExplorer({
     }
   };
 
-  // ruslanmv/GenAI-3D: Dynamic Text-to-3D Synthesis Trigger
-  const handleGenerateAi3D = (promptQuery: string) => {
-    const q = promptQuery.toLowerCase().trim();
-    if (!q) return;
+  // Universal Text-to-3D Synthesis: calls /api/ai/generate-3d so ANY topic on Earth builds a real 3D model!
+  const handleGenerateAi3D = async (promptQuery: string) => {
+    const cleanQuery = promptQuery.trim();
+    if (!cleanQuery) return;
 
     setIsAiGenerating(true);
+    setAiGenError(null);
     playSynthesizedSound('chime');
 
-    setTimeout(() => {
-      setIsAiGenerating(false);
-      setAiPromptOpen(false);
-      setShowInfoCard(true);
+    try {
+      const res = await fetch('/api/ai/generate-3d', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: cleanQuery }),
+      });
 
-      // 1. Geometry Solids (Rectangle/Cuboid, Cube, Triangular Prism, Cone, Cylinder, Sphere, Torus)
-      if (q.includes('rectang') || q.includes('cuboid') || q.includes('box') || q.includes('brick')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('cuboid');
-        setCustomAiModelTitle('📦 Generated: 3D Rectangular Prism (Cuboid)');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cuboid' });
-        speakNarration('Generated a 3D Rectangular Prism! A rectangle in 3D is called a cuboid or rectangular prism. It has 6 rectangular faces, 12 edges, and 8 corners. Its volume is length times width times height!');
-      } else if (q.includes('cube') || q.includes('square')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('cube');
-        setNetUnfoldAmount(0);
-        setCustomAiModelTitle('🧊 Generated: 3D Cube (with Unfoldable Net)');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cube' });
-        speakNarration('Generated a 3D Cube! Drag the Manim Net Unfold slider to flatten this cube into a 2D cross net!');
-      } else if (q.includes('triang') || q.includes('prism')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('prism');
-        setCustomAiModelTitle('🔺 Generated: 3D Triangular Prism');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'prism' });
-        speakNarration('Generated a 3D Triangular Prism! Notice the two identical triangular ends connected by three rectangular faces.');
-      } else if (q.includes('cone') || q.includes('ice cream')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('cone');
-        setCustomAiModelTitle('🍦 Generated: 3D Geometric Cone');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cone' });
-        speakNarration('Generated a 3D Cone! Its circular base tapers up to a sharp apex point. Volume equals one third pi r squared times height.');
-      } else if (q.includes('cylinder') || q.includes('tube') || q.includes('can')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('cylinder');
-        setCustomAiModelTitle('🛢️ Generated: 3D Cylinder');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'cylinder' });
-        speakNarration('Generated a 3D Cylinder with two parallel circular bases and a curved lateral surface.');
-      } else if (q.includes('sphere') || q.includes('ball') || q.includes('circle') || q.includes('globe')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('sphere');
-        setCustomAiModelTitle('🔵 Generated: 3D Sphere');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'sphere' });
-        speakNarration('Generated a 3D Sphere! Every point on its smooth surface is equidistant from the center.');
-      } else if (q.includes('torus') || q.includes('donut') || q.includes('ring')) {
-        setActiveModule('geometry-volume');
-        setSelectedShape('torus');
-        setCustomAiModelTitle('🍩 Generated: 3D Torus Ring');
-        broadcastVRState({ activeModule: 'geometry-volume', selectedShape: 'torus' });
-        speakNarration('Generated a 3D Torus! This ring-shaped solid is created by revolving a circle around an axis in 3D space.');
+      const data = await res.json();
+      if (!res.ok || !data?.blueprint) {
+        throw new Error(data?.error || 'Could not generate 3D model right now.');
       }
-      // 2. Science, Anatomy, Space & History Worlds
-      else if (q.includes('dna') || q.includes('gene') || q.includes('genetic') || q.includes('helix')) {
-        setActiveModule('dna-helix');
-        setCustomAiModelTitle('🧬 Generated: DNA Double Helix Molecular Model');
-        broadcastVRState({ activeModule: 'dna-helix' });
-        speakNarration('Generating 3D simulation of DNA! Notice the double helix twisted ladder with Adenine, Thymine, Guanine, and Cytosine base pairs!');
-      } else if (q.includes('cell') || q.includes('plant') || q.includes('chloroplast') || q.includes('biology')) {
-        setActiveModule('plant-cell');
-        setCustomAiModelTitle('🌿 Generated: Eukaryotic Plant Cell Model');
-        broadcastVRState({ activeModule: 'plant-cell' });
-        speakNarration('Synthesizing 3D Plant Cell! Plant cells feature a protective rigid cell wall, a large water-filled central vacuole, and green chloroplasts for photosynthesis.');
-      } else if (q.includes('water') || q.includes('h2o') || q.includes('molecule')) {
-        setCustomAiKind('water-molecule');
-        setActiveModule('ai-custom');
-        setCustomAiModelTitle('💧 Generated: Water Molecule (H₂O)');
-        setCustomAiDescription('One oxygen atom covalently bonded to two hydrogen atoms at a 104.5° bond angle — the polar molecule essential for all life on Earth.');
-        broadcastVRState({ activeModule: 'ai-custom' });
-        speakNarration('Synthesizing a 3D Water Molecule, H2O! One red oxygen atom bonds with two white hydrogen atoms at an angle of 104.5 degrees.');
-      } else if (q.includes('atom') || q.includes('electron') || q.includes('proton') || q.includes('bohr') || q.includes('chemistry')) {
-        setActiveModule('bohr-atom');
-        setCustomAiModelTitle('⚛️ Generated: Bohr Quantum Atom Model');
-        broadcastVRState({ activeModule: 'bohr-atom' });
-        speakNarration('Generating Bohr Atom model! Watch the electrons orbit the proton and neutron nucleus in concentric quantum energy shells.');
-      } else if (q.includes('heart') || q.includes('organ') || q.includes('blood') || q.includes('anatomy')) {
-        setActiveModule('human-heart');
-        setCustomAiModelTitle('🫀 Generated: 3D Beating Human Heart');
-        broadcastVRState({ activeModule: 'human-heart' });
-        speakNarration('Generating 3D Human Heart Anatomy! Watch the heart pump oxygenated red blood and deoxygenated blue blood in real time.');
-      } else if (q.includes('volcano') || q.includes('lava') || q.includes('crust') || q.includes('mantle') || q.includes('core')) {
-        setActiveModule('earth-volcano');
-        setCustomAiModelTitle('🌋 Generated: Earth Layers & Erupting Volcano');
-        broadcastVRState({ activeModule: 'earth-volcano' });
-        speakNarration('Generating Earth internal layers and erupting volcano! Use the Explode Layers slider to peel apart the crust, mantle, and core.');
-      } else if (
-        q.includes('solar') ||
-        q.includes('planet') ||
-        q.includes('sun') ||
-        q.includes('mars') ||
-        q.includes('saturn') ||
-        q.includes('jupiter') ||
-        q.includes('earth') ||
-        q.includes('mercury') ||
-        q.includes('venus') ||
-        q.includes('uranus') ||
-        q.includes('neptune')
-      ) {
-        setActiveModule('solar-system');
-        const matchedPlanet = PLANETS.find((p) => q.includes(p.name.toLowerCase()));
-        const focusName = matchedPlanet ? matchedPlanet.name : 'Earth';
-        setSelectedPin(focusName);
-        setCustomAiModelTitle(`🪐 Generated: Solar System (${focusName} Focus)`);
-        broadcastVRState({ activeModule: 'solar-system', selectedPin: focusName });
-        speakNarration(matchedPlanet ? matchedPlanet.speechText : 'Launching the 3D Solar System! Tap any planet to hear facts about it.');
-      } else if (q.includes('pyramid') || q.includes('egypt') || q.includes('giza') || q.includes('ancient')) {
-        setActiveModule('ancient-pyramid');
-        setCustomAiModelTitle('🏛️ Generated: Great Pyramid of Giza');
-        broadcastVRState({ activeModule: 'ancient-pyramid' });
-        speakNarration('Synthesizing Ancient Egyptian Stepped Pyramid! Built over 4,500 years ago as grand monumental architecture.');
+
+      const bp: AI3DBlueprintSpec = data.blueprint;
+      setAiBlueprint(bp);
+      setCustomAiModelTitle(`✨ ${bp.title}`);
+      setCustomAiDescription(bp.description);
+      setActiveModule('ai-custom');
+      setShowInfoCard(true);
+      setAiPromptOpen(false);
+      broadcastVRState({ activeModule: 'ai-custom', aiBlueprint: bp });
+      if (autoNarrate && bp.narration) {
+        speakNarration(bp.narration);
       }
-      // 3. Procedural 3D Models (Rocket, Castle, Tree, Crystal)
-      else if (q.includes('rocket') || q.includes('spaceship') || q.includes('shuttle')) {
-        setCustomAiKind('rocket');
-        setActiveModule('ai-custom');
-        setCustomAiModelTitle('🚀 Generated: 3D Space Rocket');
-        setCustomAiDescription('Multi-stage orbital launch vehicle featuring an aerodynamic nose cone, pressurized cabin window, stabilizer fins, and thruster plume.');
-        broadcastVRState({ activeModule: 'ai-custom' });
-        speakNarration('Synthesizing a 3D Space Rocket! Rockets use Newtons third law of motion, pushing exhaust downward to blast upward into orbit.');
-      } else if (q.includes('castle') || q.includes('fort') || q.includes('house') || q.includes('tower') || q.includes('building')) {
-        setCustomAiKind('castle');
-        setActiveModule('ai-custom');
-        setCustomAiModelTitle('🏰 Generated: 3D Medieval Castle');
-        setCustomAiDescription('Fortified stone keep with four cylindrical watchtowers, conical roofs, and central arched gatehouse.');
-        broadcastVRState({ activeModule: 'ai-custom' });
-        speakNarration('Synthesizing a 3D Medieval Castle! Observe the central stone keep and four corner watchtowers built for medieval defense.');
-      } else if (q.includes('tree') || q.includes('forest') || q.includes('pine') || q.includes('wood')) {
-        setCustomAiKind('tree');
-        setActiveModule('ai-custom');
-        setCustomAiModelTitle('🌲 Generated: 3D Evergreen Tree');
-        setCustomAiDescription('Layered coniferous evergreen tree with woody trunk and tiered chlorophyll-rich needle canopy that produces oxygen.');
-        broadcastVRState({ activeModule: 'ai-custom' });
-        speakNarration('Synthesizing a 3D Evergreen Tree! Trees absorb carbon dioxide and release fresh oxygen through photosynthesis.');
-      } else {
-        setCustomAiKind('crystal');
-        setActiveModule('ai-custom');
-        setCustomAiModelTitle(`✨ AI 3D Model: ${promptQuery}`);
-        setCustomAiDescription(`Interactive 3D octahedron crystalline structure generated for "${promptQuery}". Drag to rotate 360° or activate the Slice Plane to dissect inside.`);
-        broadcastVRState({ activeModule: 'ai-custom' });
-        speakNarration(`Generated a 3D interactive model for ${promptQuery}! Drag to rotate 360 degrees, zoom in, or use the slicing plane to inspect inside.`);
-      }
-    }, 650);
+    } catch (err: any) {
+      console.warn('AI 3D generation error:', err);
+      setAiGenError(err?.message || 'Generation failed — please try again.');
+    } finally {
+      setIsAiGenerating(false);
+    }
   };
 
   const activePlanetInfo = PLANETS.find((p) => p.name === selectedPin) || PLANETS[3];
@@ -2231,9 +2193,10 @@ export function VRLabExplorer({
                 value={aiPromptText}
                 onChange={(e) => setAiPromptText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateAi3D(aiPromptText)}
-                placeholder="e.g. Rectangle, Rocket, Castle, Water H2O, DNA, Plant cell..."
+                placeholder="Type ANY topic: Traffic light, Elephant, Brain, Car, Rectangle, Windmill..."
                 className="w-full bg-slate-900/90 border border-purple-400/40 rounded-xl px-3 py-1 text-xs text-white placeholder-white/40 focus:outline-none focus:border-purple-400"
               />
+              {aiGenError && <p className="text-[10px] font-bold text-rose-300 mt-1">{aiGenError}</p>}
             </div>
             <button
               onClick={() => handleGenerateAi3D(aiPromptText)}
@@ -3024,12 +2987,19 @@ export function VRLabExplorer({
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2 min-w-0">
                 <WandSparkles className="w-4 h-4 text-purple-400 shrink-0" />
-                <h3 className="font-black text-xs uppercase text-purple-300 truncate">
-                  {customAiModelTitle || 'AI 3D Generated Model'}
-                </h3>
+                <div className="min-w-0">
+                  <div className="text-[9px] uppercase font-black tracking-wider text-purple-300/70">
+                    {aiBlueprint?.category || 'AI 3D Studio'}
+                  </div>
+                  <h3 className="font-black text-xs uppercase text-purple-200 truncate">
+                    {aiBlueprint?.title || customAiModelTitle || 'AI 3D Model'}
+                  </h3>
+                </div>
               </div>
               <button
-                onClick={() => speakNarration(customAiDescription || customAiModelTitle || 'Interactive 3D Model')}
+                onClick={() =>
+                  speakNarration(aiBlueprint?.narration || customAiDescription || customAiModelTitle || 'Interactive 3D Model')
+                }
                 className="h-6 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 flex items-center gap-1 text-[10px] font-black border border-emerald-500/30 shrink-0"
               >
                 <Volume2 className="w-3 h-3" />
@@ -3037,14 +3007,26 @@ export function VRLabExplorer({
               </button>
             </div>
             <p className="text-xs text-white/80 font-medium leading-relaxed mb-3">
-              {customAiDescription || 'Drag to rotate 360°, scroll to zoom, or activate Slice Plane to inspect the internal 3D geometry.'}
+              {aiBlueprint?.description ||
+                customAiDescription ||
+                'Drag to rotate 360°, scroll to zoom, or activate Slice Plane to inspect inside.'}
             </p>
+            {aiBlueprint?.facts && aiBlueprint.facts.length > 0 && (
+              <div className="grid grid-cols-2 gap-1.5 mb-3">
+                {aiBlueprint.facts.map((f, idx) => (
+                  <div key={`${f.label}-${idx}`} className="bg-white/10 p-2 rounded-xl">
+                    <div className="text-[9px] uppercase tracking-wider font-bold text-white/50 truncate">{f.label}</div>
+                    <div className="text-xs font-black text-white truncate">{f.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
             <button
               onClick={() => setAiPromptOpen(true)}
               className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase flex items-center justify-center gap-1.5"
             >
               <WandSparkles className="w-3.5 h-3.5" />
-              <span>Generate Another 3D Model</span>
+              <span>Generate Any 3D Topic</span>
             </button>
           </aside>
         )}
