@@ -20,6 +20,7 @@ import {
   Sparkles,
   Calculator,
   Cog,
+  Glasses,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,8 @@ import { buildFeedCountMapFromNotificationData, getFeedRulesForRole } from '@/li
 import { createClient } from '@/utils/supabase/server';
 
 const tutorSections = [
+  { href: '/dash/tutor/live/classroom', title: 'Live Classroom Stage', description: 'Launch 1-on-1 video, whiteboard & 3D VR.', icon: Video, color: 'text-dark bg-emerald-300' },
+  { href: '/dash/tutor/3d-lab', title: '3D & VR Lab Studio', description: '8 interactive 3D worlds with voice narration.', icon: Glasses, color: 'text-dark bg-purple-300' },
   { href: '/dash/tutor/schedule', title: "Today's Classes", description: 'Schedule and manage live sessions.', icon: CalendarClock, color: 'text-dark bg-yellow' },
   { href: '/dash/tutor/roster', title: 'Students', description: 'Student list and performance.', icon: Users, color: 'text-dark bg-blue-200' },
   { href: '/dash/tutor/attendance', title: 'Attendance Register', description: 'Mark and review learner presence.', icon: CheckSquare, color: 'text-dark bg-emerald-300' },
@@ -55,7 +58,12 @@ export default async function TutorDashboard() {
   const viewer = await requireAppViewer();
   const dashboard = await getTutorDashboardData();
   const supabase = await createClient();
-  const [{ data: notifications = [] }, { count: pendingReviewCount }, { count: publishedNotesCount }] = await Promise.all([
+  const [
+    { data: notifications = [] },
+    { count: pendingReviewCount },
+    { count: publishedNotesCount },
+    { data: recentQuizScores = [] },
+  ] = await Promise.all([
     supabase
       .from('notifications')
       .select('data')
@@ -71,7 +79,25 @@ export default async function TutorDashboard() {
       .from('ai_generated_content')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'PUBLISHED'),
+    supabase
+      .from('student_ai_practice_scores')
+      .select('id, student_id, subject_name, topic, score, total_questions, created_at')
+      .order('created_at', { ascending: false })
+      .limit(6),
   ]);
+
+  const quizStudentIds = [...new Set((recentQuizScores ?? []).map((q: any) => q.student_id).filter(Boolean))];
+  const { data: quizProfiles = [] } = quizStudentIds.length
+    ? await supabase.from('profiles').select('id, full_name').in('id', quizStudentIds)
+    : { data: [] };
+  const quizNameMap = new Map((quizProfiles ?? []).map((pr: any) => [pr.id, pr.full_name || 'Student']));
+  const liveQuizActivity = (recentQuizScores ?? []).map((q: any) => ({
+    id: q.id,
+    studentName: quizNameMap.get(q.student_id) || 'Student',
+    label: q.topic || q.subject_name || 'Practice Quiz',
+    score: Number(q.score ?? 0),
+    total: Number(q.total_questions ?? 10) || 10,
+  }));
   const tutorNotificationFeedCounts = buildFeedCountMapFromNotificationData(notifications ?? [], 'workflow_alerts');
   const tutorFeedLanes = getFeedRulesForRole('tutor').map((rule) => ({
     ...rule,
@@ -146,7 +172,7 @@ export default async function TutorDashboard() {
               <div className="rounded-2xl border-[3px] border-dark bg-emerald-300 p-4 shadow-[3px_3px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all flex items-center gap-3 cursor-pointer group">
                 <span className="text-2xl group-hover:scale-110 transition-transform">🚀</span>
                 <div>
-                  <h4 className="font-black text-dark text-sm leading-tight">Pushed Notes ({publishedNotesCount ?? 1})</h4>
+                  <h4 className="font-black text-dark text-sm leading-tight">Pushed Notes ({publishedNotesCount ?? 0})</h4>
                   <p className="text-[10px] font-bold text-dark/80">Live for Students</p>
                 </div>
               </div>
@@ -268,24 +294,40 @@ export default async function TutorDashboard() {
                   </span>
                 </div>
                 <div className="space-y-3">
-                  <div className="p-3.5 rounded-xl bg-white border-[2px] border-dark shadow-[2px_2px_0px_#060E1C] flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-black text-dark">James Jedidiahz</p>
-                      <p className="text-[10px] font-bold text-dark/60 mt-0.5">Subtraction Master Quiz (Grade 3)</p>
+                  {liveQuizActivity.length > 0 ? (
+                    liveQuizActivity.map((item) => {
+                      const pct = Math.round((item.score / Math.max(1, item.total)) * 100);
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3.5 rounded-xl bg-white border-[2px] border-dark shadow-[2px_2px_0px_#060E1C] flex items-center justify-between gap-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-black text-dark truncate">{item.studentName}</p>
+                            <p className="text-[10px] font-bold text-dark/60 mt-0.5 truncate">{item.label}</p>
+                          </div>
+                          <span
+                            className={`px-2.5 py-1 border font-black text-xs rounded-lg shadow-[1px_1px_0px_#060E1C] shrink-0 ${
+                              pct >= 80
+                                ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                                : pct >= 60
+                                  ? 'bg-yellow text-dark border-dark'
+                                  : 'bg-rose-100 text-rose-900 border-rose-400'
+                            }`}
+                          >
+                            {pct}% ({item.score}/{item.total})
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="p-5 rounded-xl bg-white border-[2px] border-dashed border-dark/25 text-center">
+                      <p className="text-xs font-black text-dark">No quiz completions recorded yet</p>
+                      <p className="text-[10px] font-semibold text-dark/60 mt-1">
+                        Real student AI quiz and Spelling Bee scores appear here automatically as pupils practice.
+                      </p>
                     </div>
-                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-900 border border-emerald-400 font-black text-xs rounded-lg shadow-[1px_1px_0px_#060E1C]">
-                      90% (9/10)
-                    </span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-white border-[2px] border-dark shadow-[2px_2px_0px_#060E1C] flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-black text-dark">Titomi Oluwa</p>
-                      <p className="text-[10px] font-bold text-dark/60 mt-0.5">Spelling Bee Practice Challenge</p>
-                    </div>
-                    <span className="px-2.5 py-1 bg-yellow text-dark border border-dark font-black text-xs rounded-lg shadow-[1px_1px_0px_#060E1C]">
-                      100% (5/5)
-                    </span>
-                  </div>
+                  )}
                 </div>
               </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Compass, Cog, Network, BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight, Gamepad2, FileText, Zap, BookMarked, Tv, Folder, CircleDot, Globe, Award, UserCheck } from 'lucide-react';
+import { Compass, Cog, Network, BookOpen, CheckCircle2, Clock3, Target, TrendingUp, Video, Sparkles, PlayCircle, Star, Flame, ArrowRight, Gamepad2, FileText, Zap, BookMarked, Tv, Folder, CircleDot, Globe, Award, UserCheck, Glasses } from 'lucide-react';
 
 import { useBand } from './BandContext';
 import DashboardFeedWidget from './DashboardFeedWidget';
@@ -213,7 +213,9 @@ export default function StudentBandClientWrapper({
         <StudentSkillHeatmap />
 
         {/* Quick Fun Links */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-4 mb-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6 mb-4">
+          <FunCard icon={Video} label="Live Class" href="/dash/student/live" color="bg-emerald-400" />
+          <FunCard icon={Glasses} label="3D & VR Lab" href="/dash/student/3d-lab" color="bg-purple-300" />
           <FunCard icon={Compass} label="Math Studio" href="/math-studio" color="bg-yellow" />
           <FunCard icon={BookMarked} label="Word Atlas" href="/vocabulary" color="bg-pink-300" />
           <FunCard icon={Cog} label="STEM MechLab" href="/anatomy-lab" color="bg-cyan-300" />
@@ -846,6 +848,7 @@ export default function StudentBandClientWrapper({
               {band === '4-6' ? (
                 <>
                   <QuickLink href="/dash/student/live" label="🎥 Join Live Class" />
+                  <QuickLink href="/dash/student/3d-lab" label="🥽 3D & Virtual Reality Lab (8 Interactive Worlds)" />
                   <QuickLink href="/math-studio" label="📐 MathMotion Studio™ (Interactive 60 FPS Visuals)" />
                   <QuickLink href="/vocabulary" label="📖 LexiCore™ Word Atlas (7,298 Words & Audio)" />
                   <QuickLink href="/anatomy-lab" label="⚙️ STEM MechLab™ (Interactive Physical Simulations)" />
@@ -855,11 +858,11 @@ export default function StudentBandClientWrapper({
                   <QuickLink href="/dash/student/games" label="🎮 3D Play Zone (11 Games)" />
                   <QuickLink href="/dash/student/games/color-sort" label="⭕ Color Ring Sort 3D (New!)" />
                   <QuickLink href="/dash/student/library" label="📚 Class Library" />
-                  <QuickLink href="/dash/student/roadmap" label="🗺️ Curriculum Skill Tree & Roadmap" />
-                  <QuickLink href="/dash/student/vocabulary" label="📖 Visual Vocabulary Atlas (7,298 Words)" />
                 </>
               ) : (
                 <>
+                  <QuickLink href="/dash/student/3d-lab" label="🥽 3D & Virtual Reality Lab (8 Interactive Worlds)" />
+                  <QuickLink href="/dash/student/live" label="🎥 Join Live Class" />
                   <QuickLink href="/dash/student/roadmap" label="🗺️ Curriculum Skill Tree & Roadmap" />
                   <QuickLink href="/dash/student/vocabulary" label="📖 Visual Vocabulary Atlas (7,298 Words)" />
                   <QuickLink href="/dash/student/exam-prep" label="🎯 Exam Prep & Practice" />

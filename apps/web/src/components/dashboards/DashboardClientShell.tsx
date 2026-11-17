@@ -12,6 +12,7 @@ import {
   BookOpen,
   CalendarClock,
   CheckCircle2,
+  CheckSquare,
   ClipboardCheck,
   ClipboardList,
   Crown,
@@ -20,6 +21,7 @@ import {
   Flame,
   Gamepad2,
   Gift,
+  Glasses,
   Home,
   Layers,
   LifeBuoy,
@@ -36,6 +38,7 @@ import {
   User,
   UserCog,
   Users,
+  Video,
   Activity,
   CreditCard,
   Shield,
@@ -126,6 +129,115 @@ export default function DashboardClientShell({
   const [avatarUrl, setAvatarUrl] = useState<string>(
     `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(viewerName)}`,
   );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<
+    Array<{ id: string; title: string; body: string | null; status: string; created_at: string }>
+  >([]);
+
+  const quickSearchItems = React.useMemo(() => {
+    const byRole: Record<'student' | 'parent' | 'tutor' | 'admin', Array<{ label: string; href: string }>> = {
+      student: [
+        { label: 'Overview Home', href: '/dash/student' },
+        { label: 'Live Classroom', href: '/dash/student/live' },
+        { label: '3D & Virtual Reality Lab', href: '/dash/student/3d-lab' },
+        { label: 'Classes', href: '/dash/student/classes' },
+        { label: 'Subjects', href: '/dash/student/subjects' },
+        { label: 'Assignments & Homework', href: '/dash/student/assignments' },
+        { label: 'AI Study Hub & Quiz', href: '/dash/student/quiz' },
+        { label: 'Games Play Zone', href: '/dash/student/games' },
+        { label: 'Spelling Bee', href: '/dash/student/spelling-bee' },
+        { label: 'Notes', href: '/dash/student/notes' },
+        { label: 'Library', href: '/dash/student/library' },
+        { label: 'Videos', href: '/dash/student/videos' },
+        { label: 'Magic Garden', href: '/dash/student/garden' },
+        { label: 'Rewards & Badges', href: '/dash/student/rewards' },
+        { label: 'Profile', href: '/dash/profile' },
+      ],
+      tutor: [
+        { label: 'Tutor Overview', href: '/dash/tutor' },
+        { label: 'Live Classroom Stage', href: '/dash/tutor/live/classroom' },
+        { label: '3D & Virtual Reality Lab', href: '/dash/tutor/3d-lab' },
+        { label: "Today's Schedule", href: '/dash/tutor/schedule' },
+        { label: 'Student Roster', href: '/dash/tutor/roster' },
+        { label: 'Attendance Register', href: '/dash/tutor/attendance' },
+        { label: 'Lesson Notes & Plans', href: '/dash/tutor/lesson-notes' },
+        { label: 'Assignments & Builder', href: '/dash/tutor/builder' },
+        { label: 'Grading Queue', href: '/dash/tutor/grading' },
+        { label: 'Messages', href: '/dash/tutor/messages' },
+        { label: 'Edvoura AI Generator', href: '/dash/tutor/ai' },
+        { label: 'Earnings & Invoices', href: '/dash/tutor/earnings' },
+        { label: 'Profile & Availability', href: '/dash/tutor/profile' },
+      ],
+      parent: [
+        { label: 'Parent Overview', href: '/dash/parent' },
+        { label: 'Child Snapshot', href: '/dash/parent/children' },
+        { label: 'Lessons & Attendance', href: '/dash/parent/monitor' },
+        { label: 'Homework & Progress', href: '/dash/parent/reports' },
+        { label: 'Rewards & Engagement', href: '/dash/parent/rewards' },
+        { label: 'Messages', href: '/dash/parent/messages' },
+        { label: 'Billing & Subscription', href: '/dash/parent/billing' },
+        { label: 'Notifications', href: '/dash/parent/notifications' },
+        { label: 'Consent & Settings', href: '/dash/profile' },
+      ],
+      admin: [
+        { label: 'Operational Overview', href: '/dash/admin' },
+        { label: 'Users & Roles', href: '/dash/admin/users' },
+        { label: 'Students', href: '/dash/admin/students' },
+        { label: 'Parents', href: '/dash/admin/parents' },
+        { label: 'Tutors & Approvals', href: '/dash/admin/tutors' },
+        { label: 'Academic Setup', href: '/dash/admin/academic' },
+        { label: 'Lesson Oversight', href: '/dash/admin/lessons' },
+        { label: 'Finance & Billing', href: '/dash/admin/finance' },
+        { label: 'AI Control Center', href: '/dash/admin/ai' },
+        { label: 'Notification Center', href: '/dash/admin/notifications' },
+        { label: 'Analytics', href: '/dash/admin/analytics' },
+        { label: 'Support & Moderation', href: '/dash/admin/support' },
+      ],
+    };
+    const items = byRole[effectiveRole] ?? [];
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return items.slice(0, 6);
+    return items.filter((i) => i.label.toLowerCase().includes(q));
+  }, [effectiveRole, searchQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const loadNotifications = async () => {
+      try {
+        const supabase = createClient();
+        const { data: userRes } = await supabase.auth.getUser();
+        const uid = userRes?.user?.id;
+        if (!uid) return;
+        const { data } = await supabase
+          .from('notifications')
+          .select('id, title, body, status, created_at')
+          .eq('recipient_user_id', uid)
+          .order('created_at', { ascending: false })
+          .limit(12);
+        if (active && data) {
+          setNotifications(data as any);
+        }
+      } catch (_) {}
+    };
+    void loadNotifications();
+    return () => {
+      active = false;
+    };
+  }, [pathname]);
+
+  const unreadCount = notifications.filter((n) => n.status === 'unread').length;
+
+  const handleMarkAllRead = async () => {
+    const unreadIds = notifications.filter((n) => n.status === 'unread').map((n) => n.id);
+    if (unreadIds.length === 0) return;
+    setNotifications((prev) => prev.map((n) => ({ ...n, status: 'read' })));
+    try {
+      const supabase = createClient();
+      await supabase.from('notifications').update({ status: 'read' }).in('id', unreadIds);
+    } catch (_) {}
+  };
   const showStudentBottomNav = effectiveRole === 'student';
   const showTutorBottomNav = effectiveRole === 'tutor';
   const showParentBottomNav = effectiveRole === 'parent';
@@ -286,7 +398,7 @@ export default function DashboardClientShell({
                       if (typeof window !== 'undefined' && window.history.length > 1) {
                         router.back();
                       } else {
-                        router.push('/dash/student');
+                        router.push(`/dash/${effectiveRole}`);
                       }
                     }}
                     className="flex items-center gap-1 sm:gap-1.5 rounded-xl border-[3px] border-dark bg-yellow px-2.5 py-1.5 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:scale-95 shrink-0"
@@ -307,9 +419,54 @@ export default function DashboardClientShell({
                   {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </button>
 
-                <div className="hidden sm:flex items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-4 py-2 shadow-[2px_2px_0px_#060E1C] shrink-0">
-                  <Search className="h-4 w-4 text-dark/50" />
-                  <span className="text-xs font-black uppercase tracking-widest text-dark/50">Search</span>
+                <div className="hidden sm:block relative shrink-0">
+                  <div className="flex items-center gap-2 rounded-xl border-[3px] border-dark bg-off-white px-3 py-1.5 shadow-[2px_2px_0px_#060E1C]">
+                    <Search className="h-4 w-4 text-dark/50 shrink-0" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={() => setSearchFocused(true)}
+                      onBlur={() => setTimeout(() => setSearchFocused(false), 180)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && quickSearchItems.length > 0) {
+                          router.push(quickSearchItems[0].href);
+                          setSearchQuery('');
+                          setSearchFocused(false);
+                        }
+                      }}
+                      placeholder="Quick jump..."
+                      aria-label="Search dashboard pages"
+                      className="w-32 md:w-44 bg-transparent text-xs font-black text-dark placeholder:text-dark/40 outline-none"
+                    />
+                  </div>
+                  {searchFocused && (
+                    <div className="absolute left-0 top-12 w-64 rounded-2xl border-[3px] border-dark bg-white p-2 shadow-[6px_6px_0px_#060E1C] z-50 space-y-1">
+                      <p className="px-2 py-1 text-[10px] font-black uppercase tracking-wider text-dark/50">
+                        Jump to page
+                      </p>
+                      {quickSearchItems.length > 0 ? (
+                        quickSearchItems.map((item) => (
+                          <button
+                            key={item.href}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              router.push(item.href);
+                              setSearchQuery('');
+                              setSearchFocused(false);
+                            }}
+                            className="w-full text-left px-2.5 py-2 rounded-xl text-xs font-black text-dark hover:bg-yellow transition-colors flex items-center justify-between"
+                          >
+                            <span>{item.label}</span>
+                            <span className="text-[10px] text-dark/40">↵</span>
+                          </button>
+                        ))
+                      ) : (
+                        <p className="px-2.5 py-2 text-xs font-bold text-dark/50">No matching page</p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <p className="truncate text-xs sm:text-sm font-black text-dark/60 min-w-0">{roleLabel}</p>
                 {subscriptionStatus && (
@@ -348,10 +505,71 @@ export default function DashboardClientShell({
                   <p suppressHydrationWarning className="text-sm font-black text-dark">{timeLabel}</p>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-dark/50">Local Time</p>
                 </div>
-                <button type="button" className="relative rounded-xl border-[3px] border-dark bg-white p-2 sm:p-2.5 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95 shrink-0" aria-label="Notifications">
-                  <Bell className="h-5 w-5 sm:h-5 sm:w-5" />
-                  <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-[2px] border-white bg-rose-500" />
-                </button>
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setNotifOpen(!notifOpen)}
+                    className="relative rounded-xl border-[3px] border-dark bg-white p-2 sm:p-2.5 text-dark transition-all hover:translate-x-[1px] hover:translate-y-[1px] shadow-[2px_2px_0px_#060E1C] hover:shadow-none active:scale-95"
+                    aria-label="Notifications"
+                  >
+                    <Bell className="h-5 w-5 sm:h-5 sm:w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -right-1 -top-1 min-w-[18px] h-[18px] px-1 rounded-full border-[2px] border-white bg-rose-500 text-white text-[9px] font-black flex items-center justify-center">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {notifOpen && (
+                    <div className="absolute right-0 top-13 w-80 max-w-[90vw] rounded-2xl border-[3px] border-dark bg-white shadow-[6px_6px_0px_#060E1C] z-50 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 bg-yellow/40 border-b-[2px] border-dark">
+                        <span className="text-xs font-black uppercase tracking-wider text-dark">
+                          Notifications ({unreadCount} unread)
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {unreadCount > 0 && (
+                            <button
+                              type="button"
+                              onClick={handleMarkAllRead}
+                              className="text-[10px] font-black uppercase text-blue-700 hover:underline"
+                            >
+                              Mark read
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => setNotifOpen(false)}
+                            className="text-xs font-black text-dark/60 hover:text-dark"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                      <div className="max-h-72 overflow-y-auto divide-y divide-dark/10">
+                        {notifications.length > 0 ? (
+                          notifications.map((n) => (
+                            <div
+                              key={n.id}
+                              className={`p-3 text-left ${n.status === 'unread' ? 'bg-blue-50/70' : 'bg-white'}`}
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-xs font-black text-dark leading-snug">{n.title || 'Update'}</p>
+                                {n.status === 'unread' && (
+                                  <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 mt-1" />
+                                )}
+                              </div>
+                              {n.body && <p className="text-[11px] font-semibold text-dark/65 mt-1">{n.body}</p>}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-6 text-center text-xs font-bold text-dark/50">
+                            You&apos;re all caught up — no new notifications.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="lg:hidden shrink-0">
                   <LogoutButton />
                 </div>
@@ -401,8 +619,11 @@ function TutorSidebarNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tutorNav = [
+    { href: '/dash/tutor/live/classroom', label: 'Live Classroom Stage', icon: Video },
+    { href: '/dash/tutor/3d-lab', label: '3D & VR Lab Studio', icon: Glasses },
     { href: '/dash/tutor/schedule', label: "Today's Classes", icon: CalendarClock },
     { href: '/dash/tutor/roster', label: 'Students', icon: Users },
+    { href: '/dash/tutor/attendance', label: 'Attendance Register', icon: CheckSquare },
     { href: '/dash/tutor/lesson-notes', label: 'Lesson Notes & Plans', icon: ScrollText },
     { href: '/dash/tutor/builder?tool=assignment', label: 'Assignments', icon: NotebookPen },
     { href: '/dash/tutor/builder?tool=quiz', label: 'Quizzes & Challenges', icon: Star },
@@ -414,8 +635,8 @@ function TutorSidebarNav() {
     { href: '/dash/tutor/profile', label: 'Profile and Availability', icon: Settings2 },
   ];
   const toolsNav = [
-    { href: '/dash/tutor/schedule', label: 'Start or Join Lesson', icon: PanelTop },
-    { href: '/dash/tutor/roster?view=attendance', label: 'Attendance and Performance', icon: BookCheck },
+    { href: '/dash/tutor/live/classroom', label: 'Enter Live Classroom', icon: PanelTop },
+    { href: '/dash/tutor/attendance', label: 'Attendance Register', icon: BookCheck },
     { href: '/dash/tutor/ai', label: 'Edvoura AI Generator', icon: Sparkles },
   ];
   const isActive = (href: string) => {
@@ -464,15 +685,15 @@ function TutorBottomNav() {
   
   const allItems = [
     { href: '/dash/tutor', label: "Home", icon: Crown },
+    { href: '/dash/tutor/live/classroom', label: "Live", icon: Video },
+    { href: '/dash/tutor/3d-lab', label: "3D VR", icon: Glasses },
     { href: '/dash/tutor/schedule', label: "Classes", icon: CalendarClock },
     { href: '/dash/tutor/roster', label: 'Students', icon: Users },
+    { href: '/dash/tutor/attendance', label: 'Attend', icon: CheckSquare },
     { href: '/dash/tutor/lesson-notes', label: 'Notes', icon: ScrollText },
     { href: '/dash/tutor/builder?tool=assignment', label: 'Assign', icon: NotebookPen },
-    { href: '/dash/tutor/builder?tool=quiz', label: 'Quizzes', icon: Star },
     { href: '/dash/tutor/grading', label: 'Grading', icon: ClipboardCheck },
     { href: '/dash/tutor/messages', label: 'Messages', icon: MessageCircle },
-    { href: '/dash/tutor/earnings', label: 'Invoice', icon: DollarSign },
-    { href: '/dash/tutor/profile', label: 'Profile', icon: Settings2 },
     { href: '/dash/tutor/ai', label: 'AI Gen', icon: Sparkles },
   ];
 
@@ -505,6 +726,7 @@ function TutorBottomNav() {
 
 function ParentSidebarNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const parentNav = [
     { href: '/dash/parent/children', label: 'Child Snapshot', icon: Users },
     { href: '/dash/parent/monitor', label: 'Lessons & Attendance', icon: CalendarClock },
@@ -517,10 +739,16 @@ function ParentSidebarNav() {
     { href: '/dash/profile', label: 'Consent & Settings', icon: Shield },
   ];
   const isActive = (href: string) => {
-    if (href === '/dash/parent') {
-      return pathname === href;
+    const [basePath, queryString] = href.split('?');
+    if (queryString) {
+      if (pathname !== basePath) return false;
+      const params = new URLSearchParams(queryString);
+      return Array.from(params.entries()).every(([k, v]) => searchParams.get(k) === v);
     }
-    return pathname === href || pathname.startsWith(`${href}/`);
+    if (basePath === '/dash/parent') {
+      return pathname === basePath && !searchParams.get('ai-insight');
+    }
+    return pathname === basePath || pathname.startsWith(`${basePath}/`);
   };
   return (
     <div className="space-y-1.5">

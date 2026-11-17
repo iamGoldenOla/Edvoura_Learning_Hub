@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { createClient } from '@/utils/supabase/client';
 import {
   Globe,
   Heart,
@@ -31,6 +32,7 @@ import {
   Loader,
   ChevronRight,
   Plus,
+  Info,
 } from 'lucide-react';
 
 export type VRModuleId =
@@ -213,8 +215,12 @@ export function VRLabExplorer({
   syncPayload,
 }: VRLabExplorerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const gazeCooldownRef = useRef<number>(0);
+  const vrChannelRef = useRef<any>(null);
 
   // Simulation State
   const [activeModule, setActiveModule] = useState<VRModuleId>(initialModule);
@@ -222,8 +228,11 @@ export function VRLabExplorer({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1.0);
   const [selectedPin, setSelectedPin] = useState<string | null>('Earth');
+  const [showInfoCard, setShowInfoCard] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [gyroActive, setGyroActive] = useState<boolean>(false);
+  const [threeLoaded, setThreeLoaded] = useState<boolean>(false);
+  const [threeError, setThreeError] = useState<string | null>(null);
 
   // Kainmueller-Lab/vr-viewer: Slicing Plane Feature
   const [sliceHeight, setSliceHeight] = useState<number>(1.0); // 1 = fully intact, 0 = sliced halfway, -1 = full cut
@@ -262,6 +271,35 @@ export function VRLabExplorer({
   const [audioFeedbackText, setAudioFeedbackText] = useState<string>('');
   const audioContextRef = useRef<any>(null);
 
+  // Sync external initialModule prop changes (e.g. from Student/Tutor 3D Lab page switcher)
+  useEffect(() => {
+    setActiveModule(initialModule);
+  }, [initialModule]);
+
+  // Live reactive ref so Three.js 60FPS loop NEVER reads stale React closures
+  const liveParamsRef = useRef({
+    activeModule,
+    displayMode,
+    isPlaying,
+    speedMultiplier,
+    selectedShape,
+    netUnfoldAmount,
+    explodeAmount,
+    gazeReticleEnabled,
+    isWebXRPresenting,
+  });
+  liveParamsRef.current = {
+    activeModule,
+    displayMode,
+    isPlaying,
+    speedMultiplier,
+    selectedShape,
+    netUnfoldAmount,
+    explodeAmount,
+    gazeReticleEnabled,
+    isWebXRPresenting,
+  };
+
   // Three.js References
   const threeStateRef = useRef<{
     THREE: any;
@@ -282,12 +320,58 @@ export function VRLabExplorer({
     bloodParticles: any;
     geometryMesh: any;
     shapeFaces: any[];
+    cubeHinges: { front: any; back: any; left: any; right: any; top: any } | null;
     earthLayers: any[];
     lavaParticles: any;
     vaultMesh: any;
+    atomElectrons: { mesh: any; radius: number; angle: number; speed: number; tiltX: number; tiltZ: number }[];
     raycaster: any;
     clock: any;
   } | null>(null);
+
+  // Supabase Realtime sync for Live Classroom Tutor -> Student 3D/VR synchronization
+  const broadcastVRState = useCallback(
+    (payload: Record<string, any>) => {
+      if (onSyncState) onSyncState(payload);
+      if (vrChannelRef.current && role === 'tutor') {
+        vrChannelRef.current.send({
+          type: 'broadcast',
+          event: 'vr-sync',
+          payload,
+        });
+      }
+    },
+    [onSyncState, role]
+  );
+
+  useEffect(() => {
+    if (!lessonId) return;
+    const supabase = createClient();
+    const channel = supabase.channel(`vrlab:${lessonId}`, {
+      config: { broadcast: { self: false } },
+    });
+
+    channel
+      .on('broadcast', { event: 'vr-sync' }, ({ payload }) => {
+        if (!payload) return;
+        if (payload.activeModule) setActiveModule(payload.activeModule);
+        if (payload.selectedPin !== undefined) setSelectedPin(payload.selectedPin);
+        if (payload.selectedShape) setSelectedShape(payload.selectedShape);
+        if (payload.netUnfoldAmount !== undefined) setNetUnfoldAmount(payload.netUnfoldAmount);
+        if (payload.explodeAmount !== undefined) setExplodeAmount(payload.explodeAmount);
+        if (payload.isSlicingActive !== undefined) setIsSlicingActive(payload.isSlicingActive);
+        if (payload.sliceHeight !== undefined) setSliceHeight(payload.sliceHeight);
+        if (payload.isPlaying !== undefined) setIsPlaying(payload.isPlaying);
+        if (payload.speedMultiplier !== undefined) setSpeedMultiplier(payload.speedMultiplier);
+      })
+      .subscribe();
+
+    vrChannelRef.current = channel;
+    return () => {
+      supabase.removeChannel(channel);
+      vrChannelRef.current = null;
+    };
+  }, [lessonId]);
 
   // Check WebXR hardware support (Meta Quest Browser / Vision Pro)
   useEffect(() => {
@@ -476,16 +560,19 @@ export function VRLabExplorer({
       script.onload = () => {
         if (!isCancelled) initThreeEngine();
       };
+      script.onerror = () => {
+        if (!isCancelled) setThreeError('Could not load 3D graphics engine. Check your internet connection and reload.');
+      };
       document.body.appendChild(script);
     };
 
     const initThreeEngine = () => {
       const THREE = (window as any).THREE;
-      if (!THREE || !canvasRef.current || !containerRef.current) return;
+      const stageEl = stageRef.current || containerRef.current;
+      if (!THREE || !canvasRef.current || !stageEl) return;
 
-      const container = containerRef.current;
-      const width = container.clientWidth || 800;
-      const height = container.clientHeight || 500;
+      const width = Math.max(stageEl.clientWidth || 800, 300);
+      const height = Math.max(stageEl.clientHeight || 500, 300);
 
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0x060e1c);
@@ -499,24 +586,28 @@ export function VRLabExplorer({
         antialias: true,
         powerPreference: 'high-performance',
       });
-      renderer.setSize(width, height);
+      renderer.setSize(width, height, false);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
       // Kainmueller-Lab/vr-viewer: Enable local slicing clipping planes
       renderer.localClippingEnabled = true;
-      const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10);
+      const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 50);
 
       // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
       scene.add(ambientLight);
 
-      const sunLight = new THREE.PointLight(0xffffff, 2.2, 120);
+      const sunLight = new THREE.PointLight(0xffffff, 2.2, 140);
       sunLight.position.set(0, 0, 0);
       scene.add(sunLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
       dirLight.position.set(20, 30, 20);
       scene.add(dirLight);
+
+      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.4);
+      rimLight.position.set(-20, -10, -20);
+      scene.add(rimLight);
 
       // Cosmic Starfield
       const starGeometry = new THREE.BufferGeometry();
@@ -542,7 +633,7 @@ export function VRLabExplorer({
           isDragging: false,
           prevX: 0,
           prevY: 0,
-          rotX: 0.3,
+          rotX: 0.35,
           rotY: 0,
           zoom: 38,
         },
@@ -551,13 +642,17 @@ export function VRLabExplorer({
         bloodParticles: null,
         geometryMesh: null,
         shapeFaces: [],
+        cubeHinges: null,
         earthLayers: [],
         lavaParticles: null,
         vaultMesh: null,
+        atomElectrons: [],
         raycaster: new THREE.Raycaster(),
         clock: new THREE.Clock(),
       };
 
+      setThreeLoaded(true);
+      setThreeError(null);
       buildActiveScene();
       startAnimationLoop();
     };
@@ -569,6 +664,13 @@ export function VRLabExplorer({
       if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
       }
+      if (threeStateRef.current?.renderer) {
+        try {
+          threeStateRef.current.renderer.setAnimationLoop(null);
+          threeStateRef.current.renderer.dispose();
+        } catch (_) {}
+      }
+      threeStateRef.current = null;
       stopNarration();
     };
   }, []);
@@ -611,6 +713,7 @@ export function VRLabExplorer({
       state.geometryMesh = null;
     }
     state.shapeFaces = [];
+    state.cubeHinges = null;
 
     state.earthLayers.forEach((l) => scene.remove(l));
     state.earthLayers = [];
@@ -623,6 +726,23 @@ export function VRLabExplorer({
       scene.remove(state.vaultMesh);
       state.vaultMesh = null;
     }
+    state.atomElectrons = [];
+
+    // Reset optimal camera framing per module so every 3D subject fills the stage clearly
+    const moduleZoomMap: Record<VRModuleId, { zoom: number; rotX: number; rotY: number }> = {
+      'solar-system': { zoom: 42, rotX: 0.45, rotY: 0 },
+      'human-heart': { zoom: 10.5, rotX: 0.15, rotY: 0.2 },
+      'geometry-volume': { zoom: 9.5, rotX: 0.35, rotY: 0.45 },
+      'earth-volcano': { zoom: 12.5, rotX: 0.25, rotY: 0.4 },
+      'dna-helix': { zoom: 15.5, rotX: 0.1, rotY: 0 },
+      'plant-cell': { zoom: 12.5, rotX: 0.28, rotY: 0.35 },
+      'bohr-atom': { zoom: 15.5, rotX: 0.32, rotY: 0.2 },
+      'ancient-pyramid': { zoom: 16.5, rotX: 0.38, rotY: 0.5 },
+    };
+    const camPreset = moduleZoomMap[activeModule] || { zoom: 15, rotX: 0.3, rotY: 0 };
+    state.controls.zoom = camPreset.zoom;
+    state.controls.rotX = camPreset.rotX;
+    state.controls.rotY = camPreset.rotY;
 
     // 1. SOLAR SYSTEM MODULE
     if (activeModule === 'solar-system') {
@@ -645,6 +765,12 @@ export function VRLabExplorer({
         }
 
         const mesh = new THREE.Mesh(geo, mat);
+        mesh.name = p.name;
+        mesh.userData = { planetData: p };
+        const initialAngle = Math.random() * Math.PI * 2;
+        if (p.distance > 0) {
+          mesh.position.set(Math.cos(initialAngle) * p.distance, 0, Math.sin(initialAngle) * p.distance);
+        }
 
         if (p.name === 'Sun') {
           const coronaGeo = new THREE.RingGeometry(3.1, 4.2, 32);
@@ -799,41 +925,82 @@ export function VRLabExplorer({
       const group = new THREE.Group();
 
       if (selectedShape === 'cube') {
-        const faceSize = 2.4;
-        const half = faceSize / 2;
-        const faces = [
-          { name: 'Bottom', pos: [0, -half, 0], rot: [Math.PI / 2, 0, 0], unfoldRot: [0, 0, 0] },
-          { name: 'Front', pos: [0, 0, half], rot: [0, 0, 0], unfoldRot: [Math.PI / 2, 0, 0] },
-          { name: 'Back', pos: [0, 0, -half], rot: [0, Math.PI, 0], unfoldRot: [-Math.PI / 2, 0, 0] },
-          { name: 'Left', pos: [-half, 0, 0], rot: [0, -Math.PI / 2, 0], unfoldRot: [0, 0, -Math.PI / 2] },
-          { name: 'Right', pos: [half, 0, 0], rot: [0, Math.PI / 2, 0], unfoldRot: [0, 0, Math.PI / 2] },
-          { name: 'Top', pos: [0, half, 0], rot: [-Math.PI / 2, 0, 0], unfoldRot: [-Math.PI, 0, 0] },
-        ];
-
-        const faceGeo = new THREE.PlaneGeometry(faceSize, faceSize);
-        const faceMat = new THREE.MeshStandardMaterial({
-          color: 0x3b82f6,
-          side: THREE.DoubleSide,
-          roughness: 0.3,
-          metalness: 0.1,
-          transparent: true,
-          opacity: 0.9,
-          clippingPlanes: [clippingPlane],
-        });
-
-        faces.forEach((f) => {
-          const mesh = new THREE.Mesh(faceGeo, faceMat.clone());
-          mesh.position.set(f.pos[0], f.pos[1], f.pos[2]);
-          mesh.rotation.set(f.rot[0], f.rot[1], f.rot[2]);
-          mesh.userData = { config: f, origPos: [...f.pos], origRot: [...f.rot] };
-
+        const s = 2.4;
+        const h = s / 2;
+        const faceGeo = new THREE.PlaneGeometry(s, s);
+        const makeFace = (colorHex: number) => {
+          const mat = new THREE.MeshStandardMaterial({
+            color: colorHex,
+            side: THREE.DoubleSide,
+            roughness: 0.3,
+            metalness: 0.1,
+            transparent: true,
+            opacity: 0.9,
+            clippingPlanes: [clippingPlane],
+          });
+          const mesh = new THREE.Mesh(faceGeo, mat);
           const edges = new THREE.EdgesGeometry(faceGeo);
-          const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15, linewidth: 2 }));
+          const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 }));
           mesh.add(line);
+          return mesh;
+        };
 
-          group.add(mesh);
-          state.shapeFaces.push(mesh);
-        });
+        // True mathematical hinged cube net: Bottom stays anchored on y = -h
+        const bottom = makeFace(0x2563eb);
+        bottom.rotation.x = -Math.PI / 2;
+        bottom.position.set(0, -h, 0);
+        group.add(bottom);
+
+        // Front hinge at z = +h, y = -h
+        const frontHinge = new THREE.Group();
+        frontHinge.position.set(0, -h, h);
+        const frontFace = makeFace(0x3b82f6);
+        frontFace.position.set(0, h, 0);
+        frontHinge.add(frontFace);
+        group.add(frontHinge);
+
+        // Back hinge at z = -h, y = -h
+        const backHinge = new THREE.Group();
+        backHinge.position.set(0, -h, -h);
+        const backFace = makeFace(0x1d4ed8);
+        backFace.position.set(0, h, 0);
+        backHinge.add(backFace);
+
+        // Top face hinged to the top edge of Back face so unfolding opens into a classic cross net!
+        const topHinge = new THREE.Group();
+        topHinge.position.set(0, s, 0);
+        const topFace = makeFace(0x60a5fa);
+        topFace.rotation.x = -Math.PI / 2;
+        topFace.position.set(0, 0, h);
+        topHinge.add(topFace);
+        backHinge.add(topHinge);
+        group.add(backHinge);
+
+        // Left hinge at x = -h, y = -h
+        const leftHinge = new THREE.Group();
+        leftHinge.position.set(-h, -h, 0);
+        const leftFace = makeFace(0x0ea5e9);
+        leftFace.rotation.y = Math.PI / 2;
+        leftFace.position.set(0, h, 0);
+        leftHinge.add(leftFace);
+        group.add(leftHinge);
+
+        // Right hinge at x = +h, y = -h
+        const rightHinge = new THREE.Group();
+        rightHinge.position.set(h, -h, 0);
+        const rightFace = makeFace(0x38bdf8);
+        rightFace.rotation.y = Math.PI / 2;
+        rightFace.position.set(0, h, 0);
+        rightHinge.add(rightFace);
+        group.add(rightHinge);
+
+        state.cubeHinges = {
+          front: frontHinge,
+          back: backHinge,
+          left: leftHinge,
+          right: rightHinge,
+          top: topHinge,
+        };
       } else {
         let geo;
         if (selectedShape === 'cylinder') {
@@ -1086,18 +1253,43 @@ export function VRLabExplorer({
         atomGroup.add(nMesh);
       }
 
-      // Orbital Rings (K-shell and L-shell)
-      [3.0, 5.0, 7.0].forEach((r, idx) => {
+      // Orbital Rings (K, L, M quantum shells) + Glowing Orbiting Electrons!
+      const shells = [
+        { r: 2.8, count: 2, speed: 0.04, tiltX: 0, tiltZ: 0 },
+        { r: 4.6, count: 4, speed: 0.028, tiltX: Math.PI / 3, tiltZ: 0.3 },
+        { r: 6.4, count: 6, speed: 0.018, tiltX: -Math.PI / 3, tiltZ: -0.3 },
+      ];
+      shells.forEach((sh) => {
+        const shellGroup = new THREE.Group();
+        shellGroup.rotation.x = sh.tiltX;
+        shellGroup.rotation.z = sh.tiltZ;
+
         const ringGeo = new THREE.BufferGeometry();
         const pts = [];
-        for (let a = 0; a <= Math.PI * 2; a += 0.05) {
-          pts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r));
+        for (let a = 0; a <= Math.PI * 2 + 0.05; a += 0.05) {
+          pts.push(new THREE.Vector3(Math.cos(a) * sh.r, 0, Math.sin(a) * sh.r));
         }
         ringGeo.setFromPoints(pts);
-        const ringMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 });
-        const ring = new THREE.Line(ringGeo, ringMat);
-        ring.rotation.x = idx === 1 ? Math.PI / 3 : idx === 2 ? -Math.PI / 3 : 0;
-        atomGroup.add(ring);
+        const ringMat = new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.45 });
+        shellGroup.add(new THREE.Line(ringGeo, ringMat));
+
+        for (let e = 0; e < sh.count; e++) {
+          const eGeo = new THREE.SphereGeometry(0.26, 16, 16);
+          const eMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+          const eMesh = new THREE.Mesh(eGeo, eMat);
+          const startAngle = (e / sh.count) * Math.PI * 2;
+          eMesh.position.set(Math.cos(startAngle) * sh.r, 0, Math.sin(startAngle) * sh.r);
+          shellGroup.add(eMesh);
+          state.atomElectrons.push({
+            mesh: eMesh,
+            radius: sh.r,
+            angle: startAngle,
+            speed: sh.speed,
+            tiltX: sh.tiltX,
+            tiltZ: sh.tiltZ,
+          });
+        }
+        atomGroup.add(shellGroup);
       });
 
       scene.add(atomGroup);
@@ -1111,18 +1303,18 @@ export function VRLabExplorer({
 
       const pyrGroup = new THREE.Group();
 
-      // Stepped Egyptian Pyramid
+      // Stepped Egyptian Pyramid centered vertically around y=0
       const steps = 6;
       for (let s = 0; s < steps; s++) {
         const w = (steps - s) * 2.2;
         const boxGeo = new THREE.BoxGeometry(w, 0.9, w);
         const boxMat = new THREE.MeshStandardMaterial({
-          color: 0xd97706,
-          roughness: 0.7,
+          color: s === steps - 1 ? 0xfacc15 : 0xd97706,
+          roughness: 0.65,
           clippingPlanes: [clippingPlane],
         });
         const b = new THREE.Mesh(boxGeo, boxMat);
-        b.position.y = s * 0.9;
+        b.position.y = s * 0.9 - 2.25;
         pyrGroup.add(b);
       }
 
@@ -1135,7 +1327,7 @@ export function VRLabExplorer({
     buildActiveScene();
   }, [activeModule, buildActiveScene]);
 
-  // Main 60FPS Animation Loop
+  // Main 60FPS Animation Loop (WebXR compatible + zero stale closures via liveParamsRef)
   const startAnimationLoop = useCallback(() => {
     let lastSoundTime = 0;
 
@@ -1143,12 +1335,13 @@ export function VRLabExplorer({
       const state = threeStateRef.current;
       if (!state) return;
       const { renderer, scene, camera, clock } = state;
+      const lp = liveParamsRef.current;
       const time = clock.getElapsedTime();
-      const effectiveSpeed = isPlaying ? speedMultiplier : 0;
+      const effectiveSpeed = lp.isPlaying ? lp.speedMultiplier : 0;
 
-      // Desktop Orbit Controls
+      // Orbit / Gyro Camera Positioning (skip when WebXR headset owns camera)
       const c = state.controls;
-      if (displayMode === 'desktop' && !isWebXRPresenting) {
+      if (!lp.isWebXRPresenting) {
         const radius = c.zoom;
         camera.position.x = radius * Math.sin(c.rotY) * Math.cos(c.rotX);
         camera.position.y = radius * Math.sin(c.rotX);
@@ -1156,25 +1349,28 @@ export function VRLabExplorer({
         camera.lookAt(0, 0, 0);
       }
 
-      // aframevr: Gaze Reticle Raycasting
-      if (gazeReticleEnabled) {
+      // aframevr: Gaze Reticle Raycasting (with debounce cooldown so it triggers cleanly once)
+      if (lp.gazeReticleEnabled && time > gazeCooldownRef.current) {
         state.raycaster.setFromCamera({ x: 0, y: 0 }, camera);
         const interactables =
-          activeModule === 'solar-system'
+          lp.activeModule === 'solar-system'
             ? state.orbitMeshes.map((m) => m.mesh)
             : scene.children.filter((ch: any) => ch.isMesh || ch.isGroup);
 
         const hits = state.raycaster.intersectObjects(interactables, true);
         if (hits.length > 0) {
-          const hitName = hits[0].object.name || hits[0].object.userData?.planetData?.name || 'Target';
+          const hitObj = hits[0].object;
+          const hitName = hitObj.userData?.planetData?.name || hitObj.name || 'Target';
           if (gazeTargetRef.current === hitName) {
-            gazeTimerRef.current += 1.6;
+            gazeTimerRef.current += 1.8;
             setGazeProgress(Math.min(100, gazeTimerRef.current));
             if (gazeTimerRef.current >= 100) {
               gazeTimerRef.current = 0;
+              gazeCooldownRef.current = time + 2.2;
+              setGazeProgress(0);
               playSynthesizedSound('laser');
-              if (hits[0].object.userData?.planetData) {
-                handleSelectPlanet(hits[0].object.userData.planetData.name);
+              if (hitObj.userData?.planetData) {
+                handleSelectPlanet(hitObj.userData.planetData.name);
               }
             }
           } else {
@@ -1182,7 +1378,7 @@ export function VRLabExplorer({
             gazeTimerRef.current = 0;
             setGazeProgress(0);
           }
-        } else {
+        } else if (gazeTargetRef.current !== null) {
           gazeTargetRef.current = null;
           gazeTimerRef.current = 0;
           setGazeProgress(0);
@@ -1190,14 +1386,14 @@ export function VRLabExplorer({
       }
 
       // 1. Solar System
-      if (activeModule === 'solar-system') {
+      if (lp.activeModule === 'solar-system') {
         state.orbitMeshes.forEach((item) => {
           if (item.data.distance > 0 && effectiveSpeed > 0) {
             item.angle += item.data.speed * 0.5 * effectiveSpeed;
             item.mesh.position.x = Math.cos(item.angle) * item.data.distance;
             item.mesh.position.z = Math.sin(item.angle) * item.data.distance;
           }
-          item.mesh.rotation.y += item.data.rotationSpeed * (effectiveSpeed > 0 ? effectiveSpeed : 1);
+          item.mesh.rotation.y += item.data.rotationSpeed * (effectiveSpeed > 0 ? effectiveSpeed : 0);
 
           if (item.data.name === 'Sun') {
             const corona = item.mesh.getObjectByName('sunCorona');
@@ -1210,25 +1406,27 @@ export function VRLabExplorer({
       }
 
       // 2. Heart Anatomy
-      else if (activeModule === 'human-heart') {
+      else if (lp.activeModule === 'human-heart') {
         if (state.heartMesh) {
-          const beatWave = Math.sin(time * 4.5 * (effectiveSpeed > 0 ? effectiveSpeed : 1));
-          const beatScale = 1 + Math.max(0, beatWave) * 0.12;
-          state.heartMesh.scale.set(beatScale, beatScale, beatScale);
-          state.heartMesh.rotation.y += 0.004;
+          if (effectiveSpeed > 0) {
+            const beatWave = Math.sin(time * 4.5 * effectiveSpeed);
+            const beatScale = 1 + Math.max(0, beatWave) * 0.12;
+            state.heartMesh.scale.set(beatScale, beatScale, beatScale);
+            state.heartMesh.rotation.y += 0.004 * effectiveSpeed;
 
-          if (effectiveSpeed > 0 && time - lastSoundTime > 1.35 / effectiveSpeed) {
-            lastSoundTime = time;
-            playSynthesizedSound('heartbeat');
+            if (time - lastSoundTime > 1.35 / effectiveSpeed) {
+              lastSoundTime = time;
+              playSynthesizedSound('heartbeat');
+            }
           }
         }
 
-        if (state.bloodParticles) {
+        if (state.bloodParticles && effectiveSpeed > 0) {
           const positions = state.bloodParticles.geometry.attributes.position.array;
           const pData = state.bloodParticles.userData.particleData;
           for (let i = 0; i < pData.length; i++) {
             const p = pData[i];
-            p.phase += p.speed * (effectiveSpeed > 0 ? effectiveSpeed : 1);
+            p.phase += p.speed * effectiveSpeed;
             if (p.isArterial) {
               positions[i * 3] = 0.2 + Math.cos(p.phase) * 1.4;
               positions[i * 3 + 1] = 2.5 + Math.sin(p.phase) * 1.4;
@@ -1243,47 +1441,47 @@ export function VRLabExplorer({
         }
       }
 
-      // 3. Geometry (Manim Net Unfolding)
-      else if (activeModule === 'geometry-volume') {
-        if (state.geometryMesh && selectedShape !== 'cube') {
-          state.geometryMesh.rotation.y += 0.008 * (effectiveSpeed > 0 ? effectiveSpeed : 1);
-          state.geometryMesh.rotation.x += 0.004 * (effectiveSpeed > 0 ? effectiveSpeed : 1);
+      // 3. Geometry (True Hinged Manim Net Unfolding)
+      else if (lp.activeModule === 'geometry-volume') {
+        if (state.geometryMesh && effectiveSpeed > 0) {
+          state.geometryMesh.rotation.y += (lp.selectedShape === 'cube' ? 0.003 : 0.008) * effectiveSpeed;
+          if (lp.selectedShape !== 'cube') {
+            state.geometryMesh.rotation.x += 0.004 * effectiveSpeed;
+          }
         }
 
-        if (selectedShape === 'cube' && state.shapeFaces.length === 6) {
-          state.shapeFaces.forEach((face) => {
-            const cfg = face.userData.config;
-            if (cfg.unfoldRot) {
-              face.rotation.x = cfg.origRot[0] + cfg.unfoldRot[0] * netUnfoldAmount;
-              face.rotation.y = cfg.origRot[1] + cfg.unfoldRot[1] * netUnfoldAmount;
-              face.rotation.z = cfg.origRot[2] + cfg.unfoldRot[2] * netUnfoldAmount;
-            }
-          });
+        if (lp.selectedShape === 'cube' && state.cubeHinges) {
+          const u = lp.netUnfoldAmount * (Math.PI / 2);
+          state.cubeHinges.front.rotation.x = u;
+          state.cubeHinges.back.rotation.x = -u;
+          state.cubeHinges.left.rotation.z = u;
+          state.cubeHinges.right.rotation.z = -u;
+          state.cubeHinges.top.rotation.x = -u;
         }
       }
 
       // 4. Earth Layers Explode & Lava Physics
-      else if (activeModule === 'earth-volcano') {
-        if (state.geometryMesh) {
-          state.geometryMesh.rotation.y += 0.003 * (effectiveSpeed > 0 ? effectiveSpeed : 1);
+      else if (lp.activeModule === 'earth-volcano') {
+        if (state.geometryMesh && effectiveSpeed > 0) {
+          state.geometryMesh.rotation.y += 0.004 * effectiveSpeed;
         }
 
         state.earthLayers.forEach((layer) => {
           const cfg = layer.userData.config;
           if (cfg) {
-            layer.position.z = cfg.explodeOffset * explodeAmount;
+            layer.position.z = cfg.explodeOffset * lp.explodeAmount;
           }
         });
 
-        if (state.lavaParticles) {
+        if (state.lavaParticles && effectiveSpeed > 0) {
           const pos = state.lavaParticles.geometry.attributes.position.array;
           const vels = state.lavaParticles.userData.lavaVelocities;
           for (let i = 0; i < vels.length; i++) {
             const v = vels[i];
-            pos[i * 3] += v.x;
-            pos[i * 3 + 1] += v.y;
-            pos[i * 3 + 2] += v.z;
-            v.y -= 0.003;
+            pos[i * 3] += v.x * effectiveSpeed;
+            pos[i * 3 + 1] += v.y * effectiveSpeed;
+            pos[i * 3 + 2] += v.z * effectiveSpeed;
+            v.y -= 0.003 * effectiveSpeed;
 
             if (pos[i * 3 + 1] < 3.2) {
               pos[i * 3] = (Math.random() - 0.5) * 0.2;
@@ -1296,36 +1494,80 @@ export function VRLabExplorer({
         }
       }
 
-      // 5. Vault Meshes (DNA, Cell, Atom, Pyramid)
+      // 5. Vault Meshes (DNA, Cell, Atom, Pyramid) + Bohr Atom Orbiting Electrons
       else if (state.vaultMesh) {
-        state.vaultMesh.rotation.y += 0.006 * (effectiveSpeed > 0 ? effectiveSpeed : 1);
+        if (effectiveSpeed > 0) {
+          state.vaultMesh.rotation.y += 0.006 * effectiveSpeed;
+          if (lp.activeModule === 'bohr-atom' && state.atomElectrons.length > 0) {
+            state.atomElectrons.forEach((el) => {
+              el.angle += el.speed * effectiveSpeed;
+              el.mesh.position.x = Math.cos(el.angle) * el.radius;
+              el.mesh.position.z = Math.sin(el.angle) * el.radius;
+            });
+          }
+        }
       }
 
-      renderer.render(scene, camera);
-      animFrameIdRef.current = requestAnimationFrame(animate);
+      // True Stereoscopic Dual-Viewport Rendering for Cardboard Split-VR Mode
+      const stageEl = stageRef.current;
+      if (lp.displayMode === 'split-vr' && !lp.isWebXRPresenting && stageEl) {
+        const w = stageEl.clientWidth || 800;
+        const h = stageEl.clientHeight || 500;
+        const halfW = Math.floor(w / 2);
+        const origAspect = camera.aspect;
+        const origPos = camera.position.clone();
+        const rightVec = new state.THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+        const eyeSep = Math.max(0.22, c.zoom * 0.015);
+
+        renderer.setScissorTest(true);
+        camera.aspect = halfW / h;
+        camera.updateProjectionMatrix();
+
+        // Left Eye
+        camera.position.copy(origPos).addScaledVector(rightVec, -eyeSep);
+        camera.lookAt(0, 0, 0);
+        renderer.setViewport(0, 0, halfW, h);
+        renderer.setScissor(0, 0, halfW, h);
+        renderer.render(scene, camera);
+
+        // Right Eye
+        camera.position.copy(origPos).addScaledVector(rightVec, eyeSep);
+        camera.lookAt(0, 0, 0);
+        renderer.setViewport(halfW, 0, w - halfW, h);
+        renderer.setScissor(halfW, 0, w - halfW, h);
+        renderer.render(scene, camera);
+
+        // Restore full viewport & camera state
+        renderer.setScissorTest(false);
+        renderer.setViewport(0, 0, w, h);
+        camera.position.copy(origPos);
+        camera.aspect = origAspect;
+        camera.updateProjectionMatrix();
+      } else {
+        renderer.render(scene, camera);
+      }
     };
 
-    animFrameIdRef.current = requestAnimationFrame(animate);
-  }, [
-    activeModule,
-    displayMode,
-    isPlaying,
-    speedMultiplier,
-    selectedShape,
-    netUnfoldAmount,
-    explodeAmount,
-    gazeReticleEnabled,
-    isWebXRPresenting,
-    playSynthesizedSound,
-  ]);
+    const st = threeStateRef.current;
+    if (st?.renderer?.setAnimationLoop) {
+      st.renderer.setAnimationLoop(animate);
+    } else {
+      const fallbackTick = () => {
+        animate();
+        animFrameIdRef.current = requestAnimationFrame(fallbackTick);
+      };
+      animFrameIdRef.current = requestAnimationFrame(fallbackTick);
+    }
+  }, [playSynthesizedSound]);
 
-  // Pointer Handling
+  // Pointer Handling (Orbit Drag + Click-to-Select 3D Planets)
   const handlePointerDown = (e: React.PointerEvent) => {
     const state = threeStateRef.current;
     if (!state) return;
     state.controls.isDragging = true;
     state.controls.prevX = e.clientX;
     state.controls.prevY = e.clientY;
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -1340,15 +1582,45 @@ export function VRLabExplorer({
     state.controls.rotX = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, state.controls.rotX + dy * 0.008));
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     const state = threeStateRef.current;
-    if (state) state.controls.isDragging = false;
+    if (!state) return;
+    const wasDragging = state.controls.isDragging;
+    state.controls.isDragging = false;
+
+    // Detect clean click/tap (movement < 6px) to select 3D planets directly on canvas
+    if (wasDragging && liveParamsRef.current.activeModule === 'solar-system' && canvasRef.current) {
+      const dist = Math.hypot(
+        e.clientX - pointerDownPosRef.current.x,
+        e.clientY - pointerDownPosRef.current.y
+      );
+      if (dist < 6) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        state.raycaster.setFromCamera({ x: ndcX, y: ndcY }, state.camera);
+        const hits = state.raycaster.intersectObjects(
+          state.orbitMeshes.map((m) => m.mesh),
+          true
+        );
+        if (hits.length > 0) {
+          let obj = hits[0].object;
+          while (obj && !obj.userData?.planetData && obj.parent) {
+            obj = obj.parent;
+          }
+          if (obj?.userData?.planetData?.name) {
+            handleSelectPlanet(obj.userData.planetData.name);
+            setShowInfoCard(true);
+          }
+        }
+      }
+    }
   };
 
   const handleWheel = (e: React.WheelEvent) => {
     const state = threeStateRef.current;
     if (!state) return;
-    state.controls.zoom = Math.max(10, Math.min(80, state.controls.zoom + e.deltaY * 0.04));
+    state.controls.zoom = Math.max(5, Math.min(80, state.controls.zoom + e.deltaY * 0.03));
   };
 
   // Gyroscope
@@ -1397,25 +1669,39 @@ export function VRLabExplorer({
     state.controls.zoom = activeModule === 'solar-system' ? 38 : 14;
   };
 
-  // Resize Listener
+  // Resize Listener (ResizeObserver on actual 3D canvas stage + window resize + fullscreen)
   useEffect(() => {
     const handleResize = () => {
       const state = threeStateRef.current;
-      if (!state || !containerRef.current) return;
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
+      const stageEl = stageRef.current || containerRef.current;
+      if (!state || !stageEl) return;
+      const width = Math.max(stageEl.clientWidth, 1);
+      const height = Math.max(stageEl.clientHeight, 1);
       state.camera.aspect = width / height;
       state.camera.updateProjectionMatrix();
-      state.renderer.setSize(width, height);
+      state.renderer.setSize(width, height, false);
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && stageRef.current) {
+      ro = new ResizeObserver(() => handleResize());
+      ro.observe(stageRef.current);
+    }
+    const timer = setTimeout(handleResize, 120);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+      if (ro) ro.disconnect();
+    };
+  }, [isFullscreen]);
 
   // Selection Narration Triggers
   const handleSelectPlanet = (name: string) => {
     setSelectedPin(name);
+    setShowInfoCard(true);
+    broadcastVRState({ selectedPin: name });
     playSynthesizedSound('space');
     const p = PLANETS.find((item) => item.name === name);
     if (p && autoNarrate) {
@@ -1440,6 +1726,7 @@ export function VRLabExplorer({
   const handleSelectShape = (shape: 'cube' | 'cylinder' | 'pyramid' | 'sphere') => {
     setSelectedShape(shape);
     setNetUnfoldAmount(0);
+    broadcastVRState({ selectedShape: shape, netUnfoldAmount: 0 });
     playSynthesizedSound('chime');
     const texts: Record<string, string> = {
       cube: 'This is a 3D Cube. A cube has 6 identical square faces, 12 straight edges, and 8 vertices. Its volume is side cubed, and its surface area is 6 times side squared. Slide Unfold Net to see its flat 2D pattern!',
@@ -1536,7 +1823,9 @@ export function VRLabExplorer({
             <button
               key={tab.id}
               onClick={() => {
-                setActiveModule(tab.id as VRModuleId);
+                const mod = tab.id as VRModuleId;
+                setActiveModule(mod);
+                broadcastVRState({ activeModule: mod });
                 playSynthesizedSound('space');
               }}
               className={`px-2 py-1 rounded-xl text-[11px] font-black transition-all flex items-center gap-1 shrink-0 border ${
@@ -1775,7 +2064,9 @@ export function VRLabExplorer({
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              setIsSlicingActive(!isSlicingActive);
+              const next = !isSlicingActive;
+              setIsSlicingActive(next);
+              broadcastVRState({ isSlicingActive: next });
               playSynthesizedSound('laser');
             }}
             className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-xs border transition-all ${
@@ -1798,7 +2089,11 @@ export function VRLabExplorer({
                 max="1"
                 step="0.05"
                 value={sliceHeight}
-                onChange={(e) => setSliceHeight(parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  setSliceHeight(val);
+                  broadcastVRState({ sliceHeight: val });
+                }}
                 className="w-16 accent-rose-500 cursor-pointer h-1.5"
               />
             </div>
@@ -1806,7 +2101,11 @@ export function VRLabExplorer({
 
           {/* Manim Motion Controls */}
           <button
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={() => {
+              const next = !isPlaying;
+              setIsPlaying(next);
+              broadcastVRState({ isPlaying: next });
+            }}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20"
           >
             {isPlaying ? <Pause className="w-3 h-3 text-yellow" /> : <Play className="w-3 h-3 text-emerald-400" />}
@@ -1818,7 +2117,10 @@ export function VRLabExplorer({
             {[0.5, 1.0, 2.0, 5.0].map((s) => (
               <button
                 key={s}
-                onClick={() => setSpeedMultiplier(s)}
+                onClick={() => {
+                  setSpeedMultiplier(s);
+                  broadcastVRState({ speedMultiplier: s });
+                }}
                 className={`px-1 rounded font-black ${
                   speedMultiplier === s ? 'bg-yellow text-dark' : 'hover:text-white'
                 }`}
@@ -1827,6 +2129,20 @@ export function VRLabExplorer({
               </button>
             ))}
           </div>
+
+          {/* Toggle Info Card */}
+          <button
+            onClick={() => setShowInfoCard(!showInfoCard)}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg font-bold text-xs border transition-all ${
+              showInfoCard
+                ? 'bg-yellow text-dark border-dark'
+                : 'bg-white/10 hover:bg-white/20 text-white/80 border-white/20'
+            }`}
+            title={showInfoCard ? 'Hide Fact Card for full 3D view' : 'Show Fact Card'}
+          >
+            <Info className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">{showInfoCard ? 'Hide Info' : 'Show Info'}</span>
+          </button>
         </div>
       </div>
 
@@ -1834,13 +2150,34 @@ export function VRLabExplorer({
           MAIN 3D WEBGL STAGE
           ============================================================ */}
       <div
-        className="flex-1 w-full h-full relative cursor-grab active:cursor-grabbing overflow-hidden"
+        ref={stageRef}
+        className="flex-1 w-full h-full min-h-[320px] relative cursor-grab active:cursor-grabbing overflow-hidden touch-none"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
         onWheel={handleWheel}
       >
         <canvas ref={canvasRef} className="w-full h-full block" />
+
+        {!threeLoaded && !threeError && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#060E1C] text-white gap-3">
+            <Loader className="w-8 h-8 animate-spin text-yellow" />
+            <p className="text-xs font-black uppercase tracking-wider">Loading Interactive 3D &amp; VR Engine...</p>
+          </div>
+        )}
+
+        {threeError && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#060E1C] text-white gap-3 p-6 text-center">
+            <p className="text-sm font-black text-rose-400">{threeError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-xl bg-yellow text-dark font-black text-xs uppercase"
+            >
+              Reload 3D Lab
+            </button>
+          </div>
+        )}
 
         {/* aframevr: Gaze Reticle Center Pointer Ring */}
         {gazeReticleEnabled && (
@@ -1924,7 +2261,7 @@ export function VRLabExplorer({
               ))}
             </div>
 
-            {selectedPin && (
+            {selectedPin && showInfoCard && (
               <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in zoom-in-95">
                 <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
                   <div className="flex items-center gap-2">
@@ -1969,7 +2306,7 @@ export function VRLabExplorer({
         )}
 
         {/* 2. HUMAN HEART ANATOMY */}
-        {activeModule === 'human-heart' && (
+        {activeModule === 'human-heart' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
@@ -2025,7 +2362,7 @@ export function VRLabExplorer({
         )}
 
         {/* 3. 3D GEOMETRY */}
-        {activeModule === 'geometry-volume' && (
+        {activeModule === 'geometry-volume' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
@@ -2071,7 +2408,11 @@ export function VRLabExplorer({
                   max="1"
                   step="0.01"
                   value={netUnfoldAmount}
-                  onChange={(e) => setNetUnfoldAmount(parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const v = parseFloat(e.target.value);
+                    setNetUnfoldAmount(v);
+                    broadcastVRState({ netUnfoldAmount: v });
+                  }}
                   className="w-full accent-yellow cursor-pointer h-1.5 rounded-lg"
                 />
                 <div className="flex justify-between text-[9px] text-white/50 mt-1 font-mono">
@@ -2111,7 +2452,7 @@ export function VRLabExplorer({
         )}
 
         {/* 4. EARTH LAYERS */}
-        {activeModule === 'earth-volcano' && (
+        {activeModule === 'earth-volcano' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
@@ -2140,7 +2481,11 @@ export function VRLabExplorer({
                 max="1"
                 step="0.01"
                 value={explodeAmount}
-                onChange={(e) => setExplodeAmount(parseFloat(e.target.value))}
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  setExplodeAmount(v);
+                  broadcastVRState({ explodeAmount: v });
+                }}
                 className="w-full accent-amber-400 cursor-pointer h-1.5 rounded-lg"
               />
             </div>
@@ -2176,7 +2521,7 @@ export function VRLabExplorer({
         )}
 
         {/* 5. DNA DOUBLE HELIX */}
-        {activeModule === 'dna-helix' && (
+        {activeModule === 'dna-helix' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-cyan-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
@@ -2210,7 +2555,7 @@ export function VRLabExplorer({
         )}
 
         {/* 6. PLANT CELL ANATOMY */}
-        {activeModule === 'plant-cell' && (
+        {activeModule === 'plant-cell' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-emerald-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
@@ -2248,7 +2593,7 @@ export function VRLabExplorer({
         )}
 
         {/* 7. BOHR ATOM */}
-        {activeModule === 'bohr-atom' && (
+        {activeModule === 'bohr-atom' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-sky-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
@@ -2286,7 +2631,7 @@ export function VRLabExplorer({
         )}
 
         {/* 8. ANCIENT PYRAMID */}
-        {activeModule === 'ancient-pyramid' && (
+        {activeModule === 'ancient-pyramid' && showInfoCard && (
           <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-amber-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">

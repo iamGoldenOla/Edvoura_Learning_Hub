@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Flame,
   Gamepad2,
+  Glasses,
   GraduationCap,
   Layers,
   Layout,
@@ -19,18 +20,15 @@ import {
   MessageSquare,
   MonitorPlay,
   NotebookPen,
-  PenSquare,
   PlayCircle,
   ScrollText,
   ShieldCheck,
   Sparkles,
   Star,
-  Sticker,
   Target,
   Trophy,
   Tv,
   UserCircle2,
-  Users,
   Video,
   Volume2,
 } from 'lucide-react';
@@ -52,7 +50,9 @@ type NavSection = {
 
 const KNOWN_STUDENT_ROUTES = new Set([
   '/dash/student',
+  '/dash/student/3d-lab',
   '/dash/student/analytics',
+  '/dash/student/anatomy-lab',
   '/dash/student/assignments',
   '/dash/student/homework',
   '/dash/student/badges',
@@ -63,6 +63,9 @@ const KNOWN_STUDENT_ROUTES = new Set([
   '/vocabulary',
   '/anatomy-lab',
   '/roadmap',
+  '/dash/student/math-studio',
+  '/dash/student/vocabulary',
+  '/dash/student/roadmap',
   '/dash/student/games',
   '/dash/student/games/current-affairs',
   '/dash/student/games/millionaire',
@@ -79,22 +82,27 @@ const KNOWN_STUDENT_ROUTES = new Set([
   '/dash/student/leaderboard',
   '/dash/student/library',
   '/dash/student/live',
+  '/dash/student/live/classroom',
   '/dash/student/message',
   '/dash/student/mock-exams',
   '/dash/student/notes',
+  '/dash/student/nursery',
   '/dash/student/past-questions',
   '/dash/student/planner',
   '/dash/student/quiz',
+  '/dash/student/quiz-bank',
   '/dash/student/read',
   '/dash/student/rewards',
   '/dash/student/stickers',
   '/dash/student/stories',
+  '/dash/student/storybook-library',
   '/dash/student/streak',
   '/dash/student/subjects',
   '/dash/student/tracker',
   '/dash/student/tutor',
   '/dash/student/tutor-chat',
   '/dash/student/spelling-bee',
+  '/dash/student/videos',
   '/dash/profile',
 ]);
 
@@ -104,6 +112,8 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Explorer Core',
       items: [
         { href: '/dash/student', icon: Layout, label: 'Home', exact: true },
+        { href: '/dash/student/live', icon: Video, label: 'Live Class' },
+        { href: '/dash/student/3d-lab', icon: Glasses, label: '3D & VR Lab' },
         { href: '/dash/student/classes', icon: BookOpen, label: 'Classes' },
         { href: '/dash/student/subjects', icon: GraduationCap, label: 'Subjects' },
         { href: '/dash/student/notes', icon: NotebookPen, label: 'Notes' },
@@ -139,6 +149,8 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Mission Core',
       items: [
         { href: '/dash/student', icon: Layout, label: 'Home', exact: true },
+        { href: '/dash/student/live', icon: Video, label: 'Live Class' },
+        { href: '/dash/student/3d-lab', icon: Glasses, label: '3D & VR Lab' },
         { href: '/dash/student/planner', icon: Calendar, label: 'Planner' },
         { href: '/dash/student/classes', icon: BookOpen, label: 'Classes' },
         { href: '/dash/student/subjects', icon: GraduationCap, label: 'Subjects' },
@@ -168,7 +180,6 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
     {
       title: 'Support',
       items: [
-        { href: '/dash/student/live', icon: Video, label: 'Live Class' },
         { href: '/dash/student/message', icon: MessageSquare, label: 'Messages' },
         { href: '/dash/profile', icon: UserCircle2, label: 'Profile' },
       ],
@@ -179,6 +190,7 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       title: 'Academic Core',
       items: [
         { href: '/dash/student', icon: Layout, label: 'Home', exact: true },
+        { href: '/dash/student/3d-lab', icon: Glasses, label: '3D & VR Lab' },
         { href: '/dash/student/planner', icon: Calendar, label: 'Planner' },
         { href: '/dash/student/classes', icon: BookOpen, label: 'Classes' },
         { href: '/dash/student/subjects', icon: GraduationCap, label: 'Subjects' },
@@ -223,12 +235,6 @@ const LOCKED_NAV_BY_BAND: Record<LearnerBand, NavSection[]> = {
       ],
     },
     {
-      title: 'Fun Zone',
-      items: [
-        { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
-      ],
-    },
-    {
       title: 'Account',
       items: [{ href: '/dash/profile', icon: UserCircle2, label: 'Profile' }],
     },
@@ -268,7 +274,7 @@ const renderSections = (pathname: string, sections: NavSection[]) =>
     <div key={section.title} className={sectionIndex === 0 ? 'space-y-1.5' : 'mt-4 space-y-1.5 border-t border-slate-800 pt-4'}>
       <p className="mb-2 px-4 text-xs font-black uppercase tracking-[0.16em] text-white/50">{section.title}</p>
       {section.items.map((item) => (
-        <NavItem key={item.href} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
+        <NavItem key={`${section.title}-${item.href}`} href={item.href} icon={item.icon} label={item.label} active={isActiveRoute(pathname, item.href, item.exact)} />
       ))}
     </div>
   ));
@@ -296,10 +302,10 @@ export default function StudentSidebarNav({ initialBand }: { initialBand: Learne
 }
 
 const PRIMARY_BOTTOM_ITEMS: NavEntry[] = [
-  { href: '/dash/student/rewards', icon: Star, label: 'Rewards' },
-  { href: '/dash/student/live', icon: PlayCircle, label: 'Live Room' },
-  { href: '/dash/student/tutor-chat', icon: MessageCircle, label: 'Messages' },
+  { href: '/dash/student/live', icon: PlayCircle, label: 'Live' },
+  { href: '/dash/student/3d-lab', icon: Glasses, label: '3D VR' },
   { href: '/dash/student/games', icon: Gamepad2, label: 'Games' },
+  { href: '/dash/student/rewards', icon: Star, label: 'Rewards' },
   { href: '/dash/profile', icon: UserCircle2, label: 'Profile' },
 ];
 

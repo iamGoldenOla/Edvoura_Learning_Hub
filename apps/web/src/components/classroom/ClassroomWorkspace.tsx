@@ -93,6 +93,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [cameraEnabled, setCameraEnabled] = useState(true);
   const [micEnabled, setMicEnabled] = useState(true);
   const [isJitsiReady, setIsJitsiReady] = useState(false);
+  const [videoReconnectNonce, setVideoReconnectNonce] = useState(0);
+  const [cameraErrorMsg, setCameraErrorMsg] = useState<string | null>(null);
+  const [videoDevices, setVideoDevices] = useState<{ id: string; label: string }[]>([]);
+  const [activeVideoDeviceId, setActiveVideoDeviceId] = useState<string>('');
+  const [showCameraPicker, setShowCameraPicker] = useState(false);
+  const [participantCount, setParticipantCount] = useState(1);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [screenShareNotification, setScreenShareNotification] = useState<string | null>(null);
@@ -105,8 +111,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   // Open WebRTC Meeting Infrastructure (Zero Moderator Login Wall, Instant Classroom Join)
   const currentDomain = 'fairmeeting.net';
   const cleanRoom = `Edvoura-Classroom-${lessonId.replace(/[^a-zA-Z0-9]/g, '')}`;
-  // Strictly stripped out all watermarks, logos, and donate popups
-  const jitsiUrl = `https://${currentDomain}/${cleanRoom}#config.prejoinPageEnabled=false&config.prejoinConfig.enabled=false&config.skipPrejoin=true&config.startWithAudioMuted=false&config.startWithVideoMuted=false&config.enableClosePage=false&config.enableWelcomePage=false&config.disableDeepLinking=true&userInfo.displayName=${encodeURIComponent(userName)}&interfaceConfig.TOOLBAR_ALWAYS_VISIBLE=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_WATERMARK_FOR_GUESTS=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false&interfaceConfig.DEFAULT_LOGO_URL=""&interfaceConfig.JITSI_WATERMARK_LINK=""&interfaceConfig.BRAND_WATERMARK_LINK=""`;
 
   // Initialize Supabase & lesson metadata
   useEffect(() => {
@@ -241,20 +245,49 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Mount WebRTC Meeting API with strict anti-watermark and anti-redirect configurations
+  // Mount WebRTC Meeting API with rock-solid camera acquisition, Tile View, and clean cleanup
   useEffect(() => {
     let isMounted = true;
+    let observer: MutationObserver | null = null;
     if (isSessionEnded) return;
 
-    // Pre-request/prime camera & microphone on top-level origin so Opera GX & Chromium
-    // allow iframe device capture without silently blocking or denying video feeds
+    // Only prime camera permissions if not yet granted; if we do open a test stream,
+    // wait 500ms after stopping tracks so Windows/Opera GX fully releases the webcam lock
+    // before Jitsi calls getUserMedia (prevents black/dark video race condition).
     const primeMediaDevices = async () => {
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
-        try {
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return;
+      try {
+        let alreadyGranted = false;
+        if (navigator.permissions?.query) {
+          try {
+            const camPerm = await navigator.permissions.query({ name: 'camera' as PermissionName });
+            const micPerm = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+            if (camPerm.state === 'granted' && micPerm.state === 'granted') {
+              alreadyGranted = true;
+            } else if (camPerm.state === 'denied') {
+              setCameraErrorMsg('Camera permission is blocked in your browser. Click the camera/lock icon in your address bar to Allow camera, then click Reconnect Video.');
+              return;
+            }
+          } catch (_) {
+            // Safari / some browsers don't support permissions.query('camera')
+          }
+        }
+
+        if (!alreadyGranted) {
           const testStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
           testStream.getTracks().forEach((track) => track.stop());
-        } catch (err: any) {
-          console.warn('Initial camera prime check:', err);
+          // Critical hardware release cooldown for Windows DirectShow / MediaFoundation webcams
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+        setCameraErrorMsg(null);
+      } catch (err: any) {
+        console.warn('Initial camera prime check:', err);
+        if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+          setCameraErrorMsg('Camera access was blocked. Allow camera permission in your browser bar, then click Reconnect.');
+        } else if (err?.name === 'NotReadableError' || err?.name === 'TrackStartError') {
+          setCameraErrorMsg('Your camera is currently in use by another app or tab. Close other video apps, then click Reconnect.');
+        } else if (err?.name === 'NotFoundError') {
+          setCameraErrorMsg('No camera device detected on this device.');
         }
       }
     };
@@ -291,10 +324,30 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             enableLobby: false,
             requireDisplayName: false,
             disableProfile: true,
+            disableSelfView: false,
+            disableSelfViewSettings: false,
+            disableTileView: false,
+            tileView: { numberOfVisibleTiles: 4 },
+            resolution: 720,
+            constraints: {
+              video: {
+                height: { ideal: 720, max: 720, min: 240 },
+              },
+            },
             p2p: { enabled: true },
             disableFilmstrip: false,
             filmStripOnly: false,
-            toolbarButtons: [],
+            hideConferenceSubject: true,
+            hideConferenceTimer: false,
+            // Keep camera/mic/device picker/tileview/chat/polls available on hover, strip hangup & settings bleed
+            toolbarButtons: [
+              'microphone',
+              'camera',
+              'tileview',
+              'chat',
+              'raisehand',
+              'fodeviceselection',
+            ],
           },
           interfaceConfigOverwrite: {
             SHOW_JITSI_WATERMARK: false,
@@ -306,10 +359,11 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             BRAND_WATERMARK_LINK: '',
             GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
             DISPLAY_WELCOME_PAGE_CONTENT: false,
-            TOOLBAR_ALWAYS_VISIBLE: true,
+            HIDE_INVITE_MORE_HEADER: true,
+            TOOLBAR_ALWAYS_VISIBLE: false,
             DEFAULT_BACKGROUND: '#060E1C',
             SETTINGS_SECTIONS: [],
-            FILM_STRIP_MAX_HEIGHT: 120,
+            FILM_STRIP_MAX_HEIGHT: 140,
             ENABLE_FEEDBACK_ANIMATION: false,
           },
         });
@@ -317,7 +371,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         jitsiApiRef.current = api;
         setIsJitsiReady(true);
 
-        // Explicitly inject device and camera/mic permissions onto the iframe immediately and watch for new iframes
+        // Immediately grant full camera/mic permissions to the iframe
         const setIframeAllow = () => {
           if (videoMountRef.current) {
             const iframe = videoMountRef.current.querySelector('iframe');
@@ -331,10 +385,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         };
         setIframeAllow();
         setTimeout(setIframeAllow, 50);
-        setTimeout(setIframeAllow, 200);
+        setTimeout(setIframeAllow, 250);
 
-        // Also observe DOM additions to catch iframe the exact instant it is attached
-        let observer: MutationObserver | null = null;
         if (typeof MutationObserver !== 'undefined' && videoMountRef.current) {
           observer = new MutationObserver(() => {
             setIframeAllow();
@@ -342,14 +394,72 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           observer.observe(videoMountRef.current, { childList: true, subtree: true });
         }
 
+        const refreshDevices = async () => {
+          try {
+            if (typeof api.getAvailableDevices === 'function') {
+              const devices = await api.getAvailableDevices();
+              const cams = (devices?.videoInput || []).map((d: any) => ({
+                id: d.deviceId || d.id || '',
+                label: d.label || 'Camera',
+              }));
+              if (isMounted && cams.length > 0) {
+                setVideoDevices(cams);
+                // If current device is a virtual/black camera and a real physical webcam exists, auto-select physical webcam
+                const current = typeof api.getCurrentDevices === 'function' ? await api.getCurrentDevices().catch(() => null) : null;
+                const currentCam = current?.videoInput;
+                if (currentCam?.deviceId) {
+                  setActiveVideoDeviceId(currentCam.deviceId);
+                }
+                const isVirtual = (lbl: string) => /obs|virtual|snap|manycam|droidcam|iriun|nvidia broadcast/i.test(lbl);
+                if (currentCam && isVirtual(currentCam.label || '')) {
+                  const physicalCam = cams.find((c: { id: string; label: string }) => !isVirtual(c.label));
+                  if (physicalCam && typeof api.setVideoInputDevice === 'function') {
+                    api.setVideoInputDevice(physicalCam.label, physicalCam.id);
+                    setActiveVideoDeviceId(physicalCam.id);
+                  }
+                }
+              }
+            }
+          } catch (_) {}
+        };
+
         api.addEventListeners({
           audioMuteStatusChanged: (e: any) => setMicEnabled(!e.muted),
-          videoMuteStatusChanged: (e: any) => setCameraEnabled(!e.muted),
+          videoMuteStatusChanged: (e: any) => {
+            setCameraEnabled(!e.muted);
+            if (!e.muted) setCameraErrorMsg(null);
+          },
+          cameraError: (e: any) => {
+            console.warn('Jitsi cameraError:', e);
+            setCameraErrorMsg(
+              e?.message || 'Camera could not start. Select another camera or click Reconnect Video.'
+            );
+          },
+          participantJoined: () => {
+            try {
+              const count = typeof api.getNumberOfParticipants === 'function' ? api.getNumberOfParticipants() : 2;
+              setParticipantCount(Math.max(2, count));
+              api.executeCommand('setTileView', true);
+            } catch (_) {}
+          },
+          participantLeft: () => {
+            try {
+              const count = typeof api.getNumberOfParticipants === 'function' ? api.getNumberOfParticipants() : 1;
+              setParticipantCount(Math.max(1, count));
+            } catch (_) {}
+          },
           videoConferenceJoined: () => {
             api.executeCommand('setDisplayName', userName);
-            // Ensure camera & mic start active automatically with retries
-            const attemptUnmute = () => {
+            // Force Tile View so both tutor & student webcams are always clearly visible
+            try {
+              api.executeCommand('setTileView', true);
+            } catch (_) {}
+
+            void refreshDevices();
+
+            const attemptUnmuteAndTile = () => {
               try {
+                api.executeCommand('setTileView', true);
                 if (typeof api.isVideoMuted === 'function') {
                   api.isVideoMuted().then((muted: boolean) => {
                     if (muted) api.executeCommand('toggleVideo');
@@ -365,8 +475,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               } catch (_) {}
             };
 
-            setTimeout(attemptUnmute, 2500);
-            setTimeout(attemptUnmute, 5000);
+            setTimeout(attemptUnmuteAndTile, 1200);
+            setTimeout(attemptUnmuteAndTile, 3500);
           },
           videoConferenceLeft: () => {
             try { api.dispose(); } catch (_) {}
@@ -414,6 +524,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
     return () => {
       isMounted = false;
+      if (observer) {
+        observer.disconnect();
+        observer = null;
+      }
       if (jitsiApiRef.current) {
         try {
           jitsiApiRef.current.dispose();
@@ -421,7 +535,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         jitsiApiRef.current = null;
       }
     };
-  }, [cleanRoom, currentDomain, userName, isSessionEnded]);
+  }, [cleanRoom, currentDomain, userName, isSessionEnded, videoReconnectNonce]);
 
   // Realtime Supabase Channel for PDF & Whiteboard synchronization
   useEffect(() => {
@@ -524,19 +638,45 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  const handleToggleCamera = async () => {
+  const handleToggleCamera = () => {
+    setCameraErrorMsg(null);
     if (jitsiApiRef.current) {
       try {
-        if (!cameraEnabled && navigator.mediaDevices?.getUserMedia) {
-          try {
-            const s = await navigator.mediaDevices.getUserMedia({ video: true });
-            s.getTracks().forEach((t) => t.stop());
-          } catch (_) {}
-        }
         jitsiApiRef.current.executeCommand('toggleVideo');
+        jitsiApiRef.current.executeCommand('setTileView', true);
       } catch (_) {}
     } else {
       setCameraEnabled(!cameraEnabled);
+    }
+  };
+
+  const handleSelectVideoDevice = (device: { id: string; label: string }) => {
+    setActiveVideoDeviceId(device.id);
+    setShowCameraPicker(false);
+    setCameraErrorMsg(null);
+    if (jitsiApiRef.current && typeof jitsiApiRef.current.setVideoInputDevice === 'function') {
+      try {
+        jitsiApiRef.current.setVideoInputDevice(device.label, device.id);
+        jitsiApiRef.current.executeCommand('setTileView', true);
+      } catch (_) {}
+    }
+  };
+
+  const handleReconnectVideo = () => {
+    setCameraErrorMsg(null);
+    setIsJitsiReady(false);
+    setShowCameraPicker(false);
+    setVideoReconnectNonce((n) => n + 1);
+  };
+
+  const switchPresentationMode = (mode: PresentationMode) => {
+    setPresentationMode(mode);
+    if (channelRef.current && role === 'tutor') {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'present-mode',
+        payload: { mode },
+      });
     }
   };
 
@@ -834,6 +974,68 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Quick Camera Switcher / Video Reconnect */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCameraPicker(!showCameraPicker)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all active:scale-95"
+              title="Switch camera or reconnect video stream"
+            >
+              <Video className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden md:inline">Camera &amp; Video</span>
+            </button>
+            {showCameraPicker && (
+              <div className="absolute right-0 top-10 w-64 bg-[#0f172a] border-2 border-white/20 rounded-2xl shadow-2xl p-3 z-50 space-y-2 text-left">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-yellow">Video Controls</span>
+                  <button
+                    onClick={() => setShowCameraPicker(false)}
+                    className="text-xs text-white/60 hover:text-white font-black"
+                  >
+                    ✕
+                  </button>
+                </div>
+                {videoDevices.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-white/50 uppercase">Select Camera Device</p>
+                    {videoDevices.map((dev) => (
+                      <button
+                        key={dev.id || dev.label}
+                        onClick={() => handleSelectVideoDevice(dev)}
+                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-bold truncate transition-all ${
+                          activeVideoDeviceId === dev.id
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                            : 'bg-white/5 text-white/80 hover:bg-white/15'
+                        }`}
+                      >
+                        📷 {dev.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  onClick={() => {
+                    if (jitsiApiRef.current) {
+                      try { jitsiApiRef.current.executeCommand('setTileView', true); } catch (_) {}
+                    }
+                    setShowCameraPicker(false);
+                  }}
+                  className="w-full px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center justify-center gap-1.5"
+                >
+                  <Users className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Show Both Cameras (Tile View)</span>
+                </button>
+                <button
+                  onClick={handleReconnectVideo}
+                  className="w-full px-3 py-1.5 rounded-lg bg-yellow hover:bg-yellow/90 text-dark text-xs font-black flex items-center justify-center gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reconnect Camera &amp; Video</span>
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Quick AI Worksheet Studio trigger */}
           {role === 'tutor' && (
             <button
@@ -898,13 +1100,25 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                       <span>Student Desks &amp; Seatwork</span>
                     </>
                   )}
+                  {presentationMode === 'youtube' && (
+                    <>
+                      <Video className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>Educational YouTube Video</span>
+                    </>
+                  )}
+                  {presentationMode === 'vrlab' && (
+                    <>
+                      <Glasses className="w-4 h-4 text-purple-700 shrink-0" />
+                      <span>3D &amp; Virtual Reality Lab</span>
+                    </>
+                  )}
                 </span>
               </div>
 
               {/* Presentation Switchers & Stop Button */}
               <div className="flex items-center gap-2 shrink-0">
                 <button
-                  onClick={() => setPresentationMode('whiteboard')}
+                  onClick={() => switchPresentationMode('whiteboard')}
                   className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
                     presentationMode === 'whiteboard'
                       ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
@@ -917,7 +1131,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
                 {selectedPdfUrl && (
                   <button
-                    onClick={() => setPresentationMode('worksheet')}
+                    onClick={() => switchPresentationMode('worksheet')}
                     className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
                       presentationMode === 'worksheet'
                         ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
@@ -930,7 +1144,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 )}
 
                 <button
-                  onClick={() => setPresentationMode('desks')}
+                  onClick={() => switchPresentationMode('desks')}
                   className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
                     presentationMode === 'desks'
                       ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
@@ -1145,7 +1359,37 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               </div>
             )}
 
-            {isJitsiReady && !cameraEnabled && (
+            {cameraErrorMsg && (
+              <div className="absolute top-3 left-3 right-3 z-30 bg-rose-950/95 border-2 border-rose-400 rounded-2xl p-3 text-white shadow-2xl space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-[11px] font-bold leading-snug text-rose-100">{cameraErrorMsg}</p>
+                  <button
+                    onClick={() => setCameraErrorMsg(null)}
+                    className="text-xs text-white/60 hover:text-white font-black shrink-0"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    onClick={handleReconnectVideo}
+                    className="px-2.5 py-1 rounded-lg bg-yellow text-dark font-black text-[10px] uppercase flex items-center gap-1"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Reconnect Video
+                  </button>
+                  {videoDevices.length > 1 && (
+                    <button
+                      onClick={() => setShowCameraPicker(true)}
+                      className="px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-black text-[10px] uppercase"
+                    >
+                      Switch Camera
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {isJitsiReady && !cameraEnabled && !cameraErrorMsg && (
               <div className="absolute top-3 left-3 z-30">
                 <button
                   onClick={handleToggleCamera}
