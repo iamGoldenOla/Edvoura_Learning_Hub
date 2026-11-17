@@ -83,13 +83,24 @@ export interface AI3DPartSpec {
   animate?: 'none' | 'spinY' | 'spinZ' | 'spinX' | 'bob' | 'pulse';
 }
 
+export interface AI3DStationSpec {
+  title: string;
+  subtitle: string;
+  example?: string;
+  narration?: string;
+  color?: string;
+  position?: [number, number, number];
+}
+
 export interface AI3DBlueprintSpec {
   title: string;
   category: string;
+  sceneType?: 'object' | 'concept-gallery';
   description: string;
   narration: string;
   facts: { label: string; value: string }[];
   parts: AI3DPartSpec[];
+  stations?: AI3DStationSpec[];
 }
 
 export type VRDisplayMode = 'desktop' | 'gyro' | 'split-vr';
@@ -304,6 +315,7 @@ export function VRLabExplorer({
   const [customAiKind, setCustomAiKind] = useState<CustomAiSceneKind>('rocket');
   const [customAiDescription, setCustomAiDescription] = useState<string>('');
   const [aiBlueprint, setAiBlueprint] = useState<AI3DBlueprintSpec | null>(null);
+  const [activeStationIdx, setActiveStationIdx] = useState<number>(0);
   const [aiGenError, setAiGenError] = useState<string | null>(null);
 
   // Manim Motion Controls
@@ -1512,13 +1524,15 @@ export function VRLabExplorer({
           } catch (_) {}
         });
 
-        // Auto-center and normalize bounding box so ANY AI-generated model frames cleanly!
+        // Auto-center and normalize physical parts bounding box
         const bbox = new THREE.Box3().setFromObject(customGroup);
+        const isGallery = aiBlueprint.sceneType === 'concept-gallery' || (aiBlueprint.stations && aiBlueprint.stations.length >= 4);
+        const targetSpan = isGallery ? 3.8 : 6.2;
         if (!bbox.isEmpty()) {
           const center = bbox.getCenter(new THREE.Vector3());
           const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z, 1);
-          const normScale = 6.5 / maxDim;
+          const normScale = targetSpan / maxDim;
           customGroup.children.forEach((ch: any) => {
             ch.position.sub(center);
             ch.position.multiplyScalar(normScale);
@@ -1527,6 +1541,125 @@ export function VRLabExplorer({
               ch.userData.baseY = ch.position.y;
               ch.userData.baseScale = ch.scale.clone();
             }
+          });
+        }
+
+        // Render interactive 3D Holographic Learning Station Cards (Parts of Speech, Water Cycle, Callouts, etc.)
+        if (Array.isArray(aiBlueprint.stations) && aiBlueprint.stations.length > 0) {
+          const stations = aiBlueprint.stations;
+          const ringRadius = isGallery ? 6.2 : 5.2;
+          state.controls.zoom = isGallery ? 17.5 : 14.5;
+          state.controls.rotX = 0.22;
+
+          const makeCardTexture = (st: AI3DStationSpec, index: number) => {
+            const cnv = document.createElement('canvas');
+            cnv.width = 512;
+            cnv.height = 290;
+            const ctx = cnv.getContext('2d');
+            if (!ctx) return null;
+
+            const accent = st.color || '#facc15';
+            // Dark card background with crisp colored border
+            ctx.fillStyle = '#0b132b';
+            ctx.fillRect(0, 0, 512, 290);
+            ctx.strokeStyle = accent;
+            ctx.lineWidth = 10;
+            ctx.strokeRect(5, 5, 502, 280);
+
+            // Top colored header strip
+            ctx.fillStyle = accent;
+            ctx.fillRect(10, 10, 492, 62);
+
+            // Station title
+            ctx.fillStyle = '#060e1c';
+            ctx.font = '900 30px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${index + 1}. ${(st.title || 'Concept').toUpperCase().slice(0, 22)}`, 256, 42);
+
+            // Wrapped subtitle definition
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '700 24px sans-serif';
+            const words = (st.subtitle || '').split(' ');
+            const lines: string[] = [];
+            let line = '';
+            for (const w of words) {
+              const test = line ? `${line} ${w}` : w;
+              if (ctx.measureText(test).width > 450 && line) {
+                lines.push(line);
+                line = w;
+              } else {
+                line = test;
+              }
+            }
+            if (line) lines.push(line);
+            lines.slice(0, 3).forEach((ln, li) => {
+              ctx.fillText(ln, 256, 118 + li * 34);
+            });
+
+            // Example pill at bottom
+            if (st.example) {
+              ctx.fillStyle = 'rgba(255,255,255,0.12)';
+              ctx.fillRect(28, 218, 456, 46);
+              ctx.fillStyle = '#fde047';
+              ctx.font = '800 20px sans-serif';
+              ctx.fillText(st.example.slice(0, 40), 256, 242);
+            }
+
+            const tex = new THREE.CanvasTexture(cnv);
+            tex.needsUpdate = true;
+            return tex;
+          };
+
+          stations.forEach((st, idx) => {
+            const angle = (idx / stations.length) * Math.PI * 2;
+            const sx = Math.cos(angle) * ringRadius;
+            const sz = Math.sin(angle) * ringRadius;
+            const sy = isGallery ? (idx % 2 === 0 ? 1.0 : -0.6) : 1.4 + (idx % 2) * 0.9;
+
+            const cardTex = makeCardTexture(st, idx);
+            if (cardTex) {
+              const cardGeo = new THREE.PlaneGeometry(3.4, 1.95);
+              const cardMat = new THREE.MeshBasicMaterial({
+                map: cardTex,
+                side: THREE.DoubleSide,
+                clippingPlanes: [clippingPlane],
+              });
+              const cardMesh = new THREE.Mesh(cardGeo, cardMat);
+              cardMesh.position.set(sx, sy, sz);
+              cardMesh.lookAt(sx * 2, sy, sz * 2);
+              cardMesh.name = `station-${idx}`;
+              cardMesh.userData = {
+                stationIndex: idx,
+                stationData: st,
+                aiAnimate: 'bob',
+                baseY: sy,
+                baseScale: cardMesh.scale.clone(),
+              };
+              customGroup.add(cardMesh);
+            }
+
+            // Glowing orb anchor & beam connecting each concept card to the center
+            const orb = new THREE.Mesh(
+              new THREE.SphereGeometry(0.24, 16, 16),
+              new THREE.MeshBasicMaterial({ color: new THREE.Color(st.color || '#facc15') })
+            );
+            orb.position.set(sx, sy - 1.25, sz);
+            customGroup.add(orb);
+
+            const beamGeo = new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(0, 0, 0),
+              new THREE.Vector3(sx, sy - 1.25, sz),
+            ]);
+            const beam = new THREE.Line(
+              beamGeo,
+              new THREE.LineBasicMaterial({
+                color: new THREE.Color(st.color || '#38bdf8'),
+                transparent: true,
+                opacity: 0.45,
+              })
+            );
+            customGroup.add(beam);
           });
         }
       } else {
@@ -1819,8 +1952,8 @@ export function VRLabExplorer({
     const wasDragging = state.controls.isDragging;
     state.controls.isDragging = false;
 
-    // Detect clean click/tap (movement < 6px) to select 3D planets directly on canvas
-    if (wasDragging && liveParamsRef.current.activeModule === 'solar-system' && canvasRef.current) {
+    // Detect clean click/tap (movement < 6px) to select 3D planets OR floating AI VR station cards directly on canvas!
+    if (wasDragging && canvasRef.current) {
       const dist = Math.hypot(
         e.clientX - pointerDownPosRef.current.x,
         e.clientY - pointerDownPosRef.current.y
@@ -1830,18 +1963,34 @@ export function VRLabExplorer({
         const ndcX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         const ndcY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
         state.raycaster.setFromCamera({ x: ndcX, y: ndcY }, state.camera);
-        const hits = state.raycaster.intersectObjects(
-          state.orbitMeshes.map((m) => m.mesh),
-          true
-        );
-        if (hits.length > 0) {
-          let obj = hits[0].object;
-          while (obj && !obj.userData?.planetData && obj.parent) {
-            obj = obj.parent;
+
+        if (liveParamsRef.current.activeModule === 'solar-system') {
+          const hits = state.raycaster.intersectObjects(
+            state.orbitMeshes.map((m) => m.mesh),
+            true
+          );
+          if (hits.length > 0) {
+            let obj = hits[0].object;
+            while (obj && !obj.userData?.planetData && obj.parent) {
+              obj = obj.parent;
+            }
+            if (obj?.userData?.planetData?.name) {
+              handleSelectPlanet(obj.userData.planetData.name);
+              setShowInfoCard(true);
+            }
           }
-          if (obj?.userData?.planetData?.name) {
-            handleSelectPlanet(obj.userData.planetData.name);
+        } else if (liveParamsRef.current.activeModule === 'ai-custom' && state.vaultMesh) {
+          const hits = state.raycaster.intersectObjects(state.vaultMesh.children, true);
+          const stationHit = hits.find((h: any) => typeof h.object?.userData?.stationIndex === 'number');
+          if (stationHit) {
+            const idx = stationHit.object.userData.stationIndex as number;
+            const st = stationHit.object.userData.stationData as AI3DStationSpec;
+            setActiveStationIdx(idx);
             setShowInfoCard(true);
+            playSynthesizedSound('space');
+            if (st) {
+              speakNarration(st.narration || `${st.title}: ${st.subtitle}. ${st.example || ''}`);
+            }
           }
         }
       }
@@ -2212,13 +2361,12 @@ export function VRLabExplorer({
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
             <span className="text-[10px] text-white/50 font-bold shrink-0">Try:</span>
             {[
+              { label: '📚 Parts of Speech', query: 'Parts of Speech' },
+              { label: '🌧️ Water Cycle', query: 'Water Cycle' },
+              { label: '🍕 Fractions', query: 'Fractions' },
               { label: '📦 Rectangle', query: 'Rectangle' },
-              { label: '🚀 Rocket', query: 'Space Rocket' },
-              { label: '💧 H₂O', query: 'Water Molecule' },
-              { label: '🏰 Castle', query: 'Medieval Castle' },
+              { label: '🚗 Car', query: 'Car' },
               { label: '🧬 DNA', query: 'DNA Double Helix' },
-              { label: '🌿 Cell', query: 'Plant Cell' },
-              { label: '⚛️ Atom', query: 'Bohr Atom' },
             ].map((p) => (
               <button
                 key={p.label}
@@ -3011,6 +3159,35 @@ export function VRLabExplorer({
                 customAiDescription ||
                 'Drag to rotate 360°, scroll to zoom, or activate Slice Plane to inspect inside.'}
             </p>
+            {aiBlueprint?.stations && aiBlueprint.stations.length > 0 && (
+              <div className="space-y-1.5 mb-3 max-h-48 overflow-y-auto pr-1">
+                <div className="text-[10px] font-black uppercase tracking-wider text-purple-300/80">
+                  Interactive 3D Stations (Tap to Hear):
+                </div>
+                {aiBlueprint.stations.map((st, idx) => (
+                  <button
+                    key={`${st.title}-${idx}`}
+                    onClick={() => {
+                      setActiveStationIdx(idx);
+                      playSynthesizedSound('space');
+                      speakNarration(st.narration || `${st.title}: ${st.subtitle}. ${st.example || ''}`);
+                    }}
+                    className={`w-full text-left p-2 rounded-xl border text-xs transition-all flex items-center justify-between gap-2 ${
+                      activeStationIdx === idx
+                        ? 'bg-purple-500/25 border-yellow text-white'
+                        : 'bg-white/5 border-white/10 text-white/80 hover:bg-white/15'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <div className="font-black text-yellow truncate">{idx + 1}. {st.title}</div>
+                      <div className="text-[10px] text-white/70 truncate">{st.subtitle}</div>
+                      {st.example && <div className="text-[9px] text-emerald-300 truncate">{st.example}</div>}
+                    </div>
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
             {aiBlueprint?.facts && aiBlueprint.facts.length > 0 && (
               <div className="grid grid-cols-2 gap-1.5 mb-3">
                 {aiBlueprint.facts.map((f, idx) => (

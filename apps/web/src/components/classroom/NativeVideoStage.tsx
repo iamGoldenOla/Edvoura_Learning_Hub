@@ -33,6 +33,7 @@ export interface NativeVideoStageProps {
   reconnectNonce: number;
   screenStream: MediaStream | null;
   isSidebarMode: boolean;
+  isPipMode?: boolean;
   onDevicesDetected?: (devices: { id: string; label: string }[], activeId: string) => void;
   onCameraError?: (message: string | null) => void;
   onParticipantCountChange?: (count: number) => void;
@@ -152,6 +153,7 @@ export function NativeVideoStage({
   reconnectNonce,
   screenStream,
   isSidebarMode,
+  isPipMode = false,
   onDevicesDetected,
   onCameraError,
   onParticipantCountChange,
@@ -639,6 +641,36 @@ export function NativeVideoStage({
         <p className="text-[11px] text-white/55 font-semibold max-w-xs">
           Zero third-party watermarks — connecting directly to your webcam
         </p>
+      </div>
+    );
+  }
+
+  // FLOATING TOP PICTURE-IN-PICTURE MINI-STRIP (when sidebar is tucked in for 100% full-width board!)
+  if (isPipMode) {
+    return (
+      <div className="w-full h-full bg-[#060E1C] p-1.5 flex items-center gap-1.5 overflow-hidden">
+        {remotePeers.slice(0, 2).map((peer) => (
+          <div key={peer.peerId} className="flex-1 h-full min-w-0">
+            <VideoTile
+              stream={peer.stream}
+              label={peer.name}
+              camOn={peer.camOn}
+              micOn={peer.micOn}
+              compact
+            />
+          </div>
+        ))}
+        <div className="flex-1 h-full min-w-0">
+          <VideoTile
+            stream={localStream}
+            label="You"
+            muted
+            mirror
+            camOn={cameraEnabled}
+            micOn={micEnabled}
+            compact
+          />
+        </div>
       </div>
     );
   }

@@ -72,6 +72,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   // 4. Zero vertical scrollbars, crystal-clear reading and writing.
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('none');
   const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
+  const [isPipHidden, setIsPipHidden] = useState(false);
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [showAiWorksheetModal, setShowAiWorksheetModal] = useState(false);
   const [isSessionEnded, setIsSessionEnded] = useState(false);
@@ -814,9 +815,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 {/* Collapsed Video Quick Expand Pill */}
                 {isVideoCollapsed && (
                   <button
-                    onClick={() => setIsVideoCollapsed(false)}
+                    onClick={() => {
+                      setIsVideoCollapsed(false);
+                      setIsPipHidden(false);
+                    }}
                     className="flex items-center gap-1.5 px-3 py-1 bg-slate-900 text-white hover:bg-slate-800 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
-                    title="Expand Live Video Strip"
+                    title="Expand Live Video Sidebar"
                   >
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                     <Eye className="w-3.5 h-3.5" />
@@ -898,12 +902,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 />
               )}
 
-              {/* Floating Arrow Tab to slide Video back out when tucked in */}
-              {isVideoCollapsed && (
+              {/* Floating Arrow Tab only shown if user hid even the mini PiP */}
+              {isVideoCollapsed && isPipHidden && (
                 <button
-                  onClick={() => setIsVideoCollapsed(false)}
+                  onClick={() => setIsPipHidden(false)}
                   className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-1 py-3 px-1.5 bg-slate-900/95 hover:bg-slate-900 text-white border-y-[2.5px] border-l-[2.5px] border-dark rounded-l-2xl shadow-[-4px_4px_0px_#060E1C] font-black text-xs transition-all active:scale-95 group cursor-pointer"
-                  title="Slide open video & polls sidebar"
+                  title="Show floating mini video"
                 >
                   <ChevronLeft className="w-4 h-4 text-yellow group-hover:-translate-x-0.5 transition-transform" />
                   <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] tracking-wider uppercase font-black py-1 text-slate-200">
@@ -918,31 +922,40 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         {/* ==========================================================
             STAGE 2: PARTICIPANTS LIVE VIDEO FRAME
-            - When presenting: Shrinks into compact right frame (Collapsible with 1-click arrow!)
+            - When presenting & expanded: Compact right video sidebar.
+            - When presenting & tucked in: Floats at TOP-RIGHT as a crisp Picture-in-Picture (PiP)
+              mini-camera bar so Tutor & Student ALWAYS see each other while using full-width board!
             - When NOT presenting: Fills 100% of the stage!
             - PERSISTENT DOM MOUNT: WebRTC call never disconnects!
             ========================================================== */}
         <div
-          className={`h-full relative flex flex-col bg-black transition-all duration-300 ease-in-out ${
+          className={`flex flex-col bg-[#060E1C] transition-all duration-300 ease-in-out ${
             presentationMode !== 'none'
               ? isVideoCollapsed
-                ? 'w-0 overflow-hidden border-none shrink-0'
-                : 'w-[220px] sm:w-[250px] xl:w-[275px] border-l-[3px] border-dark shrink-0 z-20'
-              : 'flex-1 min-w-0'
+                ? isPipHidden
+                  ? 'w-0 h-0 overflow-hidden border-none shrink-0 pointer-events-none'
+                  : `absolute top-14 right-3 z-40 ${
+                      participantCount > 1 ? 'w-[280px] sm:w-[320px]' : 'w-[170px] sm:w-[195px]'
+                    } h-[126px] rounded-2xl border-[2.5px] border-dark shadow-[5px_5px_0px_#060E1C] overflow-hidden`
+                : 'h-full relative w-[220px] sm:w-[250px] xl:w-[275px] border-l-[3px] border-dark shrink-0 z-20'
+              : 'h-full relative flex-1 min-w-0'
           }`}
         >
           {/* Left-edge Tuck-In Arrow Toggle on the divider border */}
           {presentationMode !== 'none' && !isVideoCollapsed && (
             <button
-              onClick={() => setIsVideoCollapsed(true)}
+              onClick={() => {
+                setIsVideoCollapsed(true);
+                setIsPipHidden(false);
+              }}
               className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-40 w-7 h-12 bg-slate-900 text-yellow border-[2px] border-dark rounded-l-xl shadow-[-2px_2px_0px_#060E1C] flex items-center justify-center transition-all hover:bg-slate-800 active:scale-95 group cursor-pointer"
-              title="Tuck video in to give whiteboard full width"
+              title="Tuck sidebar into top mini-video so whiteboard has full width"
             >
               <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
           )}
 
-          {/* Header Strip when shrunk with Collapse Button */}
+          {/* Header Strip when in Right Sidebar */}
           {presentationMode !== 'none' && !isVideoCollapsed && (
             <div className="h-9 px-3 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5">
@@ -950,15 +963,46 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 <span className="text-[10px] font-black uppercase tracking-wider text-white/90">Live Video</span>
               </div>
 
-              {/* Collapse/Tuck-In Button */}
+              {/* Collapse into Top Mini-Video Button */}
               <button
-                onClick={() => setIsVideoCollapsed(true)}
+                onClick={() => {
+                  setIsVideoCollapsed(true);
+                  setIsPipHidden(false);
+                }}
                 className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white/90 hover:text-white text-[10px] font-black uppercase transition-all"
-                title="Tuck video in to maximize whiteboard"
+                title="Switch to top mini-video bar for full whiteboard width"
               >
                 <ChevronRight className="w-3 h-3 text-yellow" />
-                <span>Tuck In</span>
+                <span>Mini Top</span>
               </button>
+            </div>
+          )}
+
+          {/* Compact Header Strip when Floating at Top-Right (PiP Mini-Video Mode) */}
+          {presentationMode !== 'none' && isVideoCollapsed && !isPipHidden && (
+            <div className="h-7 px-2.5 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[9px] font-black uppercase tracking-wider text-white/90">
+                  Live ({participantCount})
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setIsVideoCollapsed(false)}
+                  className="px-1.5 py-0.5 rounded bg-yellow/90 hover:bg-yellow text-dark text-[9px] font-black uppercase cursor-pointer"
+                  title="Expand back to full side column"
+                >
+                  Expand
+                </button>
+                <button
+                  onClick={() => setIsPipHidden(true)}
+                  className="p-0.5 rounded bg-white/10 hover:bg-white/20 text-white/75 hover:text-white cursor-pointer"
+                  title="Hide mini video completely"
+                >
+                  <EyeOff className="w-3 h-3" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -973,7 +1017,8 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               selectedVideoDeviceId={activeVideoDeviceId}
               reconnectNonce={videoReconnectNonce}
               screenStream={screenStream}
-              isSidebarMode={presentationMode !== 'none'}
+              isSidebarMode={presentationMode !== 'none' && !isVideoCollapsed}
+              isPipMode={presentationMode !== 'none' && isVideoCollapsed}
               onDevicesDetected={(devs, activeId) => {
                 setVideoDevices(devs);
                 if (activeId && !activeVideoDeviceId) setActiveVideoDeviceId(activeId);
