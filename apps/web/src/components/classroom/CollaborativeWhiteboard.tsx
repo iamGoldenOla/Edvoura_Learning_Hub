@@ -28,7 +28,16 @@ import { playSound } from '@/utils/sounds';
 
 export type ToolType = 'pen' | 'highlighter' | 'eraser' | 'text' | 'rect' | 'circle' | 'arrow' | 'laser';
 export type GridType = 'blank' | 'math-grid' | 'lined' | 'dots';
-export type BgColorType = 'white' | 'black' | 'navy' | 'mild-blue' | 'warm-cream' | 'chalk-green';
+export type BgColorType =
+  | 'white'
+  | 'teddy-bear'
+  | 'space'
+  | 'chalk-green'
+  | 'lined-notebook'
+  | 'math-grid'
+  | 'pastel-sky'
+  | 'warm-cream'
+  | 'black';
 
 export interface StrokeElement {
   id: string;
@@ -49,13 +58,89 @@ interface CollaborativeWhiteboardProps {
   onReturnToFullVideo?: () => void;
 }
 
-const BG_CONFIG: Record<BgColorType, { label: string; hex: string; gridColor: string; defaultPen: string }> = {
-  white: { label: 'White', hex: '#FFFFFF', gridColor: '#E2E8F0', defaultPen: '#060E1C' },
-  black: { label: 'Chalk Black', hex: '#18181B', gridColor: 'rgba(255, 255, 255, 0.15)', defaultPen: '#FFFFFF' },
-  navy: { label: 'Navy Blue', hex: '#0F172A', gridColor: 'rgba(56, 189, 248, 0.2)', defaultPen: '#38BDF8' },
-  'mild-blue': { label: 'Mild Blue', hex: '#E0F2FE', gridColor: 'rgba(2, 132, 199, 0.18)', defaultPen: '#0369A1' },
-  'warm-cream': { label: 'Warm Cream', hex: '#FEFCE8', gridColor: 'rgba(180, 83, 9, 0.15)', defaultPen: '#78350F' },
-  'chalk-green': { label: 'Chalk Green', hex: '#064E3B', gridColor: 'rgba(255, 255, 255, 0.18)', defaultPen: '#FEF08A' },
+export const BG_CONFIG: Record<
+  BgColorType,
+  {
+    label: string;
+    emoji: string;
+    hex: string;
+    gridColor: string;
+    defaultPen: string;
+    description: string;
+  }
+> = {
+  'teddy-bear': {
+    label: 'Teddy & Stars',
+    emoji: '🧸',
+    hex: '#FFFDF0',
+    gridColor: 'rgba(217, 119, 6, 0.15)',
+    defaultPen: '#92400E',
+    description: 'Cute teddy bears & star doodles',
+  },
+  space: {
+    label: 'Cosmic Space',
+    emoji: '🚀',
+    hex: '#0A0F1D',
+    gridColor: 'rgba(125, 211, 252, 0.2)',
+    defaultPen: '#38BDF8',
+    description: 'Starry galaxy & crescent moon',
+  },
+  'chalk-green': {
+    label: 'Chalk Green',
+    emoji: '🌿',
+    hex: '#064E3B',
+    gridColor: 'rgba(255, 255, 255, 0.15)',
+    defaultPen: '#FEF08A',
+    description: 'Classic school chalkboard',
+  },
+  'lined-notebook': {
+    label: 'Lined Notebook',
+    emoji: '📝',
+    hex: '#FFFFFF',
+    gridColor: 'rgba(59, 130, 246, 0.18)',
+    defaultPen: '#1E3A8A',
+    description: 'Exercise book with red margin line',
+  },
+  'math-grid': {
+    label: 'Math Grid',
+    emoji: '📐',
+    hex: '#FFFFFF',
+    gridColor: '#E2E8F0',
+    defaultPen: '#060E1C',
+    description: 'Graph paper for sums & geometry',
+  },
+  'pastel-sky': {
+    label: 'Pastel Sky',
+    emoji: '🌈',
+    hex: '#F0F9FF',
+    gridColor: 'rgba(56, 189, 248, 0.2)',
+    defaultPen: '#0369A1',
+    description: 'Soft sky blue with gentle clouds',
+  },
+  'warm-cream': {
+    label: 'Warm Cream',
+    emoji: '🍦',
+    hex: '#FEFCE8',
+    gridColor: 'rgba(180, 83, 9, 0.15)',
+    defaultPen: '#78350F',
+    description: 'Easy-reading gentle cream paper',
+  },
+  white: {
+    label: 'Clean White',
+    emoji: '⬜',
+    hex: '#FFFFFF',
+    gridColor: '#F1F5F9',
+    defaultPen: '#060E1C',
+    description: 'Crisp blank presentation canvas',
+  },
+  black: {
+    label: 'Chalk Black',
+    emoji: '⬛',
+    hex: '#18181B',
+    gridColor: 'rgba(255, 255, 255, 0.12)',
+    defaultPen: '#FFFFFF',
+    description: 'Midnight dark chalkboard',
+  },
 };
 
 const PALETTE_COLORS = [
@@ -117,9 +202,8 @@ export function CollaborativeWhiteboard({
   const [stamps, setStamps] = useState<StampItem[]>([]);
   const [selectedStamp, setSelectedStamp] = useState<string | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
-  const [showStampsMenu, setShowStampsMenu] = useState<boolean>(false);
+  const [activeFlyout, setActiveFlyout] = useState<'none' | 'colors' | 'shapes' | 'themes' | 'stamps'>('none');
   const [stampTab, setStampTab] = useState<'stamps' | 'emojis'>('stamps');
-  const [showBgMenu, setShowBgMenu] = useState<boolean>(false);
   const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
 
   // Inline text editing state (NO browser window.prompt!)
@@ -137,49 +221,149 @@ export function CollaborativeWhiteboard({
     const { width, height } = canvas;
     const config = BG_CONFIG[bgColor] || BG_CONFIG.white;
 
-    // Fill background color
+    // Fill background base
     ctx.fillStyle = config.hex;
     ctx.fillRect(0, 0, width, height);
 
-    if (gridStyle === 'blank') return;
+    // Render theme-specific artwork on Layer 1 (Eraser operates on Layer 2 and NEVER touches Layer 1)
+    if (bgColor === 'teddy-bear') {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.2)';
+      ctx.fillStyle = 'rgba(217, 119, 6, 0.12)';
+      ctx.lineWidth = 1.8;
+      const stepX = 140;
+      const stepY = 130;
+      for (let x = 70; x < width; x += stepX) {
+        for (let y = 65; y < height; y += stepY) {
+          const offset = ((Math.floor(x / stepX) % 2) * stepY) / 2;
+          const ty = y + offset;
+          if (ty > height) continue;
 
-    ctx.save();
-    ctx.strokeStyle = config.gridColor;
-    ctx.lineWidth = 1;
-
-    if (gridStyle === 'math-grid') {
-      const step = 32;
-      ctx.beginPath();
-      for (let x = 0; x <= width; x += step) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-      }
-      for (let y = 0; y <= height; y += step) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.stroke();
-    } else if (gridStyle === 'lined') {
-      const step = 36;
-      ctx.beginPath();
-      for (let y = step; y <= height; y += step) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-      }
-      ctx.stroke();
-    } else if (gridStyle === 'dots') {
-      const step = 32;
-      ctx.fillStyle = config.gridColor;
-      for (let x = step / 2; x <= width; x += step) {
-        for (let y = step / 2; y <= height; y += step) {
+          // Head
           ctx.beginPath();
-          ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+          ctx.arc(x, ty, 18, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Left Ear
+          ctx.beginPath();
+          ctx.arc(x - 14, ty - 14, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Right Ear
+          ctx.beginPath();
+          ctx.arc(x + 14, ty - 14, 7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          // Star sparkle
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+          ctx.beginPath();
+          ctx.arc(x + 32, ty - 22, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(217, 119, 6, 0.12)';
+        }
+      }
+      ctx.restore();
+    } else if (bgColor === 'space') {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      const stepX = 110;
+      const stepY = 100;
+      for (let x = 40; x < width; x += stepX) {
+        for (let y = 40; y < height; y += stepY) {
+          const r = ((x * y) % 3) + 1.2;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fill();
         }
       }
+      // Faint crescent moons
+      ctx.strokeStyle = 'rgba(186, 230, 253, 0.25)';
+      ctx.lineWidth = 2;
+      for (let x = 160; x < width; x += 320) {
+        for (let y = 140; y < height; y += 260) {
+          ctx.beginPath();
+          ctx.arc(x, y, 14, 0.2 * Math.PI, 1.3 * Math.PI);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    } else if (bgColor === 'pastel-sky') {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      for (let x = 90; x < width; x += 220) {
+        for (let y = 80; y < height; y += 180) {
+          ctx.beginPath();
+          ctx.arc(x, y, 16, 0, Math.PI * 2);
+          ctx.arc(x + 14, y - 5, 12, 0, Math.PI * 2);
+          ctx.arc(x + 28, y, 16, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    } else if (bgColor === 'lined-notebook') {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(59, 130, 246, 0.18)';
+      ctx.lineWidth = 1;
+      const step = 34;
+      ctx.beginPath();
+      for (let y = step; y < height; y += step) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+      }
+      ctx.stroke();
+
+      // Red margin line
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(60, 0);
+      ctx.lineTo(60, height);
+      ctx.stroke();
+      ctx.restore();
     }
 
-    ctx.restore();
+    // Grid overlays
+    if (gridStyle !== 'blank' && bgColor !== 'lined-notebook') {
+      ctx.save();
+      ctx.strokeStyle = config.gridColor;
+      ctx.lineWidth = 1;
+
+      if (gridStyle === 'math-grid' || bgColor === 'math-grid') {
+        const step = 30;
+        ctx.beginPath();
+        for (let x = 0; x <= width; x += step) {
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+        }
+        for (let y = 0; y <= height; y += step) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+        }
+        ctx.stroke();
+      } else if (gridStyle === 'lined') {
+        const step = 36;
+        ctx.beginPath();
+        for (let y = step; y <= height; y += step) {
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+        }
+        ctx.stroke();
+      } else if (gridStyle === 'dots') {
+        const step = 32;
+        ctx.fillStyle = config.gridColor;
+        for (let x = step / 2; x <= width; x += step) {
+          for (let y = step / 2; y <= height; y += step) {
+            ctx.beginPath();
+            ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.restore();
+    }
   }, [bgColor, gridStyle]);
 
   // Render a single stroke on Layer 2 (Ink layer)
@@ -662,11 +846,11 @@ export function CollaborativeWhiteboard({
 
   const handleSelectBgColor = (color: BgColorType) => {
     setBgColor(color);
-    setShowBgMenu(false);
+    setActiveFlyout('none');
 
     // Auto-adjust default pen color if contrast is lost
     const conf = BG_CONFIG[color];
-    if (color === 'black' || color === 'navy' || color === 'chalk-green') {
+    if (color === 'black' || color === 'space' || color === 'chalk-green') {
       if (selectedColor === '#060E1C') setSelectedColor(conf.defaultPen);
     } else {
       if (selectedColor === '#FFFFFF') setSelectedColor(conf.defaultPen);
@@ -720,331 +904,82 @@ export function CollaborativeWhiteboard({
       className="flex flex-col h-full w-full bg-white overflow-hidden relative select-none font-sans"
     >
       {/* ============================================================
-          UNIFIED COMPACT TOOLBAR (SINGLE 48px ROW - NO SCROLL)
+          UNIFIED TOP BAR (ZERO HORIZONTAL SCROLL - ALWAYS FITS)
           ============================================================ */}
-      <div className="h-12 border-b-[2.5px] border-dark bg-yellow/20 px-3 flex items-center justify-between gap-2 shrink-0 overflow-x-auto text-xs font-black">
-        {/* Left: Primary Drawing Tools */}
-        <div className="flex items-center gap-1 shrink-0">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setActiveTool('pen')}
-            className={`h-7 px-2.5 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
-              activeTool === 'pen' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
-            }`}
-          >
-            <Pencil className="h-3.5 w-3.5 mr-1" /> Pen
-          </Button>
+      <div className="h-10 border-b-[2.5px] border-dark bg-yellow/30 px-3 flex items-center justify-between shrink-0 text-xs font-black">
+        {/* Left: Title, Role Badge, Active Tool Status */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1.5 text-xs font-black text-dark tracking-tight">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-dark" />
+            {isSeatWorkMode ? 'Student Desk' : 'Interactive Whiteboard'}
+          </span>
 
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setActiveTool('highlighter')}
-            className={`h-7 px-2.5 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
-              activeTool === 'highlighter' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
-            }`}
-          >
-            <Highlighter className="h-3.5 w-3.5 mr-1 text-amber-600" /> Marker
-          </Button>
-
-          {/* Eraser Tool with High-Impact Sizing Indicator */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setActiveTool('eraser')}
-            className={`h-7 px-2.5 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
-              activeTool === 'eraser' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
-            }`}
-            title="Eraser (Removes ink cleanly, never damages background lines!)"
-          >
-            <Eraser className="h-3.5 w-3.5 mr-1 text-rose-600" /> Eraser
-          </Button>
-
-          {/* Inline Text Tool */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setActiveTool('text')}
-            className={`h-7 px-2 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
-              activeTool === 'text' ? 'bg-yellow text-dark' : 'bg-white text-dark/70'
-            }`}
-            title="Click anywhere on canvas to type text notes or equations"
-          >
-            <Type className="h-3.5 w-3.5 mr-1" /> Text
-          </Button>
-
-          {/* Shapes */}
-          <div className="flex items-center border-[2px] border-dark rounded-lg bg-white overflow-hidden shadow-[1.5px_1.5px_0px_#060E1C]">
-            <button
-              onClick={() => setActiveTool('rect')}
-              className={`p-1 hover:bg-slate-100 ${activeTool === 'rect' ? 'bg-yellow font-black' : ''}`}
-              title="Rectangle"
-            >
-              <Square className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setActiveTool('circle')}
-              className={`p-1 hover:bg-slate-100 ${activeTool === 'circle' ? 'bg-yellow font-black' : ''}`}
-              title="Circle"
-            >
-              <Circle className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={() => setActiveTool('arrow')}
-              className={`p-1 hover:bg-slate-100 ${activeTool === 'arrow' ? 'bg-yellow font-black' : ''}`}
-              title="Arrow"
-            >
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          {role === 'tutor' && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTool('laser')}
-              className={`h-7 px-2 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] ${
-                activeTool === 'laser' ? 'bg-rose-500 text-white' : 'bg-white text-dark/70'
-              }`}
-            >
-              <Radio className="h-3.5 w-3.5 mr-1 text-rose-500" /> Laser
-            </Button>
-          )}
-        </div>
-
-        {/* Center: Color Dots & Dynamic Brush/Eraser Sizes */}
-        <div className="flex items-center gap-2 shrink-0">
-          {activeTool !== 'eraser' ? (
-            <div className="flex items-center gap-1 bg-white border-[2px] border-dark px-1.5 py-0.5 rounded-lg shadow-[1.5px_1.5px_0px_#060E1C]">
-              {PALETTE_COLORS.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setSelectedColor(c)}
-                  style={{ backgroundColor: c }}
-                  className={`h-4 w-4 rounded-full border border-dark transition-all ${
-                    selectedColor === c ? 'scale-125 ring-2 ring-dark shadow-sm' : 'hover:scale-110'
-                  }`}
-                  aria-label={`Select color ${c}`}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-[10px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-300">
-              Ink Eraser Active
-            </div>
-          )}
-
-          {/* Sizes: Adapts to Pen vs. Eraser (S, M, L, XL are huge for Eraser!) */}
-          <div className="flex items-center gap-0.5 border-[2px] border-dark rounded-lg bg-white p-0.5 shadow-[1.5px_1.5px_0px_#060E1C]">
-            {(activeTool === 'eraser' ? ERASER_SIZES : PEN_SIZES).map((b) => {
-              const currentVal = activeTool === 'eraser' ? eraserWidth : brushWidth;
-              return (
-                <button
-                  key={b.value}
-                  onClick={() => {
-                    if (activeTool === 'eraser') {
-                      setEraserWidth(b.value);
-                    } else {
-                      setBrushWidth(b.value);
-                    }
-                  }}
-                  className={`h-5 px-1.5 rounded text-[10px] font-black uppercase transition-all ${
-                    currentVal === b.value ? 'bg-yellow text-dark scale-105' : 'text-dark/60 hover:text-dark'
-                  }`}
-                  title={`${b.label} Size (${b.value}px)`}
-                >
-                  {b.label}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Grid Type (Math / Lined / Blank / Dots) */}
-          <div className="flex items-center gap-0.5 border-[2px] border-dark rounded-lg bg-white p-0.5 shadow-[1.5px_1.5px_0px_#060E1C]">
-            {(['blank', 'math-grid', 'lined', 'dots'] as GridType[]).map((g) => (
-              <button
-                key={g}
-                onClick={() => handleSelectGridStyle(g)}
-                className={`h-5 px-1.5 rounded text-[10px] font-black uppercase ${
-                  gridStyle === g ? 'bg-dark text-white' : 'text-dark/70'
-                }`}
-              >
-                {g === 'math-grid' ? 'Math' : g === 'lined' ? 'Lined' : g === 'dots' ? 'Dots' : 'Blank'}
-              </button>
-            ))}
-          </div>
-
-          {/* Background Colors Palette Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowBgMenu(!showBgMenu)}
-              className="flex items-center gap-1 h-7 px-2 rounded-lg border-[2px] border-dark bg-white hover:bg-slate-50 font-black text-[10px] uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
-              title="Change Whiteboard Background Color (White, Black, Navy, Mild Blue, etc.)"
-            >
-              <Palette className="h-3 w-3 text-dark" />
-              <span className="hidden xl:inline">{BG_CONFIG[bgColor]?.label || 'Color'}</span>
-            </button>
-
-            {showBgMenu && (
-              <div className="absolute top-9 left-0 w-48 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95">
-                <div className="text-[10px] font-black uppercase tracking-wider text-white/50 px-2 py-1 mb-1">
-                  Board Theme
-                </div>
-                <div className="grid grid-cols-1 gap-1">
-                  {(Object.keys(BG_CONFIG) as BgColorType[]).map((key) => {
-                    const conf = BG_CONFIG[key];
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => handleSelectBgColor(key)}
-                        className={`text-left p-1.5 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
-                          bgColor === key ? 'bg-white/20 text-yellow' : 'hover:bg-white/10 text-white'
-                        }`}
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full border border-white/40 shrink-0"
-                          style={{ backgroundColor: conf.hex }}
-                        />
-                        <span>{conf.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right: Stamps & Emojis, Student Lock, Undo/Redo, Snapshot */}
-        <div className="flex items-center gap-1 shrink-0 ml-auto">
           {role === 'tutor' && (
             <button
               onClick={toggleStudentLock}
-              className={`flex items-center gap-1 h-7 px-2 rounded-lg border-[2px] border-dark font-black text-[10px] uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ${
+              className={`flex items-center gap-1 h-6 px-2 rounded-md border-[1.5px] border-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all ${
                 studentPensLocked ? 'bg-rose-400 text-dark' : 'bg-emerald-300 text-dark'
               }`}
               title="Lock student from drawing"
             >
-              {studentPensLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
-              <span className="hidden md:inline">{studentPensLocked ? 'Locked' : 'Open'}</span>
+              {studentPensLocked ? <Lock className="h-2.5 w-2.5" /> : <Unlock className="h-2.5 w-2.5" />}
+              <span>{studentPensLocked ? 'Student Locked' : 'Student Open'}</span>
             </button>
           )}
 
-          {/* Stamps & Emojis Menu */}
-          {role === 'tutor' && (
-            <div className="relative">
-              <button
-                onClick={() => setShowStampsMenu(!showStampsMenu)}
-                className={`flex items-center gap-1 h-7 px-2.5 rounded-lg border-[2px] border-dark font-black text-[10px] uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ${
-                  selectedStamp || selectedEmoji ? 'bg-yellow text-dark animate-pulse' : 'bg-purple-200 hover:bg-purple-300 text-dark'
-                }`}
-                title="Reward Stamps & Emojis"
-              >
-                <Award className="h-3 w-3 text-purple-900" />
-                <span>{selectedEmoji ? `Stamp ${selectedEmoji}` : selectedStamp ? 'Stamp Armed' : 'Stamps & Emojis'}</span>
-              </button>
+          {activeTool === 'eraser' ? (
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-300">
+              <Eraser className="h-3 w-3" /> Ink Eraser ({eraserWidth >= 100 ? 'XL' : eraserWidth >= 54 ? 'L' : 'M'})
+            </span>
+          ) : selectedStamp || selectedEmoji ? (
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-black uppercase text-purple-900 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-300 animate-pulse">
+              <Award className="h-3 w-3" /> Stamp Armed: Tap Board
+            </span>
+          ) : null}
+        </div>
 
-              {showStampsMenu && (
-                <div className="absolute top-9 right-0 w-80 bg-slate-900 border-2 border-white/20 rounded-2xl shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95">
-                  {/* Tabs */}
-                  <div className="flex items-center gap-1 bg-white/10 p-1 rounded-xl mb-2">
-                    <button
-                      onClick={() => setStampTab('stamps')}
-                      className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                        stampTab === 'stamps' ? 'bg-yellow text-dark' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Teacher Stamps
-                    </button>
-                    <button
-                      onClick={() => setStampTab('emojis')}
-                      className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                        stampTab === 'emojis' ? 'bg-yellow text-dark' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      Fun Emojis
-                    </button>
-                  </div>
-
-                  {stampTab === 'stamps' ? (
-                    <div className="max-h-60 overflow-y-auto space-y-1 pr-1">
-                      {STAMP_PRESETS.map((st) => (
-                        <button
-                          key={st.type}
-                          onClick={() => {
-                            setSelectedStamp(st.type);
-                            setSelectedEmoji(null);
-                            setShowStampsMenu(false);
-                          }}
-                          className={`w-full text-left p-1.5 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 ${st.bg} ${st.text}`}
-                        >
-                          <span className="text-sm">{st.emoji}</span>
-                          <span className="truncate">{st.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-6 gap-1 max-h-60 overflow-y-auto p-1">
-                      {EMOJI_PRESETS.map((emoji) => (
-                        <button
-                          key={emoji}
-                          onClick={() => {
-                            setSelectedEmoji(emoji);
-                            setSelectedStamp(null);
-                            setShowStampsMenu(false);
-                          }}
-                          className="h-10 text-xl flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 hover:scale-125 transition-all"
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
+        {/* Right: Undo, Redo, Clear Ink, Save, Full Video */}
+        <div className="flex items-center gap-1">
           <button
             onClick={handleUndo}
-            className="h-7 w-7 rounded-lg border-[2px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
+            className="h-6 w-6 rounded-md border-[1.5px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Undo"
           >
-            <Undo2 className="h-3.5 w-3.5" />
+            <Undo2 className="h-3 w-3" />
           </button>
 
           <button
             onClick={handleRedo}
-            className="h-7 w-7 rounded-lg border-[2px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
+            className="h-6 w-6 rounded-md border-[1.5px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Redo"
           >
-            <Redo2 className="h-3.5 w-3.5" />
+            <Redo2 className="h-3 w-3" />
           </button>
 
           <button
             onClick={handleClear}
-            className="h-7 w-7 rounded-lg border-[2px] border-dark bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
+            className="h-6 w-6 rounded-md border-[1.5px] border-dark bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Clear Ink"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-3 w-3" />
           </button>
 
           <button
             onClick={handleExportPNG}
-            className="flex items-center gap-1 h-7 px-2 rounded-lg border-[2px] border-dark bg-white hover:bg-slate-100 font-black text-[10px] uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
+            className="flex items-center gap-1 h-6 px-2 rounded-md border-[1.5px] border-dark bg-white hover:bg-slate-100 font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Save PNG Snapshot"
           >
-            <Download className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Save</span>
+            <Download className="h-3 w-3" />
+            <span className="hidden md:inline">Save</span>
           </button>
 
           {onReturnToFullVideo && (
             <button
               onClick={onReturnToFullVideo}
-              className="flex items-center gap-1.5 h-7 px-3 rounded-lg border-[2px] border-dark bg-yellow text-dark font-black text-[10px] uppercase shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ml-1"
+              className="flex items-center gap-1 h-6 px-2.5 rounded-md border-[1.5px] border-dark bg-yellow text-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all ml-1"
               title="Return to Full Video View"
             >
-              <Video className="h-3.5 w-3.5" />
+              <Video className="h-3 w-3" />
               <span>Full Video</span>
             </button>
           )}
@@ -1057,6 +992,437 @@ export function CollaborativeWhiteboard({
           Layer 2: Transparent Drawing Ink Canvas (erased cleanly)
           ============================================================ */}
       <div className="flex-1 w-full h-full min-h-0 relative cursor-crosshair overflow-hidden">
+        {/* ============================================================
+            LEFT-SIDE VERTICAL FLOATING DOCK (CLEAN & COLLAPSIBLE)
+            ============================================================ */}
+        <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 p-1.5 bg-white/95 backdrop-blur border-[2.5px] border-dark rounded-2xl shadow-[4px_4px_0px_#060E1C]">
+          {/* Pen */}
+          <button
+            onClick={() => {
+              setActiveTool('pen');
+              setSelectedStamp(null);
+              setSelectedEmoji(null);
+            }}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              activeTool === 'pen' && !selectedStamp && !selectedEmoji
+                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-slate-100 text-dark/70'
+            }`}
+            title="Pen (Draw)"
+          >
+            <Pencil className="h-4 w-4" style={{ color: selectedColor }} />
+          </button>
+
+          {/* Marker / Highlighter */}
+          <button
+            onClick={() => {
+              setActiveTool('highlighter');
+              setSelectedStamp(null);
+              setSelectedEmoji(null);
+            }}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              activeTool === 'highlighter'
+                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-slate-100 text-dark/70'
+            }`}
+            title="Highlighter Marker"
+          >
+            <Highlighter className="h-4 w-4 text-amber-600" />
+          </button>
+
+          {/* Eraser */}
+          <button
+            onClick={() => {
+              setActiveTool('eraser');
+              setSelectedStamp(null);
+              setSelectedEmoji(null);
+            }}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              activeTool === 'eraser'
+                ? 'bg-rose-100 border-dark text-rose-700 shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-slate-100 text-dark/70'
+            }`}
+            title="Eraser (Removes ink cleanly, never harms background artwork!)"
+          >
+            <Eraser className="h-4 w-4 text-rose-600" />
+          </button>
+
+          {/* Inline Text */}
+          <button
+            onClick={() => {
+              setActiveTool('text');
+              setSelectedStamp(null);
+              setSelectedEmoji(null);
+            }}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              activeTool === 'text'
+                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-slate-100 text-dark/70'
+            }`}
+            title="Text Note (Click canvas to type)"
+          >
+            <Type className="h-4 w-4" />
+          </button>
+
+          {/* Shapes Flyout Toggle */}
+          <button
+            onClick={() => setActiveFlyout(activeFlyout === 'shapes' ? 'none' : 'shapes')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              ['rect', 'circle', 'arrow'].includes(activeTool) || activeFlyout === 'shapes'
+                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-slate-100 text-dark/70'
+            }`}
+            title="Geometric Shapes (Rectangle, Circle, Arrow)"
+          >
+            {activeTool === 'circle' ? (
+              <Circle className="h-4 w-4" />
+            ) : activeTool === 'arrow' ? (
+              <ArrowRight className="h-4 w-4" />
+            ) : (
+              <Square className="h-4 w-4" />
+            )}
+          </button>
+
+          {/* Colors & Sizes Flyout Toggle */}
+          <button
+            onClick={() => setActiveFlyout(activeFlyout === 'colors' ? 'none' : 'colors')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              activeFlyout === 'colors'
+                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-slate-100'
+            }`}
+            title="Colors & Stroke Sizes"
+          >
+            <span
+              className="w-4 h-4 rounded-full border-[1.5px] border-dark shadow-sm"
+              style={{ backgroundColor: selectedColor }}
+            />
+          </button>
+
+          <div className="w-full h-[1.5px] bg-dark/15 my-0.5" />
+
+          {/* Themes & Backgrounds Flyout Toggle */}
+          <button
+            onClick={() => setActiveFlyout(activeFlyout === 'themes' ? 'none' : 'themes')}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+              activeFlyout === 'themes'
+                ? 'bg-amber-400 border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                : 'border-transparent hover:bg-amber-50 text-dark/80'
+            }`}
+            title="Board Themes (🧸 Teddy Bear, 🚀 Space, 🌿 Chalkboard, etc.)"
+          >
+            <span className="text-base">{BG_CONFIG[bgColor]?.emoji || '🎨'}</span>
+          </button>
+
+          {/* Stamps & Emojis Flyout Toggle */}
+          {role === 'tutor' && (
+            <button
+              onClick={() => setActiveFlyout(activeFlyout === 'stamps' ? 'none' : 'stamps')}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                selectedStamp || selectedEmoji || activeFlyout === 'stamps'
+                  ? 'bg-purple-300 border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-purple-100 text-purple-900'
+              }`}
+              title="Reward Stamps & Emojis"
+            >
+              <Award className="h-4 w-4 text-purple-900" />
+            </button>
+          )}
+
+          {/* Laser Pointer (Tutor only) */}
+          {role === 'tutor' && (
+            <button
+              onClick={() => {
+                setActiveTool('laser');
+                setSelectedStamp(null);
+                setSelectedEmoji(null);
+              }}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                activeTool === 'laser'
+                  ? 'bg-rose-500 text-white border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100 text-rose-500'
+              }`}
+              title="Laser Pointer"
+            >
+              <Radio className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* ============================================================
+            COLLAPSIBLE FLYOUT DRAWERS (ADJACENT TO DOCK)
+            ============================================================ */}
+
+        {/* 1. Themes & Backgrounds Flyout */}
+        {activeFlyout === 'themes' && (
+          <div className="absolute left-16 top-3 w-80 max-h-[85vh] overflow-y-auto bg-white border-[3px] border-dark rounded-2xl shadow-[6px_6px_0px_#060E1C] p-3.5 z-40 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-2 mb-2.5 border-b-[2px] border-dark/15">
+              <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider text-dark">
+                <Palette className="h-4 w-4 text-amber-500" /> Board Themes
+              </div>
+              <button
+                onClick={() => setActiveFlyout('none')}
+                className="h-6 w-6 rounded-lg bg-slate-100 hover:bg-slate-200 border border-dark flex items-center justify-center text-xs font-black"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-1.5">
+              {(Object.keys(BG_CONFIG) as BgColorType[]).map((key) => {
+                const conf = BG_CONFIG[key];
+                const isSelected = bgColor === key;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      handleSelectBgColor(key);
+                    }}
+                    className={`text-left p-2 rounded-xl border-[2px] transition-all flex items-center justify-between ${
+                      isSelected
+                        ? 'border-dark bg-yellow/30 shadow-[2px_2px_0px_#060E1C] font-black'
+                        : 'border-slate-200 hover:border-dark hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className="w-8 h-8 rounded-lg border-[1.5px] border-dark flex items-center justify-center text-base shadow-xs shrink-0"
+                        style={{ backgroundColor: conf.hex }}
+                      >
+                        {conf.emoji}
+                      </div>
+                      <div>
+                        <div className="text-xs font-black text-dark leading-tight">{conf.label}</div>
+                        <div className="text-[10px] text-dark/60 font-semibold">{conf.description}</div>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <span className="text-[10px] font-black uppercase bg-dark text-white px-1.5 py-0.5 rounded">
+                        Active
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* 2. Colors & Sizes Flyout */}
+        {activeFlyout === 'colors' && (
+          <div className="absolute left-16 top-3 w-64 bg-white border-[3px] border-dark rounded-2xl shadow-[6px_6px_0px_#060E1C] p-3.5 z-40 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-2 mb-2.5 border-b-[2px] border-dark/15">
+              <div className="font-black text-xs uppercase tracking-wider text-dark">
+                {activeTool === 'eraser' ? 'Eraser Sizes' : 'Pen Color & Size'}
+              </div>
+              <button
+                onClick={() => setActiveFlyout('none')}
+                className="h-6 w-6 rounded-lg bg-slate-100 hover:bg-slate-200 border border-dark flex items-center justify-center text-xs font-black"
+              >
+                ✕
+              </button>
+            </div>
+
+            {activeTool !== 'eraser' && (
+              <div className="mb-3">
+                <div className="text-[10px] font-black uppercase text-dark/60 mb-1.5">Color Palette</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {PALETTE_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setSelectedColor(c)}
+                      className={`h-8 rounded-xl border-[2px] border-dark transition-all flex items-center justify-center ${
+                        selectedColor === c ? 'scale-110 ring-2 ring-dark shadow-sm' : 'hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: c }}
+                      title={c}
+                    >
+                      {selectedColor === c && (
+                        <span className={`text-xs ${c === '#FFFFFF' ? 'text-dark font-black' : 'text-white'}`}>✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <div className="text-[10px] font-black uppercase text-dark/60 mb-1.5">
+                {activeTool === 'eraser' ? 'Eraser Size (L & XL Erase Instantly)' : 'Stroke Width'}
+              </div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(activeTool === 'eraser' ? ERASER_SIZES : PEN_SIZES).map((b) => {
+                  const currentVal = activeTool === 'eraser' ? eraserWidth : brushWidth;
+                  const isSelected = currentVal === b.value;
+                  return (
+                    <button
+                      key={b.value}
+                      onClick={() => {
+                        if (activeTool === 'eraser') {
+                          setEraserWidth(b.value);
+                        } else {
+                          setBrushWidth(b.value);
+                        }
+                      }}
+                      className={`py-1.5 rounded-xl border-[2px] border-dark text-xs font-black transition-all ${
+                        isSelected
+                          ? 'bg-yellow text-dark shadow-[1.5px_1.5px_0px_#060E1C]'
+                          : 'bg-white hover:bg-slate-100 text-dark/70'
+                      }`}
+                    >
+                      {b.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 3. Shapes Flyout */}
+        {activeFlyout === 'shapes' && (
+          <div className="absolute left-16 top-16 w-52 bg-white border-[3px] border-dark rounded-2xl shadow-[6px_6px_0px_#060E1C] p-3 z-40 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b-[2px] border-dark/15">
+              <div className="font-black text-xs uppercase tracking-wider text-dark">Draw Shapes</div>
+              <button
+                onClick={() => setActiveFlyout('none')}
+                className="h-5 w-5 rounded bg-slate-100 hover:bg-slate-200 border border-dark flex items-center justify-center text-[10px] font-black"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => {
+                  setActiveTool('rect');
+                  setActiveFlyout('none');
+                }}
+                className={`p-2 rounded-xl text-xs font-black flex items-center gap-2 border-[1.5px] transition-all ${
+                  activeTool === 'rect' ? 'bg-yellow border-dark shadow-xs' : 'border-transparent hover:bg-slate-100'
+                }`}
+              >
+                <Square className="h-4 w-4" /> Rectangle / Box
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTool('circle');
+                  setActiveFlyout('none');
+                }}
+                className={`p-2 rounded-xl text-xs font-black flex items-center gap-2 border-[1.5px] transition-all ${
+                  activeTool === 'circle' ? 'bg-yellow border-dark shadow-xs' : 'border-transparent hover:bg-slate-100'
+                }`}
+              >
+                <Circle className="h-4 w-4" /> Circle / Oval
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTool('arrow');
+                  setActiveFlyout('none');
+                }}
+                className={`p-2 rounded-xl text-xs font-black flex items-center gap-2 border-[1.5px] transition-all ${
+                  activeTool === 'arrow' ? 'bg-yellow border-dark shadow-xs' : 'border-transparent hover:bg-slate-100'
+                }`}
+              >
+                <ArrowRight className="h-4 w-4" /> Direction Arrow
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 4. Stamps & Emojis Flyout */}
+        {activeFlyout === 'stamps' && role === 'tutor' && (
+          <div className="absolute left-16 top-3 w-80 max-h-[85vh] bg-white border-[3px] border-dark rounded-2xl shadow-[6px_6px_0px_#060E1C] p-3.5 z-40 animate-in fade-in zoom-in-95 flex flex-col">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b-[2px] border-dark/15 shrink-0">
+              <div className="flex items-center gap-1.5 font-black text-xs uppercase tracking-wider text-dark">
+                <Award className="h-4 w-4 text-purple-600" /> Reward Stamps
+              </div>
+              <button
+                onClick={() => setActiveFlyout('none')}
+                className="h-6 w-6 rounded-lg bg-slate-100 hover:bg-slate-200 border border-dark flex items-center justify-center text-xs font-black"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Armed banner */}
+            {(selectedStamp || selectedEmoji) && (
+              <div className="mb-2 p-2 bg-purple-100 border-[2px] border-purple-500 rounded-xl text-xs font-black text-purple-900 flex items-center justify-between shrink-0">
+                <span className="flex items-center gap-1.5">
+                  <span className="animate-bounce">{selectedEmoji || '⭐'}</span> Armed: Click canvas to stamp!
+                </span>
+                <button
+                  onClick={() => {
+                    setSelectedStamp(null);
+                    setSelectedEmoji(null);
+                  }}
+                  className="text-[10px] underline uppercase"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* Tabs */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl mb-2 shrink-0 border border-dark/15">
+              <button
+                onClick={() => setStampTab('stamps')}
+                className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
+                  stampTab === 'stamps' ? 'bg-yellow text-dark border border-dark shadow-xs' : 'text-dark/70 hover:text-dark'
+                }`}
+              >
+                Teacher Praise
+              </button>
+              <button
+                onClick={() => setStampTab('emojis')}
+                className={`flex-1 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
+                  stampTab === 'emojis' ? 'bg-yellow text-dark border border-dark shadow-xs' : 'text-dark/70 hover:text-dark'
+                }`}
+              >
+                Fun Emojis
+              </button>
+            </div>
+
+            {/* Tab content */}
+            <div className="flex-1 overflow-y-auto pr-1">
+              {stampTab === 'stamps' ? (
+                <div className="space-y-1.5">
+                  {STAMP_PRESETS.map((st) => (
+                    <button
+                      key={st.type}
+                      onClick={() => {
+                        setSelectedStamp(st.type);
+                        setSelectedEmoji(null);
+                        setActiveFlyout('none');
+                      }}
+                      className={`w-full text-left p-2 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 border-[2px] border-dark shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 ${st.bg} ${st.text}`}
+                    >
+                      <span className="text-base">{st.emoji}</span>
+                      <span className="truncate">{st.label}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-2 p-1">
+                  {EMOJI_PRESETS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        setSelectedEmoji(emoji);
+                        setSelectedStamp(null);
+                        setActiveFlyout('none');
+                      }}
+                      className="h-12 text-2xl flex items-center justify-center rounded-xl bg-slate-50 border-[2px] border-dark hover:bg-yellow hover:scale-110 transition-all shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Layer 1: Background Canvas */}
         <canvas
           ref={bgCanvasRef}

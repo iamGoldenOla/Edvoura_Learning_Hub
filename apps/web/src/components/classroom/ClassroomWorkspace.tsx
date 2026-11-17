@@ -258,19 +258,17 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             enableLobby: false,
             requireDisplayName: false,
             p2p: { enabled: true },
-            // Removed internal 'hangup' button so only Edvoura's branded hangup is used
+            // Clean video conferencing: strip out confusing internal backgrounds and filmstrip modals
+            disableFilmstrip: true,
+            filmStripOnly: false,
+            DISABLE_VIDEO_BACKGROUND: true,
+            SETTINGS_SECTIONS: [],
             toolbarButtons: [
               'microphone',
               'camera',
-              'closedcaptions',
-              'fullscreen',
-              'fodeviceselection',
-              'chat',
-              'raisehand',
-              'videoquality',
-              'filmstrip',
               'tileview',
-              'select-background',
+              'fodeviceselection',
+              'fullscreen',
             ],
           },
           interfaceConfigOverwrite: {
@@ -283,19 +281,47 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             BRAND_WATERMARK_LINK: '',
             GENERATE_ROOMNAMES_ON_WELCOME_PAGE: false,
             DISPLAY_WELCOME_PAGE_CONTENT: false,
-            TOOLBAR_ALWAYS_VISIBLE: true,
+            TOOLBAR_ALWAYS_VISIBLE: false,
             DEFAULT_BACKGROUND: '#060E1C',
+            SETTINGS_SECTIONS: [],
+            FILM_STRIP_MAX_HEIGHT: 0,
+            DISABLE_VIDEO_BACKGROUND: true,
+            ENABLE_FEEDBACK_ANIMATION: false,
           },
         });
 
         jitsiApiRef.current = api;
         setIsJitsiReady(true);
 
+        // Explicitly inject device and camera/mic permissions onto the iframe
+        setTimeout(() => {
+          if (videoMountRef.current) {
+            const iframe = videoMountRef.current.querySelector('iframe');
+            if (iframe) {
+              iframe.setAttribute(
+                'allow',
+                'camera *; microphone *; display-capture *; autoplay *; clipboard-write *; fullscreen *'
+              );
+            }
+          }
+        }, 150);
+
         api.addEventListeners({
           audioMuteStatusChanged: (e: any) => setMicEnabled(!e.muted),
           videoMuteStatusChanged: (e: any) => setCameraEnabled(!e.muted),
           videoConferenceJoined: () => {
             api.executeCommand('setDisplayName', userName);
+            // Ensure camera & mic start active automatically
+            setTimeout(() => {
+              try {
+                api.isAudioMuted().then((muted: boolean) => {
+                  if (muted) api.executeCommand('toggleAudio');
+                }).catch(() => {});
+                api.isVideoMuted().then((muted: boolean) => {
+                  if (muted) api.executeCommand('toggleVideo');
+                }).catch(() => {});
+              } catch (_) {}
+            }, 600);
           },
           videoConferenceLeft: () => {
             try { api.dispose(); } catch (_) {}
