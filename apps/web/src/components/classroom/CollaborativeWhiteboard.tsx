@@ -21,6 +21,9 @@ import {
   Video,
   Smile,
   Palette,
+  ChevronLeft,
+  ChevronRight,
+  Grid,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { STAMP_PRESETS, EMOJI_PRESETS, StampItem } from './BoardStamps';
@@ -202,6 +205,7 @@ export function CollaborativeWhiteboard({
   const [stamps, setStamps] = useState<StampItem[]>([]);
   const [selectedStamp, setSelectedStamp] = useState<string | null>(null);
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(null);
+  const [isDockCollapsed, setIsDockCollapsed] = useState<boolean>(false);
   const [activeFlyout, setActiveFlyout] = useState<'none' | 'colors' | 'shapes' | 'themes' | 'stamps'>('none');
   const [stampTab, setStampTab] = useState<'stamps' | 'emojis'>('stamps');
   const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
@@ -993,126 +997,152 @@ export function CollaborativeWhiteboard({
           ============================================================ */}
       <div className="flex-1 w-full h-full min-h-0 relative cursor-crosshair overflow-hidden">
         {/* ============================================================
-            LEFT-SIDE VERTICAL FLOATING DOCK (CLEAN & COLLAPSIBLE)
+            COLLAPSIBLE LEFT-SIDE TOOL DOCK (EXPAND / TUCK AWAY)
             ============================================================ */}
-        <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 p-1.5 bg-white/95 backdrop-blur border-[2.5px] border-dark rounded-2xl shadow-[4px_4px_0px_#060E1C]">
-          {/* Pen */}
+        {isDockCollapsed ? (
           <button
-            onClick={() => {
-              setActiveTool('pen');
-              setSelectedStamp(null);
-              setSelectedEmoji(null);
-            }}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              activeTool === 'pen' && !selectedStamp && !selectedEmoji
-                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-slate-100 text-dark/70'
-            }`}
-            title="Pen (Draw)"
+            onClick={() => setIsDockCollapsed(false)}
+            className="absolute left-3 top-3 z-30 flex items-center gap-1.5 px-3 py-2 bg-yellow hover:bg-yellow/90 text-dark border-[2.5px] border-dark rounded-2xl shadow-[3px_3px_0px_#060E1C] font-black text-xs transition-all active:scale-95 animate-in fade-in"
+            title="Open Drawing Tools Dock"
           >
-            <Pencil className="h-4 w-4" style={{ color: selectedColor }} />
+            <Pencil className="h-4 w-4" />
+            <span>Tools</span>
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
+        ) : (
+          <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 p-1.5 bg-white/95 backdrop-blur border-[2.5px] border-dark rounded-2xl shadow-[4px_4px_0px_#060E1C] animate-in fade-in">
+            {/* Collapse / Close Button at top of dock */}
+            <button
+              onClick={() => {
+                setIsDockCollapsed(true);
+                setActiveFlyout('none');
+              }}
+              className="w-9 h-6 rounded-lg bg-slate-100 hover:bg-slate-200 text-dark/70 hover:text-dark flex items-center justify-center transition-all border border-dark/15 mb-0.5 group"
+              title="Close / Tuck Tools Dock"
+            >
+              <ChevronLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
 
-          {/* Marker / Highlighter */}
-          <button
-            onClick={() => {
-              setActiveTool('highlighter');
-              setSelectedStamp(null);
-              setSelectedEmoji(null);
-            }}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              activeTool === 'highlighter'
-                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-slate-100 text-dark/70'
-            }`}
-            title="Highlighter Marker"
-          >
-            <Highlighter className="h-4 w-4 text-amber-600" />
-          </button>
+            {/* Pen */}
+            <button
+              onClick={() => {
+                setActiveTool('pen');
+                setSelectedStamp(null);
+                setSelectedEmoji(null);
+              }}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                activeTool === 'pen' && !selectedStamp && !selectedEmoji
+                  ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100 text-dark/70'
+              }`}
+              title="Pen (Draw)"
+            >
+              <Pencil className="h-4 w-4" style={{ color: selectedColor }} />
+            </button>
 
-          {/* Eraser */}
-          <button
-            onClick={() => {
-              setActiveTool('eraser');
-              setSelectedStamp(null);
-              setSelectedEmoji(null);
-            }}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              activeTool === 'eraser'
-                ? 'bg-rose-100 border-dark text-rose-700 shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-slate-100 text-dark/70'
-            }`}
-            title="Eraser (Removes ink cleanly, never harms background artwork!)"
-          >
-            <Eraser className="h-4 w-4 text-rose-600" />
-          </button>
+            {/* Marker / Highlighter */}
+            <button
+              onClick={() => {
+                setActiveTool('highlighter');
+                setSelectedStamp(null);
+                setSelectedEmoji(null);
+              }}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                activeTool === 'highlighter'
+                  ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100 text-dark/70'
+              }`}
+              title="Highlighter Marker"
+            >
+              <Highlighter className="h-4 w-4 text-amber-600" />
+            </button>
 
-          {/* Inline Text */}
-          <button
-            onClick={() => {
-              setActiveTool('text');
-              setSelectedStamp(null);
-              setSelectedEmoji(null);
-            }}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              activeTool === 'text'
-                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-slate-100 text-dark/70'
-            }`}
-            title="Text Note (Click canvas to type)"
-          >
-            <Type className="h-4 w-4" />
-          </button>
+            {/* Eraser */}
+            <button
+              onClick={() => {
+                setActiveTool('eraser');
+                setSelectedStamp(null);
+                setSelectedEmoji(null);
+              }}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                activeTool === 'eraser'
+                  ? 'bg-rose-100 border-dark text-rose-700 shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100 text-dark/70'
+              }`}
+              title="Eraser (Removes ink cleanly, never harms background artwork!)"
+            >
+              <Eraser className="h-4 w-4 text-rose-600" />
+            </button>
 
-          {/* Shapes Flyout Toggle */}
-          <button
-            onClick={() => setActiveFlyout(activeFlyout === 'shapes' ? 'none' : 'shapes')}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              ['rect', 'circle', 'arrow'].includes(activeTool) || activeFlyout === 'shapes'
-                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-slate-100 text-dark/70'
-            }`}
-            title="Geometric Shapes (Rectangle, Circle, Arrow)"
-          >
-            {activeTool === 'circle' ? (
-              <Circle className="h-4 w-4" />
-            ) : activeTool === 'arrow' ? (
-              <ArrowRight className="h-4 w-4" />
-            ) : (
-              <Square className="h-4 w-4" />
-            )}
-          </button>
+            {/* Inline Text */}
+            <button
+              onClick={() => {
+                setActiveTool('text');
+                setSelectedStamp(null);
+                setSelectedEmoji(null);
+              }}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                activeTool === 'text'
+                  ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100 text-dark/70'
+              }`}
+              title="Text Note (Click canvas to type)"
+            >
+              <Type className="h-4 w-4" />
+            </button>
 
-          {/* Colors & Sizes Flyout Toggle */}
-          <button
-            onClick={() => setActiveFlyout(activeFlyout === 'colors' ? 'none' : 'colors')}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              activeFlyout === 'colors'
-                ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-slate-100'
-            }`}
-            title="Colors & Stroke Sizes"
-          >
-            <span
-              className="w-4 h-4 rounded-full border-[1.5px] border-dark shadow-sm"
-              style={{ backgroundColor: selectedColor }}
-            />
-          </button>
+            {/* Shapes Flyout Toggle */}
+            <button
+              onClick={() => setActiveFlyout(activeFlyout === 'shapes' ? 'none' : 'shapes')}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                ['rect', 'circle', 'arrow'].includes(activeTool) || activeFlyout === 'shapes'
+                  ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100 text-dark/70'
+              }`}
+              title="Geometric Shapes (Rectangle, Circle, Arrow)"
+            >
+              {activeTool === 'circle' ? (
+                <Circle className="h-4 w-4" />
+              ) : activeTool === 'arrow' ? (
+                <ArrowRight className="h-4 w-4" />
+              ) : (
+                <Square className="h-4 w-4" />
+              )}
+            </button>
 
-          <div className="w-full h-[1.5px] bg-dark/15 my-0.5" />
+            {/* Colors & Sizes Flyout Toggle */}
+            <button
+              onClick={() => setActiveFlyout(activeFlyout === 'colors' ? 'none' : 'colors')}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
+                activeFlyout === 'colors'
+                  ? 'bg-yellow border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-slate-100'
+              }`}
+              title="Colors & Stroke Sizes"
+            >
+              <span
+                className="w-4 h-4 rounded-full border-[1.5px] border-dark shadow-sm"
+                style={{ backgroundColor: selectedColor }}
+              />
+            </button>
 
-          {/* Themes & Backgrounds Flyout Toggle */}
-          <button
-            onClick={() => setActiveFlyout(activeFlyout === 'themes' ? 'none' : 'themes')}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all ${
-              activeFlyout === 'themes'
-                ? 'bg-amber-400 border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
-                : 'border-transparent hover:bg-amber-50 text-dark/80'
-            }`}
-            title="Board Themes (🧸 Teddy Bear, 🚀 Space, 🌿 Chalkboard, etc.)"
-          >
-            <span className="text-base">{BG_CONFIG[bgColor]?.emoji || '🎨'}</span>
-          </button>
+            <div className="w-full h-[1.5px] bg-dark/15 my-0.5" />
+
+            {/* Themes & Backgrounds Flyout Toggle (Crystal clear Palette & BG Badge) */}
+            <button
+              onClick={() => setActiveFlyout(activeFlyout === 'themes' ? 'none' : 'themes')}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center border-[2px] transition-all relative ${
+                activeFlyout === 'themes'
+                  ? 'bg-amber-400 border-dark shadow-[1.5px_1.5px_0px_#060E1C] scale-105'
+                  : 'border-transparent hover:bg-amber-100 text-amber-900 bg-amber-50'
+              }`}
+              title="Classroom Themes & Backgrounds (Teddy Bear, Space, Chalk Green, Notebook, etc.)"
+            >
+              <Palette className="h-4 w-4 text-amber-700" />
+              <span className="text-[8px] font-black uppercase text-amber-950 absolute -bottom-1 -right-1 bg-yellow px-1 rounded-full border border-dark leading-none py-0.5">
+                BG
+              </span>
+            </button>
 
           {/* Stamps & Emojis Flyout Toggle */}
           {role === 'tutor' && (
@@ -1148,6 +1178,7 @@ export function CollaborativeWhiteboard({
             </button>
           )}
         </div>
+        )}
 
         {/* ============================================================
             COLLAPSIBLE FLYOUT DRAWERS (ADJACENT TO DOCK)
@@ -1205,6 +1236,28 @@ export function CollaborativeWhiteboard({
                   </button>
                 );
               })}
+            </div>
+
+            {/* Grid & Paper Styles Selector */}
+            <div className="mt-3 pt-2.5 border-t border-dark/15">
+              <div className="text-[10px] font-black uppercase text-dark/70 mb-1.5 flex items-center gap-1">
+                <Grid className="h-3 w-3" /> Grid & Paper Guide
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                {(['blank', 'math-grid', 'lined', 'dots'] as GridType[]).map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => handleSelectGridStyle(g)}
+                    className={`py-1.5 rounded-lg border-[1.5px] border-dark text-[10px] font-black uppercase transition-all ${
+                      gridStyle === g
+                        ? 'bg-dark text-white shadow-xs'
+                        : 'bg-white hover:bg-slate-100 text-dark/70'
+                    }`}
+                  >
+                    {g === 'math-grid' ? 'Math' : g === 'lined' ? 'Lined' : g === 'dots' ? 'Dots' : 'Blank'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

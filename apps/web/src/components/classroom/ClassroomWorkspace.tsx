@@ -26,6 +26,8 @@ import {
   CheckCircle2,
   Home,
   RotateCcw,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -267,6 +269,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               'microphone',
               'camera',
               'tileview',
+              'chat',
               'fodeviceselection',
               'fullscreen',
             ],
@@ -828,13 +831,28 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               {presentationMode === 'desks' && (
                 <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
               )}
+
+              {/* Floating Arrow Tab to slide Video back out when tucked in */}
+              {isVideoCollapsed && (
+                <button
+                  onClick={() => setIsVideoCollapsed(false)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-1 py-3 px-1.5 bg-slate-900/95 hover:bg-slate-900 text-white border-y-[2.5px] border-l-[2.5px] border-dark rounded-l-2xl shadow-[-4px_4px_0px_#060E1C] font-black text-xs transition-all active:scale-95 group cursor-pointer"
+                  title="Slide open video & polls sidebar"
+                >
+                  <ChevronLeft className="w-4 h-4 text-yellow group-hover:-translate-x-0.5 transition-transform" />
+                  <span className="[writing-mode:vertical-rl] rotate-180 text-[10px] tracking-wider uppercase font-black py-1 text-slate-200">
+                    Video & Polls
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                </button>
+              )}
             </div>
           </div>
         )}
 
         {/* ==========================================================
             STAGE 2: PARTICIPANTS LIVE VIDEO FRAME
-            - When presenting: Shrinks into small right frame (Collapsible with 1-click!)
+            - When presenting: Shrinks into compact right frame (Collapsible with 1-click arrow!)
             - When NOT presenting: Fills 100% of the stage!
             - PERSISTENT DOM MOUNT: WebRTC call never disconnects!
             ========================================================== */}
@@ -843,26 +861,37 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             presentationMode !== 'none'
               ? isVideoCollapsed
                 ? 'w-0 overflow-hidden border-none shrink-0'
-                : 'w-[240px] sm:w-[280px] xl:w-[320px] border-l-[3px] border-dark shrink-0 z-20'
+                : 'w-[220px] sm:w-[250px] xl:w-[275px] border-l-[3px] border-dark shrink-0 z-20'
               : 'flex-1 min-w-0'
           }`}
         >
+          {/* Left-edge Tuck-In Arrow Toggle on the divider border */}
+          {presentationMode !== 'none' && !isVideoCollapsed && (
+            <button
+              onClick={() => setIsVideoCollapsed(true)}
+              className="absolute -left-3.5 top-1/2 -translate-y-1/2 z-40 w-7 h-12 bg-slate-900 text-yellow border-[2px] border-dark rounded-l-xl shadow-[-2px_2px_0px_#060E1C] flex items-center justify-center transition-all hover:bg-slate-800 active:scale-95 group cursor-pointer"
+              title="Tuck video in to give whiteboard full width"
+            >
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          )}
+
           {/* Header Strip when shrunk with Collapse Button */}
           {presentationMode !== 'none' && !isVideoCollapsed && (
-            <div className="h-10 px-3 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
+            <div className="h-9 px-3 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-white/80">Live Video</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-white/90">Live Video</span>
               </div>
 
-              {/* Collapse/Hide Button */}
+              {/* Collapse/Tuck-In Button */}
               <button
                 onClick={() => setIsVideoCollapsed(true)}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white/80 hover:text-white text-[10px] font-black uppercase transition-all"
-                title="Collapse video panel to maximize whiteboard"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white/90 hover:text-white text-[10px] font-black uppercase transition-all"
+                title="Tuck video in to maximize whiteboard"
               >
-                <EyeOff className="w-3 h-3" />
-                <span>Hide</span>
+                <ChevronRight className="w-3 h-3 text-yellow" />
+                <span>Tuck In</span>
               </button>
             </div>
           )}
