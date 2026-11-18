@@ -32,7 +32,7 @@ import {
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? 'meta-llama/llama-3.1-70b-instruct';
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-flash-latest';
+const GEMINI_MODEL = process.env.GEMINI_MODEL ?? 'gemini-flash-lite-latest';
 const MAX_RETRIES = 3;
 const OPENROUTER_MODEL_CANDIDATES = [
   DEFAULT_MODEL,

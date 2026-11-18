@@ -30,9 +30,13 @@ import {
   Layers,
   Send,
   Loader,
+  ChevronLeft,
   ChevronRight,
   Plus,
   Info,
+  CheckCircle2,
+  GraduationCap,
+  HelpCircle,
 } from 'lucide-react';
 
 export type VRModuleId =
@@ -83,11 +87,36 @@ export interface AI3DPartSpec {
   animate?: 'none' | 'spinY' | 'spinZ' | 'spinX' | 'bob' | 'pulse';
 }
 
+export interface AI3DVisualSpec {
+  icon: string;
+  label: string;
+  category?: string;
+  bgColor?: string;
+}
+
+export interface AI3DStationTypeSpec {
+  name: string;
+  detail: string;
+}
+
+export interface AI3DQuizSpec {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+}
+
 export interface AI3DStationSpec {
   title: string;
   subtitle: string;
+  definition?: string;
+  types?: AI3DStationTypeSpec[];
+  examples?: string[];
   example?: string;
+  visuals?: AI3DVisualSpec[];
+  teacherScript?: string;
   narration?: string;
+  quiz?: AI3DQuizSpec;
   color?: string;
   position?: [number, number, number];
 }
@@ -97,6 +126,7 @@ export interface AI3DBlueprintSpec {
   category: string;
   sceneType?: 'object' | 'concept-gallery';
   description: string;
+  teacherIntro?: string;
   narration: string;
   facts: { label: string; value: string }[];
   parts: AI3DPartSpec[];
@@ -317,6 +347,12 @@ export function VRLabExplorer({
   const [aiBlueprint, setAiBlueprint] = useState<AI3DBlueprintSpec | null>(null);
   const [activeStationIdx, setActiveStationIdx] = useState<number>(0);
   const [aiGenError, setAiGenError] = useState<string | null>(null);
+  const [isTeacherTourActive, setIsTeacherTourActive] = useState<boolean>(false);
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
+  const [aiBoardView, setAiBoardView] = useState<'sidebar' | 'wide'>('sidebar');
+  const teacherTourTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const teacherTourActiveRef = useRef<boolean>(false);
+  teacherTourActiveRef.current = isTeacherTourActive;
 
   // Manim Motion Controls
   const [netUnfoldAmount, setNetUnfoldAmount] = useState<number>(0); // 0 = 3D folded, 1 = 2D flat net
@@ -351,6 +387,7 @@ export function VRLabExplorer({
     explodeAmount,
     gazeReticleEnabled,
     isWebXRPresenting,
+    activeStationIdx,
   });
   liveParamsRef.current = {
     activeModule,
@@ -362,6 +399,7 @@ export function VRLabExplorer({
     explodeAmount,
     gazeReticleEnabled,
     isWebXRPresenting,
+    activeStationIdx,
   };
 
   // Three.js References
@@ -378,6 +416,9 @@ export function VRLabExplorer({
       rotX: number;
       rotY: number;
       zoom: number;
+      targetRotX?: number | null;
+      targetRotY?: number | null;
+      targetZoom?: number | null;
     };
     orbitMeshes: any[];
     heartMesh: any;
@@ -431,6 +472,10 @@ export function VRLabExplorer({
           setAiBlueprint(payload.aiBlueprint);
           setCustomAiModelTitle(payload.aiBlueprint.title || 'AI 3D Model');
           setCustomAiDescription(payload.aiBlueprint.description || '');
+          setQuizAnswers({});
+        }
+        if (typeof payload.activeStationIdx === 'number') {
+          setActiveStationIdx(payload.activeStationIdx);
         }
       })
       .subscribe();
@@ -540,42 +585,129 @@ export function VRLabExplorer({
     } catch (_) {}
   }, []);
 
-  // Web Speech Synthesis
+  // Web Speech Synthesis (supports optional onComplete for Guided Teacher Tour)
   const speakNarration = useCallback(
-    (text: string) => {
-      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    (text: string, onComplete?: () => void) => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) {
+        if (onComplete) setTimeout(onComplete, 4500);
+        return;
+      }
 
       window.speechSynthesis.cancel();
       setAudioFeedbackText(text);
 
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = speechSpeed;
-      utterance.pitch = 1.08;
+      utterance.pitch = 1.06;
 
       const voices = window.speechSynthesis.getVoices();
-      const naturalVoice = voices.find(
-        (v) =>
-          v.lang.startsWith('en') &&
-          (/natural|google|samantha|libby|karen|female|victoria/i.test(v.name) || v.localService)
-      ) || voices.find((v) => v.lang.startsWith('en'));
+      const naturalVoice =
+        voices.find(
+          (v) =>
+            v.lang.startsWith('en') &&
+            (/natural|google|samantha|libby|karen|female|victoria/i.test(v.name) || v.localService)
+        ) || voices.find((v) => v.lang.startsWith('en'));
 
       if (naturalVoice) utterance.voice = naturalVoice;
 
       utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        if (onComplete) onComplete();
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+      };
 
       window.speechSynthesis.speak(utterance);
     },
     [speechSpeed]
   );
 
-  const stopNarration = () => {
+  const stopTeacherTour = useCallback(() => {
+    setIsTeacherTourActive(false);
+    teacherTourActiveRef.current = false;
+    if (teacherTourTimerRef.current) {
+      clearTimeout(teacherTourTimerRef.current);
+      teacherTourTimerRef.current = null;
+    }
+  }, []);
+
+  const stopNarration = useCallback(() => {
+    stopTeacherTour();
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     setIsSpeaking(false);
-  };
+  }, [stopTeacherTour]);
+
+  // Smoothly swing 3D VR camera right in front of a specific AI Learning Poster Station
+  const focusAIStation = useCallback(
+    (idx: number, opts?: { speak?: boolean; broadcast?: boolean; onDone?: () => void }) => {
+      const stations = aiBlueprint?.stations;
+      if (!stations || stations.length === 0) return;
+      const safeIdx = ((idx % stations.length) + stations.length) % stations.length;
+      const st = stations[safeIdx];
+      setActiveStationIdx(safeIdx);
+      setShowInfoCard(true);
+
+      const state = threeStateRef.current;
+      if (state) {
+        const isGallery =
+          aiBlueprint?.sceneType === 'concept-gallery' || stations.length >= 3;
+        const targetAngle = (safeIdx / stations.length) * Math.PI * 2;
+        state.controls.targetRotY = targetAngle;
+        state.controls.targetRotX = isGallery ? 0.08 : 0.16;
+        state.controls.targetZoom = isGallery ? 14.2 : 13.5;
+      }
+
+      if (opts?.broadcast !== false) {
+        broadcastVRState({ activeStationIdx: safeIdx });
+      }
+
+      if (opts?.speak !== false && st) {
+        const script =
+          st.teacherScript ||
+          st.narration ||
+          `${st.title}. ${st.definition || st.subtitle}. ${st.examples?.[0] || st.example || ''}`;
+        speakNarration(script, opts?.onDone);
+      }
+    },
+    [aiBlueprint, broadcastVRState, speakNarration]
+  );
+
+  // Automated Guided AI Teacher Tour: teaches every station sequentially like a live teacher!
+  const startTeacherTour = useCallback(() => {
+    const stations = aiBlueprint?.stations;
+    if (!stations || stations.length === 0) return;
+    stopTeacherTour();
+    setIsTeacherTourActive(true);
+    teacherTourActiveRef.current = true;
+    playSynthesizedSound('chime');
+
+    const teachStep = (stepIdx: number) => {
+      if (!teacherTourActiveRef.current) return;
+      if (stepIdx >= stations.length) {
+        stopTeacherTour();
+        speakNarration(
+          `Wonderful job! You just completed the entire ${aiBlueprint?.title || 'VR'} lesson. Try tapping any station quiz to test what you learned!`
+        );
+        return;
+      }
+      focusAIStation(stepIdx, {
+        speak: true,
+        broadcast: true,
+        onDone: () => {
+          if (!teacherTourActiveRef.current) return;
+          teacherTourTimerRef.current = setTimeout(() => {
+            teachStep(stepIdx + 1);
+          }, 1400);
+        },
+      });
+    };
+
+    teachStep(0);
+  }, [aiBlueprint, focusAIStation, playSynthesizedSound, speakNarration, stopTeacherTour]);
 
   // Launch Native WebXR Session on VR Headsets, OR seamlessly enter Browser Immersive VR Mode on Laptops/Tablets
   const launchNativeWebXR = async () => {
@@ -1441,170 +1573,348 @@ export function VRLabExplorer({
       state.vaultMesh = pyrGroup;
     }
 
-    // 9. UNIVERSAL AI 3D BLUEPRINT COMPOSER (Generates ANY topic dynamically from Gemini/OpenRouter!)
+    // 9. UNIVERSAL AI VR CLASSROOM & 3D BLUEPRINT COMPOSER
     else if (activeModule === 'ai-custom') {
-      camera.position.set(0, 4, 14);
+      camera.position.set(0, 1.5, 14.2);
       camera.lookAt(0, 0, 0);
 
       const customGroup = new THREE.Group();
       const std = (color: number, roughness = 0.35) =>
         new THREE.MeshStandardMaterial({ color, roughness, clippingPlanes: [clippingPlane] });
 
-      if (aiBlueprint && Array.isArray(aiBlueprint.parts) && aiBlueprint.parts.length > 0) {
-        const makeGeo = (part: AI3DPartSpec) => {
-          const a = Array.isArray(part.args) ? part.args.map((n) => (Number.isFinite(n) ? n : 1)) : [1, 1, 1];
-          switch (part.geometry) {
-            case 'box':
-              return new THREE.BoxGeometry(a[0] || 1, a[1] || 1, a[2] || 1);
-            case 'sphere':
-              return new THREE.SphereGeometry(Math.max(0.05, a[0] || 1), Math.min(32, a[1] || 24), Math.min(32, a[2] || 24));
-            case 'cylinder':
-              return new THREE.CylinderGeometry(
-                Math.max(0, a[0] ?? 0.5),
-                Math.max(0, a[1] ?? 0.5),
-                Math.max(0.05, a[2] || 1),
-                Math.min(32, a[3] || 20)
-              );
-            case 'cone':
-              return new THREE.ConeGeometry(Math.max(0.05, a[0] || 1), Math.max(0.05, a[1] || 2), Math.min(32, a[2] || 20));
-            case 'torus':
-              return new THREE.TorusGeometry(
-                Math.max(0.1, a[0] || 1.5),
-                Math.max(0.03, a[1] || 0.3),
-                Math.min(24, a[2] || 16),
-                Math.min(48, a[3] || 32)
-              );
-            case 'octahedron':
-              return new THREE.OctahedronGeometry(Math.max(0.1, a[0] || 1.5), 0);
-            case 'dodecahedron':
-              return new THREE.DodecahedronGeometry(Math.max(0.1, a[0] || 1.5), 0);
-            case 'ring':
-              return new THREE.RingGeometry(Math.max(0.05, a[0] || 0.8), Math.max(0.2, a[1] || 1.5), 24);
-            case 'plane':
-              return new THREE.PlaneGeometry(Math.max(0.1, a[0] || 2), Math.max(0.1, a[1] || 2));
-            default:
-              return new THREE.BoxGeometry(1, 1, 1);
-          }
-        };
+      if (aiBlueprint) {
+        const stations = Array.isArray(aiBlueprint.stations) ? aiBlueprint.stations : [];
+        const isGallery =
+          aiBlueprint.sceneType === 'concept-gallery' ||
+          (aiBlueprint.sceneType !== 'object' && stations.length >= 2);
+        customGroup.userData = { isConceptGallery: isGallery };
 
-        aiBlueprint.parts.forEach((part) => {
-          try {
-            const geo = makeGeo(part);
-            const opacity = typeof part.opacity === 'number' ? Math.max(0.15, Math.min(1, part.opacity)) : 1;
-            const mat = new THREE.MeshStandardMaterial({
-              color: new THREE.Color(part.color || '#3b82f6'),
-              emissive: part.emissive ? new THREE.Color(part.emissive) : new THREE.Color(0x000000),
-              emissiveIntensity: part.emissive ? 0.45 : 0,
-              roughness: typeof part.roughness === 'number' ? part.roughness : 0.4,
-              metalness: typeof part.metalness === 'number' ? part.metalness : 0.15,
-              transparent: opacity < 0.99,
-              opacity,
-              side: THREE.DoubleSide,
+        if (isGallery) {
+          // Sleek Edvoura Holographic VR Classroom Floor Stage (NEVER blocky robots!)
+          const stageBase = new THREE.Mesh(
+            new THREE.CylinderGeometry(3.2, 3.6, 0.22, 48),
+            new THREE.MeshStandardMaterial({
+              color: 0x0f172a,
+              emissive: 0x1e3a8a,
+              emissiveIntensity: 0.45,
+              roughness: 0.25,
+              metalness: 0.6,
               clippingPlanes: [clippingPlane],
-            });
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.name = part.name || 'AI Part';
-            const pos = Array.isArray(part.position) ? part.position : [0, 0, 0];
-            const rot = Array.isArray(part.rotation) ? part.rotation : [0, 0, 0];
-            mesh.position.set(pos[0] || 0, pos[1] || 0, pos[2] || 0);
-            mesh.rotation.set(rot[0] || 0, rot[1] || 0, rot[2] || 0);
-            if (Array.isArray(part.scale)) {
-              mesh.scale.set(part.scale[0] || 1, part.scale[1] || 1, part.scale[2] || 1);
-            }
-            if (part.wireframeEdges) {
-              const edges = new THREE.EdgesGeometry(geo);
-              mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 })));
-            }
-            mesh.userData = {
-              aiAnimate: part.animate || 'none',
-              baseY: pos[1] || 0,
-              baseScale: mesh.scale.clone(),
-            };
-            customGroup.add(mesh);
-          } catch (_) {}
-        });
+            })
+          );
+          stageBase.position.set(0, -2.55, 0);
+          customGroup.add(stageBase);
 
-        // Auto-center and normalize physical parts bounding box
-        const bbox = new THREE.Box3().setFromObject(customGroup);
-        const isGallery = aiBlueprint.sceneType === 'concept-gallery' || (aiBlueprint.stations && aiBlueprint.stations.length >= 4);
-        const targetSpan = isGallery ? 3.8 : 6.2;
-        if (!bbox.isEmpty()) {
-          const center = bbox.getCenter(new THREE.Vector3());
-          const size = bbox.getSize(new THREE.Vector3());
-          const maxDim = Math.max(size.x, size.y, size.z, 1);
-          const normScale = targetSpan / maxDim;
-          customGroup.children.forEach((ch: any) => {
-            ch.position.sub(center);
-            ch.position.multiplyScalar(normScale);
-            ch.scale.multiplyScalar(normScale);
-            if (ch.userData) {
-              ch.userData.baseY = ch.position.y;
-              ch.userData.baseScale = ch.scale.clone();
+          const outerGlowRing = new THREE.Mesh(
+            new THREE.TorusGeometry(3.7, 0.07, 16, 64),
+            new THREE.MeshBasicMaterial({ color: 0xfacc15, clippingPlanes: [clippingPlane] })
+          );
+          outerGlowRing.position.set(0, -2.4, 0);
+          outerGlowRing.rotation.x = Math.PI / 2;
+          outerGlowRing.userData = { aiAnimate: 'spinZ' };
+          customGroup.add(outerGlowRing);
+
+          const innerGlowRing = new THREE.Mesh(
+            new THREE.TorusGeometry(2.3, 0.05, 16, 48),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8, clippingPlanes: [clippingPlane] })
+          );
+          innerGlowRing.position.set(0, -2.35, 0);
+          innerGlowRing.rotation.x = Math.PI / 2;
+          innerGlowRing.userData = { aiAnimate: 'spinZ' };
+          customGroup.add(innerGlowRing);
+        } else if (Array.isArray(aiBlueprint.parts) && aiBlueprint.parts.length > 0) {
+          const makeGeo = (part: AI3DPartSpec) => {
+            const a = Array.isArray(part.args) ? part.args.map((n) => (Number.isFinite(n) ? n : 1)) : [1, 1, 1];
+            switch (part.geometry) {
+              case 'box':
+                return new THREE.BoxGeometry(a[0] || 1, a[1] || 1, a[2] || 1);
+              case 'sphere':
+                return new THREE.SphereGeometry(Math.max(0.05, a[0] || 1), Math.min(32, a[1] || 24), Math.min(32, a[2] || 24));
+              case 'cylinder':
+                return new THREE.CylinderGeometry(
+                  Math.max(0, a[0] ?? 0.5),
+                  Math.max(0, a[1] ?? 0.5),
+                  Math.max(0.05, a[2] || 1),
+                  Math.min(32, a[3] || 20)
+                );
+              case 'cone':
+                return new THREE.ConeGeometry(Math.max(0.05, a[0] || 1), Math.max(0.05, a[1] || 2), Math.min(32, a[2] || 20));
+              case 'torus':
+                return new THREE.TorusGeometry(
+                  Math.max(0.1, a[0] || 1.5),
+                  Math.max(0.03, a[1] || 0.3),
+                  Math.min(24, a[2] || 16),
+                  Math.min(48, a[3] || 32)
+                );
+              case 'octahedron':
+                return new THREE.OctahedronGeometry(Math.max(0.1, a[0] || 1.5), 0);
+              case 'dodecahedron':
+                return new THREE.DodecahedronGeometry(Math.max(0.1, a[0] || 1.5), 0);
+              case 'ring':
+                return new THREE.RingGeometry(Math.max(0.05, a[0] || 0.8), Math.max(0.2, a[1] || 1.5), 24);
+              case 'plane':
+                return new THREE.PlaneGeometry(Math.max(0.1, a[0] || 2), Math.max(0.1, a[1] || 2));
+              default:
+                return new THREE.BoxGeometry(1, 1, 1);
             }
+          };
+
+          aiBlueprint.parts.forEach((part) => {
+            try {
+              const geo = makeGeo(part);
+              const opacity = typeof part.opacity === 'number' ? Math.max(0.15, Math.min(1, part.opacity)) : 1;
+              const mat = new THREE.MeshStandardMaterial({
+                color: new THREE.Color(part.color || '#3b82f6'),
+                emissive: part.emissive ? new THREE.Color(part.emissive) : new THREE.Color(0x000000),
+                emissiveIntensity: part.emissive ? 0.45 : 0,
+                roughness: typeof part.roughness === 'number' ? part.roughness : 0.4,
+                metalness: typeof part.metalness === 'number' ? part.metalness : 0.15,
+                transparent: opacity < 0.99,
+                opacity,
+                side: THREE.DoubleSide,
+                clippingPlanes: [clippingPlane],
+              });
+              const mesh = new THREE.Mesh(geo, mat);
+              mesh.name = part.name || 'AI Part';
+              const pos = Array.isArray(part.position) ? part.position : [0, 0, 0];
+              const rot = Array.isArray(part.rotation) ? part.rotation : [0, 0, 0];
+              mesh.position.set(pos[0] || 0, pos[1] || 0, pos[2] || 0);
+              mesh.rotation.set(rot[0] || 0, rot[1] || 0, rot[2] || 0);
+              if (Array.isArray(part.scale)) {
+                mesh.scale.set(part.scale[0] || 1, part.scale[1] || 1, part.scale[2] || 1);
+              }
+              if (part.wireframeEdges) {
+                const edges = new THREE.EdgesGeometry(geo);
+                mesh.add(new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 })));
+              }
+              mesh.userData = {
+                aiAnimate: part.animate || 'none',
+                baseY: pos[1] || 0,
+                baseScale: mesh.scale.clone(),
+              };
+              customGroup.add(mesh);
+            } catch (_) {}
           });
+
+          // Auto-center and normalize physical object bounding box
+          const bbox = new THREE.Box3().setFromObject(customGroup);
+          if (!bbox.isEmpty()) {
+            const center = bbox.getCenter(new THREE.Vector3());
+            const size = bbox.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z, 1);
+            const normScale = 5.8 / maxDim;
+            customGroup.children.forEach((ch: any) => {
+              ch.position.sub(center);
+              ch.position.multiplyScalar(normScale);
+              ch.scale.multiplyScalar(normScale);
+              if (ch.userData) {
+                ch.userData.baseY = ch.position.y;
+                ch.userData.baseScale = ch.scale.clone();
+              }
+            });
+          }
         }
 
-        // Render interactive 3D Holographic Learning Station Cards (Parts of Speech, Water Cycle, Callouts, etc.)
-        if (Array.isArray(aiBlueprint.stations) && aiBlueprint.stations.length > 0) {
-          const stations = aiBlueprint.stations;
-          const ringRadius = isGallery ? 6.2 : 5.2;
-          state.controls.zoom = isGallery ? 17.5 : 14.5;
-          state.controls.rotX = 0.22;
+        // Render GIANT 1024x640 HD Illustrated VR Classroom Poster Boards (with pictures, definition, types, examples!)
+        if (stations.length > 0) {
+          const ringRadius = isGallery ? (stations.length >= 6 ? 8.2 : 6.4) : 6.2;
+          state.controls.zoom = isGallery ? 14.4 : 13.8;
+          state.controls.rotX = isGallery ? 0.08 : 0.2;
+          state.controls.rotY = 0;
+          state.controls.targetRotY = 0;
+          state.controls.targetRotX = isGallery ? 0.08 : 0.2;
+          state.controls.targetZoom = isGallery ? 14.4 : 13.8;
 
-          const makeCardTexture = (st: AI3DStationSpec, index: number) => {
+          const drawRoundedRect = (
+            ctx: CanvasRenderingContext2D,
+            x: number,
+            y: number,
+            w: number,
+            h: number,
+            r: number
+          ) => {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+          };
+
+          const makeIllustratedPosterTexture = (st: AI3DStationSpec, index: number) => {
             const cnv = document.createElement('canvas');
-            cnv.width = 512;
-            cnv.height = 290;
+            cnv.width = 1024;
+            cnv.height = 640;
             const ctx = cnv.getContext('2d');
             if (!ctx) return null;
 
             const accent = st.color || '#facc15';
-            // Dark card background with crisp colored border
-            ctx.fillStyle = '#0b132b';
-            ctx.fillRect(0, 0, 512, 290);
+
+            // Rich chalkboard-slate backdrop
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, 640);
+            bgGrad.addColorStop(0, '#0f172a');
+            bgGrad.addColorStop(1, '#060e1c');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, 1024, 640);
+
+            // Outer neon border
             ctx.strokeStyle = accent;
-            ctx.lineWidth = 10;
-            ctx.strokeRect(5, 5, 502, 280);
+            ctx.lineWidth = 14;
+            drawRoundedRect(ctx, 10, 10, 1004, 620, 28);
+            ctx.stroke();
 
-            // Top colored header strip
+            // Top vibrant header bar
             ctx.fillStyle = accent;
-            ctx.fillRect(10, 10, 492, 62);
+            drawRoundedRect(ctx, 22, 22, 980, 82, 18);
+            ctx.fill();
 
-            // Station title
             ctx.fillStyle = '#060e1c';
-            ctx.font = '900 30px sans-serif';
-            ctx.textAlign = 'center';
+            ctx.font = '900 38px sans-serif';
+            ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(`${index + 1}. ${(st.title || 'Concept').toUpperCase().slice(0, 22)}`, 256, 42);
+            ctx.fillText(
+              `${index + 1}. ${(st.title || 'CONCEPT').toUpperCase().slice(0, 26)}`,
+              48,
+              63
+            );
 
-            // Wrapped subtitle definition
-            ctx.fillStyle = '#f8fafc';
-            ctx.font = '700 24px sans-serif';
-            const words = (st.subtitle || '').split(' ');
-            const lines: string[] = [];
-            let line = '';
-            for (const w of words) {
-              const test = line ? `${line} ${w}` : w;
-              if (ctx.measureText(test).width > 450 && line) {
-                lines.push(line);
-                line = w;
-              } else {
-                line = test;
+            ctx.font = '800 22px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`LESSON ${index + 1} OF ${stations.length}`, 976, 63);
+
+            // 4 Distinct Illustrated Visual Picture Cards across upper section!
+            const visuals =
+              Array.isArray(st.visuals) && st.visuals.length > 0
+                ? st.visuals.slice(0, 4)
+                : [
+                    { icon: '📖', label: st.title, category: 'Concept', bgColor: accent },
+                    { icon: '💡', label: 'Key Rule', category: 'Learn', bgColor: '#f59e0b' },
+                    { icon: '🌟', label: 'Example', category: 'Practice', bgColor: '#10b981' },
+                  ];
+
+            const tileGap = 18;
+            const totalW = 948;
+            const tileW = (totalW - tileGap * (visuals.length - 1)) / visuals.length;
+            const tileY = 122;
+            const tileH = 182;
+
+            visuals.forEach((v, vi) => {
+              const tx = 38 + vi * (tileW + tileGap);
+              const tileColor = v.bgColor || accent;
+
+              // Colorful tinted card surface
+              ctx.fillStyle = 'rgba(255,255,255,0.08)';
+              drawRoundedRect(ctx, tx, tileY, tileW, tileH, 20);
+              ctx.fill();
+
+              // Bright colored top picture spotlight circle
+              ctx.fillStyle = tileColor;
+              ctx.globalAlpha = 0.28;
+              ctx.beginPath();
+              ctx.arc(tx + tileW / 2, tileY + 62, 46, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.globalAlpha = 1;
+
+              // Crisp colored tile outline
+              ctx.strokeStyle = tileColor;
+              ctx.lineWidth = 4;
+              drawRoundedRect(ctx, tx, tileY, tileW, tileH, 20);
+              ctx.stroke();
+
+              // Big illustrated icon / picture
+              ctx.font = '64px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(v.icon || '✨', tx + tileW / 2, tileY + 66);
+
+              // Bold picture caption
+              ctx.fillStyle = '#ffffff';
+              ctx.font = '900 24px sans-serif';
+              ctx.fillText((v.label || '').slice(0, 16), tx + tileW / 2, tileY + 132);
+
+              // Sub-category tag
+              if (v.category) {
+                ctx.fillStyle = '#fde047';
+                ctx.font = '800 16px sans-serif';
+                ctx.fillText(v.category.toUpperCase().slice(0, 18), tx + tileW / 2, tileY + 160);
               }
-            }
-            if (line) lines.push(line);
-            lines.slice(0, 3).forEach((ln, li) => {
-              ctx.fillText(ln, 256, 118 + li * 34);
             });
 
-            // Example pill at bottom
-            if (st.example) {
-              ctx.fillStyle = 'rgba(255,255,255,0.12)';
-              ctx.fillRect(28, 218, 456, 46);
-              ctx.fillStyle = '#fde047';
-              ctx.font = '800 20px sans-serif';
-              ctx.fillText(st.example.slice(0, 40), 256, 242);
+            // Definition Box
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            drawRoundedRect(ctx, 38, 322, 948, 126, 18);
+            ctx.fill();
+
+            ctx.fillStyle = '#fde047';
+            ctx.font = '900 20px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('DEFINITION:', 60, 348);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '700 25px sans-serif';
+            const defText = st.definition || st.subtitle || '';
+            const words = defText.split(' ');
+            const defLines: string[] = [];
+            let curLine = '';
+            for (const w of words) {
+              const test = curLine ? `${curLine} ${w}` : w;
+              if (ctx.measureText(test).width > 900 && curLine) {
+                defLines.push(curLine);
+                curLine = w;
+              } else {
+                curLine = test;
+              }
             }
+            if (curLine) defLines.push(curLine);
+            defLines.slice(0, 3).forEach((ln, li) => {
+              ctx.fillText(ln, 60, 382 + li * 30);
+            });
+
+            // Types / Kinds Pills Row
+            if (Array.isArray(st.types) && st.types.length > 0) {
+              ctx.fillStyle = '#94a3b8';
+              ctx.font = '900 18px sans-serif';
+              ctx.fillText('TYPES:', 42, 488);
+
+              let px = 122;
+              st.types.slice(0, 4).forEach((tp) => {
+                const label = tp.name.slice(0, 20);
+                ctx.font = '800 19px sans-serif';
+                const pillW = Math.min(210, ctx.measureText(label).width + 32);
+                if (px + pillW < 988) {
+                  ctx.fillStyle = 'rgba(56, 189, 248, 0.22)';
+                  drawRoundedRect(ctx, px, 466, pillW, 42, 12);
+                  ctx.fill();
+                  ctx.strokeStyle = '#38bdf8';
+                  ctx.lineWidth = 2;
+                  ctx.stroke();
+
+                  ctx.fillStyle = '#e0f2fe';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(label, px + pillW / 2, 488);
+                  ctx.textAlign = 'left';
+                  px += pillW + 12;
+                }
+              });
+            }
+
+            // Bottom Highlighted Example Sentence Banner
+            const exLine =
+              (Array.isArray(st.examples) && st.examples[0]) ||
+              st.example ||
+              'Tap card to hear teacher explanation!';
+            ctx.fillStyle = 'rgba(250, 204, 21, 0.16)';
+            drawRoundedRect(ctx, 38, 528, 948, 74, 16);
+            ctx.fill();
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.font = '800 24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(`✨ ${exLine.slice(0, 68)}`, 512, 566);
 
             const tex = new THREE.CanvasTexture(cnv);
             tex.needsUpdate = true;
@@ -1612,14 +1922,17 @@ export function VRLabExplorer({
           };
 
           stations.forEach((st, idx) => {
-            const angle = (idx / stations.length) * Math.PI * 2;
-            const sx = Math.cos(angle) * ringRadius;
-            const sz = Math.sin(angle) * ringRadius;
-            const sy = isGallery ? (idx % 2 === 0 ? 1.0 : -0.6) : 1.4 + (idx % 2) * 0.9;
+            // Position Station 0 right at +Z (theta = 0) so camera rotY = 0 faces it dead-on, unmirrored!
+            const theta = (idx / stations.length) * Math.PI * 2;
+            const sx = Math.sin(theta) * ringRadius;
+            const sz = Math.cos(theta) * ringRadius;
+            const sy = isGallery ? 0.35 : 1.3;
 
-            const cardTex = makeCardTexture(st, idx);
+            const cardTex = makeIllustratedPosterTexture(st, idx);
             if (cardTex) {
-              const cardGeo = new THREE.PlaneGeometry(3.4, 1.95);
+              const cardW = isGallery ? 5.6 : 4.2;
+              const cardH = isGallery ? 3.5 : 2.62;
+              const cardGeo = new THREE.PlaneGeometry(cardW, cardH);
               const cardMat = new THREE.MeshBasicMaterial({
                 map: cardTex,
                 side: THREE.DoubleSide,
@@ -1632,31 +1945,32 @@ export function VRLabExplorer({
               cardMesh.userData = {
                 stationIndex: idx,
                 stationData: st,
-                aiAnimate: 'bob',
+                stationAngle: theta,
+                aiAnimate: 'stationFloat',
                 baseY: sy,
                 baseScale: cardMesh.scale.clone(),
               };
               customGroup.add(cardMesh);
             }
 
-            // Glowing orb anchor & beam connecting each concept card to the center
+            // Glowing anchor pedestal pillar under each poster board
             const orb = new THREE.Mesh(
               new THREE.SphereGeometry(0.24, 16, 16),
               new THREE.MeshBasicMaterial({ color: new THREE.Color(st.color || '#facc15') })
             );
-            orb.position.set(sx, sy - 1.25, sz);
+            orb.position.set(sx, sy - 2.15, sz);
             customGroup.add(orb);
 
             const beamGeo = new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(sx, sy - 1.25, sz),
+              new THREE.Vector3(0, -2.35, 0),
+              new THREE.Vector3(sx, sy - 2.15, sz),
             ]);
             const beam = new THREE.Line(
               beamGeo,
               new THREE.LineBasicMaterial({
                 color: new THREE.Color(st.color || '#38bdf8'),
                 transparent: true,
-                opacity: 0.45,
+                opacity: 0.4,
               })
             );
             customGroup.add(beam);
@@ -1690,9 +2004,41 @@ export function VRLabExplorer({
       const time = clock.getElapsedTime();
       const effectiveSpeed = lp.isPlaying ? lp.speedMultiplier : 0;
 
-      // Orbit / Gyro Camera Positioning (skip when WebXR headset owns camera)
+      // Orbit / Gyro Camera Positioning + Smooth Teacher Spotlight Glide (skip when WebXR headset owns camera)
       const c = state.controls;
       if (!lp.isWebXRPresenting) {
+        if (!c.isDragging) {
+          if (typeof c.targetRotY === 'number') {
+            // Shortest angular interpolation so camera never spins awkwardly around the back
+            let diff = c.targetRotY - c.rotY;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            if (Math.abs(diff) < 0.004) {
+              c.rotY = c.targetRotY;
+              c.targetRotY = null;
+            } else {
+              c.rotY += diff * 0.1;
+            }
+          }
+          if (typeof c.targetRotX === 'number') {
+            const dx = c.targetRotX - c.rotX;
+            if (Math.abs(dx) < 0.004) {
+              c.rotX = c.targetRotX;
+              c.targetRotX = null;
+            } else {
+              c.rotX += dx * 0.1;
+            }
+          }
+          if (typeof c.targetZoom === 'number') {
+            const dz = c.targetZoom - c.zoom;
+            if (Math.abs(dz) < 0.05) {
+              c.zoom = c.targetZoom;
+              c.targetZoom = null;
+            } else {
+              c.zoom += dz * 0.1;
+            }
+          }
+        }
         const radius = c.zoom;
         camera.position.x = radius * Math.sin(c.rotY) * Math.cos(c.rotX);
         camera.position.y = radius * Math.sin(c.rotX);
@@ -1845,10 +2191,16 @@ export function VRLabExplorer({
         }
       }
 
-      // 5. Vault Meshes (DNA, Cell, Atom, Pyramid, & Universal AI 3D Blueprints)
+      // 5. Vault Meshes (DNA, Cell, Atom, Pyramid, & Universal AI VR Classroom Blueprints)
       else if (state.vaultMesh) {
+        const isConceptGallery =
+          lp.activeModule === 'ai-custom' && Boolean(state.vaultMesh.userData?.isConceptGallery);
+
         if (effectiveSpeed > 0) {
-          state.vaultMesh.rotation.y += 0.005 * effectiveSpeed;
+          // Keep concept-gallery steady so pupils can read 3D posters cleanly; rotate physical 3D objects
+          if (!isConceptGallery) {
+            state.vaultMesh.rotation.y += 0.005 * effectiveSpeed;
+          }
           if (lp.activeModule === 'bohr-atom' && state.atomElectrons.length > 0) {
             state.atomElectrons.forEach((el) => {
               el.angle += el.speed * effectiveSpeed;
@@ -1859,9 +2211,21 @@ export function VRLabExplorer({
             state.vaultMesh.children.forEach((part: any) => {
               const anim = part.userData?.aiAnimate;
               if (anim === 'spinY') part.rotation.y += 0.025 * effectiveSpeed;
-              else if (anim === 'spinZ') part.rotation.z += 0.03 * effectiveSpeed;
+              else if (anim === 'spinZ') part.rotation.z += 0.015 * effectiveSpeed;
               else if (anim === 'spinX') part.rotation.x += 0.025 * effectiveSpeed;
-              else if (anim === 'bob' && typeof part.userData?.baseY === 'number') {
+              else if (anim === 'stationFloat' && typeof part.userData?.baseY === 'number') {
+                const isActive = part.userData.stationIndex === lp.activeStationIdx;
+                const phase = (part.userData.stationIndex || 0) * 0.9;
+                part.position.y =
+                  part.userData.baseY + Math.sin(time * 1.6 + phase) * (isActive ? 0.06 : 0.11);
+                if (part.userData.baseScale) {
+                  const targetS = isActive ? 1.07 : 0.94;
+                  part.scale.lerp(
+                    part.userData.baseScale.clone().multiplyScalar(targetS),
+                    0.12
+                  );
+                }
+              } else if (anim === 'bob' && typeof part.userData?.baseY === 'number') {
                 part.position.y = part.userData.baseY + Math.sin(time * 2.5 * effectiveSpeed) * 0.2;
               } else if (anim === 'pulse' && part.userData?.baseScale) {
                 const p = 1 + Math.sin(time * 4 * effectiveSpeed) * 0.1;
@@ -1929,6 +2293,9 @@ export function VRLabExplorer({
     const state = threeStateRef.current;
     if (!state) return;
     state.controls.isDragging = true;
+    state.controls.targetRotX = null;
+    state.controls.targetRotY = null;
+    state.controls.targetZoom = null;
     state.controls.prevX = e.clientX;
     state.controls.prevY = e.clientY;
     pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
@@ -1984,13 +2351,9 @@ export function VRLabExplorer({
           const stationHit = hits.find((h: any) => typeof h.object?.userData?.stationIndex === 'number');
           if (stationHit) {
             const idx = stationHit.object.userData.stationIndex as number;
-            const st = stationHit.object.userData.stationData as AI3DStationSpec;
-            setActiveStationIdx(idx);
-            setShowInfoCard(true);
+            stopTeacherTour();
             playSynthesizedSound('space');
-            if (st) {
-              speakNarration(st.narration || `${st.title}: ${st.subtitle}. ${st.example || ''}`);
-            }
+            focusAIStation(idx, { speak: true, broadcast: true });
           }
         }
       }
@@ -2000,6 +2363,7 @@ export function VRLabExplorer({
   const handleWheel = (e: React.WheelEvent) => {
     const state = threeStateRef.current;
     if (!state) return;
+    state.controls.targetZoom = null;
     state.controls.zoom = Math.max(5, Math.min(80, state.controls.zoom + e.deltaY * 0.03));
   };
 
@@ -2159,15 +2523,19 @@ export function VRLabExplorer({
       }
 
       const bp: AI3DBlueprintSpec = data.blueprint;
+      stopTeacherTour();
       setAiBlueprint(bp);
+      setActiveStationIdx(0);
+      setQuizAnswers({});
       setCustomAiModelTitle(`✨ ${bp.title}`);
       setCustomAiDescription(bp.description);
       setActiveModule('ai-custom');
       setShowInfoCard(true);
       setAiPromptOpen(false);
-      broadcastVRState({ activeModule: 'ai-custom', aiBlueprint: bp });
-      if (autoNarrate && bp.narration) {
-        speakNarration(bp.narration);
+      broadcastVRState({ activeModule: 'ai-custom', aiBlueprint: bp, activeStationIdx: 0 });
+      if (autoNarrate) {
+        const opening = bp.teacherIntro || bp.narration || bp.description;
+        if (opening) speakNarration(opening);
       }
     } catch (err: any) {
       console.warn('AI 3D generation error:', err);
@@ -2210,6 +2578,7 @@ export function VRLabExplorer({
               key={tab.id}
               onClick={() => {
                 const mod = tab.id as VRModuleId;
+                stopTeacherTour();
                 setActiveModule(mod);
                 broadcastVRState({ activeModule: mod });
                 playSynthesizedSound('space');
@@ -2363,10 +2732,10 @@ export function VRLabExplorer({
             {[
               { label: '📚 Parts of Speech', query: 'Parts of Speech' },
               { label: '🌧️ Water Cycle', query: 'Water Cycle' },
+              { label: '🌿 Photosynthesis', query: 'Photosynthesis' },
               { label: '🍕 Fractions', query: 'Fractions' },
               { label: '📦 Rectangle', query: 'Rectangle' },
               { label: '🚗 Car', query: 'Car' },
-              { label: '🧬 DNA', query: 'DNA Double Helix' },
             ].map((p) => (
               <button
                 key={p.label}
@@ -2414,6 +2783,12 @@ export function VRLabExplorer({
                   speakNarration('Bohr Atom: Positively charged protons and neutral neutrons form the dense nucleus, surrounded by orbiting electrons.');
                 } else if (activeModule === 'ancient-pyramid') {
                   speakNarration('Ancient Egyptian Pyramids: Architectural marvels of the ancient world constructed from millions of limestone blocks.');
+                } else if (activeModule === 'ai-custom' && aiBlueprint) {
+                  if (aiBlueprint.stations && aiBlueprint.stations.length > 0) {
+                    startTeacherTour();
+                  } else {
+                    speakNarration(aiBlueprint.teacherIntro || aiBlueprint.narration || aiBlueprint.description);
+                  }
                 } else {
                   handleSelectLayer(selectedLayer);
                 }
@@ -2562,8 +2937,8 @@ export function VRLabExplorer({
         <canvas ref={canvasRef} className="w-full h-full block" />
 
         {/* Friendly Immersive VR Mode / AI Model Generated Status Banners */}
-        {(vrStatusBanner || customAiModelTitle) && (
-          <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 max-w-md pointer-events-auto">
+        {(vrStatusBanner || (customAiModelTitle && !(activeModule === 'ai-custom' && showInfoCard))) && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex flex-col gap-1.5 max-w-md pointer-events-auto">
             {vrStatusBanner && (
               <div className="bg-sky-950/95 border border-sky-400/60 px-3 py-2 rounded-xl text-[11px] font-bold text-sky-100 shadow-xl flex items-center justify-between gap-2">
                 <span>🥽 {vrStatusBanner}</span>
@@ -2580,9 +2955,15 @@ export function VRLabExplorer({
                 </button>
               </div>
             )}
-            {customAiModelTitle && (
+            {customAiModelTitle && !(activeModule === 'ai-custom' && showInfoCard) && (
               <div className="bg-purple-950/90 border border-purple-400/50 px-3 py-1.5 rounded-xl text-[11px] font-black text-purple-100 shadow-lg flex items-center justify-between gap-2">
                 <span>{customAiModelTitle}</span>
+                <button
+                  onClick={() => setShowInfoCard(true)}
+                  className="px-2 py-0.5 rounded-md bg-yellow text-dark text-[10px] font-black uppercase"
+                >
+                  Open Teacher Board
+                </button>
                 <button
                   onClick={() => setCustomAiModelTitle('')}
                   className="text-xs text-white/60 hover:text-white font-black"
@@ -3129,84 +3510,397 @@ export function VRLabExplorer({
           </aside>
         )}
 
-        {/* 9. AI CUSTOM GENERATED MODEL INFO CARD */}
-        {activeModule === 'ai-custom' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-purple-500/50 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
-            <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <WandSparkles className="w-4 h-4 text-purple-400 shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-[9px] uppercase font-black tracking-wider text-purple-300/70">
-                    {aiBlueprint?.category || 'AI 3D Studio'}
-                  </div>
-                  <h3 className="font-black text-xs uppercase text-purple-200 truncate">
-                    {aiBlueprint?.title || customAiModelTitle || 'AI 3D Model'}
-                  </h3>
-                </div>
-              </div>
-              <button
-                onClick={() =>
-                  speakNarration(aiBlueprint?.narration || customAiDescription || customAiModelTitle || 'Interactive 3D Model')
-                }
-                className="h-6 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 flex items-center gap-1 text-[10px] font-black border border-emerald-500/30 shrink-0"
-              >
-                <Volume2 className="w-3 h-3" />
-                <span>Listen</span>
-              </button>
-            </div>
-            <p className="text-xs text-white/80 font-medium leading-relaxed mb-3">
-              {aiBlueprint?.description ||
-                customAiDescription ||
-                'Drag to rotate 360°, scroll to zoom, or activate Slice Plane to inspect inside.'}
-            </p>
-            {aiBlueprint?.stations && aiBlueprint.stations.length > 0 && (
-              <div className="space-y-1.5 mb-3 max-h-48 overflow-y-auto pr-1">
-                <div className="text-[10px] font-black uppercase tracking-wider text-purple-300/80">
-                  Interactive 3D Stations (Tap to Hear):
-                </div>
-                {aiBlueprint.stations.map((st, idx) => (
-                  <button
-                    key={`${st.title}-${idx}`}
-                    onClick={() => {
-                      setActiveStationIdx(idx);
-                      playSynthesizedSound('space');
-                      speakNarration(st.narration || `${st.title}: ${st.subtitle}. ${st.example || ''}`);
-                    }}
-                    className={`w-full text-left p-2 rounded-xl border text-xs transition-all flex items-center justify-between gap-2 ${
-                      activeStationIdx === idx
-                        ? 'bg-purple-500/25 border-yellow text-white'
-                        : 'bg-white/5 border-white/10 text-white/80 hover:bg-white/15'
-                    }`}
-                  >
-                    <div className="min-w-0">
-                      <div className="font-black text-yellow truncate">{idx + 1}. {st.title}</div>
-                      <div className="text-[10px] text-white/70 truncate">{st.subtitle}</div>
-                      {st.example && <div className="text-[9px] text-emerald-300 truncate">{st.example}</div>}
-                    </div>
-                    <Volume2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  </button>
-                ))}
-              </div>
-            )}
-            {aiBlueprint?.facts && aiBlueprint.facts.length > 0 && (
-              <div className="grid grid-cols-2 gap-1.5 mb-3">
-                {aiBlueprint.facts.map((f, idx) => (
-                  <div key={`${f.label}-${idx}`} className="bg-white/10 p-2 rounded-xl">
-                    <div className="text-[9px] uppercase tracking-wider font-bold text-white/50 truncate">{f.label}</div>
-                    <div className="text-xs font-black text-white truncate">{f.value}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <button
-              onClick={() => setAiPromptOpen(true)}
-              className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase flex items-center justify-center gap-1.5"
+        {/* 9. INTERACTIVE AI VR TEACHER CLASSROOM BOARD (Left-docked so it NEVER overlaps top-right PiP video!) */}
+        {activeModule === 'ai-custom' && showInfoCard && (() => {
+          const stations = aiBlueprint?.stations || [];
+          const safeIdx = stations.length > 0 ? Math.min(activeStationIdx, stations.length - 1) : 0;
+          const activeSt = stations[safeIdx];
+          const chosenQuizIdx = quizAnswers[safeIdx];
+
+          const renderHighlightedSentence = (sentence: string) =>
+            sentence.split(/(\b[A-Z]{2,}[A-Z'’-]*\b)/g).map((chunk, ci) =>
+              /^[A-Z]{2,}[A-Z'’-]*$/.test(chunk) ? (
+                <span
+                  key={ci}
+                  className="px-1.5 py-0.5 mx-0.5 rounded-md bg-yellow text-dark font-black"
+                >
+                  {chunk}
+                </span>
+              ) : (
+                <React.Fragment key={ci}>{chunk}</React.Fragment>
+              )
+            );
+
+          return (
+            <aside
+              className={`absolute top-3 left-3 bottom-16 z-20 flex flex-col bg-[#081022]/95 backdrop-blur-xl border-[2.5px] border-yellow/70 rounded-2xl text-white shadow-[0_14px_40px_rgba(0,0,0,0.65)] overflow-hidden animate-in fade-in transition-all duration-300 ${
+                aiBoardView === 'wide'
+                  ? 'w-[calc(100%-24px)] max-w-3xl'
+                  : 'w-[calc(100%-24px)] sm:w-[400px] lg:w-[430px]'
+              }`}
             >
-              <WandSparkles className="w-3.5 h-3.5" />
-              <span>Generate Any 3D Topic</span>
-            </button>
-          </aside>
-        )}
+              {/* Teacher Header Bar */}
+              <div className="px-3.5 py-2.5 bg-gradient-to-r from-indigo-950 via-[#0f1c3a] to-slate-900 border-b border-white/15 shrink-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-9 h-9 rounded-xl bg-yellow text-dark border-2 border-dark flex items-center justify-center text-lg shrink-0 shadow-[2px_2px_0px_#060E1C] ${
+                        isSpeaking ? 'animate-bounce' : ''
+                      }`}
+                      title="Edvoura AI VR Teacher"
+                    >
+                      👩‍🏫
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-yellow/20 text-yellow border border-yellow/30">
+                          AI VR Teacher
+                        </span>
+                        <span className="text-[10px] font-bold text-sky-300 truncate">
+                          {aiBlueprint?.category || 'Interactive VR Classroom'}
+                        </span>
+                      </div>
+                      <h3 className="font-black text-sm text-white truncate mt-0.5">
+                        {aiBlueprint?.title || customAiModelTitle || 'Interactive VR Lesson'}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => setAiBoardView((v) => (v === 'sidebar' ? 'wide' : 'sidebar'))}
+                      className="h-7 px-2 rounded-lg bg-white/10 hover:bg-white/20 text-white/85 text-[10px] font-black border border-white/15 cursor-pointer"
+                      title={aiBoardView === 'sidebar' ? 'Expand Teacher Board' : 'Compact Sidebar View'}
+                    >
+                      {aiBoardView === 'sidebar' ? 'Expand' : 'Compact'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Teacher Action Row: Guided Auto-Teach Tour + Replay Voice */}
+                <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                  {stations.length > 0 && (
+                    <button
+                      onClick={() => (isTeacherTourActive ? stopNarration() : startTeacherTour())}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer border ${
+                        isTeacherTourActive
+                          ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-300 animate-pulse'
+                          : 'bg-yellow hover:bg-yellow/90 text-dark border-dark shadow-[2px_2px_0px_#060E1C]'
+                      }`}
+                    >
+                      <GraduationCap className="w-3.5 h-3.5" />
+                      <span>{isTeacherTourActive ? 'Stop Teacher Tour' : 'Start Teacher Tour'}</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      if (isSpeaking) {
+                        stopNarration();
+                      } else if (activeSt) {
+                        speakNarration(
+                          activeSt.teacherScript ||
+                            activeSt.narration ||
+                            `${activeSt.title}. ${activeSt.definition || activeSt.subtitle}.`
+                        );
+                      } else {
+                        speakNarration(
+                          aiBlueprint?.teacherIntro ||
+                            aiBlueprint?.narration ||
+                            customAiDescription ||
+                            'Interactive 3D Lesson'
+                        );
+                      }
+                    }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] font-black border border-emerald-400/40 cursor-pointer"
+                  >
+                    {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    <span>{isSpeaking ? 'Mute' : 'Teach Aloud'}</span>
+                  </button>
+
+                  {stations.length > 0 && (
+                    <span className="ml-auto text-[10px] font-black text-white/70 bg-white/10 px-2 py-1 rounded-lg">
+                      Step {safeIdx + 1} / {stations.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* Clickable Station Stepper Pills */}
+                {stations.length > 0 && (
+                  <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar pb-0.5">
+                    {stations.map((st, idx) => (
+                      <button
+                        key={`${st.title}-${idx}`}
+                        onClick={() => {
+                          stopTeacherTour();
+                          playSynthesizedSound('space');
+                          focusAIStation(idx, { speak: true, broadcast: true });
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all shrink-0 border cursor-pointer ${
+                          safeIdx === idx
+                            ? 'bg-white text-dark border-yellow shadow-[2px_2px_0px_#facc15]'
+                            : 'bg-white/10 hover:bg-white/20 text-white/80 border-white/10'
+                        }`}
+                      >
+                        {idx + 1}. {st.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Scrollable Rich Teacher Lesson Body (Definition, Visual Pictures, Types, Examples, Mini-Quiz!) */}
+              <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5">
+                {activeSt ? (
+                  <>
+                    {/* 1. Active Station Title + Full Definition */}
+                    <div
+                      className="p-3 rounded-xl bg-white/5 border-l-4 border border-white/10"
+                      style={{ borderLeftColor: activeSt.color || '#facc15' }}
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h4 className="font-black text-base uppercase tracking-tight text-yellow">
+                          {safeIdx + 1}. {activeSt.title}
+                        </h4>
+                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80">
+                          Definition
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-[13px] text-white/95 font-semibold leading-relaxed">
+                        {activeSt.definition || activeSt.subtitle}
+                      </p>
+                    </div>
+
+                    {/* 2. DIFFERENT VISUAL PICTURE CARDS FOR EVERY STATION */}
+                    {Array.isArray(activeSt.visuals) && activeSt.visuals.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-sky-300">
+                            🖼️ Picture Examples (Tap any image to hear)
+                          </span>
+                        </div>
+                        <div
+                          className={`grid gap-2 ${
+                            aiBoardView === 'wide' ? 'grid-cols-4' : 'grid-cols-2'
+                          }`}
+                        >
+                          {activeSt.visuals.map((v, vi) => (
+                            <button
+                              key={`${v.label}-${vi}`}
+                              onClick={() => {
+                                playSynthesizedSound('chime');
+                                speakNarration(
+                                  `${v.label}${v.category ? `, ${v.category}` : ''} — an example of ${activeSt.title}!`
+                                );
+                              }}
+                              className="group p-2.5 rounded-xl bg-white/5 hover:bg-white/15 border-2 transition-all flex flex-col items-center text-center cursor-pointer active:scale-95"
+                              style={{ borderColor: v.bgColor || activeSt.color || '#38bdf8' }}
+                            >
+                              <div
+                                className="w-12 h-12 rounded-2xl flex items-center justify-center text-3xl mb-1.5 shadow-inner group-hover:scale-110 transition-transform"
+                                style={{
+                                  backgroundColor: `${v.bgColor || activeSt.color || '#38bdf8'}33`,
+                                }}
+                              >
+                                {v.icon}
+                              </div>
+                              <span className="text-xs font-black text-white leading-tight">
+                                {v.label}
+                              </span>
+                              {v.category && (
+                                <span className="text-[9px] font-extrabold uppercase tracking-wider text-yellow/90 mt-0.5">
+                                  {v.category}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. TYPES / KINDS BREAKDOWN */}
+                    {Array.isArray(activeSt.types) && activeSt.types.length > 0 && (
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-emerald-300">
+                          🏷️ Types &amp; Kinds of {activeSt.title}
+                        </div>
+                        <div className="space-y-1.5">
+                          {activeSt.types.map((tp, ti) => (
+                            <div
+                              key={`${tp.name}-${ti}`}
+                              className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-400/25"
+                            >
+                              <div className="text-xs font-black text-emerald-300">{tp.name}</div>
+                              <div className="text-[11px] text-white/85 font-medium leading-snug mt-0.5">
+                                {tp.detail}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 4. REAL EXAMPLE SENTENCES */}
+                    {((Array.isArray(activeSt.examples) && activeSt.examples.length > 0) ||
+                      activeSt.example) && (
+                      <div className="space-y-1.5">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                          💬 Examples in Sentences
+                        </div>
+                        <div className="space-y-1.5">
+                          {(Array.isArray(activeSt.examples) && activeSt.examples.length > 0
+                            ? activeSt.examples
+                            : [activeSt.example || '']
+                          )
+                            .filter(Boolean)
+                            .map((ex, ei) => (
+                              <div
+                                key={ei}
+                                className="p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/30 text-xs text-white/95 font-semibold leading-relaxed"
+                              >
+                                {renderHighlightedSentence(ex)}
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 5. INTERACTIVE QUICK TEACHER CHECK MINI-QUIZ */}
+                    {activeSt.quiz && Array.isArray(activeSt.quiz.options) && (
+                      <div className="p-3 rounded-xl bg-purple-950/60 border-2 border-purple-400/40 space-y-2">
+                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-200">
+                          <HelpCircle className="w-3.5 h-3.5 text-yellow" />
+                          <span>Quick Teacher Check — Try It!</span>
+                        </div>
+                        <p className="text-xs font-bold text-white leading-snug">
+                          {activeSt.quiz.question}
+                        </p>
+                        <div className="grid grid-cols-1 gap-1.5">
+                          {activeSt.quiz.options.map((opt, oi) => {
+                            const isPicked = chosenQuizIdx === oi;
+                            const isCorrect = oi === activeSt.quiz!.correctIndex;
+                            const answered = typeof chosenQuizIdx === 'number';
+                            return (
+                              <button
+                                key={`${opt}-${oi}`}
+                                onClick={() => {
+                                  setQuizAnswers((prev) => ({ ...prev, [safeIdx]: oi }));
+                                  if (isCorrect) {
+                                    playSynthesizedSound('chime');
+                                    speakNarration(
+                                      activeSt.quiz?.explanation || `Correct! ${opt} is the right answer!`
+                                    );
+                                  } else {
+                                    playSynthesizedSound('laser');
+                                    speakNarration(`Almost! Look closely at the definition and try another option.`);
+                                  }
+                                }}
+                                className={`w-full text-left px-3 py-2 rounded-xl text-xs font-black border transition-all flex items-center justify-between cursor-pointer ${
+                                  isPicked
+                                    ? isCorrect
+                                      ? 'bg-emerald-500 text-dark border-emerald-200'
+                                      : 'bg-rose-600/80 text-white border-rose-300'
+                                    : answered && isCorrect
+                                      ? 'bg-emerald-500/25 text-emerald-200 border-emerald-400/50'
+                                      : 'bg-white/10 hover:bg-white/20 text-white border-white/15'
+                                }`}
+                              >
+                                <span>
+                                  {String.fromCharCode(65 + oi)}. {opt}
+                                </span>
+                                {isPicked && isCorrect && <CheckCircle2 className="w-4 h-4 shrink-0" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {typeof chosenQuizIdx === 'number' && (
+                          <div
+                            className={`text-[11px] font-bold p-2 rounded-lg ${
+                              chosenQuizIdx === activeSt.quiz.correctIndex
+                                ? 'bg-emerald-500/20 text-emerald-200'
+                                : 'bg-rose-500/20 text-rose-200'
+                            }`}
+                          >
+                            {chosenQuizIdx === activeSt.quiz.correctIndex
+                              ? `🎉 ${activeSt.quiz.explanation || 'Excellent work!'}`
+                              : '💡 Not quite — check the definition above and tap another choice!'}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-white/90 font-medium leading-relaxed">
+                      {aiBlueprint?.description ||
+                        customAiDescription ||
+                        'Drag to rotate 360°, scroll to zoom, or activate Slice Plane to inspect inside.'}
+                    </p>
+                    {aiBlueprint?.facts && aiBlueprint.facts.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {aiBlueprint.facts.map((f, idx) => (
+                          <div key={`${f.label}-${idx}`} className="bg-white/10 p-2.5 rounded-xl">
+                            <div className="text-[9px] uppercase tracking-wider font-bold text-white/60">
+                              {f.label}
+                            </div>
+                            <div className="text-xs font-black text-white mt-0.5">{f.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Sticky Bottom Teacher Navigation Controls */}
+              <div className="px-3 py-2.5 bg-[#060e1c] border-t border-white/15 flex items-center justify-between gap-2 shrink-0">
+                {stations.length > 1 ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        stopTeacherTour();
+                        playSynthesizedSound('space');
+                        focusAIStation(safeIdx - 1, { speak: true, broadcast: true });
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-black flex items-center gap-1 border border-white/15 cursor-pointer"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      <span>Prev</span>
+                    </button>
+
+                    <button
+                      onClick={() => setAiPromptOpen(true)}
+                      className="px-2.5 py-1.5 rounded-xl bg-purple-600/80 hover:bg-purple-500 text-white text-[11px] font-black flex items-center gap-1 cursor-pointer"
+                    >
+                      <WandSparkles className="w-3 h-3" />
+                      <span>New Topic</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        stopTeacherTour();
+                        playSynthesizedSound('space');
+                        focusAIStation(safeIdx + 1, { speak: true, broadcast: true });
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-yellow hover:bg-yellow/90 text-dark text-xs font-black flex items-center gap-1 border-2 border-dark shadow-[2px_2px_0px_#060E1C] cursor-pointer"
+                    >
+                      <span>Next</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setAiPromptOpen(true)}
+                    className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black uppercase flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <WandSparkles className="w-3.5 h-3.5" />
+                    <span>Generate Any 3D Lesson Topic</span>
+                  </button>
+                )}
+              </div>
+            </aside>
+          );
+        })()}
       </div>
     </div>
   );
