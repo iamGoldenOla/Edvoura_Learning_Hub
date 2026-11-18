@@ -4,7 +4,7 @@ import { generateText } from 'ai';
 import { z } from 'zod';
 import { extractJsonPayload } from '@/lib/ai/orchestrator';
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const PartSchema = z.object({
   name: z.string().default('Part'),
@@ -2176,18 +2176,25 @@ async function fetchWikipediaImage(query: string): Promise<string | null> {
 
 async function enrichBlueprintWithRealImages(blueprint: AI3DBlueprint): Promise<AI3DBlueprint> {
   if (!Array.isArray(blueprint.stations) || blueprint.stations.length === 0) return blueprint;
-  const enrichedStations = await Promise.all(
+  const work = Promise.all(
     blueprint.stations.map(async (st) => {
       if (st.imageUrl) return st;
       const q = st.imageQuery || st.title;
       const img = await fetchWikipediaImage(q);
       return img ? { ...st, imageUrl: img } : st;
     }),
-  );
-  return { ...blueprint, stations: enrichedStations };
+  ).then((enrichedStations) => ({ ...blueprint, stations: enrichedStations }));
+
+  // Never let image lookup push a Vercel function near timeout
+  return await Promise.race([
+    work,
+    new Promise<AI3DBlueprint>((resolve) => setTimeout(() => resolve(blueprint), 3000)),
+  ]);
 }
 
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now();
+  const AI_BUDGET_MS = 21000;
   try {
     const body = await request.json().catch(() => null);
     const topic = typeof body?.prompt === 'string' ? body.prompt.trim() : '';
@@ -2204,19 +2211,20 @@ export async function POST(request: NextRequest) {
     const geminiKeys = getGeminiKeys();
     const geminiModels = [
       process.env.GEMINI_MODEL,
+      'gemini-3.1-flash-lite',
       'gemini-flash-lite-latest',
       'gemini-2.5-flash-lite',
-      'gemini-3.1-flash-lite',
       'gemini-flash-latest',
       'gemini-3-flash-preview',
-      'gemini-2.5-flash',
     ].filter((m): m is string => typeof m === 'string' && m.trim().length > 0);
 
     for (const key of geminiKeys) {
       for (const modelName of [...new Set(geminiModels)]) {
+        const remaining = AI_BUDGET_MS - (Date.now() - startedAt);
+        if (remaining < 3500) break;
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 26000);
+          const timer = setTimeout(() => controller.abort(), Math.min(11500, remaining));
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
             modelName,
           )}:generateContent?key=${encodeURIComponent(key)}`;
@@ -2227,7 +2235,7 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify({
               contents: [{ role: 'user', parts: [{ text: promptText }] }],
               generationConfig: {
-                temperature: 0.4,
+                temperature: 0.35,
                 responseMimeType: 'application/json',
               },
             }),
@@ -2256,9 +2264,10 @@ export async function POST(request: NextRequest) {
           );
         }
       }
+      if (AI_BUDGET_MS - (Date.now() - startedAt) < 3500) break;
     }
 
-    // 2. Fallback to OpenRouter keys
+    // 2. Fallback to OpenRouter keys (only if budget remains)
     const openRouterKeys = getOpenRouterKeys();
     const openRouterModels = [
       process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001',
@@ -2267,13 +2276,15 @@ export async function POST(request: NextRequest) {
     ];
 
     for (const key of openRouterKeys) {
+      if (AI_BUDGET_MS - (Date.now() - startedAt) < 4000) break;
       const client = createOpenAI({ baseURL: 'https://openrouter.ai/api/v1', apiKey: key });
       for (const modelName of [...new Set(openRouterModels)]) {
+        if (AI_BUDGET_MS - (Date.now() - startedAt) < 4000) break;
         try {
           const { text } = await generateText({
             model: client(modelName),
             prompt: promptText,
-            temperature: 0.4,
+            temperature: 0.35,
           });
           const parsed = extractJsonPayload(text);
           const validated = BlueprintSchema.parse(parsed);

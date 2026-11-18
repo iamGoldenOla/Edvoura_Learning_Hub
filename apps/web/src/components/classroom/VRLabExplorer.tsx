@@ -407,6 +407,72 @@ export function VRLabExplorer({
     setActiveModule(initialModule);
   }, [initialModule]);
 
+  // Client-side Wikipedia real-photo backup (ensures President portraits, Dinosaurs & Volcano photos ALWAYS load even if edge IP is rate-limited!)
+  const enrichedBpKeyRef = useRef<string>('');
+  useEffect(() => {
+    if (!aiBlueprint?.stations || aiBlueprint.stations.length === 0) return;
+    const bpKey = `${aiBlueprint.title}:${aiBlueprint.stations.length}`;
+    if (enrichedBpKeyRef.current === bpKey) return;
+    const missingAny = aiBlueprint.stations.some((s) => !s.imageUrl && (s.imageQuery || s.title));
+    if (!missingAny) {
+      enrichedBpKeyRef.current = bpKey;
+      return;
+    }
+    enrichedBpKeyRef.current = bpKey;
+    let cancelled = false;
+
+    const fetchWikiClient = async (query: string): Promise<string | null> => {
+      const clean = query.replace(/^\d+\.\s*/, '').trim();
+      if (!clean) return null;
+      try {
+        const direct = await fetch(
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(clean.replace(/\s+/g, '_'))}`
+        );
+        if (direct.ok) {
+          const j = await direct.json();
+          const img = j?.thumbnail?.source || j?.originalimage?.source;
+          if (typeof img === 'string' && img.startsWith('http')) return img;
+        }
+        const search = await fetch(
+          `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(clean)}&srlimit=1&format=json&origin=*`
+        );
+        if (search.ok) {
+          const sj = await search.json();
+          const top = sj?.query?.search?.[0]?.title;
+          if (top) {
+            const s2 = await fetch(
+              `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(top.replace(/\s+/g, '_'))}`
+            );
+            if (s2.ok) {
+              const j2 = await s2.json();
+              const img2 = j2?.thumbnail?.source || j2?.originalimage?.source;
+              if (typeof img2 === 'string' && img2.startsWith('http')) return img2;
+            }
+          }
+        }
+      } catch (_) {}
+      return null;
+    };
+
+    Promise.all(
+      aiBlueprint.stations.map(async (st) => {
+        if (st.imageUrl) return st;
+        const found = await fetchWikiClient(st.imageQuery || st.title);
+        return found ? { ...st, imageUrl: found } : st;
+      })
+    ).then((updatedStations) => {
+      if (cancelled) return;
+      const changed = updatedStations.some((s, i) => s.imageUrl !== aiBlueprint.stations?.[i]?.imageUrl);
+      if (changed) {
+        setAiBlueprint((prev) => (prev ? { ...prev, stations: updatedStations } : prev));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [aiBlueprint]);
+
   // Live reactive ref so Three.js 60FPS loop NEVER reads stale React closures
   const liveParamsRef = useRef({
     activeModule,
