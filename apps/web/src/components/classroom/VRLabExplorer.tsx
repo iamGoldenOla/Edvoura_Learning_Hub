@@ -38,6 +38,14 @@ import {
   GraduationCap,
   HelpCircle,
 } from 'lucide-react';
+import {
+  GEOMETRY_SHAPES,
+  AUTO_CURRICULUM_SUBJECTS,
+  type GeometryShapeId,
+  type GeoHighlightPart,
+} from './geometryCatalog';
+
+export type { GeometryShapeId, GeoHighlightPart };
 
 export type VRModuleId =
   | 'solar-system'
@@ -49,16 +57,6 @@ export type VRModuleId =
   | 'bohr-atom'
   | 'ancient-pyramid'
   | 'ai-custom';
-
-export type GeometryShapeId =
-  | 'cube'
-  | 'cuboid'
-  | 'cylinder'
-  | 'pyramid'
-  | 'cone'
-  | 'prism'
-  | 'sphere'
-  | 'torus';
 
 export type CustomAiSceneKind = 'rocket' | 'castle' | 'water-molecule' | 'tree' | 'crystal';
 
@@ -125,6 +123,9 @@ export interface AI3DStationSpec {
   subtitle: string;
   definition?: string;
   formulaOrRule?: string;
+  timelineYear?: string;
+  imageQuery?: string;
+  imageUrl?: string;
   types?: AI3DStationTypeSpec[];
   workedExample?: AI3DWorkedExampleSpec;
   examples?: string[];
@@ -388,6 +389,9 @@ export function VRLabExplorer({
   // Module Specific Sub-selections
   const [selectedHeartPart, setSelectedHeartPart] = useState<string>('Left Ventricle');
   const [selectedShape, setSelectedShape] = useState<GeometryShapeId>('cube');
+  const [geoDimensionTab, setGeoDimensionTab] = useState<'2D' | '3D'>('3D');
+  const [geoHighlightPart, setGeoHighlightPart] = useState<GeoHighlightPart>('vertices');
+  const [activeCurriculumSubject, setActiveCurriculumSubject] = useState<string>('geography');
   const [selectedLayer, setSelectedLayer] = useState<string>('Inner Core');
   const [selectedCellOrganelle, setSelectedCellOrganelle] = useState<string>('Chloroplast');
 
@@ -1640,60 +1644,350 @@ export function VRLabExplorer({
       });
     }
 
-    // 2. HUMAN HEART ANATOMY (with Kainmueller Slicing)
-    else if (activeModule === 'human-heart') {
-      camera.position.set(0, 2, 12);
+    // Shared helper: build a glowing 3D pointer arrow + floating callout badge pointing right at a 3D coordinate!
+    const create3DPointerCallout = (
+      targetPos: [number, number, number],
+      labelText: string,
+      accentHex = '#facc15'
+    ) => {
+      const ptrGroup = new THREE.Group();
+      ptrGroup.name = 'vrPointerCallout';
+      const tx = targetPos[0];
+      const ty = targetPos[1];
+      const tz = targetPos[2];
+      const dir = new THREE.Vector3(tx, ty, tz);
+      if (dir.lengthSq() < 0.01) dir.set(0.7, 0.8, 1.0);
+      else dir.normalize();
+
+      // Glowing target dot right on the vertex/edge/face
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.18, 20, 20),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(accentHex) })
+      );
+      dot.position.set(tx, ty, tz);
+      ptrGroup.add(dot);
+
+      // Pulsing 3D Arrow Cone + Shaft pointing straight into targetPos
+      const tipPos = new THREE.Vector3(tx, ty, tz).addScaledVector(dir, 0.36);
+      const tailPos = new THREE.Vector3(tx, ty, tz).addScaledVector(dir, 1.85);
+      const arrowMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(accentHex),
+        emissive: new THREE.Color(accentHex),
+        emissiveIntensity: 0.65,
+        roughness: 0.25,
+      });
+
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.24, 0.56, 20), arrowMat);
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.0, 16), arrowMat);
+
+      const arrowPivot = new THREE.Group();
+      arrowPivot.name = 'vrPointerArrow';
+      cone.position.y = -0.28;
+      cone.rotation.x = Math.PI;
+      shaft.position.y = 0.5;
+      arrowPivot.add(cone);
+      arrowPivot.add(shaft);
+      arrowPivot.position.copy(tipPos);
+      // Orient arrowPivot local +Y along outward `dir` so cone points INWARD to targetPos!
+      arrowPivot.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      ptrGroup.add(arrowPivot);
+
+      // Crisp floating 3D callout label sprite at the tail of the pointer arrow
+      const cnv = document.createElement('canvas');
+      cnv.width = 512;
+      cnv.height = 112;
+      const ctx = cnv.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#060e1c';
+        ctx.beginPath();
+        ctx.roundRect(8, 8, 496, 96, 24);
+        ctx.fill();
+        ctx.strokeStyle = accentHex;
+        ctx.lineWidth = 8;
+        ctx.stroke();
+
+        ctx.fillStyle = accentHex;
+        ctx.font = '900 34px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`👆 ${labelText.slice(0, 24)}`, 256, 56);
+
+        const tex = new THREE.CanvasTexture(cnv);
+        tex.needsUpdate = true;
+        const badge = new THREE.Sprite(
+          new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })
+        );
+        badge.scale.set(3.2, 0.72, 1);
+        badge.position.copy(tailPos).addScaledVector(dir, 0.55);
+        badge.renderOrder = 999;
+        ptrGroup.add(badge);
+      }
+
+      return ptrGroup;
+    };
+
+    // 2. TRULY ANATOMICAL 3D HUMAN HEART (Sculpted Myocardium, Coronary Arteries, Aortic Arch w/ 3 Branches, Vena Cava & Pulmonary Bifurcation!)
+    if (activeModule === 'human-heart') {
+      camera.position.set(0, 1.5, 11.5);
       camera.lookAt(0, 0, 0);
 
       const heartGroup = new THREE.Group();
 
-      const bodyGeo = new THREE.SphereGeometry(2.4, 32, 32);
-      bodyGeo.scale(1.0, 1.35, 0.9);
-      const bodyMat = new THREE.MeshStandardMaterial({
-        color: 0xbe123c,
-        roughness: 0.35,
-        metalness: 0.15,
+      // Procedural organic striated cardiac muscle + coronary artery/vein texture
+      const makeHeartMuscleTexture = () => {
+        const cnv = document.createElement('canvas');
+        cnv.width = 512;
+        cnv.height = 512;
+        const ctx = cnv.getContext('2d');
+        if (!ctx) return null;
+
+        const g = ctx.createLinearGradient(0, 0, 0, 512);
+        g.addColorStop(0, '#9f1239');
+        g.addColorStop(0.45, '#be123c');
+        g.addColorStop(0.8, '#881337');
+        g.addColorStop(1, '#6b0f2a');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, 512, 512);
+
+        // Organic diagonal myocardial muscle fibers
+        ctx.strokeStyle = 'rgba(255, 180, 195, 0.14)';
+        ctx.lineWidth = 2;
+        for (let i = -256; i < 768; i += 9) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.bezierCurveTo(i + 80, 170, i - 60, 340, i + 90, 512);
+          ctx.stroke();
+        }
+
+        // Yellowish epicardial fat band along the coronary sulcus
+        ctx.strokeStyle = 'rgba(253, 224, 71, 0.32)';
+        ctx.lineWidth = 18;
+        ctx.beginPath();
+        ctx.moveTo(0, 165);
+        ctx.bezierCurveTo(180, 190, 340, 150, 512, 175);
+        ctx.stroke();
+
+        // Branching crimson coronary arteries & blue cardiac veins
+        const drawBranch = (x0: number, y0: number, col: string) => {
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 4.5;
+          ctx.beginPath();
+          ctx.moveTo(x0, y0);
+          ctx.bezierCurveTo(x0 + 18, y0 + 90, x0 - 22, y0 + 180, x0 + 12, y0 + 290);
+          ctx.stroke();
+          ctx.lineWidth = 2.2;
+          for (let b = 1; b <= 4; b++) {
+            const by = y0 + b * 62;
+            ctx.beginPath();
+            ctx.moveTo(x0, by);
+            ctx.lineTo(x0 + (b % 2 === 0 ? 48 : -44), by + 36);
+            ctx.stroke();
+          }
+        };
+        drawBranch(256, 155, 'rgba(244, 63, 94, 0.85)');
+        drawBranch(266, 160, 'rgba(59, 130, 246, 0.72)');
+        drawBranch(110, 175, 'rgba(244, 63, 94, 0.65)');
+        drawBranch(405, 175, 'rgba(59, 130, 246, 0.62)');
+
+        const tex = new THREE.CanvasTexture(cnv);
+        tex.needsUpdate = true;
+        return tex;
+      };
+
+      const muscleTex = makeHeartMuscleTexture();
+      const myocardiumMat = new THREE.MeshStandardMaterial({
+        map: muscleTex || undefined,
+        color: 0xe11d48,
+        roughness: 0.34,
+        metalness: 0.08,
         clippingPlanes: [clippingPlane],
-        clipShadows: true,
         side: THREE.DoubleSide,
       });
-      const heartBody = new THREE.Mesh(bodyGeo, bodyMat);
-      heartGroup.add(heartBody);
-
-      // Aorta Arch
-      const aortaGeo = new THREE.TorusGeometry(1.4, 0.45, 16, 32, Math.PI);
+      const atriumMat = new THREE.MeshStandardMaterial({
+        color: 0x9f1239,
+        roughness: 0.42,
+        metalness: 0.06,
+        clippingPlanes: [clippingPlane],
+      });
       const aortaMat = new THREE.MeshStandardMaterial({
-        color: 0xe11d48,
-        roughness: 0.3,
+        color: 0xf43f5e,
+        emissive: 0x4c0519,
+        emissiveIntensity: 0.2,
+        roughness: 0.28,
+        metalness: 0.1,
         clippingPlanes: [clippingPlane],
       });
-      const aorta = new THREE.Mesh(aortaGeo, aortaMat);
-      aorta.position.set(0.2, 2.5, 0);
-      aorta.rotation.z = -Math.PI / 1.1;
-      heartGroup.add(aorta);
-
-      // Vena Cava
-      const venaGeo = new THREE.CylinderGeometry(0.4, 0.4, 2.2, 16);
-      const venaMat = new THREE.MeshStandardMaterial({
+      const venousMat = new THREE.MeshStandardMaterial({
         color: 0x2563eb,
-        roughness: 0.3,
+        emissive: 0x172554,
+        emissiveIntensity: 0.22,
+        roughness: 0.32,
+        metalness: 0.12,
         clippingPlanes: [clippingPlane],
       });
-      const vena = new THREE.Mesh(venaGeo, venaMat);
-      vena.position.set(-1.2, 2.4, 0.2);
-      heartGroup.add(vena);
+      const pulmonaryMat = new THREE.MeshStandardMaterial({
+        color: 0x3b82f6,
+        roughness: 0.32,
+        metalness: 0.12,
+        clippingPlanes: [clippingPlane],
+      });
 
-      // Pulmonary Artery
-      const pulmGeo = new THREE.CylinderGeometry(0.38, 0.38, 2.0, 16);
-      const pulm = new THREE.Mesh(pulmGeo, venaMat);
-      pulm.position.set(1.1, 2.1, 0.3);
-      pulm.rotation.z = Math.PI / 5;
-      heartGroup.add(pulm);
+      // 1. Sculpted Asymmetrical Ventricular Myocardium (distinct tapered left-tilted apex & interventricular groove!)
+      const ventGeo = new THREE.SphereGeometry(2.05, 56, 48);
+      const posAttr = ventGeo.attributes.position;
+      for (let i = 0; i < posAttr.count; i++) {
+        let x = posAttr.getX(i);
+        let y = posAttr.getY(i);
+        let z = posAttr.getZ(i);
+
+        // Stretch vertically slightly and flatten front-to-back slightly like a real human heart
+        y *= 1.28;
+        z *= 0.86;
+
+        // Taper bottom smoothly into the iconic leftward-pointing cardiac APEX!
+        if (y < 0) {
+          const t = Math.min(1, Math.abs(y) / 2.65);
+          const taper = 1 - t * 0.56;
+          x = x * taper + t * t * 0.72; // Apex tilts toward viewer's right (anatomical left!)
+          z *= taper;
+        } else {
+          // Broaden upper base slightly where the ventricles meet the atria
+          const u = Math.min(1, y / 2.65);
+          x *= 1 + u * 0.08;
+        }
+
+        // Subtle anterior interventricular sulcus groove separating right & left ventricles
+        if (z > 0.2 && Math.abs(x - (0.15 - y * 0.16)) < 0.45) {
+          const groove = Math.cos(((x - (0.15 - y * 0.16)) / 0.45) * (Math.PI / 2));
+          z -= groove * 0.22;
+        }
+
+        posAttr.setXYZ(i, x, y - 0.35, z);
+      }
+      ventGeo.computeVertexNormals();
+      const ventMesh = new THREE.Mesh(ventGeo, myocardiumMat);
+      ventMesh.name = 'Left Ventricle';
+      heartGroup.add(ventMesh);
+
+      // 2. Right Atrium & Scalloped Right Auricle (anatomical right = viewer's left)
+      const rightAtrium = new THREE.Mesh(new THREE.SphereGeometry(1.08, 32, 28), atriumMat);
+      rightAtrium.scale.set(1.05, 0.95, 0.92);
+      rightAtrium.position.set(-1.28, 1.35, 0.18);
+      heartGroup.add(rightAtrium);
+
+      // 3. Left Atrium & Left Auricle (upper-right posterior)
+      const leftAtrium = new THREE.Mesh(new THREE.SphereGeometry(0.98, 32, 28), atriumMat);
+      leftAtrium.scale.set(1.08, 0.9, 0.88);
+      leftAtrium.position.set(1.05, 1.48, -0.22);
+      heartGroup.add(leftAtrium);
+
+      // 4. Sweeping Aortic Arch (TubeGeometry curving over the top + Descending Aorta!)
+      const aortaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.15, 0.95, 0.15),
+        new THREE.Vector3(-0.18, 2.25, 0.12),
+        new THREE.Vector3(0.32, 3.12, -0.05),
+        new THREE.Vector3(0.92, 2.55, -0.58),
+        new THREE.Vector3(0.75, 0.4, -1.05),
+        new THREE.Vector3(0.55, -2.1, -1.15),
+      ]);
+      const aortaMesh = new THREE.Mesh(new THREE.TubeGeometry(aortaCurve, 44, 0.44, 20, false), aortaMat);
+      aortaMesh.name = 'Aorta Arch';
+      heartGroup.add(aortaMesh);
+
+      // 3 Iconic Superior Aortic Arch Branches (Brachiocephalic, Left Common Carotid, Left Subclavian)
+      const archBranches: [number, number, number, number][] = [
+        [-0.08, 3.25, 0.04, 0.14],
+        [0.3, 3.45, -0.08, -0.04],
+        [0.66, 3.22, -0.26, -0.22],
+      ];
+      archBranches.forEach(([bx, by, bz, rz]) => {
+        const br = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.17, 1.05, 16), aortaMat);
+        br.position.set(bx, by, bz);
+        br.rotation.z = rz;
+        heartGroup.add(br);
+      });
+
+      // 5. Superior & Inferior Vena Cava (venous blue trunks entering Right Atrium)
+      const svcCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-1.32, 3.45, -0.08),
+        new THREE.Vector3(-1.35, 2.4, 0.05),
+        new THREE.Vector3(-1.25, 1.4, 0.12),
+      ]);
+      const svcMesh = new THREE.Mesh(new THREE.TubeGeometry(svcCurve, 20, 0.36, 18, false), venousMat);
+      svcMesh.name = 'Vena Cava';
+      heartGroup.add(svcMesh);
+
+      const ivcMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 1.65, 18), venousMat);
+      ivcMesh.position.set(-1.22, -1.65, -0.32);
+      heartGroup.add(ivcMesh);
+
+      // 6. Pulmonary Artery Trunk + Left & Right Bifurcation sweeping across front of Aorta!
+      const pulmMain = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(-0.28, 0.72, 0.82),
+        new THREE.Vector3(0.05, 1.82, 0.78),
+        new THREE.Vector3(0.32, 2.32, 0.38),
+      ]);
+      const pulmMesh = new THREE.Mesh(new THREE.TubeGeometry(pulmMain, 24, 0.36, 18, false), pulmonaryMat);
+      pulmMesh.name = 'Pulmonary Artery';
+      heartGroup.add(pulmMesh);
+
+      const pulmLeftBranch = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.3, 2.3, 0.38),
+        new THREE.Vector3(1.15, 2.28, 0.15),
+        new THREE.Vector3(1.95, 2.08, -0.15),
+      ]);
+      heartGroup.add(new THREE.Mesh(new THREE.TubeGeometry(pulmLeftBranch, 16, 0.25, 14, false), pulmonaryMat));
+
+      const pulmRightBranch = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.28, 2.28, 0.34),
+        new THREE.Vector3(-0.65, 2.15, -0.2),
+        new THREE.Vector3(-1.75, 2.02, -0.42),
+      ]);
+      heartGroup.add(new THREE.Mesh(new THREE.TubeGeometry(pulmRightBranch, 16, 0.24, 14, false), pulmonaryMat));
+
+      // 7. 4 Arterial Red Pulmonary Veins entering Left Atrium
+      [
+        [1.75, 1.65, -0.35, 0.2],
+        [1.75, 1.15, -0.45, -0.15],
+        [-0.35, 1.32, -1.02, 0.25],
+        [-0.2, 0.92, -1.05, -0.2],
+      ].forEach(([vx, vy, vz, rz]) => {
+        const pv = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.85, 14), aortaMat);
+        pv.position.set(vx, vy, vz);
+        pv.rotation.z = Math.PI / 2 + rz;
+        heartGroup.add(pv);
+      });
+
+      // 8. Raised Anterior Interventricular Coronary Artery hugging the heart front!
+      const corCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.08, 1.0, 1.48),
+        new THREE.Vector3(0.26, 0.1, 1.68),
+        new THREE.Vector3(0.45, -0.95, 1.48),
+        new THREE.Vector3(0.65, -2.05, 0.92),
+      ]);
+      heartGroup.add(
+        new THREE.Mesh(
+          new THREE.TubeGeometry(corCurve, 24, 0.085, 10, false),
+          new THREE.MeshStandardMaterial({ color: 0xfb7185, emissive: 0xbe123c, emissiveIntensity: 0.35, roughness: 0.25 })
+        )
+      );
+
+      // Interactive 3D Pointer Callout for the selected anatomical heart region!
+      const heartAnchorMap: Record<string, { pos: [number, number, number]; color: string }> = {
+        'Left Ventricle': { pos: [0.95, -1.2, 1.35], color: '#facc15' },
+        'Aorta Arch': { pos: [0.32, 3.15, 0.1], color: '#fb7185' },
+        'Vena Cava': { pos: [-1.35, 2.75, 0.12], color: '#38bdf8' },
+        'Pulmonary Artery': { pos: [0.22, 2.25, 0.65], color: '#60a5fa' },
+      };
+      const heartTarget = heartAnchorMap[selectedHeartPart];
+      if (heartTarget) {
+        heartGroup.add(create3DPointerCallout(heartTarget.pos, selectedHeartPart.toUpperCase(), heartTarget.color));
+      }
 
       scene.add(heartGroup);
       state.heartMesh = heartGroup;
 
-      // Flowing Blood Corpuscles
+      // Flowing Oxygenated (Red) & Deoxygenated (Blue) Blood Corpuscles
       const particleCount = 120;
       const bloodGeo = new THREE.BufferGeometry();
       const positions = new Float32Array(particleCount * 3);
@@ -1708,19 +2002,16 @@ export function VRLabExplorer({
           isArterial,
         });
 
-        const r = isArterial ? 1.0 : 0.2;
-        const g = isArterial ? 0.1 : 0.5;
-        const b = isArterial ? 0.2 : 1.0;
-        colors[i * 3] = r;
-        colors[i * 3 + 1] = g;
-        colors[i * 3 + 2] = b;
+        colors[i * 3] = isArterial ? 1.0 : 0.2;
+        colors[i * 3 + 1] = isArterial ? 0.15 : 0.55;
+        colors[i * 3 + 2] = isArterial ? 0.25 : 1.0;
       }
 
       bloodGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       bloodGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
       const bloodMat = new THREE.PointsMaterial({
-        size: 0.25,
+        size: 0.22,
         vertexColors: true,
         transparent: true,
         opacity: 0.9,
@@ -1732,12 +2023,24 @@ export function VRLabExplorer({
       state.bloodParticles = bloodParticles;
     }
 
-    // 3. 3D GEOMETRY (MANIM MATHEMATICAL NET UNFOLD)
+    // 3. 2D & 3D GEOMETRY STUDIO WITH LIVE ANIMATED 3D POINTERS (VERTICES, EDGES, FACES, RADIUS, APEX!)
     else if (activeModule === 'geometry-volume') {
-      camera.position.set(0, 4, 12);
+      const shapeMeta = GEOMETRY_SHAPES.find((g) => g.id === selectedShape) || GEOMETRY_SHAPES[12];
+      const is2D = shapeMeta.dimension === '2D';
+      camera.position.set(0, is2D ? 0.5 : 3.8, is2D ? 10.5 : 11.5);
       camera.lookAt(0, 0, 0);
+      if (is2D) {
+        state.controls.rotX = 0.08;
+        state.controls.rotY = 0;
+        state.controls.zoom = 10.2;
+      }
 
       const group = new THREE.Group();
+      group.userData = { is2DShape: is2D };
+
+      const edgeHighlightColor = geoHighlightPart === 'edges' ? 0x22d3ee : 0xfacc15;
+      const faceEmissiveHex = geoHighlightPart === 'faces' ? shapeMeta.colorHex : 0x000000;
+      const faceEmissiveIntensity = geoHighlightPart === 'faces' ? 0.42 : 0;
 
       if (selectedShape === 'cube') {
         const s = 2.4;
@@ -1746,27 +2049,27 @@ export function VRLabExplorer({
         const makeFace = (colorHex: number) => {
           const mat = new THREE.MeshStandardMaterial({
             color: colorHex,
+            emissive: new THREE.Color(faceEmissiveHex),
+            emissiveIntensity: faceEmissiveIntensity,
             side: THREE.DoubleSide,
-            roughness: 0.3,
-            metalness: 0.1,
+            roughness: 0.28,
+            metalness: 0.12,
             transparent: true,
             opacity: 0.9,
             clippingPlanes: [clippingPlane],
           });
           const mesh = new THREE.Mesh(faceGeo, mat);
           const edges = new THREE.EdgesGeometry(faceGeo);
-          const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 }));
+          const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: edgeHighlightColor }));
           mesh.add(line);
           return mesh;
         };
 
-        // True mathematical hinged cube net: Bottom stays anchored on y = -h
         const bottom = makeFace(0x2563eb);
         bottom.rotation.x = -Math.PI / 2;
         bottom.position.set(0, -h, 0);
         group.add(bottom);
 
-        // Front hinge at z = +h, y = -h
         const frontHinge = new THREE.Group();
         frontHinge.position.set(0, -h, h);
         const frontFace = makeFace(0x3b82f6);
@@ -1774,14 +2077,12 @@ export function VRLabExplorer({
         frontHinge.add(frontFace);
         group.add(frontHinge);
 
-        // Back hinge at z = -h, y = -h
         const backHinge = new THREE.Group();
         backHinge.position.set(0, -h, -h);
         const backFace = makeFace(0x1d4ed8);
         backFace.position.set(0, h, 0);
         backHinge.add(backFace);
 
-        // Top face hinged to the top edge of Back face so unfolding opens into a classic cross net!
         const topHinge = new THREE.Group();
         topHinge.position.set(0, s, 0);
         const topFace = makeFace(0x60a5fa);
@@ -1791,7 +2092,6 @@ export function VRLabExplorer({
         backHinge.add(topHinge);
         group.add(backHinge);
 
-        // Left hinge at x = -h, y = -h
         const leftHinge = new THREE.Group();
         leftHinge.position.set(-h, -h, 0);
         const leftFace = makeFace(0x0ea5e9);
@@ -1800,7 +2100,6 @@ export function VRLabExplorer({
         leftHinge.add(leftFace);
         group.add(leftHinge);
 
-        // Right hinge at x = +h, y = -h
         const rightHinge = new THREE.Group();
         rightHinge.position.set(h, -h, 0);
         const rightFace = makeFace(0x38bdf8);
@@ -1817,37 +2116,90 @@ export function VRLabExplorer({
           top: topHinge,
         };
       } else {
-        let geo;
-        let shapeColor = 0x2563eb;
-        if (selectedShape === 'cuboid') {
-          // 3D Rectangular Prism (Cuboid): clear length > depth > height ratio
+        let geo: any;
+        const extrudeFlat2D = (shape2D: any) =>
+          new THREE.ExtrudeGeometry(shape2D, { depth: 0.14, bevelEnabled: false });
+
+        if (is2D) {
+          const sh = new THREE.Shape();
+          if (selectedShape === 'circle') {
+            sh.absarc(0, 0, 2.2, 0, Math.PI * 2, false);
+            geo = extrudeFlat2D(sh);
+            // Add crisp glowing Radius line inside Circle!
+            const radLine = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0.17),
+                new THREE.Vector3(2.2, 0, 0.17),
+              ]),
+              new THREE.LineBasicMaterial({ color: 0xfacc15 })
+            );
+            group.add(radLine);
+          } else if (selectedShape === 'oval') {
+            sh.absellipse(0, 0, 2.6, 1.55, 0, Math.PI * 2, false, 0);
+            geo = extrudeFlat2D(sh);
+            const axisLine = new THREE.Line(
+              new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(-2.6, 0, 0.17),
+                new THREE.Vector3(2.6, 0, 0.17),
+              ]),
+              new THREE.LineBasicMaterial({ color: 0xfacc15 })
+            );
+            group.add(axisLine);
+          } else {
+            const pts = shapeMeta.vertexPoints;
+            if (pts.length >= 3) {
+              sh.moveTo(pts[0][0], pts[0][1]);
+              for (let pi = 1; pi < pts.length; pi++) sh.lineTo(pts[pi][0], pts[pi][1]);
+              sh.closePath();
+              geo = extrudeFlat2D(sh);
+            } else {
+              geo = new THREE.BoxGeometry(3.6, 3.6, 0.14);
+            }
+          }
+          // Center thin 2D plate on Z = 0
+          geo.translate(0, 0, -0.07);
+        } else if (selectedShape === 'cuboid') {
           geo = new THREE.BoxGeometry(4.4, 2.2, 2.8);
-          shapeColor = 0x0ea5e9;
         } else if (selectedShape === 'cylinder') {
-          geo = new THREE.CylinderGeometry(1.7, 1.7, 3.6, 32);
-          shapeColor = 0x2563eb;
+          geo = new THREE.CylinderGeometry(1.7, 1.7, 3.6, 36);
         } else if (selectedShape === 'pyramid') {
           geo = new THREE.ConeGeometry(2.4, 3.6, 4);
-          shapeColor = 0xd97706;
+          geo.rotateY(Math.PI / 4);
+        } else if (selectedShape === 'triangular-pyramid') {
+          geo = new THREE.ConeGeometry(2.2, 3.7, 3);
         } else if (selectedShape === 'cone') {
-          geo = new THREE.ConeGeometry(2.0, 3.8, 32);
-          shapeColor = 0xe11d48;
+          geo = new THREE.ConeGeometry(2.0, 3.8, 36);
         } else if (selectedShape === 'prism') {
-          // Triangular Prism (3-sided cylinder)
-          geo = new THREE.CylinderGeometry(2.2, 2.2, 4.0, 3);
-          shapeColor = 0x10b981;
+          geo = new THREE.CylinderGeometry(2.0, 2.0, 4.0, 3);
+        } else if (selectedShape === 'hex-prism') {
+          geo = new THREE.CylinderGeometry(1.9, 1.9, 3.6, 6);
+        } else if (selectedShape === 'hemisphere') {
+          geo = new THREE.SphereGeometry(2.2, 36, 24, 0, Math.PI * 2, 0, Math.PI / 2);
+          const cap = new THREE.Mesh(
+            new THREE.CircleGeometry(2.2, 36),
+            new THREE.MeshStandardMaterial({
+              color: shapeMeta.colorHex,
+              roughness: 0.3,
+              side: THREE.DoubleSide,
+              clippingPlanes: [clippingPlane],
+            })
+          );
+          cap.rotation.x = Math.PI / 2;
+          group.add(cap);
         } else if (selectedShape === 'torus') {
           geo = new THREE.TorusGeometry(2.0, 0.72, 24, 48);
-          shapeColor = 0x9333ea;
+        } else if (selectedShape === 'octahedron') {
+          geo = new THREE.OctahedronGeometry(2.2, 0);
         } else {
-          geo = new THREE.SphereGeometry(2.2, 32, 32);
-          shapeColor = 0x3b82f6;
+          geo = new THREE.SphereGeometry(2.2, 36, 36);
         }
 
         const mat = new THREE.MeshStandardMaterial({
-          color: shapeColor,
+          color: shapeMeta.colorHex,
+          emissive: new THREE.Color(faceEmissiveHex),
+          emissiveIntensity: faceEmissiveIntensity,
           roughness: 0.25,
-          metalness: 0.2,
+          metalness: 0.18,
           transparent: true,
           opacity: 0.88,
           side: THREE.DoubleSide,
@@ -1856,9 +2208,43 @@ export function VRLabExplorer({
 
         const mesh = new THREE.Mesh(geo, mat);
         const edges = new THREE.EdgesGeometry(geo);
-        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xfacc15 }));
+        const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: edgeHighlightColor }));
         mesh.add(line);
         group.add(mesh);
+      }
+
+      // Light up glowing 3D Vertex Spheres on EVERY corner when Vertices pointer is active!
+      if (geoHighlightPart === 'vertices' && shapeMeta.vertexPoints.length > 0) {
+        const vSphereGeo = new THREE.SphereGeometry(0.19, 18, 18);
+        const vSphereMat = new THREE.MeshBasicMaterial({ color: 0xfacc15 });
+        shapeMeta.vertexPoints.forEach(([vx, vy, vz]) => {
+          const vs = new THREE.Mesh(vSphereGeo, vSphereMat);
+          vs.position.set(vx, vy, vz);
+          group.add(vs);
+        });
+      }
+
+      // Attach live animated 3D Pointer Arrow + Floating Badge showing exact Vertex / Edge / Face!
+      if (geoHighlightPart !== 'none') {
+        const ptrPos =
+          geoHighlightPart === 'vertices'
+            ? shapeMeta.pointers.vertex
+            : geoHighlightPart === 'edges'
+              ? shapeMeta.pointers.edge
+              : shapeMeta.pointers.face;
+        const ptrLabel =
+          geoHighlightPart === 'vertices'
+            ? shapeMeta.pointers.vertexLabel || 'VERTEX (CORNER)'
+            : geoHighlightPart === 'edges'
+              ? shapeMeta.pointers.edgeLabel || 'EDGE (SIDE)'
+              : shapeMeta.pointers.faceLabel || 'FACE (SURFACE)';
+        const ptrColor =
+          geoHighlightPart === 'vertices'
+            ? '#facc15'
+            : geoHighlightPart === 'edges'
+              ? '#22d3ee'
+              : '#34d399';
+        group.add(create3DPointerCallout(ptrPos, ptrLabel, ptrColor));
       }
 
       scene.add(group);
@@ -2512,6 +2898,30 @@ export function VRLabExplorer({
 
             const tex = new THREE.CanvasTexture(cnv);
             tex.needsUpdate = true;
+
+            // If station has a real verified Wikipedia photograph (e.g., President portrait, Dinosaur, Volcano!), paint it crisply onto the 3D poster!
+            if (st.imageUrl) {
+              const img = new Image();
+              img.crossOrigin = 'anonymous';
+              img.onload = () => {
+                try {
+                  ctx.save();
+                  drawRoundedRect(ctx, 38, 122, 250, 182, 18);
+                  ctx.clip();
+                  const scale = Math.max(250 / img.width, 182 / img.height);
+                  const dw = img.width * scale;
+                  const dh = img.height * scale;
+                  ctx.drawImage(img, 38 + (250 - dw) / 2, 122 + (182 - dh) / 2, dw, dh);
+                  ctx.restore();
+                  ctx.strokeStyle = '#facc15';
+                  ctx.lineWidth = 5;
+                  drawRoundedRect(ctx, 38, 122, 250, 182, 18);
+                  ctx.stroke();
+                  tex.needsUpdate = true;
+                } catch (_) {}
+              };
+              img.src = st.imageUrl;
+            }
             return tex;
           };
 
@@ -2749,7 +3159,7 @@ export function VRLabExplorer({
       scene.add(customGroup);
       state.vaultMesh = customGroup;
     }
-  }, [activeModule, selectedShape, customAiKind, aiBlueprint]);
+  }, [activeModule, selectedShape, geoHighlightPart, selectedHeartPart, customAiKind, aiBlueprint]);
 
   useEffect(() => {
     buildActiveScene();
@@ -2919,12 +3329,24 @@ export function VRLabExplorer({
         }
       }
 
-      // 3. Geometry (True Hinged Manim Net Unfolding)
+      // 3. Geometry (2D Flat + 3D Solid Shapes + Live Animated 3D Pointers + Hinged Cube Net!)
       else if (lp.activeModule === 'geometry-volume') {
         if (state.geometryMesh && effectiveSpeed > 0) {
-          state.geometryMesh.rotation.y += (lp.selectedShape === 'cube' ? 0.003 : 0.008) * effectiveSpeed;
-          if (lp.selectedShape !== 'cube') {
-            state.geometryMesh.rotation.x += 0.004 * effectiveSpeed;
+          if (state.geometryMesh.userData?.is2DShape) {
+            // Gentle 3D showcase sway for flat 2D shapes so pupils can always read vertices/edges clearly
+            state.geometryMesh.rotation.y = Math.sin(time * 0.85 * effectiveSpeed) * 0.32;
+            state.geometryMesh.rotation.x = Math.cos(time * 0.6 * effectiveSpeed) * 0.08;
+          } else {
+            state.geometryMesh.rotation.y += (lp.selectedShape === 'cube' ? 0.003 : 0.006) * effectiveSpeed;
+            if (lp.selectedShape !== 'cube') {
+              state.geometryMesh.rotation.x = Math.sin(time * 0.45 * effectiveSpeed) * 0.18;
+            }
+          }
+          // Subtle pulse on the 3D pointer arrow so students immediately spot it!
+          const ptrArrow = state.geometryMesh.getObjectByName('vrPointerArrow');
+          if (ptrArrow) {
+            const pScale = 1 + Math.sin(time * 5.2) * 0.12;
+            ptrArrow.scale.set(pScale, pScale, pScale);
           }
         }
 
@@ -3249,23 +3671,50 @@ export function VRLabExplorer({
   };
 
   const handleSelectShape = (shape: GeometryShapeId) => {
+    stopTeacherTour();
     setSelectedShape(shape);
+    const meta = GEOMETRY_SHAPES.find((g) => g.id === shape);
+    if (meta) setGeoDimensionTab(meta.dimension);
+    setGeoHighlightPart('vertices');
     setNetUnfoldAmount(0);
     broadcastVRState({ selectedShape: shape, netUnfoldAmount: 0 });
     playSynthesizedSound('chime');
-    const texts: Record<GeometryShapeId, string> = {
-      cube: 'This is a 3D Cube. A cube has 6 identical square faces, 12 straight edges, and 8 vertices. Its volume is side cubed, and its surface area is 6 times side squared. Slide Unfold Net to see its flat 2D pattern!',
-      cuboid: 'This is a 3D Rectangular Prism, also called a Cuboid! It has 6 rectangular faces, 12 edges, and 8 right-angle vertices. Its volume is length times width times height!',
-      cylinder: 'This is a cylinder. It has two congruent circular bases connected by a smooth curved surface. Its volume formula is pi times radius squared times height!',
-      pyramid: 'This is a square pyramid. It has one square base and four triangular faces that converge at a single apex. Its volume is one third times base area times height!',
-      cone: 'This is a 3D Cone. It has a flat circular base tapering smoothly to a single point called the apex. Its volume is one third times pi times radius squared times height!',
-      prism: 'This is a Triangular Prism! It has two identical triangular bases connected by three rectangular sides. Its volume is the area of the triangular base times length!',
-      sphere: 'This is a sphere. Every point on its surface is the exact same distance from the center. Its volume is four thirds pi r cubed, and surface area is four pi r squared!',
-      torus: 'This is a 3D Torus, shaped like a geometric ring or donut! It is formed by revolving a circle in 3D space around a central axis.',
-    };
-    if (texts[shape] && autoNarrate) {
-      speakNarration(texts[shape]);
+    if (meta && autoNarrate) {
+      speakNarration(meta.overviewSpeech);
     }
+  };
+
+  const handlePointGeometryPart = (part: GeoHighlightPart) => {
+    stopTeacherTour();
+    setGeoHighlightPart(part);
+    playSynthesizedSound('space');
+    const meta = GEOMETRY_SHAPES.find((g) => g.id === selectedShape);
+    if (!meta) return;
+    if (part === 'vertices') speakNarration(meta.vertexSpeech);
+    else if (part === 'edges') speakNarration(meta.edgeSpeech);
+    else if (part === 'faces') speakNarration(meta.faceSpeech);
+  };
+
+  const autoTeachGeometryParts = () => {
+    const meta = GEOMETRY_SHAPES.find((g) => g.id === selectedShape);
+    if (!meta) return;
+    stopTeacherTour();
+    const seqId = ++teachSequenceIdRef.current;
+    const steps: { part: GeoHighlightPart; text: string }[] = [
+      { part: 'vertices', text: meta.vertexSpeech },
+      { part: 'edges', text: meta.edgeSpeech },
+      { part: 'faces', text: meta.faceSpeech },
+    ];
+    const runStep = (i: number) => {
+      if (teachSequenceIdRef.current !== seqId || i >= steps.length) return;
+      setGeoHighlightPart(steps[i].part);
+      playSynthesizedSound('chime');
+      speakNarration(steps[i].text, () => {
+        if (teachSequenceIdRef.current !== seqId) return;
+        teacherTourTimerRef.current = setTimeout(() => runStep(i + 1), 700);
+      });
+    };
+    runStep(0);
   };
 
   const handleSelectLayer = (layerName: string) => {
@@ -3538,29 +3987,55 @@ export function VRLabExplorer({
             </button>
           </div>
 
-          {/* Quick Presets */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full">
-            <span className="text-[10px] text-white/50 font-bold shrink-0">Popular Lessons:</span>
-            {[
-              { label: '💰 Profit & Loss', query: 'Profit and Loss' },
-              { label: '📚 Parts of Speech', query: 'Parts of Speech' },
-              { label: '🍕 Fractions', query: 'Fractions' },
-              { label: '🌧️ Water Cycle', query: 'Water Cycle' },
-              { label: '🌿 Photosynthesis', query: 'Photosynthesis' },
-              { label: '📦 Rectangle', query: 'Rectangle' },
-              { label: '🚗 Car', query: 'Car' },
-            ].map((p) => (
+          {/* Automatic Curriculum Subject & Topic Explorer Hub */}
+          <div className="space-y-1.5 w-full">
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {AUTO_CURRICULUM_SUBJECTS.map((subj) => (
+                <button
+                  key={subj.id}
+                  onClick={() => setActiveCurriculumSubject(subj.id)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black shrink-0 border transition-all cursor-pointer ${
+                    activeCurriculumSubject === subj.id
+                      ? 'bg-yellow text-dark border-dark shadow-sm'
+                      : 'bg-white/10 hover:bg-white/20 text-white/80 border-white/10'
+                  }`}
+                >
+                  {subj.label}
+                </button>
+              ))}
               <button
-                key={p.label}
                 onClick={() => {
-                  setAiPromptText(p.query);
-                  handleGenerateAi3D(p.query);
+                  const allTopics = AUTO_CURRICULUM_SUBJECTS.flatMap((s) => s.topics);
+                  const pick = allTopics[Math.floor(Math.random() * allTopics.length)];
+                  if (pick) {
+                    setAiPromptText(pick.query);
+                    handleGenerateAi3D(pick.query);
+                  }
                 }}
-                className="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/85 text-[10px] font-bold shrink-0 cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-emerald-500/25 hover:bg-emerald-500/40 text-emerald-200 border border-emerald-400/40 text-[10px] font-black shrink-0 cursor-pointer"
+                title="Automatically pick and generate a rich curriculum VR lesson!"
               >
-                {p.label}
+                🎲 Surprise Auto-Lesson
               </button>
-            ))}
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              <span className="text-[10px] text-white/50 font-bold shrink-0">1-Click Topics:</span>
+              {(
+                AUTO_CURRICULUM_SUBJECTS.find((s) => s.id === activeCurriculumSubject)?.topics ||
+                AUTO_CURRICULUM_SUBJECTS[0].topics
+              ).map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => {
+                    setAiPromptText(p.query);
+                    handleGenerateAi3D(p.query);
+                  }}
+                  className="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-purple-500/40 text-white/90 text-[10px] font-bold shrink-0 border border-white/10 cursor-pointer"
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -3987,124 +4462,159 @@ export function VRLabExplorer({
           </aside>
         )}
 
-        {/* 3. 3D GEOMETRY */}
-        {activeModule === 'geometry-volume' && showInfoCard && (
-          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
-            <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
-              <div className="flex items-center gap-2">
-                <Box className="w-4 h-4 text-yellow" />
-                <h3 className="font-black text-sm uppercase text-yellow">3D Geometry & Volume</h3>
-              </div>
-              <button
-                onClick={() => handleSelectShape(selectedShape)}
-                className="h-6 px-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 flex items-center gap-1 text-[10px] font-black border border-emerald-500/30"
-              >
-                <Volume2 className="w-3 h-3" />
-                <span>Listen</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-4 gap-1 mb-3">
-              {(
-                [
-                  { id: 'cube', label: 'Cube' },
-                  { id: 'cuboid', label: 'Rect' },
-                  { id: 'cylinder', label: 'Cyl' },
-                  { id: 'pyramid', label: 'Pyr' },
-                  { id: 'cone', label: 'Cone' },
-                  { id: 'prism', label: 'Prism' },
-                  { id: 'sphere', label: 'Sphere' },
-                  { id: 'torus', label: 'Torus' },
-                ] as { id: GeometryShapeId; label: string }[]
-              ).map((s) => (
+        {/* 3. 2D & 3D GEOMETRY STUDIO WITH LIVE ANIMATED 3D POINTERS */}
+        {activeModule === 'geometry-volume' && showInfoCard && (() => {
+          const activeGeo = GEOMETRY_SHAPES.find((g) => g.id === selectedShape) || GEOMETRY_SHAPES[12];
+          const tabShapes = GEOMETRY_SHAPES.filter((g) => g.dimension === geoDimensionTab);
+          return (
+            <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-80 sm:w-[340px] max-h-[calc(100%-115px)] overflow-y-auto bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-3.5 text-white shadow-2xl animate-in fade-in`}>
+              <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Box className="w-4 h-4 text-yellow shrink-0" />
+                  <h3 className="font-black text-xs uppercase text-yellow truncate">
+                    2D &amp; 3D Geometry Studio
+                  </h3>
+                </div>
                 <button
-                  key={s.id}
-                  onClick={() => handleSelectShape(s.id)}
-                  className={`py-1.5 rounded-xl border text-[10px] font-black uppercase transition-all ${
-                    selectedShape === s.id
-                      ? 'bg-yellow text-dark border-dark shadow-sm'
-                      : 'bg-white/10 border-white/10 text-white/70 hover:bg-white/20'
-                  }`}
+                  onClick={autoTeachGeometryParts}
+                  className="h-6 px-2 rounded-lg bg-yellow hover:bg-yellow/90 text-dark flex items-center gap-1 text-[10px] font-black border border-dark shrink-0 cursor-pointer"
+                  title="AI Teacher points to Vertices, Edges & Faces sequentially!"
                 >
-                  {s.label}
+                  <GraduationCap className="w-3 h-3" />
+                  <span>Auto-Point</span>
                 </button>
-              ))}
-            </div>
+              </div>
 
-            {selectedShape === 'cube' && (
-              <div className="bg-blue-950/70 border border-blue-500/30 p-2.5 rounded-xl mb-3">
-                <div className="flex items-center justify-between text-xs font-bold mb-1">
-                  <span className="flex items-center gap-1 text-blue-200">
-                    <Sliders className="w-3 h-3 text-yellow" /> Manim Net Unfold:
-                  </span>
-                  <span className="font-mono text-yellow">{Math.round(netUnfoldAmount * 100)}%</span>
+              {/* 2D Flat vs 3D Solid Switcher Tabs */}
+              <div className="grid grid-cols-2 gap-1.5 mb-2.5">
+                {(['2D', '3D'] as const).map((dim) => (
+                  <button
+                    key={dim}
+                    onClick={() => {
+                      setGeoDimensionTab(dim);
+                      const first = GEOMETRY_SHAPES.find((g) => g.dimension === dim);
+                      if (first && activeGeo.dimension !== dim) handleSelectShape(first.id);
+                    }}
+                    className={`py-1.5 rounded-xl text-[11px] font-black uppercase border transition-all cursor-pointer ${
+                      geoDimensionTab === dim
+                        ? 'bg-sky-500 text-dark border-sky-200 shadow-sm'
+                        : 'bg-white/10 text-white/75 border-white/10 hover:bg-white/20'
+                    }`}
+                  >
+                    {dim === '2D' ? '📐 2D Flat Shapes (12)' : '🧊 3D Solid Shapes (12)'}
+                  </button>
+                ))}
+              </div>
+
+              {/* Shape Grid (12 Flat 2D OR 12 Solid 3D) */}
+              <div className="grid grid-cols-3 gap-1 mb-2.5">
+                {tabShapes.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleSelectShape(s.id)}
+                    className={`py-1.5 px-1 rounded-xl border text-[10px] font-black uppercase transition-all truncate cursor-pointer ${
+                      selectedShape === s.id
+                        ? 'bg-yellow text-dark border-dark shadow-sm'
+                        : 'bg-white/10 border-white/10 text-white/75 hover:bg-white/20'
+                    }`}
+                  >
+                    {s.shortLabel}
+                  </button>
+                ))}
+              </div>
+
+              {/* LIVE 3D POINTER BUTTONS (Show Students Vertices, Edges, Faces!) */}
+              <div className="bg-indigo-950/75 border border-indigo-400/35 p-2 rounded-xl mb-2.5">
+                <div className="text-[9px] font-black uppercase tracking-wider text-indigo-200 mb-1.5">
+                  👆 Live 3D Teacher Pointer (Tap to Show &amp; Explain):
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={netUnfoldAmount}
-                  onChange={(e) => {
-                    const v = parseFloat(e.target.value);
-                    setNetUnfoldAmount(v);
-                    broadcastVRState({ netUnfoldAmount: v });
-                  }}
-                  className="w-full accent-yellow cursor-pointer h-1.5 rounded-lg"
-                />
-                <div className="flex justify-between text-[9px] text-white/50 mt-1 font-mono">
-                  <span>3D Solid</span>
-                  <span>Flat 2D Net</span>
+                <div className="grid grid-cols-3 gap-1">
+                  <button
+                    onClick={() => handlePointGeometryPart('vertices')}
+                    className={`py-1.5 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
+                      geoHighlightPart === 'vertices'
+                        ? 'bg-yellow text-dark border-dark'
+                        : 'bg-white/10 hover:bg-white/20 text-white border-white/15'
+                    }`}
+                  >
+                    🟡 Vertices
+                  </button>
+                  <button
+                    onClick={() => handlePointGeometryPart('edges')}
+                    className={`py-1.5 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
+                      geoHighlightPart === 'edges'
+                        ? 'bg-cyan-400 text-dark border-dark'
+                        : 'bg-white/10 hover:bg-white/20 text-white border-white/15'
+                    }`}
+                  >
+                    📏 Edges
+                  </button>
+                  <button
+                    onClick={() => handlePointGeometryPart('faces')}
+                    className={`py-1.5 rounded-lg text-[10px] font-black border transition-all cursor-pointer ${
+                      geoHighlightPart === 'faces'
+                        ? 'bg-emerald-400 text-dark border-dark'
+                        : 'bg-white/10 hover:bg-white/20 text-white border-white/15'
+                    }`}
+                  >
+                    🟦 Faces
+                  </button>
                 </div>
               </div>
-            )}
 
-            <div className="space-y-1.5 bg-white/10 p-3 rounded-xl mb-2.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-white/60">Volume Formula:</span>
-                <span className="font-black text-yellow">
-                  {selectedShape === 'cube'
-                    ? 'V = s³'
-                    : selectedShape === 'cuboid'
-                    ? 'V = l × w × h'
-                    : selectedShape === 'cylinder'
-                    ? 'V = π × r² × h'
-                    : selectedShape === 'pyramid'
-                    ? 'V = ⅓ × B × h'
-                    : selectedShape === 'cone'
-                    ? 'V = ⅓ × π × r² × h'
-                    : selectedShape === 'prism'
-                    ? 'V = ½ × b × h × L'
-                    : selectedShape === 'torus'
-                    ? 'V = 2π²Rr²'
-                    : 'V = ⁴⁄₃ × π × r³'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-white/60">Surface Area:</span>
-                <span className="font-black text-emerald-400">
-                  {selectedShape === 'cube'
-                    ? 'SA = 6s²'
-                    : selectedShape === 'cuboid'
-                    ? 'SA = 2(lw + lh + wh)'
-                    : selectedShape === 'cylinder'
-                    ? 'SA = 2πrh + 2πr²'
-                    : selectedShape === 'pyramid'
-                    ? 'SA = B + ½Ps'
-                    : selectedShape === 'cone'
-                    ? 'SA = πr(r + l)'
-                    : selectedShape === 'prism'
-                    ? 'SA = bh + (s₁+s₂+s₃)L'
-                    : selectedShape === 'torus'
-                    ? 'SA = 4π²Rr'
-                    : 'SA = 4πr²'}
-                </span>
-              </div>
-            </div>
-          </aside>
-        )}
+              {selectedShape === 'cube' && (
+                <div className="bg-blue-950/70 border border-blue-500/30 p-2 rounded-xl mb-2.5">
+                  <div className="flex items-center justify-between text-[11px] font-bold mb-1">
+                    <span className="flex items-center gap-1 text-blue-200">
+                      <Sliders className="w-3 h-3 text-yellow" /> Unfold 3D Net:
+                    </span>
+                    <span className="font-mono text-yellow">{Math.round(netUnfoldAmount * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={netUnfoldAmount}
+                    onChange={(e) => {
+                      const v = parseFloat(e.target.value);
+                      setNetUnfoldAmount(v);
+                      broadcastVRState({ netUnfoldAmount: v });
+                    }}
+                    className="w-full accent-yellow cursor-pointer h-1.5 rounded-lg"
+                  />
+                </div>
+              )}
 
-        {/* 4. EARTH LAYERS */}
+              {/* Properties & Formulas Card */}
+              <div className="space-y-1 bg-white/10 p-2.5 rounded-xl text-[11px]">
+                <div className="font-black text-yellow uppercase text-xs mb-1">{activeGeo.label}</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60">Vertices:</span>
+                  <span className="font-black text-yellow">{activeGeo.vertices}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60">Edges / Sides:</span>
+                  <span className="font-black text-cyan-300">{activeGeo.edges}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60">Faces:</span>
+                  <span className="font-black text-emerald-300">{activeGeo.faces}</span>
+                </div>
+                <div className="pt-1.5 mt-1 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-white/60">{activeGeo.primaryFormulaLabel}:</span>
+                  <span className="font-black text-white">{activeGeo.primaryFormula}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-white/60">{activeGeo.secondaryFormulaLabel}:</span>
+                  <span className="font-black text-sky-300">{activeGeo.secondaryFormula}</span>
+                </div>
+              </div>
+            </aside>
+          );
+        })()}
+
+        {/* 4. EARTH LAYERS & GEOGRAPHY VOLCANOES */}
         {activeModule === 'earth-volcano' && showInfoCard && (
           <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
@@ -4143,7 +4653,7 @@ export function VRLabExplorer({
               />
             </div>
 
-            <div className="space-y-1.5 mb-2">
+            <div className="space-y-1.5 mb-3">
               {[
                 { layer: 'Crust', color: '#0284c7', depth: '0 - 70 km', desc: 'Solid rock surface where we live.' },
                 { layer: 'Mantle', color: '#ea580c', depth: '70 - 2,890 km', desc: 'Convection molten rock magma.' },
@@ -4170,6 +4680,14 @@ export function VRLabExplorer({
                 </button>
               ))}
             </div>
+
+            <button
+              onClick={() => handleGenerateAi3D('Volcanoes, Eruptions and Earth Structure')}
+              className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-dark font-black text-[11px] uppercase flex items-center justify-center gap-1.5 border-2 border-dark shadow-[2px_2px_0px_#060E1C] cursor-pointer"
+            >
+              <Flame className="w-3.5 h-3.5" />
+              <span>Full Geography &amp; Volcanoes VR</span>
+            </button>
           </aside>
         )}
 
@@ -4486,6 +5004,28 @@ export function VRLabExplorer({
               <div ref={teacherBodyRef} className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5">
                 {activeSt ? (
                   <>
+                    {/* 0. REAL VERIFIED PHOTOGRAPH BANNER (Presidents, Dinosaurs, Volcanoes, Landmarks!) */}
+                    {activeSt.imageUrl && (
+                      <div className="relative rounded-xl overflow-hidden border-2 border-yellow/50 bg-slate-950 shadow-lg">
+                        <img
+                          src={activeSt.imageUrl}
+                          alt={activeSt.title}
+                          className="w-full h-44 object-cover object-top"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-3 py-2 flex items-end justify-between gap-2">
+                          <span className="text-xs font-black text-white drop-shadow truncate">
+                            📸 {activeSt.title}
+                          </span>
+                          {activeSt.timelineYear && (
+                            <span className="px-2 py-0.5 rounded-full bg-yellow text-dark text-[9px] font-black uppercase shrink-0">
+                              {activeSt.timelineYear}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* 1. Active Station Title + Full Definition + Key Formula/Rule */}
                     <div
                       id="vr-sec-definition"

@@ -28,6 +28,8 @@ import {
   RotateCcw,
   ChevronLeft,
   ChevronRight,
+  GripVertical,
+  Move,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -73,6 +75,46 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [presentationMode, setPresentationMode] = useState<PresentationMode>('none');
   const [isVideoCollapsed, setIsVideoCollapsed] = useState(false);
   const [isPipHidden, setIsPipHidden] = useState(false);
+  const [pipPos, setPipPos] = useState<{ x: number; y: number } | null>(null);
+  const [isDraggingPip, setIsDraggingPip] = useState(false);
+  const [dockPos, setDockPos] = useState<{ x: number; y: number } | null>(null);
+  const [isDraggingDock, setIsDraggingDock] = useState(false);
+  const pipBoxRef = useRef<HTMLDivElement>(null);
+  const dockBoxRef = useRef<HTMLElement>(null);
+
+  const startDragElement = (
+    e: React.PointerEvent,
+    el: HTMLElement | null,
+    setPos: React.Dispatch<React.SetStateAction<{ x: number; y: number } | null>>,
+    setDragging: React.Dispatch<React.SetStateAction<boolean>>
+  ) => {
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = el.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    setDragging(true);
+
+    const onMove = (ev: PointerEvent) => {
+      const maxX = Math.max(8, window.innerWidth - rect.width - 8);
+      const maxY = Math.max(8, window.innerHeight - rect.height - 8);
+      const nextX = Math.max(8, Math.min(maxX, ev.clientX - offsetX));
+      const nextY = Math.max(8, Math.min(maxY, ev.clientY - offsetY));
+      setPos({ x: nextX, y: nextY });
+    };
+
+    const onUp = () => {
+      setDragging(false);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+    };
+
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+  };
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [showAiWorksheetModal, setShowAiWorksheetModal] = useState(false);
   const [isSessionEnded, setIsSessionEnded] = useState(false);
@@ -929,14 +971,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             - PERSISTENT DOM MOUNT: WebRTC call never disconnects!
             ========================================================== */}
         <div
-          className={`flex flex-col bg-[#060E1C] transition-all duration-300 ease-in-out ${
+          ref={pipBoxRef}
+          style={
+            presentationMode !== 'none' && isVideoCollapsed && !isPipHidden && pipPos
+              ? { position: 'fixed', left: pipPos.x, top: pipPos.y, right: 'auto' }
+              : undefined
+          }
+          className={`flex flex-col bg-[#060E1C] ${isDraggingPip ? 'transition-none' : 'transition-all duration-300 ease-in-out'} ${
             presentationMode !== 'none'
               ? isVideoCollapsed
                 ? isPipHidden
                   ? 'w-0 h-0 overflow-hidden border-none shrink-0 pointer-events-none'
-                  : `absolute top-14 right-3 z-40 ${
-                      participantCount > 1 ? 'w-[280px] sm:w-[320px]' : 'w-[170px] sm:w-[195px]'
-                    } h-[126px] rounded-2xl border-[2.5px] border-dark shadow-[5px_5px_0px_#060E1C] overflow-hidden`
+                  : `${pipPos ? 'fixed' : 'absolute top-14 right-3'} z-50 ${
+                      participantCount > 1 ? 'w-[280px] sm:w-[320px]' : 'w-[180px] sm:w-[205px]'
+                    } h-[132px] rounded-2xl border-[2.5px] border-yellow/80 shadow-[5px_5px_0px_#060E1C] overflow-hidden`
                 : 'h-full relative w-[220px] sm:w-[250px] xl:w-[275px] border-l-[3px] border-dark shrink-0 z-20'
               : 'h-full relative flex-1 min-w-0'
           }`}
@@ -978,16 +1026,25 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             </div>
           )}
 
-          {/* Compact Header Strip when Floating at Top-Right (PiP Mini-Video Mode) */}
+          {/* Compact Draggable Header Strip when Floating (PiP Mini-Video Mode) */}
           {presentationMode !== 'none' && isVideoCollapsed && !isPipHidden && (
-            <div className="h-7 px-2.5 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-wider text-white/90">
+            <div
+              onPointerDown={(e) => startDragElement(e, pipBoxRef.current, setPipPos, setIsDraggingPip)}
+              onDoubleClick={() => setPipPos(null)}
+              className="h-7 px-2 bg-[#0d1527] border-b border-white/10 flex items-center justify-between shrink-0 cursor-grab active:cursor-grabbing select-none touch-none"
+              title="Drag to move your mini video anywhere • Double-click to reset"
+            >
+              <div className="flex items-center gap-1 min-w-0">
+                <Move className="w-3 h-3 text-yellow shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-[9px] font-black uppercase tracking-wider text-white/90 truncate">
                   Live ({participantCount})
                 </span>
               </div>
-              <div className="flex items-center gap-1">
+              <div
+                className="flex items-center gap-1 shrink-0"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
                 <button
                   onClick={() => setIsVideoCollapsed(false)}
                   className="px-1.5 py-0.5 rounded bg-yellow/90 hover:bg-yellow text-dark text-[9px] font-black uppercase cursor-pointer"
@@ -1292,10 +1349,29 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       </main>
 
       {/* ============================================================
-          FLOATING MINIMALIST BOTTOM DOCK (CLEAN - NO GOOGLE MEET BUTTON)
+          MOVABLE FLOATING MINIMALIST CONTROL DOCK (DRAG ANYWHERE!)
           ============================================================ */}
-      <footer className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
-        <div className="bg-[#1e1e1e]/95 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/20 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-2 sm:gap-3 transition-all">
+      <footer
+        ref={dockBoxRef}
+        style={
+          dockPos
+            ? { position: 'fixed', left: dockPos.x, top: dockPos.y, bottom: 'auto', transform: 'none' }
+            : undefined
+        }
+        className={`${
+          dockPos ? 'fixed' : 'absolute bottom-5 left-1/2 -translate-x-1/2'
+        } z-50 pointer-events-auto ${isDraggingDock ? 'select-none' : ''}`}
+      >
+        <div className="bg-[#1e1e1e]/95 hover:bg-[#1e1e1e] backdrop-blur-md border border-white/25 p-2 sm:p-2.5 rounded-full shadow-[0px_10px_30px_rgba(0,0,0,0.8)] flex items-center gap-1.5 sm:gap-2.5">
+          {/* Drag Handle so Tutor/Student can move the Share/Mic/Cam/Whiteboard dock anywhere */}
+          <div
+            onPointerDown={(e) => startDragElement(e, dockBoxRef.current, setDockPos, setIsDraggingDock)}
+            onDoubleClick={() => setDockPos(null)}
+            className="w-7 h-10 rounded-full bg-white/10 hover:bg-yellow/25 text-white/75 hover:text-yellow flex items-center justify-center cursor-grab active:cursor-grabbing select-none touch-none shrink-0"
+            title="Drag to move toolbar anywhere • Double-click to snap back to bottom center"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
           {/* Mic Button */}
           <button
             onClick={handleToggleMic}
