@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Pencil, Eraser, Trash2, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { getDrawingCursor } from './drawingCursors';
 
 interface Point {
   x: number;
@@ -480,7 +481,8 @@ export function PDFAnnotator({ lessonId, role, pdfUrl }: PDFAnnotatorProps) {
               onTouchStart={startDrawing}
               onTouchMove={draw}
               onTouchEnd={stopDrawing}
-              className="absolute inset-0 cursor-crosshair"
+              className="absolute inset-0"
+              style={{ cursor: getDrawingCursor(isEraser ? 'eraser' : 'pen', color) }}
             />
           </div>
         )}

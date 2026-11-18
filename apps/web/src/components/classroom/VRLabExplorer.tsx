@@ -824,20 +824,23 @@ export function VRLabExplorer({
       renderer.localClippingEnabled = true;
       const clippingPlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), 50);
 
-      // Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+      // Lighting (Warm Solar Core PointLight + Deep 3D Rim & Hemisphere Depth)
+      const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.38);
       scene.add(ambientLight);
 
-      const sunLight = new THREE.PointLight(0xffffff, 2.2, 140);
+      const hemiLight = new THREE.HemisphereLight(0xfef3c7, 0x0f172a, 0.35);
+      scene.add(hemiLight);
+
+      const sunLight = new THREE.PointLight(0xffefc2, 3.4, 220, 1.1);
       sunLight.position.set(0, 0, 0);
       scene.add(sunLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
-      dirLight.position.set(20, 30, 20);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.75);
+      dirLight.position.set(22, 32, 20);
       scene.add(dirLight);
 
-      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.4);
-      rimLight.position.set(-20, -10, -20);
+      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.45);
+      rimLight.position.set(-22, -12, -20);
       scene.add(rimLight);
 
       // Cosmic Starfield
@@ -976,21 +979,294 @@ export function VRLabExplorer({
     state.controls.rotX = camPreset.rotX;
     state.controls.rotY = camPreset.rotY;
 
-    // 1. SOLAR SYSTEM MODULE
+    // 1. SOLAR SYSTEM MODULE (True 3D Textured Spheres + Volumetric Glowing Sun Corona!)
     if (activeModule === 'solar-system') {
       camera.position.set(0, 22, 42);
       camera.lookAt(0, 0, 0);
 
+      // Procedural 3D Solar Plasma & Granulation Texture
+      const makeSunSurfaceTexture = () => {
+        const cnv = document.createElement('canvas');
+        cnv.width = 512;
+        cnv.height = 256;
+        const ctx = cnv.getContext('2d');
+        if (!ctx) return null;
+
+        const baseGrad = ctx.createLinearGradient(0, 0, 0, 256);
+        baseGrad.addColorStop(0, '#ff8c00');
+        baseGrad.addColorStop(0.25, '#ffb703');
+        baseGrad.addColorStop(0.5, '#ffe066');
+        baseGrad.addColorStop(0.75, '#ff9f1c');
+        baseGrad.addColorStop(1, '#e85d04');
+        ctx.fillStyle = baseGrad;
+        ctx.fillRect(0, 0, 512, 256);
+
+        // Swirling plasma granulation cells & fiery eddies
+        for (let i = 0; i < 240; i++) {
+          const x = (i * 73) % 512;
+          const y = ((i * 41) % 236) + 10;
+          const r = 6 + (i % 18);
+          const g = ctx.createRadialGradient(x, y, 1, x, y, r);
+          if (i % 3 === 0) {
+            g.addColorStop(0, 'rgba(255, 255, 225, 0.72)');
+            g.addColorStop(1, 'rgba(255, 190, 20, 0)');
+          } else if (i % 3 === 1) {
+            g.addColorStop(0, 'rgba(255, 95, 0, 0.55)');
+            g.addColorStop(1, 'rgba(255, 120, 0, 0)');
+          } else {
+            g.addColorStop(0, 'rgba(185, 45, 0, 0.42)');
+            g.addColorStop(1, 'rgba(255, 140, 0, 0)');
+          }
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Subtle solar flare filaments
+        ctx.strokeStyle = 'rgba(255, 250, 205, 0.4)';
+        ctx.lineWidth = 2.5;
+        for (let f = 0; f < 16; f++) {
+          ctx.beginPath();
+          const y0 = 25 + f * 13;
+          ctx.moveTo(0, y0);
+          ctx.bezierCurveTo(170, y0 + ((f % 2 === 0 ? 1 : -1) * 14), 340, y0 - ((f % 2 === 0 ? 1 : -1) * 14), 512, y0);
+          ctx.stroke();
+        }
+
+        const tex = new THREE.CanvasTexture(cnv);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.needsUpdate = true;
+        return tex;
+      };
+
+      // Radiant Glowing Circular Corona Halo Sprite Texture (360° camera-facing volumetric glow)
+      const makeSunGlowTexture = (withRays: boolean) => {
+        const cnv = document.createElement('canvas');
+        cnv.width = 512;
+        cnv.height = 512;
+        const ctx = cnv.getContext('2d');
+        if (!ctx) return null;
+
+        const cx = 256;
+        const cy = 256;
+
+        // Smooth multi-stop volumetric radial glow
+        const grad = ctx.createRadialGradient(cx, cy, 42, cx, cy, 250);
+        if (!withRays) {
+          grad.addColorStop(0, 'rgba(255, 255, 235, 1.0)');
+          grad.addColorStop(0.24, 'rgba(255, 230, 120, 0.92)');
+          grad.addColorStop(0.42, 'rgba(255, 175, 30, 0.58)');
+          grad.addColorStop(0.62, 'rgba(255, 115, 0, 0.28)');
+          grad.addColorStop(0.82, 'rgba(255, 75, 0, 0.08)');
+          grad.addColorStop(1, 'rgba(255, 50, 0, 0)');
+        } else {
+          grad.addColorStop(0, 'rgba(255, 240, 160, 0.45)');
+          grad.addColorStop(0.35, 'rgba(255, 180, 40, 0.25)');
+          grad.addColorStop(0.7, 'rgba(255, 110, 0, 0.08)');
+          grad.addColorStop(1, 'rgba(255, 60, 0, 0)');
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 512, 512);
+
+        if (!withRays) {
+          // Crisp luminous glowing circular ring around the Sun's chromosphere
+          ctx.strokeStyle = 'rgba(255, 238, 150, 0.52)';
+          ctx.lineWidth = 10;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 122, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'rgba(255, 165, 20, 0.28)';
+          ctx.lineWidth = 18;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 146, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          // Delicate golden corona sunbeams radiating outward
+          ctx.save();
+          ctx.translate(cx, cy);
+          for (let r = 0; r < 24; r++) {
+            ctx.rotate((Math.PI * 2) / 24);
+            const rayGrad = ctx.createLinearGradient(95, 0, 245, 0);
+            rayGrad.addColorStop(0, 'rgba(255, 225, 110, 0.34)');
+            rayGrad.addColorStop(0.6, 'rgba(255, 150, 20, 0.12)');
+            rayGrad.addColorStop(1, 'rgba(255, 100, 0, 0)');
+            ctx.fillStyle = rayGrad;
+            ctx.beginPath();
+            ctx.moveTo(95, -5);
+            ctx.lineTo(245, 0);
+            ctx.lineTo(95, 5);
+            ctx.closePath();
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        const tex = new THREE.CanvasTexture(cnv);
+        tex.needsUpdate = true;
+        return tex;
+      };
+
+      // Procedural 3D Planet Surface Textures for genuine 3D realism
+      const makePlanetTexture = (name: string) => {
+        const cnv = document.createElement('canvas');
+        cnv.width = 512;
+        cnv.height = 256;
+        const ctx = cnv.getContext('2d');
+        if (!ctx) return null;
+
+        if (name === 'Earth') {
+          const ocean = ctx.createLinearGradient(0, 0, 0, 256);
+          ocean.addColorStop(0, '#60a5fa');
+          ocean.addColorStop(0.15, '#1d4ed8');
+          ocean.addColorStop(0.5, '#1e40af');
+          ocean.addColorStop(0.85, '#1d4ed8');
+          ocean.addColorStop(1, '#60a5fa');
+          ctx.fillStyle = ocean;
+          ctx.fillRect(0, 0, 512, 256);
+
+          // Continents
+          ctx.fillStyle = '#22c55e';
+          const blobs = [
+            [95, 95, 48, 34], [140, 145, 30, 42], [245, 85, 58, 32],
+            [275, 142, 34, 44], [385, 98, 62, 38], [415, 178, 32, 22],
+          ];
+          blobs.forEach(([x, y, rx, ry]) => {
+            ctx.beginPath();
+            ctx.ellipse(x, y, rx, ry, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          // Polar ice caps
+          ctx.fillStyle = 'rgba(248, 250, 252, 0.9)';
+          ctx.fillRect(0, 0, 512, 18);
+          ctx.fillRect(0, 238, 512, 18);
+
+          // Swirling white clouds
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.38)';
+          for (let c = 0; c < 22; c++) {
+            ctx.beginPath();
+            ctx.ellipse((c * 67) % 512, 32 + ((c * 37) % 190), 34 + (c % 25), 7 + (c % 6), 0.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        } else if (name === 'Jupiter') {
+          const bands = ['#d97706', '#fde68a', '#b45309', '#f59e0b', '#fef3c7', '#c2410c', '#fbbf24', '#9a3412', '#fde68a', '#d97706'];
+          bands.forEach((col, bi) => {
+            ctx.fillStyle = col;
+            ctx.fillRect(0, (bi * 256) / bands.length, 512, 256 / bands.length + 2);
+          });
+          // Great Red Spot
+          ctx.fillStyle = '#dc2626';
+          ctx.beginPath();
+          ctx.ellipse(310, 152, 34, 18, -0.1, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fef3c7';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        } else if (name === 'Saturn') {
+          const bands = ['#ca8a04', '#fef08a', '#eab308', '#fde047', '#fef9c3', '#d97706', '#fde047', '#ca8a04'];
+          bands.forEach((col, bi) => {
+            ctx.fillStyle = col;
+            ctx.fillRect(0, (bi * 256) / bands.length, 512, 256 / bands.length + 2);
+          });
+        } else if (name === 'Mars') {
+          ctx.fillStyle = '#dc2626';
+          ctx.fillRect(0, 0, 512, 256);
+          for (let i = 0; i < 65; i++) {
+            ctx.fillStyle = i % 2 === 0 ? 'rgba(127, 29, 29, 0.42)' : 'rgba(251, 146, 60, 0.35)';
+            ctx.beginPath();
+            ctx.arc((i * 89) % 512, 24 + ((i * 47) % 208), 8 + (i % 24), 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fillRect(0, 0, 512, 12);
+          ctx.fillRect(0, 244, 512, 12);
+        } else if (name === 'Venus') {
+          const g = ctx.createLinearGradient(0, 0, 0, 256);
+          g.addColorStop(0, '#fde68a');
+          g.addColorStop(0.5, '#f59e0b');
+          g.addColorStop(1, '#d97706');
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, 512, 256);
+          ctx.fillStyle = 'rgba(255, 251, 235, 0.28)';
+          for (let i = 0; i < 18; i++) {
+            ctx.fillRect(0, i * 14, 512, 6);
+          }
+        } else if (name === 'Uranus' || name === 'Neptune') {
+          const isNep = name === 'Neptune';
+          const g = ctx.createLinearGradient(0, 0, 0, 256);
+          g.addColorStop(0, isNep ? '#1d4ed8' : '#06b6d4');
+          g.addColorStop(0.5, isNep ? '#2563eb' : '#38bdf8');
+          g.addColorStop(1, isNep ? '#1e3a8a' : '#0284c7');
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, 512, 256);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+          for (let i = 0; i < 12; i++) {
+            ctx.fillRect(0, 12 + i * 21, 512, 5);
+          }
+        } else {
+          // Mercury cratered slate
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillRect(0, 0, 512, 256);
+          for (let i = 0; i < 80; i++) {
+            ctx.fillStyle = i % 2 === 0 ? 'rgba(51, 65, 85, 0.42)' : 'rgba(226, 232, 240, 0.3)';
+            ctx.beginPath();
+            ctx.arc((i * 71) % 512, (i * 53) % 256, 4 + (i % 14), 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        const tex = new THREE.CanvasTexture(cnv);
+        tex.needsUpdate = true;
+        return tex;
+      };
+
+      const makeSaturnRingTexture = () => {
+        const cnv = document.createElement('canvas');
+        cnv.width = 512;
+        cnv.height = 64;
+        const ctx = cnv.getContext('2d');
+        if (!ctx) return null;
+        const grad = ctx.createLinearGradient(0, 0, 512, 0);
+        grad.addColorStop(0, 'rgba(253, 224, 71, 0)');
+        grad.addColorStop(0.15, 'rgba(217, 178, 102, 0.55)');
+        grad.addColorStop(0.4, 'rgba(254, 240, 138, 0.92)');
+        grad.addColorStop(0.58, 'rgba(250, 204, 21, 0.78)');
+        grad.addColorStop(0.65, 'rgba(15, 23, 42, 0.12)'); // Cassini Division gap
+        grad.addColorStop(0.72, 'rgba(253, 224, 71, 0.72)');
+        grad.addColorStop(0.92, 'rgba(217, 178, 102, 0.38)');
+        grad.addColorStop(1, 'rgba(253, 224, 71, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 512, 64);
+        const tex = new THREE.CanvasTexture(cnv);
+        tex.needsUpdate = true;
+        return tex;
+      };
+
       PLANETS.forEach((p) => {
-        const geo = new THREE.SphereGeometry(p.size, 32, 32);
+        const geo = new THREE.SphereGeometry(p.size, 56, 56);
         let mat;
         if (p.name === 'Sun') {
-          mat = new THREE.MeshBasicMaterial({ color: p.color });
-        } else {
+          const sunTex = makeSunSurfaceTexture();
           mat = new THREE.MeshStandardMaterial({
-            color: p.color,
-            roughness: 0.45,
-            metalness: 0.15,
+            map: sunTex || undefined,
+            emissiveMap: sunTex || undefined,
+            color: 0xffd166,
+            emissive: new THREE.Color(0xff9900),
+            emissiveIntensity: 1.45,
+            roughness: 0.35,
+            metalness: 0.0,
+            clippingPlanes: [clippingPlane],
+          });
+        } else {
+          const planetTex = makePlanetTexture(p.name);
+          mat = new THREE.MeshStandardMaterial({
+            map: planetTex || undefined,
+            color: planetTex ? 0xffffff : p.color,
+            roughness: p.name === 'Earth' ? 0.52 : 0.72,
+            metalness: p.name === 'Earth' ? 0.12 : 0.06,
             clippingPlanes: [clippingPlane],
             clipShadows: true,
           });
@@ -1005,16 +1281,82 @@ export function VRLabExplorer({
         }
 
         if (p.name === 'Sun') {
-          const coronaGeo = new THREE.RingGeometry(3.1, 4.2, 32);
-          const coronaMat = new THREE.MeshBasicMaterial({
-            color: 0xffe066,
-            side: THREE.DoubleSide,
-            transparent: true,
-            opacity: 0.4,
-          });
-          const coronaMesh = new THREE.Mesh(coronaGeo, coronaMat);
-          coronaMesh.name = 'sunCorona';
-          mesh.add(coronaMesh);
+          // 1. 3D Volumetric Translucent Photosphere Aura Shell
+          const auraShell = new THREE.Mesh(
+            new THREE.SphereGeometry(p.size * 1.15, 48, 48),
+            new THREE.MeshBasicMaterial({
+              color: 0xffb703,
+              transparent: true,
+              opacity: 0.24,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+              side: THREE.BackSide,
+            })
+          );
+          auraShell.name = 'sunAuraShell';
+          mesh.add(auraShell);
+
+          // 2. Radiant Circular Glowing Corona Halo (Sprite always faces camera in 360°!)
+          const glowTex = makeSunGlowTexture(false);
+          if (glowTex) {
+            const coronaSprite = new THREE.Sprite(
+              new THREE.SpriteMaterial({
+                map: glowTex,
+                color: 0xffd166,
+                transparent: true,
+                opacity: 0.96,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+              })
+            );
+            coronaSprite.scale.set(11.8, 11.8, 1);
+            coronaSprite.name = 'sunCorona';
+            mesh.add(coronaSprite);
+          }
+
+          // 3. Outer Shimmering Golden Solar Flare Rays Halo
+          const raysTex = makeSunGlowTexture(true);
+          if (raysTex) {
+            const raysSprite = new THREE.Sprite(
+              new THREE.SpriteMaterial({
+                map: raysTex,
+                color: 0xffaa00,
+                transparent: true,
+                opacity: 0.72,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+              })
+            );
+            raysSprite.scale.set(15.4, 15.4, 1);
+            raysSprite.name = 'sunOuterRays';
+            mesh.add(raysSprite);
+          }
+        }
+
+        // Earth 3D Glowing Sky-Blue Atmosphere Rim + Orbiting 3D Moon
+        if (p.name === 'Earth') {
+          const atmoMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(p.size * 1.09, 32, 32),
+            new THREE.MeshBasicMaterial({
+              color: 0x38bdf8,
+              transparent: true,
+              opacity: 0.22,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false,
+              side: THREE.BackSide,
+            })
+          );
+          mesh.add(atmoMesh);
+
+          const moonPivot = new THREE.Group();
+          moonPivot.name = 'earthMoonPivot';
+          const moonMesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.28, 24, 24),
+            new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.88 })
+          );
+          moonMesh.position.set(1.9, 0.22, 0);
+          moonPivot.add(moonMesh);
+          mesh.add(moonPivot);
         }
 
         let orbitLine = null;
@@ -1035,15 +1377,29 @@ export function VRLabExplorer({
         }
 
         if (p.hasRings) {
-          const ringGeo = new THREE.RingGeometry(2.4, 4.2, 32);
-          const ringMat = new THREE.MeshBasicMaterial({
+          const ringGeo = new THREE.RingGeometry(2.35, 4.4, 64);
+          // Map radial UV coordinates so concentric Saturn ring bands render cleanly
+          const posAttr = ringGeo.attributes.position;
+          const uvAttr = ringGeo.attributes.uv;
+          for (let vi = 0; vi < posAttr.count; vi++) {
+            const x = posAttr.getX(vi);
+            const y = posAttr.getY(vi);
+            const r = Math.sqrt(x * x + y * y);
+            const u = (r - 2.35) / (4.4 - 2.35);
+            uvAttr.setXY(vi, Math.max(0, Math.min(1, u)), 0.5);
+          }
+          const ringTex = makeSaturnRingTexture();
+          const ringMat = new THREE.MeshStandardMaterial({
+            map: ringTex || undefined,
             color: 0xfef08a,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.9,
+            roughness: 0.65,
+            depthWrite: false,
           });
           const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-          ringMesh.rotation.x = Math.PI / 2.3;
+          ringMesh.rotation.x = Math.PI / 2.25;
           mesh.add(ringMesh);
         }
 
@@ -1052,7 +1408,7 @@ export function VRLabExplorer({
           mesh,
           orbitLine,
           data: p,
-          angle: Math.random() * Math.PI * 2,
+          angle: initialAngle,
         });
       });
     }
@@ -2095,8 +2451,26 @@ export function VRLabExplorer({
           if (item.data.name === 'Sun') {
             const corona = item.mesh.getObjectByName('sunCorona');
             if (corona) {
-              const pulse = 1 + Math.sin(time * 3) * 0.08;
-              corona.scale.set(pulse, pulse, pulse);
+              const pulse = 1 + Math.sin(time * 2.4) * 0.065;
+              corona.scale.set(11.8 * pulse, 11.8 * pulse, 1);
+            }
+            const outerRays = item.mesh.getObjectByName('sunOuterRays');
+            if (outerRays) {
+              const rayPulse = 1 + Math.cos(time * 1.6) * 0.09;
+              outerRays.scale.set(15.4 * rayPulse, 15.4 * rayPulse, 1);
+              if (outerRays.material) {
+                outerRays.material.rotation = time * 0.14;
+              }
+            }
+            const auraShell = item.mesh.getObjectByName('sunAuraShell');
+            if (auraShell) {
+              const aPulse = 1 + Math.sin(time * 3.1) * 0.03;
+              auraShell.scale.set(aPulse, aPulse, aPulse);
+            }
+          } else if (item.data.name === 'Earth' && effectiveSpeed > 0) {
+            const moonPivot = item.mesh.getObjectByName('earthMoonPivot');
+            if (moonPivot) {
+              moonPivot.rotation.y += 0.025 * effectiveSpeed;
             }
           }
         });
@@ -3077,7 +3451,11 @@ export function VRLabExplorer({
             </div>
 
             {selectedPin && showInfoCard && (
-              <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in zoom-in-95">
+              <aside
+                className={`absolute ${
+                  lessonId ? 'top-24' : 'top-3'
+                } right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in zoom-in-95`}
+              >
                 <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
                   <div className="flex items-center gap-2">
                     <span
@@ -3122,7 +3500,7 @@ export function VRLabExplorer({
 
         {/* 2. HUMAN HEART ANATOMY */}
         {activeModule === 'human-heart' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <Heart className="w-4 h-4 text-rose-500 animate-pulse" />
@@ -3178,7 +3556,7 @@ export function VRLabExplorer({
 
         {/* 3. 3D GEOMETRY */}
         {activeModule === 'geometry-volume' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <Box className="w-4 h-4 text-yellow" />
@@ -3295,7 +3673,7 @@ export function VRLabExplorer({
 
         {/* 4. EARTH LAYERS */}
         {activeModule === 'earth-volcano' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-84 bg-slate-900/95 backdrop-blur-md border-2 border-white/20 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-amber-500 animate-bounce" />
@@ -3364,7 +3742,7 @@ export function VRLabExplorer({
 
         {/* 5. DNA DOUBLE HELIX */}
         {activeModule === 'dna-helix' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-cyan-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-cyan-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <Dna className="w-4 h-4 text-cyan-400" />
@@ -3398,7 +3776,7 @@ export function VRLabExplorer({
 
         {/* 6. PLANT CELL ANATOMY */}
         {activeModule === 'plant-cell' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-emerald-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-emerald-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-emerald-400" />
@@ -3436,7 +3814,7 @@ export function VRLabExplorer({
 
         {/* 7. BOHR ATOM */}
         {activeModule === 'bohr-atom' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-sky-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-sky-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <Atom className="w-4 h-4 text-sky-400" />
@@ -3474,7 +3852,7 @@ export function VRLabExplorer({
 
         {/* 8. ANCIENT PYRAMID */}
         {activeModule === 'ancient-pyramid' && showInfoCard && (
-          <aside className="absolute top-3 right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-amber-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in">
+          <aside className={`absolute ${lessonId ? 'top-24' : 'top-3'} right-3 z-20 w-72 sm:w-80 bg-slate-900/95 backdrop-blur-md border-2 border-amber-500/40 rounded-2xl p-4 text-white shadow-2xl animate-in fade-in`}>
             <div className="flex items-center justify-between pb-2 border-b border-white/10 mb-2">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-amber-400" />

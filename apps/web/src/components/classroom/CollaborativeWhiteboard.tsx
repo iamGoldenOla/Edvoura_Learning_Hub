@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { STAMP_PRESETS, EMOJI_PRESETS, StampItem } from './BoardStamps';
+import { getDrawingCursor } from './drawingCursors';
 import { playSound } from '@/utils/sounds';
 
 export type ToolType = 'pen' | 'highlighter' | 'eraser' | 'text' | 'rect' | 'circle' | 'arrow' | 'laser';
@@ -995,14 +996,22 @@ export function CollaborativeWhiteboard({
           Layer 1: Background & Grid (underneath, NEVER erased)
           Layer 2: Transparent Drawing Ink Canvas (erased cleanly)
           ============================================================ */}
-      <div className="flex-1 w-full h-full min-h-0 relative cursor-crosshair overflow-hidden">
+      <div
+        className="flex-1 w-full h-full min-h-0 relative overflow-hidden"
+        style={{
+          cursor:
+            selectedStamp || selectedEmoji
+              ? getDrawingCursor('stamp')
+              : getDrawingCursor(activeTool, selectedColor),
+        }}
+      >
         {/* ============================================================
             COLLAPSIBLE LEFT-SIDE TOOL DOCK (EXPAND / TUCK AWAY)
             ============================================================ */}
         {isDockCollapsed ? (
           <button
             onClick={() => setIsDockCollapsed(false)}
-            className="absolute left-3 top-3 z-30 flex items-center gap-1.5 px-3 py-2 bg-yellow hover:bg-yellow/90 text-dark border-[2.5px] border-dark rounded-2xl shadow-[3px_3px_0px_#060E1C] font-black text-xs transition-all active:scale-95 animate-in fade-in"
+            className="absolute left-3 top-3 z-30 flex items-center gap-1.5 px-3 py-2 bg-yellow hover:bg-yellow/90 text-dark border-[2.5px] border-dark rounded-2xl shadow-[3px_3px_0px_#060E1C] font-black text-xs transition-all active:scale-95 animate-in fade-in cursor-pointer"
             title="Open Drawing Tools Dock"
           >
             <Pencil className="h-4 w-4" />
@@ -1010,7 +1019,7 @@ export function CollaborativeWhiteboard({
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
         ) : (
-          <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 p-1.5 bg-white/95 backdrop-blur border-[2.5px] border-dark rounded-2xl shadow-[4px_4px_0px_#060E1C] animate-in fade-in">
+          <div className="absolute left-3 top-3 z-30 flex flex-col gap-1.5 p-1.5 bg-white/95 backdrop-blur border-[2.5px] border-dark rounded-2xl shadow-[4px_4px_0px_#060E1C] animate-in fade-in cursor-default">
             {/* Collapse / Close Button at top of dock */}
             <button
               onClick={() => {
