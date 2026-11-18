@@ -104,16 +104,33 @@ export interface AI3DQuizSpec {
   options: string[];
   correctIndex: number;
   explanation?: string;
+  hint?: string;
+  workedSolution?: string;
+}
+
+export interface AI3DWorkedStepSpec {
+  label: string;
+  work: string;
+  speak: string;
+}
+
+export interface AI3DWorkedExampleSpec {
+  problem: string;
+  steps: AI3DWorkedStepSpec[];
+  finalAnswer: string;
 }
 
 export interface AI3DStationSpec {
   title: string;
   subtitle: string;
   definition?: string;
+  formulaOrRule?: string;
   types?: AI3DStationTypeSpec[];
+  workedExample?: AI3DWorkedExampleSpec;
   examples?: string[];
   example?: string;
   visuals?: AI3DVisualSpec[];
+  propKind?: 'coins' | 'scale' | 'book' | 'globe' | 'beaker' | 'cube' | 'pie' | 'chart' | 'sun' | 'leaf' | 'trophy';
   teacherScript?: string;
   narration?: string;
   quiz?: AI3DQuizSpec;
@@ -124,6 +141,7 @@ export interface AI3DStationSpec {
 export interface AI3DBlueprintSpec {
   title: string;
   category: string;
+  gradeLevel?: string;
   sceneType?: 'object' | 'concept-gallery';
   description: string;
   teacherIntro?: string;
@@ -337,9 +355,10 @@ export function VRLabExplorer({
   const [isWebXRPresenting, setIsWebXRPresenting] = useState<boolean>(false);
   const [vrStatusBanner, setVrStatusBanner] = useState<string | null>(null);
 
-  // ruslanmv/GenAI-3D: Generative AI 3D Prompting
+  // ruslanmv/GenAI-3D: Generative AI 3D Prompting & Master VR Teacher Engine
   const [aiPromptOpen, setAiPromptOpen] = useState<boolean>(false);
   const [aiPromptText, setAiPromptText] = useState<string>('');
+  const [aiGradeLevel, setAiGradeLevel] = useState<string>('Grade 4–6 (Upper Primary)');
   const [isAiGenerating, setIsAiGenerating] = useState<boolean>(false);
   const [customAiModelTitle, setCustomAiModelTitle] = useState<string>('');
   const [customAiKind, setCustomAiKind] = useState<CustomAiSceneKind>('rocket');
@@ -348,10 +367,18 @@ export function VRLabExplorer({
   const [activeStationIdx, setActiveStationIdx] = useState<number>(0);
   const [aiGenError, setAiGenError] = useState<string | null>(null);
   const [isTeacherTourActive, setIsTeacherTourActive] = useState<boolean>(false);
+  const [activeTeachPhase, setActiveTeachPhase] = useState<
+    'idle' | 'definition' | 'visuals' | 'types' | 'worked' | 'examples' | 'quiz'
+  >('idle');
+  const [revealedWorkedStep, setRevealedWorkedStep] = useState<number>(99);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
+  const [showQuizHint, setShowQuizHint] = useState<Record<number, boolean>>({});
+  const [showQuizWork, setShowQuizWork] = useState<Record<number, boolean>>({});
   const [aiBoardView, setAiBoardView] = useState<'sidebar' | 'wide'>('sidebar');
   const teacherTourTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const teacherTourActiveRef = useRef<boolean>(false);
+  const teachSequenceIdRef = useRef<number>(0);
+  const teacherBodyRef = useRef<HTMLDivElement | null>(null);
   teacherTourActiveRef.current = isTeacherTourActive;
 
   // Manim Motion Controls
@@ -625,7 +652,10 @@ export function VRLabExplorer({
   );
 
   const stopTeacherTour = useCallback(() => {
+    teachSequenceIdRef.current += 1;
     setIsTeacherTourActive(false);
+    setActiveTeachPhase('idle');
+    setRevealedWorkedStep(99);
     teacherTourActiveRef.current = false;
     if (teacherTourTimerRef.current) {
       clearTimeout(teacherTourTimerRef.current);
@@ -641,15 +671,202 @@ export function VRLabExplorer({
     setIsSpeaking(false);
   }, [stopTeacherTour]);
 
+  const scrollTeacherSection = useCallback((sectionId: string) => {
+    setTimeout(() => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 80);
+  }, []);
+
+  // Run an ordered list of synchronized voice + visual highlight segments (Explanation-Video Engine!)
+  const runSpeechQueue = useCallback(
+    (
+      segments: {
+        phase: 'definition' | 'visuals' | 'types' | 'worked' | 'examples' | 'quiz';
+        sectionId?: string;
+        workedStep?: number;
+        text: string;
+        chime?: boolean;
+      }[],
+      onAllDone?: () => void
+    ) => {
+      const seqId = ++teachSequenceIdRef.current;
+
+      const playIdx = (i: number) => {
+        if (teachSequenceIdRef.current !== seqId) return;
+        if (i >= segments.length) {
+          setActiveTeachPhase('idle');
+          setRevealedWorkedStep(99);
+          if (onAllDone) onAllDone();
+          return;
+        }
+        const seg = segments[i];
+        setActiveTeachPhase(seg.phase);
+        if (typeof seg.workedStep === 'number') {
+          setRevealedWorkedStep(seg.workedStep);
+        }
+        if (seg.sectionId) scrollTeacherSection(seg.sectionId);
+        if (seg.chime) playSynthesizedSound('chime');
+
+        speakNarration(seg.text, () => {
+          if (teachSequenceIdRef.current !== seqId) return;
+          teacherTourTimerRef.current = setTimeout(() => {
+            playIdx(i + 1);
+          }, 550);
+        });
+      };
+
+      playIdx(0);
+    },
+    [playSynthesizedSound, scrollTeacherSection, speakNarration]
+  );
+
+  // Build the FULL explanation-video script queue for a single station (reads EVERY section & works the example!)
+  const buildStationFullSegments = useCallback((st: AI3DStationSpec, index: number) => {
+    const segs: {
+      phase: 'definition' | 'visuals' | 'types' | 'worked' | 'examples' | 'quiz';
+      sectionId?: string;
+      workedStep?: number;
+      text: string;
+      chime?: boolean;
+    }[] = [];
+
+    // 1. Definition + Formula / Key Rule
+    const defSpeech = [
+      `Lesson ${index + 1}: ${st.title}.`,
+      st.definition || st.subtitle || '',
+      st.formulaOrRule ? `Remember our key rule: ${st.formulaOrRule.replace(/÷/g, ' divided by ').replace(/×/g, ' times ').replace(/−/g, ' minus ')}.` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    segs.push({ phase: 'definition', sectionId: 'vr-sec-definition', text: defSpeech });
+
+    // 2. Picture Visuals on the Card
+    if (Array.isArray(st.visuals) && st.visuals.length > 0) {
+      const visList = st.visuals
+        .map((v) => `${v.label}${v.category ? ` (${v.category})` : ''}`)
+        .join(', ');
+      segs.push({
+        phase: 'visuals',
+        sectionId: 'vr-sec-visuals',
+        text: `Look at the picture examples on the board: ${visList}.`,
+      });
+    }
+
+    // 3. Types & Kinds
+    if (Array.isArray(st.types) && st.types.length > 0) {
+      const typeLines = st.types.map((t) => `${t.name}: ${t.detail}`).join('. ');
+      segs.push({
+        phase: 'types',
+        sectionId: 'vr-sec-types',
+        text: `Now let us examine the types of ${st.title}. ${typeLines}`,
+      });
+    }
+
+    // 4. Step-by-Step Worked Example (Animates Step 1 → Step 2 → Step 3 → Final Answer like a live blackboard video!)
+    if (st.workedExample && Array.isArray(st.workedExample.steps) && st.workedExample.steps.length > 0) {
+      segs.push({
+        phase: 'worked',
+        sectionId: 'vr-sec-worked',
+        workedStep: 0,
+        chime: true,
+        text: `Let us work out a real example step by step! Here is the problem: ${st.workedExample.problem}`,
+      });
+      st.workedExample.steps.forEach((step, si) => {
+        segs.push({
+          phase: 'worked',
+          sectionId: 'vr-sec-worked',
+          workedStep: si + 1,
+          text: `${step.label}. ${step.speak || step.work}`,
+        });
+      });
+      segs.push({
+        phase: 'worked',
+        sectionId: 'vr-sec-worked',
+        workedStep: st.workedExample.steps.length + 1,
+        chime: true,
+        text: `So our final answer is: ${st.workedExample.finalAnswer}!`,
+      });
+    }
+
+    // 5. Real-World Examples
+    if (Array.isArray(st.examples) && st.examples.length > 0) {
+      segs.push({
+        phase: 'examples',
+        sectionId: 'vr-sec-examples',
+        text: `Here are real-life examples: ${st.examples.slice(0, 2).join(' Next example: ')}`,
+      });
+    }
+
+    // 6. Interactive Activity Question + Options A, B, C read aloud!
+    if (st.quiz && Array.isArray(st.quiz.options) && st.quiz.options.length > 0) {
+      const optSpoken = st.quiz.options
+        .map((o, oi) => `Option ${String.fromCharCode(65 + oi)}: ${o}`)
+        .join('. ');
+      segs.push({
+        phase: 'quiz',
+        sectionId: 'vr-sec-quiz',
+        chime: true,
+        text: `Now it is your turn for a quick classroom activity! ${st.quiz.question} ${optSpoken}. Tap your answer on the board, or click Work It Out so we can solve it together!`,
+      });
+    }
+
+    return segs;
+  }, []);
+
+  // Animate & narrate ONLY the Step-by-Step Worked Example on demand
+  const playWorkedExampleAloud = useCallback(
+    (st: AI3DStationSpec) => {
+      if (!st.workedExample || !st.workedExample.steps?.length) return;
+      const segs: {
+        phase: 'worked';
+        sectionId: string;
+        workedStep: number;
+        text: string;
+        chime?: boolean;
+      }[] = [
+        {
+          phase: 'worked',
+          sectionId: 'vr-sec-worked',
+          workedStep: 0,
+          chime: true,
+          text: `Let us work this problem together step by step! ${st.workedExample.problem}`,
+        },
+        ...st.workedExample.steps.map((step, si) => ({
+          phase: 'worked' as const,
+          sectionId: 'vr-sec-worked',
+          workedStep: si + 1,
+          text: `${step.label}. ${step.speak || step.work}`,
+        })),
+        {
+          phase: 'worked',
+          sectionId: 'vr-sec-worked',
+          workedStep: st.workedExample.steps.length + 1,
+          chime: true,
+          text: `Final answer: ${st.workedExample.finalAnswer}!`,
+        },
+      ];
+      runSpeechQueue(segs);
+    },
+    [runSpeechQueue]
+  );
+
   // Smoothly swing 3D VR camera right in front of a specific AI Learning Poster Station
   const focusAIStation = useCallback(
-    (idx: number, opts?: { speak?: boolean; broadcast?: boolean; onDone?: () => void }) => {
+    (
+      idx: number,
+      opts?: { speak?: boolean; fullCard?: boolean; broadcast?: boolean; onDone?: () => void }
+    ) => {
       const stations = aiBlueprint?.stations;
       if (!stations || stations.length === 0) return;
       const safeIdx = ((idx % stations.length) + stations.length) % stations.length;
       const st = stations[safeIdx];
       setActiveStationIdx(safeIdx);
       setShowInfoCard(true);
+      setRevealedWorkedStep(99);
+      setActiveTeachPhase('idle');
 
       const state = threeStateRef.current;
       if (state) {
@@ -658,7 +875,7 @@ export function VRLabExplorer({
         const targetAngle = (safeIdx / stations.length) * Math.PI * 2;
         state.controls.targetRotY = targetAngle;
         state.controls.targetRotX = isGallery ? 0.08 : 0.16;
-        state.controls.targetZoom = isGallery ? 14.2 : 13.5;
+        state.controls.targetZoom = isGallery ? 14.6 : 13.8;
       }
 
       if (opts?.broadcast !== false) {
@@ -666,48 +883,58 @@ export function VRLabExplorer({
       }
 
       if (opts?.speak !== false && st) {
-        const script =
-          st.teacherScript ||
-          st.narration ||
-          `${st.title}. ${st.definition || st.subtitle}. ${st.examples?.[0] || st.example || ''}`;
-        speakNarration(script, opts?.onDone);
+        if (opts?.fullCard !== false) {
+          const segments = buildStationFullSegments(st, safeIdx);
+          runSpeechQueue(segments, opts?.onDone);
+        } else {
+          const script =
+            st.teacherScript ||
+            st.narration ||
+            `${st.title}. ${st.definition || st.subtitle}. ${st.examples?.[0] || st.example || ''}`;
+          speakNarration(script, opts?.onDone);
+        }
       }
     },
-    [aiBlueprint, broadcastVRState, speakNarration]
+    [aiBlueprint, broadcastVRState, buildStationFullSegments, runSpeechQueue, speakNarration]
   );
 
-  // Automated Guided AI Teacher Tour: teaches every station sequentially like a live teacher!
-  const startTeacherTour = useCallback(() => {
-    const stations = aiBlueprint?.stations;
-    if (!stations || stations.length === 0) return;
-    stopTeacherTour();
-    setIsTeacherTourActive(true);
-    teacherTourActiveRef.current = true;
-    playSynthesizedSound('chime');
+  // Automated Full Explanation-Video VR Teacher Tour: reads EVERY card, works every problem, reads every activity!
+  const startTeacherTour = useCallback(
+    (startIndex = 0) => {
+      const stations = aiBlueprint?.stations;
+      if (!stations || stations.length === 0) return;
+      stopTeacherTour();
+      setIsTeacherTourActive(true);
+      teacherTourActiveRef.current = true;
+      playSynthesizedSound('chime');
 
-    const teachStep = (stepIdx: number) => {
-      if (!teacherTourActiveRef.current) return;
-      if (stepIdx >= stations.length) {
-        stopTeacherTour();
-        speakNarration(
-          `Wonderful job! You just completed the entire ${aiBlueprint?.title || 'VR'} lesson. Try tapping any station quiz to test what you learned!`
-        );
-        return;
-      }
-      focusAIStation(stepIdx, {
-        speak: true,
-        broadcast: true,
-        onDone: () => {
-          if (!teacherTourActiveRef.current) return;
-          teacherTourTimerRef.current = setTimeout(() => {
-            teachStep(stepIdx + 1);
-          }, 1400);
-        },
-      });
-    };
+      const teachStep = (stepIdx: number) => {
+        if (!teacherTourActiveRef.current) return;
+        if (stepIdx >= stations.length) {
+          stopTeacherTour();
+          speakNarration(
+            `Fantastic job! You completed the full ${aiBlueprint?.title || 'VR'} video lesson! You can revisit any station or practice the quizzes anytime.`
+          );
+          return;
+        }
+        focusAIStation(stepIdx, {
+          speak: true,
+          fullCard: true,
+          broadcast: true,
+          onDone: () => {
+            if (!teacherTourActiveRef.current) return;
+            // Give pupil a comfortable pause at the end of each station's activity before gliding to next board
+            teacherTourTimerRef.current = setTimeout(() => {
+              teachStep(stepIdx + 1);
+            }, 3500);
+          },
+        });
+      };
 
-    teachStep(0);
-  }, [aiBlueprint, focusAIStation, playSynthesizedSound, speakNarration, stopTeacherTour]);
+      teachStep(startIndex);
+    },
+    [aiBlueprint, focusAIStation, playSynthesizedSound, speakNarration, stopTeacherTour]
+  );
 
   // Launch Native WebXR Session on VR Headsets, OR seamlessly enter Browser Immersive VR Mode on Laptops/Tablets
   const launchNativeWebXR = async () => {
@@ -2255,11 +2482,12 @@ export function VRLabExplorer({
               });
             }
 
-            // Bottom Highlighted Example Sentence Banner
+            // Bottom Highlighted Formula / Key Takeaway Banner (auto-fits cleanly so ZERO text clips!)
             const exLine =
-              (Array.isArray(st.examples) && st.examples[0]) ||
+              st.formulaOrRule ||
               st.example ||
-              'Tap card to hear teacher explanation!';
+              (Array.isArray(st.examples) && st.examples[0]) ||
+              'Tap card to hear full VR teacher lesson!';
             ctx.fillStyle = 'rgba(250, 204, 21, 0.16)';
             drawRoundedRect(ctx, 38, 528, 948, 74, 16);
             ctx.fill();
@@ -2268,13 +2496,180 @@ export function VRLabExplorer({
             ctx.stroke();
 
             ctx.fillStyle = '#fef08a';
-            ctx.font = '800 24px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText(`✨ ${exLine.slice(0, 68)}`, 512, 566);
+            const displayBanner = `✨ ${exLine}`;
+            let bannerFont = 23;
+            ctx.font = `800 ${bannerFont}px sans-serif`;
+            while (ctx.measureText(displayBanner).width > 900 && bannerFont > 15) {
+              bannerFont -= 1;
+              ctx.font = `800 ${bannerFont}px sans-serif`;
+            }
+            const safeBanner =
+              ctx.measureText(displayBanner).width > 900
+                ? `${displayBanner.slice(0, 72)}…`
+                : displayBanner;
+            ctx.fillText(safeBanner, 512, 566);
 
             const tex = new THREE.CanvasTexture(cnv);
             tex.needsUpdate = true;
             return tex;
+          };
+
+          // Build a REAL 3D sculpted animated educational object floating above each VR poster!
+          const build3DStationProp = (st: AI3DStationSpec, accentHex: string) => {
+            const propGroup = new THREE.Group();
+            const qText = `${st.title} ${aiBlueprint.title} ${aiBlueprint.category}`.toLowerCase();
+            const inferredKind =
+              st.propKind ||
+              (qText.includes('profit') || qText.includes('chart') || qText.includes('gain')
+                ? 'chart'
+                : qText.includes('cost') || qText.includes('price') || qText.includes('money') || qText.includes('loss')
+                  ? 'coins'
+                  : qText.includes('sell') || qText.includes('balance') || qText.includes('equation') || qText.includes('weight')
+                    ? 'scale'
+                    : qText.includes('fraction') || qText.includes('percent') || qText.includes('ratio')
+                      ? 'pie'
+                      : qText.includes('water') || qText.includes('chem') || qText.includes('matter') || qText.includes('acid')
+                        ? 'beaker'
+                        : qText.includes('photo') || qText.includes('plant') || qText.includes('leaf') || qText.includes('bio')
+                          ? 'leaf'
+                          : qText.includes('earth') || qText.includes('world') || qText.includes('continent') || qText.includes('geo')
+                            ? 'globe'
+                            : qText.includes('sun') || qText.includes('energy') || qText.includes('light')
+                              ? 'sun'
+                              : qText.includes('speech') || qText.includes('noun') || qText.includes('verb') || qText.includes('grammar') || qText.includes('english')
+                                ? 'book'
+                                : 'trophy');
+
+            const matGold = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.65, roughness: 0.22, emissive: 0x713f12, emissiveIntensity: 0.25 });
+            const matAccent = new THREE.MeshStandardMaterial({ color: new THREE.Color(accentHex || '#38bdf8'), metalness: 0.25, roughness: 0.35 });
+            const matSilver = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.7, roughness: 0.25 });
+
+            if (inferredKind === 'coins') {
+              // Stacked 3D metallic gold coins + floating top spinning coin
+              for (let c = 0; c < 4; c++) {
+                const coin = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.11, 24), matGold);
+                coin.position.set(-0.32, c * 0.13 - 0.18, 0);
+                propGroup.add(coin);
+              }
+              for (let c = 0; c < 6; c++) {
+                const coin2 = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.11, 24), matGold);
+                coin2.position.set(0.38, c * 0.13 - 0.18, 0.08);
+                propGroup.add(coin2);
+              }
+              const emeraldGem = new THREE.Mesh(new THREE.OctahedronGeometry(0.28, 0), new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x059669, emissiveIntensity: 0.4, roughness: 0.2 }));
+              emeraldGem.position.set(0, 0.85, 0);
+              propGroup.add(emeraldGem);
+            } else if (inferredKind === 'chart') {
+              // Rising 3D neon bar chart + golden upward arrow
+              const heights = [0.35, 0.62, 0.92, 1.25];
+              const barCols = [0x38bdf8, 0xfacc15, 0x22c55e, 0x10b981];
+              heights.forEach((h, bi) => {
+                const bar = new THREE.Mesh(
+                  new THREE.BoxGeometry(0.26, h, 0.26),
+                  new THREE.MeshStandardMaterial({ color: barCols[bi], emissive: barCols[bi], emissiveIntensity: 0.25, roughness: 0.3 })
+                );
+                bar.position.set((bi - 1.5) * 0.36, h / 2 - 0.35, 0);
+                propGroup.add(bar);
+              });
+              const base = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.1, 0.45), matSilver);
+              base.position.set(0, -0.4, 0);
+              propGroup.add(base);
+            } else if (inferredKind === 'scale') {
+              // 3D Golden Balance Scale
+              const base = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.48, 0.14, 24), matGold);
+              base.position.y = -0.35;
+              propGroup.add(base);
+              const post = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 1.05, 16), matGold);
+              post.position.y = 0.2;
+              propGroup.add(post);
+              const beam = new THREE.Mesh(new THREE.BoxGeometry(1.45, 0.08, 0.08), matGold);
+              beam.position.y = 0.65;
+              beam.rotation.z = 0.14;
+              propGroup.add(beam);
+              const panL = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.18, 0.1, 20), matSilver);
+              panL.position.set(-0.62, 0.22, 0);
+              propGroup.add(panL);
+              const panR = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.18, 0.1, 20), matAccent);
+              panR.position.set(0.62, 0.42, 0);
+              propGroup.add(panR);
+            } else if (inferredKind === 'book') {
+              // 3D Open Hardcover Classroom Book
+              const leftCover = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.08, 0.95), matAccent);
+              leftCover.position.set(-0.36, 0.06, 0);
+              leftCover.rotation.z = 0.25;
+              propGroup.add(leftCover);
+              const rightCover = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.08, 0.95), matAccent);
+              rightCover.position.set(0.36, 0.06, 0);
+              rightCover.rotation.z = -0.25;
+              propGroup.add(rightCover);
+              const pagesL = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.12, 0.84), matSilver);
+              pagesL.position.set(-0.34, 0.15, 0);
+              pagesL.rotation.z = 0.25;
+              propGroup.add(pagesL);
+              const pagesR = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.12, 0.84), matSilver);
+              pagesR.position.set(0.34, 0.15, 0);
+              pagesR.rotation.z = -0.25;
+              propGroup.add(pagesR);
+            } else if (inferredKind === 'pie') {
+              // 3D Fraction Cylinder Pie with popped golden wedge
+              const mainPie = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.24, 28, 1, false, 0, Math.PI * 1.5), matAccent);
+              mainPie.rotation.x = 0.45;
+              propGroup.add(mainPie);
+              const slice = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.24, 20, 1, false, Math.PI * 1.5, Math.PI * 0.5), matGold);
+              slice.rotation.x = 0.45;
+              slice.position.set(0.18, 0.12, 0.16);
+              propGroup.add(slice);
+            } else if (inferredKind === 'beaker') {
+              // 3D Science Lab Flask with glowing cyan liquid
+              const glass = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.24, 0.56, 0.95, 24),
+                new THREE.MeshStandardMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0.42, roughness: 0.1, metalness: 0.2 })
+              );
+              propGroup.add(glass);
+              const liquid = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.38, 0.52, 0.45, 24),
+                new THREE.MeshStandardMaterial({ color: 0x06b6d4, emissive: 0x0284c7, emissiveIntensity: 0.5, roughness: 0.2 })
+              );
+              liquid.position.y = -0.22;
+              propGroup.add(liquid);
+            } else if (inferredKind === 'globe') {
+              const globe = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 24), new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.4 }));
+              propGroup.add(globe);
+              const ring = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.04, 12, 32), matGold);
+              ring.rotation.y = 0.5;
+              propGroup.add(ring);
+            } else if (inferredKind === 'leaf') {
+              const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.9, 12), new THREE.MeshStandardMaterial({ color: 0x15803d }));
+              propGroup.add(stem);
+              const leaf1 = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x15803d, emissiveIntensity: 0.3 }));
+              leaf1.scale.set(1.4, 0.25, 0.8);
+              leaf1.position.set(0.38, 0.2, 0);
+              leaf1.rotation.z = 0.4;
+              propGroup.add(leaf1);
+              const leaf2 = leaf1.clone();
+              leaf2.position.set(-0.38, 0.05, 0);
+              leaf2.rotation.z = -0.4;
+              propGroup.add(leaf2);
+            } else if (inferredKind === 'sun') {
+              const sunBall = new THREE.Mesh(new THREE.SphereGeometry(0.48, 24, 24), new THREE.MeshStandardMaterial({ color: 0xfacc15, emissive: 0xf59e0b, emissiveIntensity: 1.1 }));
+              propGroup.add(sunBall);
+              const halo = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.05, 12, 32), matGold);
+              propGroup.add(halo);
+            } else {
+              // 3D Golden Trophy Cup / Mastery Emblem
+              const base = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.4, 0.16, 20), matSilver);
+              base.position.y = -0.38;
+              propGroup.add(base);
+              const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.14, 0.36, 16), matGold);
+              stem.position.y = -0.14;
+              propGroup.add(stem);
+              const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.22, 0.55, 24), matGold);
+              cup.position.y = 0.28;
+              propGroup.add(cup);
+            }
+
+            return propGroup;
           };
 
           stations.forEach((st, idx) => {
@@ -2282,7 +2677,7 @@ export function VRLabExplorer({
             const theta = (idx / stations.length) * Math.PI * 2;
             const sx = Math.sin(theta) * ringRadius;
             const sz = Math.cos(theta) * ringRadius;
-            const sy = isGallery ? 0.35 : 1.3;
+            const sy = isGallery ? 0.15 : 1.3;
 
             const cardTex = makeIllustratedPosterTexture(st, idx);
             if (cardTex) {
@@ -2307,6 +2702,18 @@ export function VRLabExplorer({
                 baseScale: cardMesh.scale.clone(),
               };
               customGroup.add(cardMesh);
+            }
+
+            // Real 3D sculpted rotating educational prop floating right above each VR poster!
+            if (isGallery) {
+              const prop3D = build3DStationProp(st, st.color || '#facc15');
+              prop3D.position.set(sx, sy + 2.45, sz);
+              prop3D.userData = {
+                aiAnimate: 'spinY',
+                baseY: sy + 2.45,
+                baseScale: prop3D.scale.clone(),
+              };
+              customGroup.add(prop3D);
             }
 
             // Glowing anchor pedestal pillar under each poster board
@@ -2888,7 +3295,7 @@ export function VRLabExplorer({
       const res = await fetch('/api/ai/generate-3d', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: cleanQuery }),
+        body: JSON.stringify({ prompt: cleanQuery, gradeLevel: aiGradeLevel }),
       });
 
       const data = await res.json();
@@ -2901,6 +3308,10 @@ export function VRLabExplorer({
       setAiBlueprint(bp);
       setActiveStationIdx(0);
       setQuizAnswers({});
+      setShowQuizHint({});
+      setShowQuizWork({});
+      setRevealedWorkedStep(99);
+      setActiveTeachPhase('idle');
       setCustomAiModelTitle(`✨ ${bp.title}`);
       setCustomAiDescription(bp.description);
       setActiveModule('ai-custom');
@@ -2909,7 +3320,15 @@ export function VRLabExplorer({
       broadcastVRState({ activeModule: 'ai-custom', aiBlueprint: bp, activeStationIdx: 0 });
       if (autoNarrate) {
         const opening = bp.teacherIntro || bp.narration || bp.description;
-        if (opening) speakNarration(opening);
+        if (bp.stations && bp.stations.length > 0) {
+          const introSeg = opening
+            ? [{ phase: 'definition' as const, sectionId: 'vr-sec-definition', text: opening }]
+            : [];
+          const station0Segs = buildStationFullSegments(bp.stations[0], 0);
+          runSpeechQueue([...introSeg, ...station0Segs]);
+        } else if (opening) {
+          speakNarration(opening);
+        }
       }
     } catch (err: any) {
       console.warn('AI 3D generation error:', err);
@@ -3073,19 +3492,32 @@ export function VRLabExplorer({
           ruslanmv/GenAI-3D: POPUP AI 3D GENERATOR PROMPT BAR
           ============================================================ */}
       {aiPromptOpen && (
-        <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 border-b-2 border-purple-500/40 px-3 sm:px-4 py-2.5 z-30 flex flex-col sm:flex-row items-center justify-between gap-2 shadow-2xl animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 border-b-2 border-purple-500/40 px-3 sm:px-4 py-2.5 z-30 flex flex-col gap-2 shadow-2xl animate-in fade-in slide-in-from-top-2">
+          <div className="flex flex-wrap items-center gap-2 w-full">
             <WandSparkles className="w-4 h-4 text-purple-400 shrink-0" />
             <span className="font-black text-xs text-white uppercase tracking-wider shrink-0">
-              AI 3D Lab Generator:
+              AI VR Teacher Studio:
             </span>
-            <div className="relative flex-1 sm:w-80">
+            {/* Class / Grade Level Picker */}
+            <select
+              value={aiGradeLevel}
+              onChange={(e) => setAiGradeLevel(e.target.value)}
+              className="bg-slate-900/95 border border-yellow/50 rounded-xl px-2.5 py-1 text-xs font-bold text-yellow focus:outline-none focus:border-yellow cursor-pointer shrink-0"
+              title="Select student class or grade level"
+            >
+              <option value="Nursery / KG (Ages 3–5)">Nursery / KG</option>
+              <option value="Grade 1–3 (Lower Primary)">Grade 1–3 (Lower Primary)</option>
+              <option value="Grade 4–6 (Upper Primary)">Grade 4–6 (Upper Primary)</option>
+              <option value="JSS 1–3 (Grade 7–9)">JSS 1–3 (Grade 7–9)</option>
+              <option value="SSS 1–3 (Grade 10–12)">SSS 1–3 (Grade 10–12)</option>
+            </select>
+            <div className="relative flex-1 min-w-[200px]">
               <input
                 type="text"
                 value={aiPromptText}
                 onChange={(e) => setAiPromptText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleGenerateAi3D(aiPromptText)}
-                placeholder="Type ANY topic: Traffic light, Elephant, Brain, Car, Rectangle, Windmill..."
+                placeholder="Type ANY lesson topic: Profit and Loss, Parts of Speech, Simple Interest, Photosynthesis..."
                 className="w-full bg-slate-900/90 border border-purple-400/40 rounded-xl px-3 py-1 text-xs text-white placeholder-white/40 focus:outline-none focus:border-purple-400"
               />
               {aiGenError && <p className="text-[10px] font-bold text-rose-300 mt-1">{aiGenError}</p>}
@@ -3093,21 +3525,28 @@ export function VRLabExplorer({
             <button
               onClick={() => handleGenerateAi3D(aiPromptText)}
               disabled={isAiGenerating}
-              className="px-3 py-1 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center gap-1 shadow-sm shrink-0"
+              className="px-3.5 py-1.5 rounded-xl bg-yellow hover:bg-yellow/90 text-dark border-2 border-dark font-black text-xs flex items-center gap-1 shadow-[2px_2px_0px_#060E1C] shrink-0 cursor-pointer"
             >
-              {isAiGenerating ? <Loader className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-              <span>{isAiGenerating ? 'Synthesizing...' : 'Generate 3D'}</span>
+              {isAiGenerating ? <Loader className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              <span>{isAiGenerating ? 'Building VR Lesson...' : 'Generate VR Lesson'}</span>
+            </button>
+            <button
+              onClick={() => setAiPromptOpen(false)}
+              className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-white/70 shrink-0 cursor-pointer"
+            >
+              ✕
             </button>
           </div>
 
           {/* Quick Presets */}
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar w-full sm:w-auto">
-            <span className="text-[10px] text-white/50 font-bold shrink-0">Try:</span>
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar w-full">
+            <span className="text-[10px] text-white/50 font-bold shrink-0">Popular Lessons:</span>
             {[
+              { label: '💰 Profit & Loss', query: 'Profit and Loss' },
               { label: '📚 Parts of Speech', query: 'Parts of Speech' },
+              { label: '🍕 Fractions', query: 'Fractions' },
               { label: '🌧️ Water Cycle', query: 'Water Cycle' },
               { label: '🌿 Photosynthesis', query: 'Photosynthesis' },
-              { label: '🍕 Fractions', query: 'Fractions' },
               { label: '📦 Rectangle', query: 'Rectangle' },
               { label: '🚗 Car', query: 'Car' },
             ].map((p) => (
@@ -3117,17 +3556,11 @@ export function VRLabExplorer({
                   setAiPromptText(p.query);
                   handleGenerateAi3D(p.query);
                 }}
-                className="px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/80 text-[10px] font-bold shrink-0"
+                className="px-2.5 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 text-white/85 text-[10px] font-bold shrink-0 cursor-pointer"
               >
                 {p.label}
               </button>
             ))}
-            <button
-              onClick={() => setAiPromptOpen(false)}
-              className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-white/70 ml-1 shrink-0"
-            >
-              ✕
-            </button>
           </div>
         </div>
       )}
@@ -3925,17 +4358,17 @@ export function VRLabExplorer({
                       className={`w-9 h-9 rounded-xl bg-yellow text-dark border-2 border-dark flex items-center justify-center text-lg shrink-0 shadow-[2px_2px_0px_#060E1C] ${
                         isSpeaking ? 'animate-bounce' : ''
                       }`}
-                      title="Edvoura AI VR Teacher"
+                      title="Edvoura AI VR Master Teacher"
                     >
                       👩‍🏫
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1">
                         <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-yellow/20 text-yellow border border-yellow/30">
                           AI VR Teacher
                         </span>
-                        <span className="text-[10px] font-bold text-sky-300 truncate">
-                          {aiBlueprint?.category || 'Interactive VR Classroom'}
+                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-200 border border-sky-400/30 truncate max-w-[155px]">
+                          {aiBlueprint?.gradeLevel || aiGradeLevel}
                         </span>
                       </div>
                       <h3 className="font-black text-sm text-white truncate mt-0.5">
@@ -3955,11 +4388,11 @@ export function VRLabExplorer({
                   </div>
                 </div>
 
-                {/* Teacher Action Row: Guided Auto-Teach Tour + Replay Voice */}
+                {/* Teacher Action Row: Full Explanation Video Tour + Read Full Card */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
                   {stations.length > 0 && (
                     <button
-                      onClick={() => (isTeacherTourActive ? stopNarration() : startTeacherTour())}
+                      onClick={() => (isTeacherTourActive ? stopNarration() : startTeacherTour(0))}
                       className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[11px] font-black transition-all cursor-pointer border ${
                         isTeacherTourActive
                           ? 'bg-rose-600 hover:bg-rose-500 text-white border-rose-300 animate-pulse'
@@ -3967,7 +4400,7 @@ export function VRLabExplorer({
                       }`}
                     >
                       <GraduationCap className="w-3.5 h-3.5" />
-                      <span>{isTeacherTourActive ? 'Stop Teacher Tour' : 'Start Teacher Tour'}</span>
+                      <span>{isTeacherTourActive ? 'Stop Video Lesson' : 'Play Full VR Lesson'}</span>
                     </button>
                   )}
 
@@ -3976,11 +4409,9 @@ export function VRLabExplorer({
                       if (isSpeaking) {
                         stopNarration();
                       } else if (activeSt) {
-                        speakNarration(
-                          activeSt.teacherScript ||
-                            activeSt.narration ||
-                            `${activeSt.title}. ${activeSt.definition || activeSt.subtitle}.`
-                        );
+                        stopTeacherTour();
+                        const segs = buildStationFullSegments(activeSt, safeIdx);
+                        runSpeechQueue(segs);
                       } else {
                         speakNarration(
                           aiBlueprint?.teacherIntro ||
@@ -3991,9 +4422,10 @@ export function VRLabExplorer({
                       }
                     }}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] font-black border border-emerald-400/40 cursor-pointer"
+                    title="Read every definition, type, worked example, and activity on this card aloud"
                   >
                     {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                    <span>{isSpeaking ? 'Mute' : 'Teach Aloud'}</span>
+                    <span>{isSpeaking ? 'Stop Voice' : 'Read Full Card'}</span>
                   </button>
 
                   {stations.length > 0 && (
@@ -4002,6 +4434,29 @@ export function VRLabExplorer({
                     </span>
                   )}
                 </div>
+
+                {/* Live Speaking Phase Progress Indicator */}
+                {activeTeachPhase !== 'idle' && (
+                  <div className="mt-2 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-400/35 flex items-center justify-between text-[10px] font-black text-emerald-200">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                      <span>
+                        Now Teaching:{' '}
+                        {activeTeachPhase === 'definition'
+                          ? '📖 Definition & Key Formula'
+                          : activeTeachPhase === 'visuals'
+                            ? '🖼️ Visual Picture Examples'
+                            : activeTeachPhase === 'types'
+                              ? '🏷️ Types & Categories'
+                              : activeTeachPhase === 'worked'
+                                ? '🧮 Step-by-Step Worked Example'
+                                : activeTeachPhase === 'examples'
+                                  ? '💬 Real-World Examples'
+                                  : '🎯 Interactive Activity — Your Turn!'}
+                      </span>
+                    </span>
+                  </div>
+                )}
 
                 {/* Clickable Station Stepper Pills */}
                 {stations.length > 0 && (
@@ -4012,7 +4467,7 @@ export function VRLabExplorer({
                         onClick={() => {
                           stopTeacherTour();
                           playSynthesizedSound('space');
-                          focusAIStation(idx, { speak: true, broadcast: true });
+                          focusAIStation(idx, { speak: true, fullCard: true, broadcast: true });
                         }}
                         className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide transition-all shrink-0 border cursor-pointer ${
                           safeIdx === idx
@@ -4027,31 +4482,57 @@ export function VRLabExplorer({
                 )}
               </div>
 
-              {/* Scrollable Rich Teacher Lesson Body (Definition, Visual Pictures, Types, Examples, Mini-Quiz!) */}
-              <div className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5">
+              {/* Scrollable Rich Teacher Lesson Body (Definition, Formula, Pictures, Types, Worked Example, Examples, Interactive Activity!) */}
+              <div ref={teacherBodyRef} className="flex-1 min-h-0 overflow-y-auto p-3.5 space-y-3.5">
                 {activeSt ? (
                   <>
-                    {/* 1. Active Station Title + Full Definition */}
+                    {/* 1. Active Station Title + Full Definition + Key Formula/Rule */}
                     <div
-                      className="p-3 rounded-xl bg-white/5 border-l-4 border border-white/10"
+                      id="vr-sec-definition"
+                      className={`p-3 rounded-xl border-l-4 border transition-all ${
+                        activeTeachPhase === 'definition'
+                          ? 'bg-yellow/15 border-yellow ring-2 ring-yellow/60'
+                          : 'bg-white/5 border-white/10'
+                      }`}
                       style={{ borderLeftColor: activeSt.color || '#facc15' }}
                     >
                       <div className="flex items-center justify-between gap-2 mb-1">
                         <h4 className="font-black text-base uppercase tracking-tight text-yellow">
                           {safeIdx + 1}. {activeSt.title}
                         </h4>
-                        <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                          Definition
-                        </span>
+                        <button
+                          onClick={() => {
+                            stopTeacherTour();
+                            speakNarration(
+                              `${activeSt.title}. ${activeSt.definition || activeSt.subtitle}. ${
+                                activeSt.formulaOrRule ? `Key rule: ${activeSt.formulaOrRule}` : ''
+                              }`
+                            );
+                          }}
+                          className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-emerald-300 flex items-center gap-1 cursor-pointer"
+                          title="Read Definition aloud"
+                        >
+                          <Volume2 className="w-2.5 h-2.5" /> Read
+                        </button>
                       </div>
                       <p className="text-xs sm:text-[13px] text-white/95 font-semibold leading-relaxed">
                         {activeSt.definition || activeSt.subtitle}
                       </p>
+                      {activeSt.formulaOrRule && (
+                        <div className="mt-2.5 px-3 py-2 rounded-xl bg-yellow/15 border border-yellow/50 text-xs font-black text-yellow tracking-tight">
+                          🔑 {activeSt.formulaOrRule}
+                        </div>
+                      )}
                     </div>
 
                     {/* 2. DIFFERENT VISUAL PICTURE CARDS FOR EVERY STATION */}
                     {Array.isArray(activeSt.visuals) && activeSt.visuals.length > 0 && (
-                      <div>
+                      <div
+                        id="vr-sec-visuals"
+                        className={`p-2 rounded-xl transition-all ${
+                          activeTeachPhase === 'visuals' ? 'bg-sky-500/15 ring-2 ring-sky-400/70' : ''
+                        }`}
+                      >
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-[10px] font-black uppercase tracking-wider text-sky-300">
                             🖼️ Picture Examples (Tap any image to hear)
@@ -4098,9 +4579,26 @@ export function VRLabExplorer({
 
                     {/* 3. TYPES / KINDS BREAKDOWN */}
                     {Array.isArray(activeSt.types) && activeSt.types.length > 0 && (
-                      <div className="space-y-1.5">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-emerald-300">
-                          🏷️ Types &amp; Kinds of {activeSt.title}
+                      <div
+                        id="vr-sec-types"
+                        className={`space-y-1.5 p-2 rounded-xl transition-all ${
+                          activeTeachPhase === 'types' ? 'bg-emerald-500/15 ring-2 ring-emerald-400/70' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-300">
+                            🏷️ Types &amp; Kinds of {activeSt.title}
+                          </span>
+                          <button
+                            onClick={() => {
+                              stopTeacherTour();
+                              const txt = activeSt.types!.map((t) => `${t.name}: ${t.detail}`).join('. ');
+                              speakNarration(`Types of ${activeSt.title}. ${txt}`);
+                            }}
+                            className="text-[9px] font-black text-emerald-300 bg-emerald-500/15 hover:bg-emerald-500/25 px-2 py-0.5 rounded-full flex items-center gap-1 cursor-pointer"
+                          >
+                            <Volume2 className="w-2.5 h-2.5" /> Read Types
+                          </button>
                         </div>
                         <div className="space-y-1.5">
                           {activeSt.types.map((tp, ti) => (
@@ -4118,12 +4616,99 @@ export function VRLabExplorer({
                       </div>
                     )}
 
-                    {/* 4. REAL EXAMPLE SENTENCES */}
+                    {/* 4. LIVE STEP-BY-STEP WORKED EXAMPLE CHALKBOARD (Explanation-Video Style!) */}
+                    {activeSt.workedExample && Array.isArray(activeSt.workedExample.steps) && (
+                      <div
+                        id="vr-sec-worked"
+                        className={`p-3 rounded-xl bg-gradient-to-br from-emerald-950/90 to-slate-900 border-2 space-y-2 transition-all ${
+                          activeTeachPhase === 'worked'
+                            ? 'border-yellow ring-2 ring-yellow/60'
+                            : 'border-emerald-500/45'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-yellow">
+                            🧮 Step-by-Step Worked Example
+                          </span>
+                          <button
+                            onClick={() => {
+                              stopTeacherTour();
+                              playWorkedExampleAloud(activeSt);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-yellow hover:bg-yellow/90 text-dark font-black text-[10px] flex items-center gap-1 cursor-pointer shadow-sm"
+                          >
+                            <Play className="w-2.5 h-2.5" /> Work Step-by-Step
+                          </button>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-black/35 border border-white/10 text-xs font-bold text-white leading-relaxed">
+                          <span className="text-sky-300 font-black uppercase text-[10px] block mb-0.5">
+                            Classroom Problem:
+                          </span>
+                          {activeSt.workedExample.problem}
+                        </div>
+                        <div className="space-y-1.5">
+                          {activeSt.workedExample.steps.map((step, si) => {
+                            const visible = revealedWorkedStep >= si + 1;
+                            const isCurrentStep =
+                              activeTeachPhase === 'worked' && revealedWorkedStep === si + 1;
+                            if (!visible) return null;
+                            return (
+                              <div
+                                key={`${step.label}-${si}`}
+                                className={`p-2 rounded-lg border transition-all animate-in fade-in ${
+                                  isCurrentStep
+                                    ? 'bg-yellow/20 border-yellow text-white'
+                                    : 'bg-white/5 border-white/15 text-white/90'
+                                }`}
+                              >
+                                <div className="text-[10px] font-black uppercase text-emerald-300">
+                                  {step.label}
+                                </div>
+                                <div className="text-xs font-mono font-black text-yellow mt-0.5">
+                                  {step.work}
+                                </div>
+                                <div className="text-[11px] text-white/80 font-medium mt-0.5 leading-snug">
+                                  {step.speak}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {revealedWorkedStep >= activeSt.workedExample.steps.length + 1 && (
+                          <div className="p-2.5 rounded-xl bg-emerald-500/20 border-2 border-emerald-400 text-xs font-black text-emerald-200 flex items-center gap-2 animate-in fade-in">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+                            <span>Final Answer: {activeSt.workedExample.finalAnswer}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 5. REAL EXAMPLE SENTENCES */}
                     {((Array.isArray(activeSt.examples) && activeSt.examples.length > 0) ||
                       activeSt.example) && (
-                      <div className="space-y-1.5">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-300">
-                          💬 Examples in Sentences
+                      <div
+                        id="vr-sec-examples"
+                        className={`space-y-1.5 p-2 rounded-xl transition-all ${
+                          activeTeachPhase === 'examples' ? 'bg-amber-500/15 ring-2 ring-amber-400/70' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                            💬 Real-World Examples
+                          </span>
+                          <button
+                            onClick={() => {
+                              stopTeacherTour();
+                              const list =
+                                Array.isArray(activeSt.examples) && activeSt.examples.length > 0
+                                  ? activeSt.examples
+                                  : [activeSt.example || ''];
+                              speakNarration(`Here are examples for ${activeSt.title}: ${list.join('. ')}`);
+                            }}
+                            className="text-[9px] font-black text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 px-2 py-0.5 rounded-full flex items-center gap-1 cursor-pointer"
+                          >
+                            <Volume2 className="w-2.5 h-2.5" /> Read
+                          </button>
                         </div>
                         <div className="space-y-1.5">
                           {(Array.isArray(activeSt.examples) && activeSt.examples.length > 0
@@ -4143,16 +4728,78 @@ export function VRLabExplorer({
                       </div>
                     )}
 
-                    {/* 5. INTERACTIVE QUICK TEACHER CHECK MINI-QUIZ */}
+                    {/* 6. INTERACTIVE ACTIVITY (Reads Question & Options Aloud + Hint + Live Work It Out!) */}
                     {activeSt.quiz && Array.isArray(activeSt.quiz.options) && (
-                      <div className="p-3 rounded-xl bg-purple-950/60 border-2 border-purple-400/40 space-y-2">
-                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-200">
-                          <HelpCircle className="w-3.5 h-3.5 text-yellow" />
-                          <span>Quick Teacher Check — Try It!</span>
+                      <div
+                        id="vr-sec-quiz"
+                        className={`p-3 rounded-xl bg-purple-950/70 border-2 space-y-2 transition-all ${
+                          activeTeachPhase === 'quiz'
+                            ? 'border-yellow ring-2 ring-yellow/70'
+                            : 'border-purple-400/45'
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-200">
+                            <HelpCircle className="w-3.5 h-3.5 text-yellow" />
+                            <span>Interactive Activity — Try It!</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => {
+                                stopTeacherTour();
+                                const optRead = activeSt.quiz!.options
+                                  .map((o, i) => `Option ${String.fromCharCode(65 + i)}: ${o}`)
+                                  .join('. ');
+                                speakNarration(`${activeSt.quiz!.question} ${optRead}`);
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-sky-200 text-[9px] font-black flex items-center gap-1 cursor-pointer"
+                              title="Read activity question and options aloud"
+                            >
+                              <Volume2 className="w-2.5 h-2.5" /> Read
+                            </button>
+                            {activeSt.quiz.hint && (
+                              <button
+                                onClick={() => {
+                                  setShowQuizHint((prev) => ({ ...prev, [safeIdx]: true }));
+                                  speakNarration(`Here is a teacher hint: ${activeSt.quiz!.hint}`);
+                                }}
+                                className="px-2 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-[9px] font-black cursor-pointer"
+                              >
+                                💡 Hint
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setShowQuizWork((prev) => ({ ...prev, [safeIdx]: true }));
+                                setQuizAnswers((prev) => ({
+                                  ...prev,
+                                  [safeIdx]: activeSt.quiz!.correctIndex,
+                                }));
+                                playSynthesizedSound('chime');
+                                const sol =
+                                  activeSt.quiz!.workedSolution ||
+                                  activeSt.quiz!.explanation ||
+                                  `The correct answer is ${activeSt.quiz!.options[activeSt.quiz!.correctIndex]}!`;
+                                speakNarration(`Let us work this activity out together! ${sol}`);
+                              }}
+                              className="px-2 py-0.5 rounded-md bg-yellow hover:bg-yellow/90 text-dark text-[9px] font-black cursor-pointer"
+                              title="Watch & hear the VR Teacher work out the answer step by step"
+                            >
+                              🧮 Work It Out
+                            </button>
+                          </div>
                         </div>
+
                         <p className="text-xs font-bold text-white leading-snug">
                           {activeSt.quiz.question}
                         </p>
+
+                        {showQuizHint[safeIdx] && activeSt.quiz.hint && (
+                          <div className="p-2 rounded-lg bg-amber-500/15 border border-amber-400/40 text-[11px] font-bold text-amber-200">
+                            💡 Hint: {activeSt.quiz.hint}
+                          </div>
+                        )}
+
                         <div className="grid grid-cols-1 gap-1.5">
                           {activeSt.quiz.options.map((opt, oi) => {
                             const isPicked = chosenQuizIdx === oi;
@@ -4164,13 +4811,20 @@ export function VRLabExplorer({
                                 onClick={() => {
                                   setQuizAnswers((prev) => ({ ...prev, [safeIdx]: oi }));
                                   if (isCorrect) {
+                                    setShowQuizWork((prev) => ({ ...prev, [safeIdx]: true }));
                                     playSynthesizedSound('chime');
                                     speakNarration(
-                                      activeSt.quiz?.explanation || `Correct! ${opt} is the right answer!`
+                                      activeSt.quiz?.workedSolution ||
+                                        activeSt.quiz?.explanation ||
+                                        `Correct! ${opt} is the right answer!`
                                     );
                                   } else {
                                     playSynthesizedSound('laser');
-                                    speakNarration(`Almost! Look closely at the definition and try another option.`);
+                                    speakNarration(
+                                      activeSt.quiz?.hint
+                                        ? `Not quite! Here is a hint: ${activeSt.quiz.hint}`
+                                        : 'Almost! Check the worked example above and try another option, or click Work It Out!'
+                                    );
                                   }
                                 }}
                                 className={`w-full text-left px-3 py-2 rounded-xl text-xs font-black border transition-all flex items-center justify-between cursor-pointer ${
@@ -4191,17 +4845,25 @@ export function VRLabExplorer({
                             );
                           })}
                         </div>
-                        {typeof chosenQuizIdx === 'number' && (
+
+                        {(typeof chosenQuizIdx === 'number' || showQuizWork[safeIdx]) && (
                           <div
-                            className={`text-[11px] font-bold p-2 rounded-lg ${
+                            className={`text-[11px] font-bold p-2.5 rounded-lg space-y-1 ${
                               chosenQuizIdx === activeSt.quiz.correctIndex
-                                ? 'bg-emerald-500/20 text-emerald-200'
-                                : 'bg-rose-500/20 text-rose-200'
+                                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/40'
+                                : 'bg-rose-500/20 text-rose-200 border border-rose-400/30'
                             }`}
                           >
-                            {chosenQuizIdx === activeSt.quiz.correctIndex
-                              ? `🎉 ${activeSt.quiz.explanation || 'Excellent work!'}`
-                              : '💡 Not quite — check the definition above and tap another choice!'}
+                            <div>
+                              {chosenQuizIdx === activeSt.quiz.correctIndex
+                                ? `🎉 ${activeSt.quiz.explanation || 'Excellent work!'}`
+                                : '💡 Not quite — try another choice or tap "Work It Out" above!'}
+                            </div>
+                            {showQuizWork[safeIdx] && activeSt.quiz.workedSolution && (
+                              <div className="pt-1 border-t border-white/15 text-yellow font-semibold">
+                                🧮 Working: {activeSt.quiz.workedSolution}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

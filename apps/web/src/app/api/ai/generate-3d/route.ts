@@ -49,16 +49,35 @@ const MiniQuizSchema = z.object({
   options: z.array(z.string()).min(2).max(4),
   correctIndex: z.number().int().min(0).max(3).default(0),
   explanation: z.string().default('Great job!'),
+  hint: z.string().optional(),
+  workedSolution: z.string().optional(),
+});
+
+const WorkedStepSchema = z.object({
+  label: z.string(),
+  work: z.string(),
+  speak: z.string(),
+});
+
+const WorkedExampleSchema = z.object({
+  problem: z.string(),
+  steps: z.array(WorkedStepSchema).min(2).max(5),
+  finalAnswer: z.string(),
 });
 
 const StationSchema = z.object({
   title: z.string(),
   subtitle: z.string(),
   definition: z.string().optional(),
+  formulaOrRule: z.string().optional(),
   types: z.array(StationTypeSchema).max(6).optional(),
+  workedExample: WorkedExampleSchema.optional(),
   examples: z.array(z.string()).max(6).optional(),
   example: z.string().default(''),
   visuals: z.array(VisualItemSchema).max(6).optional(),
+  propKind: z
+    .enum(['coins', 'scale', 'book', 'globe', 'beaker', 'cube', 'pie', 'chart', 'sun', 'leaf', 'trophy'])
+    .optional(),
   teacherScript: z.string().optional(),
   narration: z.string().default(''),
   quiz: MiniQuizSchema.optional(),
@@ -69,6 +88,7 @@ const StationSchema = z.object({
 const BlueprintSchema = z.object({
   title: z.string(),
   category: z.string().default('AI VR Classroom'),
+  gradeLevel: z.string().optional(),
   sceneType: z.enum(['object', 'concept-gallery']).default('concept-gallery'),
   description: z.string(),
   teacherIntro: z.string().optional(),
@@ -116,47 +136,63 @@ function getOpenRouterKeys(): string[] {
 }
 
 function build3DPrompt(topic: string, gradeLevel: string): string {
-  return `You are an award-winning K-12 Classroom Teacher AND Interactive 3D Virtual Reality Lesson Designer for Edvoura Learning Hub.
-Design a complete, engaging, teacher-led Interactive 3D VR Lesson for the topic: "${topic}" (audience: ${gradeLevel}).
+  return `You are a Master K-12 Classroom Teacher with over 50 years of world-class teaching experience AND an Interactive 3D Virtual Reality Lesson Designer for Edvoura Learning Hub.
+Design a COMPLETE, deep, explanation-video-quality Interactive 3D VR Lesson for the topic: "${topic}" tailored specifically for class/grade level: "${gradeLevel}".
 
-CRITICAL PEDAGOGICAL RULES:
-1. BEHAVE LIKE A REAL CLASSROOM TEACHER: Pupils must finish this VR lesson truly understanding the topic!
+MASTER TEACHER PEDAGOGICAL RULES (50 YEARS OF EXPERIENCE):
+1. TAILOR EVERYTHING STRICTLY TO "${gradeLevel}":
+   - Nursery / KG / Grade 1-3: Warm simple words, concrete real-life stories, small friendly numbers (e.g. $5, $10, counting items), playful tone.
+   - Grade 4-6 (Upper Primary): Clear definitions, key rules/formulas, multi-step worked word problems, percentages/fractions where relevant, rich real-life examples.
+   - Grade 7-9 (JSS 1-3): Rigorous mathematical/scientific formulas, sub-types, multi-step worked calculations (e.g. Profit %, Loss %, Discount, Markup, equations, mechanisms), exam-ready clarity.
+   - Grade 10-12 (SSS 1-3 / High School): Deep analytical concepts, full derivations/formulas, multi-step exam worked solutions, edge cases, and application challenges.
 2. DECIDE THE SCENE TYPE:
-   - Use "sceneType": "concept-gallery" for ANY conceptual, language, grammar, math rule, science process, biology system, geography, history, civics, or multi-type topic (e.g. "Parts of Speech", "English Tenses", "Punctuation", "Fractions", "Photosynthesis", "Water Cycle", "States of Matter", "Food Chain", "Types of Rocks", "Continents", "Electricity", "Human Rights", "Figures of Speech").
-     * NEVER build weird robots, stick figures, or random abstract shapes for conceptual topics!
-     * Keep "parts" minimal (just 2 sleek glowing hologram pedestal rings in the center) and put ALL your richness into 4 to 8 comprehensive teaching "stations" (for example, ALL 8 Parts of Speech if the topic is Parts of Speech!).
-   - Use "sceneType": "object" ONLY for a specific physical 3D object, geometric shape, vehicle, building, organ, or molecule (e.g. "Rectangle", "Car", "Human Brain", "Volcano", "Guitar", "Bridge", "Water Molecule").
-     * Assemble a recognizable 3D model using 6 to 22 well-proportioned connected Three.js "parts" centered around [0, 0, 0] within -4 to +4 units, AND ALSO include 3 to 5 rich teaching "stations" explaining its key parts, types, formulas, and examples!
-3. EVERY SINGLE STATION MUST TEACH COMPLETELY WITH:
-   - "title": Short clear concept name (e.g. "NOUN", "VERB", "EVAPORATION")
-   - "subtitle": 1 crisp headline sentence (under 70 chars)
-   - "definition": Full, warm, kid-friendly teacher definition (2 clear sentences explaining WHAT it is and WHY it matters).
-   - "types": 2 to 4 real sub-types or categories of that concept, each with "name" and "detail" (e.g. for NOUN: Proper Noun, Common Noun, Collective Noun, Abstract Noun).
-   - "examples": 3 vivid example sentences with the key target word(s) in UPPERCASE so pupils spot them instantly!
-   - "example": 1 short summary example line for the 3D poster footer (under 55 chars).
-   - "visuals": EXACTLY 4 DIFFERENT visual picture items representing concrete examples of THIS station! Each has:
-     * "icon": 1 vivid, distinct emoji representing a real object/action/scene (NEVER repeat the same emoji across stations!)
-     * "label": Short caption (e.g. "Teacher", "School", "Dog", "Book")
-     * "category": Short sub-tag (e.g. "Person", "Place", "Animal", "Thing")
-     * "bgColor": Bright hex color matching the visual (e.g. "#3b82f6", "#10b981", "#f59e0b", "#ec4899")
-   - "teacherScript": 3 warm, encouraging spoken teacher sentences teaching the definition, types, and an example aloud to the pupil.
+   - Use "sceneType": "concept-gallery" for conceptual, math, grammar, science-process, commerce, geography, history, or multi-part lessons (e.g. "Profit and Loss", "Parts of Speech", "Fractions", "Photosynthesis", "Water Cycle", "Simple Interest", "Algebraic Equations", "States of Matter", "Punctuation").
+     * NEVER invent weird robots or random blobs for conceptual topics!
+     * Keep "parts" minimal (2 sleek glowing pedestal rings) and put FULL mastery into 4 to 6 comprehensive teaching "stations" that take a pupil from zero to total mastery!
+   - Use "sceneType": "object" ONLY for a specific physical 3D object/shape/organ/machine (e.g. "Rectangle", "Car", "Human Brain", "Volcano", "Bridge").
+     * Build a recognizable 3D model in "parts" AND include 3 to 5 comprehensive teaching "stations"!
+3. EVERY SINGLE STATION MUST BE A COMPLETE MINI-VIDEO LESSON WITH:
+   - "title": Clear concept name (e.g. "COST PRICE (CP)", "PROFIT & PROFIT %")
+   - "subtitle": 1 crisp summary line (under 65 chars)
+   - "definition": Rich 2-3 sentence master-teacher explanation clearly defining WHAT it is, HOW it works, and WHY it matters in real life.
+   - "formulaOrRule": The exact formula, key rule, or golden takeaway (e.g. "Profit = Selling Price (SP) − Cost Price (CP)  |  Profit % = (Profit ÷ CP) × 100" or for Grammar: "Noun = Person, Place, Animal, Thing, or Idea").
+   - "types": 2 to 4 real sub-types/kinds with "name" and clear "detail" including a concrete mini-example.
+   - "workedExample": A REAL STEP-BY-STEP WORKED CLASSROOM PROBLEM that the VR Teacher animates and works out live on the board!
+     * "problem": Clear grade-appropriate word problem or sentence/science task to solve together!
+     * "steps": 3 to 4 sequential steps, each with:
+       - "label": e.g. "Step 1: Identify Cost & Selling Price"
+       - "work": The exact chalkboard calculation/working line (e.g. "CP = $40, SP = $52")
+       - "speak": Natural warm spoken teacher sentence explaining this step aloud!
+     * "finalAnswer": Crisp boxed final answer (e.g. "Profit = $12 (30% Profit)")
+   - "examples": 3 vivid real-world example sentences/scenarios with key words in UPPERCASE.
+   - "example": 1 short punchy footer summary (MAX 52 characters so it fits cleanly on the 3D poster!).
+   - "visuals": EXACTLY 4 DIFFERENT concrete visual tiles for THIS station ("icon", "label", "category", "bgColor"). Never repeat icons across stations!
+   - "propKind": Choose the best real 3D animated prop to sculpt floating above THIS station's 3D board: one of "coins", "scale", "book", "globe", "beaker", "cube", "pie", "chart", "sun", "leaf", "trophy".
+   - "teacherScript": Warm 3-sentence teacher voice introduction to this station.
    - "narration": Same as teacherScript.
-   - "quiz": 1 fun multiple-choice Check-for-Understanding question with 3 short "options", "correctIndex" (0, 1, or 2), and encouraging "explanation".
-   - "color": Distinct vibrant hex color for this station's 3D poster board.
+   - "quiz": An interactive classroom activity question that pupils can work out! Includes:
+     * "question": Clear active question (e.g. a mini calculation or real application for ${gradeLevel})
+     * "options": 3 crisp options
+     * "correctIndex": 0, 1, or 2
+     * "hint": Helpful teacher nudge without giving away the answer immediately
+     * "workedSolution": Step-by-step spoken + written working showing HOW to arrive at the exact answer!
+     * "explanation": Warm congratulatory teacher feedback!
+   - "color": Distinct vibrant hex color for this station's 3D board.
 
 Return ONLY raw valid JSON matching this exact structure (no markdown fences, no commentary):
 {
   "title": "Clear Lesson Title",
-  "category": "Subject Area (e.g. English Grammar, Science, Mathematics, History)",
+  "category": "Subject Area",
+  "gradeLevel": "${gradeLevel}",
   "sceneType": "concept-gallery | object",
-  "description": "2 welcoming sentences introducing what pupils will learn in this VR lesson.",
-  "teacherIntro": "2 warm spoken teacher sentences defining ${topic} before starting Station 1.",
-  "narration": "Warm spoken intro welcoming the pupil to the ${topic} VR classroom.",
+  "description": "2 welcoming sentences introducing what pupils will master in this VR lesson.",
+  "teacherIntro": "3 warm spoken master-teacher sentences welcoming the ${gradeLevel} class to ${topic}.",
+  "narration": "Same warm teacher intro.",
   "facts": [
-    { "label": "Key Idea", "value": "Short crisp fact" },
-    { "label": "Key Idea 2", "value": "Short crisp fact" },
-    { "label": "Key Idea 3", "value": "Short crisp fact" },
-    { "label": "Key Idea 4", "value": "Short crisp fact" }
+    { "label": "Class Level", "value": "${gradeLevel}" },
+    { "label": "Key Rule", "value": "Short crisp fact" },
+    { "label": "Key Formula", "value": "Short crisp fact" },
+    { "label": "Real Life", "value": "Short crisp fact" }
   ],
   "parts": [
     {
@@ -174,31 +210,43 @@ Return ONLY raw valid JSON matching this exact structure (no markdown fences, no
   "stations": [
     {
       "title": "CONCEPT NAME",
-      "subtitle": "Crisp 1-line definition",
-      "definition": "Clear 2-sentence kid-friendly definition.",
+      "subtitle": "Crisp 1-line summary",
+      "definition": "Rich 2-3 sentence teacher definition.",
+      "formulaOrRule": "Key formula or golden rule",
+      "propKind": "coins | scale | book | globe | beaker | cube | pie | chart | sun | leaf | trophy",
       "types": [
-        { "name": "Type 1", "detail": "Short explanation + mini example" },
-        { "name": "Type 2", "detail": "Short explanation + mini example" }
+        { "name": "Type 1", "detail": "Clear explanation + mini example" },
+        { "name": "Type 2", "detail": "Clear explanation + mini example" }
       ],
+      "workedExample": {
+        "problem": "Concrete worked classroom problem for ${gradeLevel}.",
+        "steps": [
+          { "label": "Step 1: Read & List", "work": "Given values...", "speak": "First, let us write down what we know..." },
+          { "label": "Step 2: Apply Formula", "work": "Formula substitution...", "speak": "Now we apply our golden rule..." },
+          { "label": "Step 3: Final Calculation", "work": "Result = ...", "speak": "Calculating carefully gives our final answer!" }
+        ],
+        "finalAnswer": "Clear boxed answer"
+      },
       "examples": [
-        "Example sentence 1 with TARGET WORD in uppercase.",
-        "Example sentence 2 with TARGET WORD in uppercase.",
-        "Example sentence 3 with TARGET WORD in uppercase."
+        "Real-world example 1 with KEY TERM in uppercase.",
+        "Real-world example 2 with KEY TERM in uppercase."
       ],
-      "example": "Ex: short words or sentence",
+      "example": "Short footer summary under 52 chars",
       "visuals": [
-        { "icon": "👩‍🏫", "label": "Teacher", "category": "Person", "bgColor": "#3b82f6" },
-        { "icon": "🏫", "label": "School", "category": "Place", "bgColor": "#10b981" },
-        { "icon": "🐕", "label": "Puppy", "category": "Animal", "bgColor": "#f59e0b" },
-        { "icon": "📚", "label": "Book", "category": "Thing", "bgColor": "#8b5cf6" }
+        { "icon": "🪙", "label": "Caption 1", "category": "Tag", "bgColor": "#3b82f6" },
+        { "icon": "🧾", "label": "Caption 2", "category": "Tag", "bgColor": "#10b981" },
+        { "icon": "🏪", "label": "Caption 3", "category": "Tag", "bgColor": "#f59e0b" },
+        { "icon": "📈", "label": "Caption 4", "category": "Tag", "bgColor": "#8b5cf6" }
       ],
-      "teacherScript": "Warm 3-sentence teacher voice script.",
-      "narration": "Same warm teacher voice script.",
+      "teacherScript": "Warm 3-sentence teacher voice explanation.",
+      "narration": "Same warm teacher voice explanation.",
       "quiz": {
-        "question": "Short check question for the pupil?",
+        "question": "Active practice problem for the pupil?",
         "options": ["Option A", "Option B", "Option C"],
         "correctIndex": 0,
-        "explanation": "Short encouraging explanation of why the answer is right!"
+        "hint": "Helpful teacher hint.",
+        "workedSolution": "Step 1... Step 2... Therefore the answer is Option A!",
+        "explanation": "Well done! Encouraging explanation."
       },
       "color": "#3b82f6"
     }
@@ -219,8 +267,215 @@ THREE.JS GEOMETRY ARGS:
 Output ONLY the JSON object.`;
 }
 
-function buildSmartFallback(topic: string): AI3DBlueprint {
+function buildSmartFallback(topic: string, gradeLevel = 'Grade 4–6 (Upper Primary)'): AI3DBlueprint {
   const q = topic.toLowerCase().trim();
+
+  if (q.includes('profit') || q.includes('loss') || q.includes('cost price') || q.includes('selling price')) {
+    return {
+      title: `Mastering Profit & Loss (${gradeLevel})`,
+      category: 'Mathematics & Commercial Arithmetic',
+      gradeLevel,
+      sceneType: 'concept-gallery',
+      description:
+        'Master Cost Price, Selling Price, Profit, Loss, and Percentage Profit/Loss through animated step-by-step worked examples, 3D visual props, and interactive market activities!',
+      teacherIntro: `Welcome ${gradeLevel} scholars! Today we are mastering Profit and Loss—the exact math shopkeepers, bakers, and entrepreneurs use every single day! Let us work through every definition, formula, step-by-step calculation, and activity together!`,
+      narration: `Welcome to the Profit and Loss Virtual Classroom for ${gradeLevel}! Click Play Full VR Video Lesson to walk through Cost Price, Selling Price, Profit, Loss, and worked calculations step by step!`,
+      facts: [
+        { label: 'Class Level', value: gradeLevel },
+        { label: 'Profit Rule', value: 'Profit = SP − CP (SP > CP)' },
+        { label: 'Loss Rule', value: 'Loss = CP − SP (CP > SP)' },
+        { label: 'Percentage', value: '(Profit or Loss ÷ CP) × 100' },
+      ],
+      parts: [
+        { name: 'Stage Base', geometry: 'cylinder', args: [2.4, 2.6, 0.2, 32], position: [0, -2.0, 0], rotation: [0, 0, 0], color: '#1e293b', emissive: '#3b82f6' },
+        { name: 'Orbit Ring', geometry: 'torus', args: [2.7, 0.06, 16, 48], position: [0, -1.8, 0], rotation: [1.57, 0, 0], color: '#facc15', animate: 'spinZ' },
+      ],
+      stations: [
+        {
+          title: 'COST PRICE (CP)',
+          subtitle: 'The total amount paid to buy or make an item before selling',
+          definition:
+            'Cost Price (CP) is the exact amount of money a trader pays to buy goods from a wholesaler or manufacture them in a factory—including extra expenses like transport or repair (overhead costs).',
+          formulaOrRule: 'Total Cost Price (CP) = Buying Price + Overhead Expenses (Transport / Repairs)',
+          propKind: 'coins',
+          types: [
+            { name: 'Purchase Cost', detail: 'Amount paid to a supplier for ready-made items (e.g., buying a bag for $20)' },
+            { name: 'Production & Overhead Cost', detail: 'Raw materials plus transport or repair costs added before selling' },
+          ],
+          workedExample: {
+            problem: 'A shopkeeper buys a used bicycle for $60 and spends $15 repairing the brakes. What is the Total Cost Price (CP)?',
+            steps: [
+              { label: 'Step 1: List Buying Price', work: 'Buying Price = $60', speak: 'First, write down the initial buying price of the bicycle, which is 60 dollars.' },
+              { label: 'Step 2: List Overhead Expense', work: 'Repair Expense = $15', speak: 'Next, notice the shopkeeper spent 15 dollars repairing the brakes. That is an overhead cost.' },
+              { label: 'Step 3: Add Together for Total CP', work: 'Total CP = $60 + $15 = $75', speak: 'Add 60 dollars plus 15 dollars! That gives a Total Cost Price of 75 dollars!' },
+            ],
+            finalAnswer: 'Total Cost Price (CP) = $75',
+          },
+          examples: [
+            'A baker spends $18 on flour and sugar — her COST PRICE is $18.',
+            'Buying a crate of drinks for $12 plus $2 bus fare makes the TOTAL COST PRICE $14.',
+          ],
+          example: 'Total CP = Buying Price + Overhead Costs',
+          visuals: [
+            { icon: '📦', label: 'Wholesale Box', category: 'Supply', bgColor: '#3b82f6' },
+            { icon: '🧾', label: 'Receipt', category: 'Purchase Record', bgColor: '#10b981' },
+            { icon: '🚚', label: 'Delivery Fee', category: 'Overhead', bgColor: '#f59e0b' },
+            { icon: '💰', label: 'Capital Spent', category: 'Total CP', bgColor: '#8b5cf6' },
+          ],
+          teacherScript:
+            'Lesson 1 is Cost Price! Remember, Cost Price is everything the seller spends to buy or prepare an item for sale, including transport or repair expenses.',
+          narration:
+            'Lesson 1 is Cost Price! Cost Price is the total amount spent to buy or make an item, including any transport or repair expenses.',
+          quiz: {
+            question: 'Ada buys a box of notebooks for $25 and pays $5 for delivery. What is her Total Cost Price (CP)?',
+            options: ['$20', '$30', '$25'],
+            correctIndex: 1,
+            hint: 'Remember to ADD the delivery overhead expense to the buying price!',
+            workedSolution: 'Step 1: Buying price is $25. Step 2: Delivery overhead is $5. Step 3: Total Cost Price equals 25 plus 5, which is 30 dollars!',
+            explanation: 'Spot on! $25 buying price + $5 delivery = $30 Total Cost Price!',
+          },
+          color: '#3b82f6',
+        },
+        {
+          title: 'SELLING PRICE (SP)',
+          subtitle: 'The price a customer pays to buy the item from the seller',
+          definition:
+            'Selling Price (SP) is the final amount of money a shopkeeper receives from a customer when an item is sold. Comparing Selling Price against Cost Price immediately tells us whether the business made a Profit or suffered a Loss!',
+          formulaOrRule: 'If SP > CP → PROFIT!  |  If SP < CP → LOSS!  |  If SP = CP → BREAK-EVEN',
+          propKind: 'scale',
+          types: [
+            { name: 'Marked / Tag Price', detail: 'The original price printed on the shop price tag before any discount' },
+            { name: 'Net Selling Price', detail: 'Final amount paid after subtracting any discount (SP = Marked Price − Discount)' },
+          ],
+          workedExample: {
+            problem: 'A jacket has a price tag of $50. The store offers a $8 holiday discount. What is the Selling Price (SP)?',
+            steps: [
+              { label: 'Step 1: Write Marked Price & Discount', work: 'Marked Price = $50, Discount = $8', speak: 'First, identify the tag price of 50 dollars and the holiday discount of 8 dollars.' },
+              { label: 'Step 2: Subtract Discount', work: 'SP = $50 − $8', speak: 'A discount reduces the price for the buyer, so subtract 8 from 50.' },
+              { label: 'Step 3: Solve Final SP', work: 'Selling Price (SP) = $42', speak: '50 minus 8 equals 42 dollars! So the customer pays a Selling Price of 42 dollars.' },
+            ],
+            finalAnswer: 'Selling Price (SP) = $42',
+          },
+          examples: [
+            'The customer paid $35 at the counter — the SELLING PRICE is $35.',
+            'If a book costs $10 (CP) and sells for $10 (SP), the trader BREAKS EVEN.',
+          ],
+          example: 'SP = Money received from customer',
+          visuals: [
+            { icon: '🏷️', label: 'Price Tag', category: 'Marked Price', bgColor: '#10b981' },
+            { icon: '🛍️', label: 'Customer Buys', category: 'Sale Made', bgColor: '#06b6d4' },
+            { icon: '💳', label: 'Checkout Pay', category: 'Revenue', bgColor: '#6366f1' },
+            { icon: '🎁', label: 'Discount Off', category: 'Net SP', bgColor: '#f59e0b' },
+          ],
+          teacherScript:
+            'Lesson 2 is Selling Price! Selling Price is what the customer pays at checkout. Always compare Selling Price with Cost Price to see if you gained or lost money.',
+          narration:
+            'Lesson 2 is Selling Price! Selling Price is the money a seller receives from a customer after any discount.',
+          quiz: {
+            question: 'A pair of sneakers is marked $40, and the store gives a $6 discount. What is the Selling Price (SP)?',
+            options: ['$46', '$34', '$40'],
+            correctIndex: 1,
+            hint: 'A discount takes money OFF the marked price, so subtract $6 from $40.',
+            workedSolution: 'Step 1: Marked price is $40. Step 2: Subtract the $6 discount: 40 minus 6 equals 34 dollars!',
+            explanation: 'Brilliant! $40 − $6 discount = $34 Selling Price!',
+          },
+          color: '#10b981',
+        },
+        {
+          title: 'PROFIT & PROFIT %',
+          subtitle: 'Extra money GAINED when Selling Price is greater than Cost Price',
+          definition:
+            'A Profit (or Gain) happens whenever a trader sells an item for MORE than its Cost Price (SP > CP). To measure how strong that gain is, we calculate Profit Percentage by comparing Profit to the original Cost Price!',
+          formulaOrRule: 'Profit = SP − CP   |   Profit % = (Profit ÷ CP) × 100%',
+          propKind: 'chart',
+          types: [
+            { name: 'Profit Amount', detail: 'Exact cash gained: Profit = Selling Price − Cost Price' },
+            { name: 'Percentage Profit (Profit %)', detail: 'Always divided by COST PRICE: (Profit ÷ CP) × 100%' },
+          ],
+          workedExample: {
+            problem: 'A trader buys a backpack for $20 (CP) and sells it for $25 (SP). Find both the Profit and the Profit Percentage.',
+            steps: [
+              { label: 'Step 1: Compare SP and CP', work: 'CP = $20, SP = $25 → Since SP > CP, it is a PROFIT!', speak: 'First, compare 25 dollars and 20 dollars. Selling Price is bigger than Cost Price, so we have a profit!' },
+              { label: 'Step 2: Calculate Profit Amount', work: 'Profit = SP − CP = $25 − $20 = $5', speak: 'Subtract Cost Price from Selling Price: 25 minus 20 gives a profit of 5 dollars.' },
+              { label: 'Step 3: Apply Profit % Formula', work: 'Profit % = ($5 ÷ $20) × 100', speak: 'Now divide the 5 dollar profit by the original Cost Price of 20 dollars, then multiply by 100.' },
+              { label: 'Step 4: Simplify to Final %', work: '5 ÷ 20 = 0.25 → 0.25 × 100 = 25%', speak: '5 divided by 20 is one quarter, and one quarter of 100 is 25 percent profit!' },
+            ],
+            finalAnswer: 'Profit = $5  |  Profit % = 25%',
+          },
+          examples: [
+            'Buying a watch for $40 and selling it for $50 earns a $10 PROFIT (25% gain).',
+            'PROFIT PERCENTAGE is ALWAYS calculated using Cost Price on the bottom!',
+          ],
+          example: 'Profit = SP − CP | Profit % = (Profit÷CP)×100',
+          visuals: [
+            { icon: '📈', label: 'Rising Gain', category: 'SP > CP', bgColor: '#22c55e' },
+            { icon: '💵', label: 'Extra Cash', category: 'SP − CP', bgColor: '#10b981' },
+            { icon: '💯', label: 'Profit %', category: '(P ÷ CP) × 100', bgColor: '#eab308' },
+            { icon: '🏆', label: 'Smart Trade', category: 'Success', bgColor: '#3b82f6' },
+          ],
+          teacherScript:
+            'Lesson 3 is Profit and Profit Percentage! Whenever Selling Price beats Cost Price, you earn a profit. Remember the golden rule: Profit equals SP minus CP, and Profit Percentage always divides by Cost Price!',
+          narration:
+            'Lesson 3 is Profit and Profit Percentage! Profit equals Selling Price minus Cost Price, and Profit Percentage equals Profit divided by Cost Price times 100.',
+          quiz: {
+            question: 'A fruit seller buys mangoes for $40 (CP) and sells them all for $50 (SP). What is the Profit Percentage?',
+            options: ['10%', '20%', '25%'],
+            correctIndex: 2,
+            hint: 'First find Profit = $50 − $40 = $10. Then divide $10 by Cost Price ($40) and multiply by 100!',
+            workedSolution: 'Step 1: Profit = 50 minus 40 = 10 dollars. Step 2: Profit percent = (10 divided by 40) times 100. Since 10 over 40 is 1/4, one quarter of 100 is 25 percent!',
+            explanation: 'Superstar! Profit = $10, and ($10 ÷ $40) × 100 = 25% Profit!',
+          },
+          color: '#22c55e',
+        },
+        {
+          title: 'LOSS & LOSS %',
+          subtitle: 'Money LOST when Selling Price is lower than Cost Price',
+          definition:
+            'A Loss occurs when a seller has to sell an item for LESS than what they paid for it (SP < CP)—for instance during clearance sales or if goods get damaged. Just like profit, Loss Percentage is ALWAYS calculated over Cost Price!',
+          formulaOrRule: 'Loss = CP − SP   |   Loss % = (Loss ÷ CP) × 100%',
+          propKind: 'trophy',
+          types: [
+            { name: 'Loss Amount', detail: 'Cash lost on the sale: Loss = Cost Price − Selling Price' },
+            { name: 'Percentage Loss (Loss %)', detail: 'Always divided by COST PRICE: (Loss ÷ CP) × 100%' },
+          ],
+          workedExample: {
+            problem: 'A phone shop buys a headset for $50 (CP) but sells it on clearance for $40 (SP). Find the Loss and Loss Percentage.',
+            steps: [
+              { label: 'Step 1: Compare CP and SP', work: 'CP = $50, SP = $40 → Since CP > SP, it is a LOSS!', speak: 'First, compare Cost Price 50 dollars with Selling Price 40 dollars. Because Cost Price is higher, the shop made a loss.' },
+              { label: 'Step 2: Calculate Loss Amount', work: 'Loss = CP − SP = $50 − $40 = $10', speak: 'Subtract Selling Price from Cost Price: 50 minus 40 equals a 10 dollar loss.' },
+              { label: 'Step 3: Apply Loss % Formula', work: 'Loss % = ($10 ÷ $50) × 100', speak: 'Divide the 10 dollar loss by the original Cost Price of 50 dollars, and multiply by 100.' },
+              { label: 'Step 4: Solve Final Loss %', work: '10 ÷ 50 = 0.20 → 0.20 × 100 = 20%', speak: '10 divided by 50 is one fifth, and one fifth of 100 equals a 20 percent loss!' },
+            ],
+            finalAnswer: 'Loss = $10  |  Loss % = 20%',
+          },
+          examples: [
+            'Buying a lamp for $30 and selling it for $24 causes a $6 LOSS (20% loss).',
+            'Always divide Loss by the ORIGINAL COST PRICE—never by Selling Price!',
+          ],
+          example: 'Loss = CP − SP | Loss % = (Loss÷CP)×100',
+          visuals: [
+            { icon: '📉', label: 'Price Drop', category: 'SP < CP', bgColor: '#ef4444' },
+            { icon: '💸', label: 'Cash Lost', category: 'CP − SP', bgColor: '#f97316' },
+            { icon: '🏷️', label: 'Clearance', category: 'Below Cost', bgColor: '#ec4899' },
+            { icon: '🧮', label: 'Loss %', category: '(L ÷ CP) × 100', bgColor: '#a855f7' },
+          ],
+          teacherScript:
+            'Lesson 4 is Loss and Loss Percentage! When Selling Price drops below Cost Price, subtract SP from CP to find the Loss, then divide by Cost Price and multiply by 100!',
+          narration:
+            'Lesson 4 is Loss and Loss Percentage! Loss equals Cost Price minus Selling Price, and Loss Percentage equals Loss divided by Cost Price times 100.',
+          quiz: {
+            question: 'Sam buys a skateboard for $80 (CP) and sells it later for $60 (SP). What is his Loss Percentage?',
+            options: ['20%', '25%', '15%'],
+            correctIndex: 1,
+            hint: 'Find Loss = $80 − $60 = $20. Then compute ($20 ÷ $80) × 100!',
+            workedSolution: 'Step 1: Loss = 80 minus 60 = 20 dollars. Step 2: Loss percent = (20 divided by 80) times 100. Since 20 over 80 equals one quarter, one quarter of 100 is 25 percent loss!',
+            explanation: 'Champion! Loss = $20, and ($20 ÷ $80) × 100 = 25% Loss!',
+          },
+          color: '#ef4444',
+        },
+      ],
+    };
+  }
 
   if (
     (q.includes('part') && q.includes('speech')) ||
@@ -1281,7 +1536,7 @@ export async function POST(request: NextRequest) {
       for (const modelName of [...new Set(geminiModels)]) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 22000);
+          const timer = setTimeout(() => controller.abort(), 26000);
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
             modelName,
           )}:generateContent?key=${encodeURIComponent(key)}`;
@@ -1353,7 +1608,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Rich Teacher-Grade Smart Fallback
     return NextResponse.json({
-      blueprint: buildSmartFallback(topic),
+      blueprint: buildSmartFallback(topic, gradeLevel),
       provider: 'local-fallback',
     });
   } catch (err) {
