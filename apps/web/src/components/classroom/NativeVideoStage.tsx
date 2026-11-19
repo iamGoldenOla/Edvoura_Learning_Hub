@@ -13,7 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 
-interface RemotePeer {
+export interface RemotePeer {
   peerId: string;
   name: string;
   role: 'tutor' | 'student';
@@ -40,6 +40,7 @@ export interface NativeVideoStageProps {
   onCopyInvite?: () => void;
   copiedInvite?: boolean;
   onReconnect?: () => void;
+  onRemotePeersChange?: (peers: RemotePeer[]) => void;
 }
 
 const ICE_SERVERS: RTCIceServer[] = [
@@ -62,6 +63,7 @@ function VideoTile({
   camOn = true,
   micOn = true,
   compact = false,
+  isScreenShare = false,
 }: {
   stream: MediaStream | null;
   label: string;
@@ -71,6 +73,7 @@ function VideoTile({
   camOn?: boolean;
   micOn?: boolean;
   compact?: boolean;
+  isScreenShare?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -100,8 +103,10 @@ function VideoTile({
         autoPlay
         playsInline
         muted={muted}
-        className={`w-full h-full object-cover transition-opacity duration-200 ${
-          mirror ? '-scale-x-100' : ''
+        className={`w-full h-full ${
+          isScreenShare ? 'object-contain bg-black' : 'object-cover'
+        } transition-opacity duration-200 ${
+          mirror && !isScreenShare ? '-scale-x-100' : ''
         } ${hasLiveVideoTrack ? 'opacity-100' : 'opacity-0'}`}
       />
 
@@ -160,6 +165,7 @@ export function NativeVideoStage({
   onCopyInvite,
   copiedInvite,
   onReconnect,
+  onRemotePeersChange,
 }: NativeVideoStageProps) {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [initializing, setInitializing] = useState(true);
@@ -199,7 +205,8 @@ export function NativeVideoStage({
 
   useEffect(() => {
     onParticipantCountChange?.(1 + remotePeers.length);
-  }, [remotePeers.length, onParticipantCountChange]);
+    onRemotePeersChange?.(remotePeers);
+  }, [remotePeers, onParticipantCountChange, onRemotePeersChange]);
 
   // 1. Acquire real local webcam + mic immediately (zero third-party iframe, zero virtual background!)
   useEffect(() => {
@@ -369,18 +376,38 @@ export function NativeVideoStage({
     }
   }, [cameraEnabled, micEnabled]);
 
-  // 3. Swap outgoing WebRTC video track when tutor shares screen (so student sees shared screen live!)
+  // 3. Swap outgoing WebRTC video & audio tracks when tutor or student shares screen (so peer sees & hears shared screen live!)
   useEffect(() => {
-    const targetTrack =
+    const targetVideoTrack =
       screenStream?.getVideoTracks()[0] || localStreamRef.current?.getVideoTracks()[0] || null;
-    if (!targetTrack) return;
 
-    pcsRef.current.forEach((pc) => {
-      const videoSender = pc.getSenders().find((s) => s.track?.kind === 'video');
-      if (videoSender) {
-        void videoSender.replaceTrack(targetTrack).catch(() => {});
-      }
-    });
+    if (targetVideoTrack) {
+      pcsRef.current.forEach((pc) => {
+        const videoSender = pc.getSenders().find((s) => s.track?.kind === 'video');
+        if (videoSender) {
+          void videoSender.replaceTrack(targetVideoTrack).catch(() => {});
+        }
+      });
+    }
+
+    // Handle screen audio if user shared tab/window audio
+    const screenAudioTrack = screenStream?.getAudioTracks()[0];
+    if (screenAudioTrack) {
+      pcsRef.current.forEach((pc) => {
+        const audioSender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+        if (audioSender) {
+          void audioSender.replaceTrack(screenAudioTrack).catch(() => {});
+        }
+      });
+    } else if (localStreamRef.current?.getAudioTracks()[0]) {
+      const micTrack = localStreamRef.current.getAudioTracks()[0];
+      pcsRef.current.forEach((pc) => {
+        const audioSender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+        if (audioSender && audioSender.track !== micTrack) {
+          void audioSender.replaceTrack(micTrack).catch(() => {});
+        }
+      });
+    }
   }, [screenStream]);
 
   // 4. Native WebRTC Signaling over Supabase Realtime (`webrtc:${lessonId}`)
@@ -665,7 +692,7 @@ export function NativeVideoStage({
             stream={localStream}
             label="You"
             muted
-            mirror
+            mirror={!screenStream}
             camOn={cameraEnabled}
             micOn={micEnabled}
             compact
@@ -698,7 +725,7 @@ export function NativeVideoStage({
             label={`${userName} (You)`}
             badge={role}
             muted
-            mirror
+            mirror={!screenStream}
             camOn={cameraEnabled}
             micOn={micEnabled}
             compact
@@ -793,7 +820,7 @@ export function NativeVideoStage({
             label={`${userName} (You)`}
             badge={role}
             muted
-            mirror
+            mirror={!screenStream}
             camOn={cameraEnabled}
             micOn={micEnabled}
           />

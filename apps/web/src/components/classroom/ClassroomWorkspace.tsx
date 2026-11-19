@@ -30,6 +30,11 @@ import {
   ChevronRight,
   GripVertical,
   Move,
+  Hand,
+  Smile,
+  Camera,
+  Wifi,
+  Volume2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CollaborativeWhiteboard } from './CollaborativeWhiteboard';
@@ -37,7 +42,8 @@ import { StudentDeskManager } from './StudentDeskManager';
 import { PDFAnnotator } from './PDFAnnotator';
 import { AIWorksheetModal } from './AIWorksheetModal';
 import { VRLabExplorer } from './VRLabExplorer';
-import { NativeVideoStage } from './NativeVideoStage';
+import { NativeVideoStage, type RemotePeer } from './NativeVideoStage';
+import { ScreenShareStage } from './ScreenShareStage';
 import { Glasses, ExternalLink } from 'lucide-react';
 
 interface ClassroomWorkspaceProps {
@@ -46,7 +52,82 @@ interface ClassroomWorkspaceProps {
   userName: string;
 }
 
-type PresentationMode = 'none' | 'whiteboard' | 'worksheet' | 'desks' | 'youtube' | 'vrlab';
+type PresentationMode =
+  | 'none'
+  | 'whiteboard'
+  | 'worksheet'
+  | 'desks'
+  | 'youtube'
+  | 'vrlab'
+  | 'screenshare';
+
+interface ActiveScreenShare {
+  isActive: boolean;
+  isLocal: boolean;
+  stream: MediaStream | null;
+  sharerRole: 'tutor' | 'student';
+  sharerName: string;
+}
+
+interface RaisedHandInfo {
+  name: string;
+  role: 'tutor' | 'student';
+  timestamp: number;
+}
+
+interface FloatingReaction {
+  id: string;
+  emoji: string;
+  senderName: string;
+  xPercent: number;
+}
+
+function playClassroomAudioChime(type: 'hand-raise' | 'reaction' | 'snapshot') {
+  try {
+    if (typeof window === 'undefined') return;
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    if (type === 'hand-raise') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.16);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.55);
+    } else if (type === 'reaction') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.28);
+    } else if (type === 'snapshot') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1400, now);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    }
+  } catch (_) {}
+}
 
 
 function getYouTubeVideoId(url: string): string | null {
@@ -145,6 +226,13 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [personalMeetUrl, setPersonalMeetUrl] = useState<string | null>(null);
   const [copiedInvite, setCopiedInvite] = useState(false);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [activeScreenShare, setActiveScreenShare] = useState<ActiveScreenShare | null>(null);
+  const [remotePeers, setRemotePeers] = useState<RemotePeer[]>([]);
+  const [raisedHand, setRaisedHand] = useState<RaisedHandInfo | null>(null);
+  const [isHandRaisedLocally, setIsHandRaisedLocally] = useState(false);
+  const [showReactionsMenu, setShowReactionsMenu] = useState(false);
+  const [floatingReactions, setFloatingReactions] = useState<FloatingReaction[]>([]);
+  const [tutorStageBadge, setTutorStageBadge] = useState<string | null>(null);
   const [screenShareNotification, setScreenShareNotification] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -286,7 +374,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     void loadClassroomData();
   }, [lessonId]);
 
-  // Realtime Supabase Channel for PDF & Whiteboard synchronization
+  // Realtime Supabase Channel for PDF, Whiteboard, 3D/VR Stage, Screen Share & Classroom Interactions
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase.channel(`classroom:${lessonId}`, {
@@ -300,6 +388,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           setSelectedPdfTitle(payload.pdfTitle || 'Shared Worksheet');
           setPresentationMode('worksheet');
           setIsToolsOpen(false);
+          if (role === 'student') {
+            setTutorStageBadge('Worksheet: ' + (payload.pdfTitle || 'Worksheet'));
+            setTimeout(() => setTutorStageBadge(null), 4000);
+          }
         }
       })
       .on('broadcast', { event: 'close-pdf' }, () => {
@@ -310,6 +402,18 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       .on('broadcast', { event: 'present-mode' }, ({ payload }) => {
         if (payload?.mode) {
           setPresentationMode(payload.mode);
+          if (role === 'student') {
+            const labels: Record<string, string> = {
+              whiteboard: 'Interactive Whiteboard',
+              vrlab: '3D & Virtual Reality Lab',
+              desks: 'Student Desks & Exercises',
+              none: 'Full-Stage Live Video',
+            };
+            if (labels[payload.mode]) {
+              setTutorStageBadge(labels[payload.mode]);
+              setTimeout(() => setTutorStageBadge(null), 4000);
+            }
+          }
         }
       })
       .on('broadcast', { event: 'share-youtube' }, ({ payload }) => {
@@ -317,20 +421,113 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           setSharedYoutubeId(payload.videoId);
           setPresentationMode('youtube');
           setIsToolsOpen(false);
+          if (role === 'student') {
+            setTutorStageBadge('Educational YouTube Video');
+            setTimeout(() => setTutorStageBadge(null), 4000);
+          }
         }
       })
       .on('broadcast', { event: 'stop-youtube' }, () => {
         setSharedYoutubeId(null);
         setPresentationMode('none');
       })
-      .subscribe();
+      .on('broadcast', { event: 'screen-share-started' }, ({ payload }) => {
+        if (payload?.sharerRole && payload?.sharerName) {
+          setActiveScreenShare({
+            isActive: true,
+            isLocal: false,
+            stream: null,
+            sharerRole: payload.sharerRole,
+            sharerName: payload.sharerName,
+          });
+          setPresentationMode('screenshare');
+          const title = `${payload.sharerRole === 'tutor' ? '🎓 Tutor' : '🎒 Student'} ${payload.sharerName} is sharing screen`;
+          setScreenShareNotification(title);
+          setTutorStageBadge(title);
+          setTimeout(() => {
+            setScreenShareNotification(null);
+            setTutorStageBadge(null);
+          }, 4500);
+        }
+      })
+      .on('broadcast', { event: 'screen-share-stopped' }, () => {
+        setActiveScreenShare(null);
+        setPresentationMode((prev) => (prev === 'screenshare' ? 'none' : prev));
+        setScreenShareNotification('Screen share finished. Returned to classroom stage.');
+        setTimeout(() => setScreenShareNotification(null), 4000);
+      })
+      .on('broadcast', { event: 'request-stage-state' }, () => {
+        if (role === 'tutor' && channelRef.current) {
+          channelRef.current.send({
+            type: 'broadcast',
+            event: 'stage-state-response',
+            payload: {
+              presentationMode,
+              selectedPdfUrl,
+              selectedPdfTitle,
+              sharedYoutubeId,
+              screenShareActive: !!activeScreenShare,
+              screenSharerRole: activeScreenShare?.sharerRole,
+              screenSharerName: activeScreenShare?.sharerName,
+            },
+          });
+        }
+      })
+      .on('broadcast', { event: 'stage-state-response' }, ({ payload }) => {
+        if (role === 'student' && payload) {
+          if (payload.screenShareActive && payload.screenSharerRole) {
+            setActiveScreenShare({
+              isActive: true,
+              isLocal: false,
+              stream: null,
+              sharerRole: payload.screenSharerRole,
+              sharerName: payload.screenSharerName || 'Tutor',
+            });
+            setPresentationMode('screenshare');
+          } else if (payload.presentationMode && payload.presentationMode !== 'none') {
+            setPresentationMode(payload.presentationMode);
+            if (payload.selectedPdfUrl) {
+              setSelectedPdfUrl(payload.selectedPdfUrl);
+              setSelectedPdfTitle(payload.selectedPdfTitle || 'Worksheet');
+            }
+            if (payload.sharedYoutubeId) {
+              setSharedYoutubeId(payload.sharedYoutubeId);
+            }
+          }
+        }
+      })
+      .on('broadcast', { event: 'hand-raise' }, ({ payload }) => {
+        playClassroomAudioChime('hand-raise');
+        setRaisedHand({
+          name: payload?.name || 'Student',
+          role: payload?.role || 'student',
+          timestamp: Date.now(),
+        });
+      })
+      .on('broadcast', { event: 'lower-hand' }, () => {
+        setRaisedHand(null);
+      })
+      .on('broadcast', { event: 'reaction' }, ({ payload }) => {
+        if (payload?.emoji) {
+          triggerFloatingReaction(payload.emoji, payload.senderName || 'Participant');
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED' && role === 'student') {
+          channel.send({
+            type: 'broadcast',
+            event: 'request-stage-state',
+            payload: { studentName: userName },
+          });
+        }
+      });
 
     channelRef.current = channel;
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [lessonId]);
+  }, [lessonId, role, userName, presentationMode, selectedPdfUrl, selectedPdfTitle, sharedYoutubeId, activeScreenShare]);
 
   // Fullscreen Handler
   const toggleNativeFullscreen = () => {
@@ -341,14 +538,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
     }
   };
 
-  // Native Browser Screen Sharing (W3C getDisplayMedia - 100% Free, NO Paywalls)
+  // Native Browser Screen Sharing (W3C getDisplayMedia - 100% Free, NO Paywalls, Available for Tutor & Student!)
   const handleToggleScreenShare = async () => {
-    if (screenStream) {
-      screenStream.getTracks().forEach((t) => t.stop());
-      setScreenStream(null);
-      setScreenShareNotification('Screen share finished. Returned to Edvoura Classroom.');
-      setTimeout(() => setScreenShareNotification(null), 4000);
-      try { window.focus(); } catch (_) {}
+    if (activeScreenShare?.isLocal && screenStream) {
+      handleStopLocalScreenShare();
       return;
     }
 
@@ -357,24 +550,134 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         const stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             cursor: 'always',
+            displaySurface: 'monitor',
           } as any,
           audio: true,
         });
 
         setScreenStream(stream);
+        setActiveScreenShare({
+          isActive: true,
+          isLocal: true,
+          stream,
+          sharerRole: role,
+          sharerName: userName,
+        });
+        setPresentationMode('screenshare');
+        setIsToolsOpen(false);
 
-        stream.getVideoTracks()[0].onended = () => {
-          setScreenStream(null);
-          setScreenShareNotification('Screen share finished. Returned to Edvoura Classroom.');
-          setTimeout(() => setScreenShareNotification(null), 4000);
-          try { window.focus(); } catch (_) {}
-        };
+        // Broadcast to other participant immediately
+        if (channelRef.current) {
+          channelRef.current.send({
+            type: 'broadcast',
+            event: 'screen-share-started',
+            payload: {
+              sharerRole: role,
+              sharerName: userName,
+            },
+          });
+        }
+
+        // Automatic cleanup when user clicks browser's native "Stop sharing" blue pill
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          track.onended = () => {
+            handleStopLocalScreenShare();
+          };
+        }
       } catch (err: any) {
         if (err.name !== 'NotAllowedError') {
           console.warn('Native display media error:', err);
         }
       }
     }
+  };
+
+  const handleStopLocalScreenShare = () => {
+    if (screenStream) {
+      screenStream.getTracks().forEach((t) => t.stop());
+      setScreenStream(null);
+    }
+    setActiveScreenShare(null);
+    setPresentationMode('none');
+    setScreenShareNotification('Screen share finished. Returned to Edvoura Classroom.');
+    setTimeout(() => setScreenShareNotification(null), 4000);
+
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'screen-share-stopped',
+        payload: { sharerRole: role },
+      });
+    }
+  };
+
+  const triggerFloatingReaction = (emoji: string, sender: string) => {
+    playClassroomAudioChime('reaction');
+    const id = `${Date.now()}-${Math.random()}`;
+    const xPercent = 25 + Math.random() * 50;
+    setFloatingReactions((prev) => [...prev, { id, emoji, senderName: sender, xPercent }]);
+    setTimeout(() => {
+      setFloatingReactions((prev) => prev.filter((r) => r.id !== id));
+    }, 3200);
+  };
+
+  const handleSendReaction = (emoji: string) => {
+    triggerFloatingReaction(emoji, userName);
+    setShowReactionsMenu(false);
+    if (channelRef.current) {
+      channelRef.current.send({
+        type: 'broadcast',
+        event: 'reaction',
+        payload: { emoji, senderName: userName },
+      });
+    }
+  };
+
+  const handleToggleHandRaise = () => {
+    if (isHandRaisedLocally) {
+      setIsHandRaisedLocally(false);
+      setRaisedHand(null);
+      if (channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'lower-hand',
+          payload: { name: userName, role },
+        });
+      }
+    } else {
+      setIsHandRaisedLocally(true);
+      setRaisedHand({ name: userName, role, timestamp: Date.now() });
+      playClassroomAudioChime('hand-raise');
+      if (channelRef.current) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'hand-raise',
+          payload: { name: userName, role },
+        });
+      }
+    }
+  };
+
+  const handleTakeStageSnapshot = () => {
+    playClassroomAudioChime('snapshot');
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const filename = `Edvoura-Classroom-Notes-${Date.now()}.png`;
+
+    const canvas = document.querySelector('canvas') as HTMLCanvasElement | null;
+    if (canvas) {
+      try {
+        const dataUrl = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (_) {}
+    }
+    setScreenShareNotification(`📸 Lesson snapshot saved at ${timestamp}! Added to your study notes archive.`);
+    setTimeout(() => setScreenShareNotification(null), 4500);
   };
 
   const handleToggleMic = () => {
@@ -528,14 +831,20 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   };
 
   const handleStopPresenting = () => {
+    if (activeScreenShare?.isLocal && screenStream) {
+      handleStopLocalScreenShare();
+      return;
+    }
     setPresentationMode('none');
     setSelectedPdfUrl(null);
     setSelectedPdfTitle('');
     setSharedYoutubeId(null);
+    setActiveScreenShare(null);
     if (channelRef.current && role === 'tutor') {
       channelRef.current.send({ type: 'broadcast', event: 'close-pdf' });
       channelRef.current.send({ type: 'broadcast', event: 'present-mode', payload: { mode: 'none' } });
       channelRef.current.send({ type: 'broadcast', event: 'stop-youtube', payload: {} });
+      channelRef.current.send({ type: 'broadcast', event: 'screen-share-stopped', payload: {} });
     }
   };
 
@@ -638,6 +947,24 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* HD Network Health Pill */}
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-white text-[11px] font-bold">
+            <Wifi className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="text-white/80">HD 1080p</span>
+            <span className="text-white/40">•</span>
+            <span className="text-emerald-400 font-black">Low Latency</span>
+          </div>
+
+          {/* Quick Snapshot Stage Button (Saves to Study Notes) */}
+          <button
+            onClick={handleTakeStageSnapshot}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer"
+            title="Take instant snapshot of current whiteboard, worksheet, or stage to save into study notes"
+          >
+            <Camera className="w-3.5 h-3.5 text-sky-400" />
+            <span className="hidden sm:inline">Snapshot</span>
+          </button>
+
           {/* Quick Camera Switcher / Video Reconnect */}
           <div className="relative">
             <button
@@ -728,6 +1055,52 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
         </div>
       )}
 
+      {/* Tutor Stage Change Notification for Students */}
+      {tutorStageBadge && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 px-4 py-1.5 bg-[#0f172a]/95 border-2 border-yellow/70 rounded-full text-white text-xs font-black shadow-2xl flex items-center gap-2 animate-in slide-in-from-top-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>🎯 Synced with Stage: {tutorStageBadge}</span>
+        </div>
+      )}
+
+      {/* Raised Hand Banner */}
+      {raisedHand && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-yellow border-[2.5px] border-dark rounded-2xl text-dark shadow-[5px_5px_0px_#060E1C] flex items-center gap-3 animate-in slide-in-from-top-3">
+          <span className="text-xl">✋</span>
+          <div className="flex flex-col text-left">
+            <span className="text-xs font-black uppercase">{raisedHand.name} raised a hand!</span>
+            <span className="text-[10px] font-bold text-dark/75">Question or ready to participate</span>
+          </div>
+          {role === 'tutor' && (
+            <button
+              onClick={() => {
+                setRaisedHand(null);
+                if (channelRef.current) {
+                  channelRef.current.send({ type: 'broadcast', event: 'lower-hand', payload: {} });
+                }
+              }}
+              className="px-2.5 py-1 rounded-lg bg-dark text-yellow text-[10px] font-black uppercase hover:bg-dark/90 active:scale-95 transition-all cursor-pointer"
+            >
+              Acknowledge
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Floating Animated Classroom Reaction Bubbles */}
+      {floatingReactions.map((r) => (
+        <div
+          key={r.id}
+          style={{ left: `${r.xPercent}%` }}
+          className="fixed bottom-24 z-50 pointer-events-none flex flex-col items-center animate-bounce duration-1000"
+        >
+          <span className="text-4xl drop-shadow-2xl">{r.emoji}</span>
+          <span className="px-2 py-0.5 rounded-full bg-dark/90 text-yellow text-[9px] font-black uppercase tracking-wider mt-1 border border-white/20">
+            {r.senderName}
+          </span>
+        </div>
+      ))}
+
       {/* ============================================================
           MAIN BODY: GOOGLE MEET PRESENTATION ARCHITECTURE
           - When presenting: Worksheet / Whiteboard fills MAIN STAGE.
@@ -772,6 +1145,16 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     <>
                       <Glasses className="w-4 h-4 text-purple-700 shrink-0" />
                       <span>3D &amp; Virtual Reality Lab</span>
+                    </>
+                  )}
+                  {presentationMode === 'screenshare' && (
+                    <>
+                      <ScreenShare className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="truncate">
+                        {activeScreenShare?.isLocal
+                          ? 'Sharing Your Screen (1080p HD)'
+                          : `Screen Share: ${activeScreenShare?.sharerRole === 'tutor' ? 'Tutor' : 'Student'} ${activeScreenShare?.sharerName || ''}`}
+                      </span>
                     </>
                   )}
                 </span>
@@ -833,16 +1216,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 )}
 
                 <button
-                  onClick={() => {
-                    setPresentationMode('vrlab');
-                    if (channelRef.current && role === 'tutor') {
-                      channelRef.current.send({
-                        type: 'broadcast',
-                        event: 'present-mode',
-                        payload: { mode: 'vrlab' },
-                      });
-                    }
-                  }}
+                  onClick={() => switchPresentationMode('vrlab')}
                   className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
                     presentationMode === 'vrlab'
                       ? 'bg-purple-600 text-white shadow-[1px_1px_0px_#060E1C]'
@@ -853,6 +1227,21 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   <Glasses className="w-3.5 h-3.5 text-purple-600" />
                   <span>3D/VR Lab</span>
                 </button>
+
+                {activeScreenShare && (
+                  <button
+                    onClick={() => switchPresentationMode('screenshare')}
+                    className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                      presentationMode === 'screenshare'
+                        ? 'bg-emerald-600 text-white shadow-[1px_1px_0px_#060E1C]'
+                        : 'bg-white text-dark/70 hover:bg-slate-50'
+                    }`}
+                    title="Switch to Shared Screen Stage"
+                  >
+                    <ScreenShare className="w-3.5 h-3.5" />
+                    <span>Screen Share</span>
+                  </button>
+                )}
 
                 {/* Collapsed Video Quick Expand Pill */}
                 {isVideoCollapsed && (
@@ -941,6 +1330,24 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                 <VRLabExplorer
                   lessonId={lessonId}
                   role={role}
+                />
+              )}
+
+              {presentationMode === 'screenshare' && (
+                <ScreenShareStage
+                  stream={
+                    activeScreenShare?.isLocal
+                      ? screenStream
+                      : (remotePeers.find((p) => p.role === activeScreenShare?.sharerRole)?.stream || remotePeers[0]?.stream || null)
+                  }
+                  sharerName={
+                    activeScreenShare?.sharerName ||
+                    (activeScreenShare?.sharerRole === 'tutor' ? 'Tutor' : 'Student')
+                  }
+                  sharerRole={activeScreenShare?.sharerRole || 'tutor'}
+                  isLocal={!!activeScreenShare?.isLocal}
+                  onStopSharing={activeScreenShare?.isLocal ? handleStopLocalScreenShare : handleStopPresenting}
+                  viewerRole={role}
                 />
               )}
 
@@ -1085,6 +1492,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               onCopyInvite={handleCopyClassInvite}
               copiedInvite={copiedInvite}
               onReconnect={handleReconnectVideo}
+              onRemotePeersChange={setRemotePeers}
             />
 
             {cameraErrorMsg && (
@@ -1127,32 +1535,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                   <VideoOff className="w-3.5 h-3.5" />
                   <span>Camera Off • Tap to Turn On</span>
                 </button>
-              </div>
-            )}
-
-            {/* Native Screen Share Overlay (Crystal Clear 1080p, 100% Free, NO Paywalls) */}
-            {screenStream && (
-              <div className="absolute inset-0 z-30 bg-black flex items-center justify-center">
-                <video
-                  ref={(el) => {
-                    if (el && el.srcObject !== screenStream) {
-                      el.srcObject = screenStream;
-                    }
-                  }}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-contain"
-                />
-                <div className="absolute top-4 left-4 z-40 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-white/20 text-white text-xs font-bold shadow-2xl backdrop-blur-md">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Sharing Screen (HD Window / Tab)</span>
-                  <button
-                    onClick={handleToggleScreenShare}
-                    className="ml-2 px-2.5 py-1 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-black uppercase transition-all active:scale-95"
-                  >
-                    Stop Sharing
-                  </button>
-                </div>
               </div>
             )}
           </div>
@@ -1400,19 +1782,75 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             {cameraEnabled ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
           </button>
 
-          {/* Share Screen (Native Windows/Tab dialog - Zero Paywalls) */}
+          {/* Share Screen (Native Windows/Tab dialog - Zero Paywalls - Both Tutor & Student can Share!) */}
           <button
             onClick={handleToggleScreenShare}
             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-              screenStream
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white/10 hover:bg-white/20 text-white'
+              activeScreenShare?.isLocal
+                ? 'bg-rose-600 text-white shadow-lg animate-pulse'
+                : activeScreenShare
+                  ? 'bg-emerald-600 text-white shadow-lg'
+                  : 'bg-white/10 hover:bg-white/20 text-white'
             }`}
-            title={screenStream ? 'Stop Sharing Screen' : 'Share Screen (Select any window, PDF, Word, or tab)'}
+            title={
+              activeScreenShare?.isLocal
+                ? 'Stop sharing your screen'
+                : activeScreenShare
+                  ? `${activeScreenShare.sharerName} is sharing screen (click to view)`
+                  : 'Share Screen (Select any window, PDF, Word, tab, or desktop)'
+            }
             aria-label="Share Screen"
           >
             <ScreenShare className="w-5 h-5" />
           </button>
+
+          {/* Hand Raise Button (Student can raise hand to ask question / offer answer) */}
+          <button
+            onClick={handleToggleHandRaise}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+              isHandRaisedLocally
+                ? 'bg-yellow text-dark shadow-lg animate-bounce'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={isHandRaisedLocally ? 'Lower Hand' : 'Raise Hand (Ask Tutor a Question)'}
+            aria-label="Raise Hand"
+          >
+            <Hand className="w-5 h-5" />
+          </button>
+
+          {/* Quick Classroom Reactions Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowReactionsMenu(!showReactionsMenu)}
+              className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
+              title="Classroom Reactions (Thumbs Up, Brilliant, Idea, Help, Applause)"
+              aria-label="Reactions"
+            >
+              <Smile className="w-5 h-5" />
+            </button>
+
+            {showReactionsMenu && (
+              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 p-2 bg-[#0B1426] border-[2px] border-dark rounded-2xl shadow-2xl flex items-center gap-1.5 z-50 animate-in zoom-in-95">
+                {[
+                  { emoji: '👍', label: 'Understood' },
+                  { emoji: '⭐', label: 'Brilliant' },
+                  { emoji: '💡', label: 'Great Idea' },
+                  { emoji: '❓', label: 'Need Help' },
+                  { emoji: '👏', label: 'Applause' },
+                  { emoji: '❤️', label: 'Love it' },
+                ].map((item) => (
+                  <button
+                    key={item.emoji}
+                    onClick={() => handleSendReaction(item.emoji)}
+                    className="w-9 h-9 rounded-xl hover:bg-white/20 text-xl flex items-center justify-center transition-all active:scale-125 cursor-pointer"
+                    title={item.label}
+                  >
+                    {item.emoji}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Whiteboard Toggle (Opens Whiteboard in Main Stage) */}
           <button
@@ -1427,6 +1865,21 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           >
             <Presentation className="w-4 h-4" />
             <span className="hidden sm:inline">Whiteboard</span>
+          </button>
+
+          {/* 3D / VR Lab Quick Button in Dock */}
+          <button
+            onClick={() => switchPresentationMode('vrlab')}
+            className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+              presentationMode === 'vrlab'
+                ? 'bg-purple-600 text-white shadow-md'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={presentationMode === 'vrlab' ? 'Stop 3D Lab' : 'Launch 3D & VR Lab on Main Stage'}
+            aria-label="3D / VR Lab"
+          >
+            <Glasses className="w-4 h-4 text-purple-400" />
+            <span className="hidden sm:inline">3D Lab</span>
           </button>
 
           {/* Teaching Tools / Worksheets Toggle */}

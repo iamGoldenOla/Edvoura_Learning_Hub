@@ -574,8 +574,47 @@ export function VRLabExplorer({
         if (typeof payload.activeStationIdx === 'number') {
           setActiveStationIdx(payload.activeStationIdx);
         }
+        if (payload.camera && threeStateRef.current?.controls) {
+          const c = threeStateRef.current.controls;
+          if (typeof payload.camera.rotX === 'number') c.rotX = payload.camera.rotX;
+          if (typeof payload.camera.rotY === 'number') c.rotY = payload.camera.rotY;
+          if (typeof payload.camera.zoom === 'number') c.zoom = payload.camera.zoom;
+        }
       })
-      .subscribe();
+      .on('broadcast', { event: 'vr-request-sync' }, () => {
+        if (role === 'tutor' && channel) {
+          const st = threeStateRef.current;
+          channel.send({
+            type: 'broadcast',
+            event: 'vr-sync',
+            payload: {
+              activeModule: liveParamsRef.current.activeModule,
+              selectedPin,
+              selectedShape,
+              netUnfoldAmount,
+              explodeAmount,
+              isSlicingActive,
+              sliceHeight,
+              isPlaying,
+              speedMultiplier,
+              aiBlueprint,
+              activeStationIdx,
+              camera: st?.controls
+                ? { rotX: st.controls.rotX, rotY: st.controls.rotY, zoom: st.controls.zoom }
+                : undefined,
+            },
+          });
+        }
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED' && role === 'student') {
+          channel.send({
+            type: 'broadcast',
+            event: 'vr-request-sync',
+            payload: {},
+          });
+        }
+      });
 
     vrChannelRef.current = channel;
     return () => {
