@@ -44,7 +44,11 @@ import { AIWorksheetModal } from './AIWorksheetModal';
 import { VRLabExplorer } from './VRLabExplorer';
 import { NativeVideoStage, type RemotePeer } from './NativeVideoStage';
 import { ScreenShareStage } from './ScreenShareStage';
-import { Glasses, ExternalLink } from 'lucide-react';
+import { EddyWhisperDrawer } from './EddyWhisperDrawer';
+import { LaserPointerOverlay } from './LaserPointerOverlay';
+import { ClassroomPollModal } from './ClassroomPollModal';
+import { LessonCapsuleSummary } from './LessonCapsuleSummary';
+import { Glasses, ExternalLink, Zap } from 'lucide-react';
 
 interface ClassroomWorkspaceProps {
   lessonId: string;
@@ -235,7 +239,17 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   const [tutorStageBadge, setTutorStageBadge] = useState<string | null>(null);
   const [screenShareNotification, setScreenShareNotification] = useState<string | null>(null);
 
+  // Landmark Innovations: Eddy AI Co-Teacher, Quiz Blitz, & Synchronized Laser Spotlight
+  const [showEddyDrawer, setShowEddyDrawer] = useState(false);
+  const [showPollModal, setShowPollModal] = useState(false);
+  const [pollInitialQuestion, setPollInitialQuestion] = useState<string>('');
+  const [pollInitialOptions, setPollInitialOptions] = useState<string[]>([]);
+  const [pollInitialCorrect, setPollInitialCorrect] = useState<number>(0);
+  const [isLaserActive, setIsLaserActive] = useState(false);
+  const [isSpotlightActive, setIsSpotlightActive] = useState(false);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const mainStageRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<any>(null);
 
   // Initialize Supabase & lesson metadata
@@ -873,48 +887,16 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
   // ============================================================
   if (isSessionEnded) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#070D18] text-white flex flex-col items-center justify-center p-6 select-none font-sans">
-        <div className="bg-[#0f172a] border-[3px] border-yellow/60 rounded-3xl p-8 sm:p-10 max-w-lg w-full text-center shadow-[10px_10px_0px_#060E1C] space-y-6 animate-in zoom-in-95 duration-200">
-          <div className="w-16 h-16 rounded-2xl bg-yellow border-2 border-dark mx-auto flex items-center justify-center shadow-[3px_3px_0px_#060E1C]">
-            <CheckCircle2 className="w-10 h-10 text-dark" />
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase">
-              Lesson Session Completed
-            </h2>
-            <p className="text-sm font-bold text-white/70">
-              {studentDisplayName ? `Session with ${studentDisplayName}` : lesson?.title || 'Interactive Lesson'}
-            </p>
-            <p className="text-xs text-white/50">
-              Whiteboard notes, completed exercises, and participation data have been logged to your dashboard.
-            </p>
-          </div>
-
-          <div className="space-y-3 pt-2">
-            <Button
-              onClick={() => {
-                window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
-              }}
-              className="w-full h-12 bg-yellow hover:bg-yellow/90 border-2 border-dark text-dark font-black text-sm uppercase shadow-[3px_3px_0px_#060E1C] active:scale-95 transition-all flex items-center justify-center gap-2"
-            >
-              <Home className="w-4 h-4" />
-              <span>Return to {role === 'tutor' ? 'Tutor Dashboard' : 'Student Hub'}</span>
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsSessionEnded(false);
-                              }}
-              className="w-full h-11 border-2 border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase transition-all flex items-center justify-center gap-2"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Rejoin Classroom Session</span>
-            </Button>
-          </div>
-        </div>
-      </div>
+      <LessonCapsuleSummary
+        lessonTitle={studentDisplayName ? `1-on-1 Lesson with ${studentDisplayName}` : lesson?.title || 'Interactive Lesson'}
+        pupilName={studentDisplayName || 'Pupil'}
+        gradeLevel={gradeDisplayName}
+        role={role}
+        onRejoin={() => setIsSessionEnded(false)}
+        onReturnDashboard={() => {
+          window.location.replace(role === 'tutor' ? '/dash/tutor/roster' : '/dash/student');
+        }}
+      />
     );
   }
 
@@ -1025,6 +1007,32 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             )}
           </div>
 
+          {/* Eddy AI Co-Teacher Trigger (Tutor Whisper Assistant) */}
+          {role === 'tutor' && (
+            <button
+              onClick={() => setShowEddyDrawer(!showEddyDrawer)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-500/50 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
+              title="Open Eddy AI Co-Teacher Whisper Drawer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-yellow" />
+              <span className="hidden sm:inline">Eddy AI</span>
+            </button>
+          )}
+
+          {/* Quick Quiz Poll Trigger */}
+          <button
+            onClick={() => {
+              setPollInitialQuestion('');
+              setPollInitialOptions([]);
+              setShowPollModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/40 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
+            title="Launch Interactive Pop Check / Poll"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Quiz Poll</span>
+          </button>
+
           {/* Quick AI Worksheet Studio trigger */}
           {role === 'tutor' && (
             <button
@@ -1112,7 +1120,7 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             STAGE 1: PRESENTATION CONTENT (LARGE MAIN STAGE ON LEFT)
             ========================================================== */}
         {presentationMode !== 'none' && (
-          <div className="flex-1 h-full min-w-0 bg-white relative flex flex-col overflow-hidden animate-in fade-in duration-150">
+          <div ref={mainStageRef} className="flex-1 h-full min-w-0 bg-white relative flex flex-col overflow-hidden animate-in fade-in duration-150">
             {/* Presentation Header Strip */}
             <div className="h-12 px-3 sm:px-4 bg-yellow/20 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2 min-w-0">
@@ -1273,6 +1281,15 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
             {/* Presentation Stage Content */}
             <div className="flex-1 min-h-0 relative w-full h-full overflow-hidden bg-white">
+              {/* Synchronized Neon Laser Pointer & Attention Spotlight Overlay */}
+              <LaserPointerOverlay
+                channel={channelRef.current}
+                role={role}
+                userName={userName}
+                isLaserActive={isLaserActive}
+                isSpotlightActive={isSpotlightActive}
+                containerRef={mainStageRef}
+              />
               {presentationMode === 'whiteboard' && (
                 <CollaborativeWhiteboard
                   lessonId={lessonId}
@@ -1882,6 +1899,40 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             <span className="hidden sm:inline">3D Lab</span>
           </button>
 
+          {/* Laser Pointer Attention Tool */}
+          <button
+            onClick={() => {
+              setIsLaserActive(!isLaserActive);
+              if (isSpotlightActive) setIsSpotlightActive(false);
+            }}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+              isLaserActive
+                ? 'bg-red-600 text-white shadow-lg ring-2 ring-red-300 animate-pulse'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={isLaserActive ? 'Turn off Laser Pointer' : 'Turn on Synchronized Neon Laser Pointer'}
+            aria-label="Laser Pointer"
+          >
+            <span className="text-base select-none">🔴</span>
+          </button>
+
+          {/* Attention Spotlight Focus Tool */}
+          <button
+            onClick={() => {
+              setIsSpotlightActive(!isSpotlightActive);
+              if (isLaserActive) setIsLaserActive(false);
+            }}
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+              isSpotlightActive
+                ? 'bg-amber-500 text-dark shadow-lg ring-2 ring-amber-300'
+                : 'bg-white/10 hover:bg-white/20 text-white'
+            }`}
+            title={isSpotlightActive ? 'Turn off Spotlight' : 'Turn on Attention Spotlight Mode'}
+            aria-label="Attention Spotlight"
+          >
+            <span className="text-base select-none">🔦</span>
+          </button>
+
           {/* Teaching Tools / Worksheets Toggle */}
           <button
             onClick={() => {
@@ -1998,6 +2049,38 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
           </div>
         </div>
       )}
+
+      {/* Eddy AI Co-Teacher Whisper Drawer */}
+      <EddyWhisperDrawer
+        isOpen={showEddyDrawer}
+        onClose={() => setShowEddyDrawer(false)}
+        lessonTitle={studentDisplayName ? `1-on-1 Lesson with ${studentDisplayName}` : lesson?.title || 'Interactive Lesson'}
+        gradeLevel={gradeDisplayName}
+        studentName={studentDisplayName || 'Student'}
+        onPushToWhiteboard={(text) => {
+          setPresentationMode('whiteboard');
+          setScreenShareNotification('✨ Note from Eddy AI pushed to your whiteboard!');
+          setTimeout(() => setScreenShareNotification(null), 4000);
+        }}
+        onLaunchAsPoll={(q, opts, cIdx) => {
+          setPollInitialQuestion(q);
+          setPollInitialOptions(opts);
+          setPollInitialCorrect(cIdx);
+          setShowPollModal(true);
+        }}
+      />
+
+      {/* Interactive Classroom Polling & Quiz Battles Modal */}
+      <ClassroomPollModal
+        channel={channelRef.current}
+        role={role}
+        userName={userName}
+        isOpen={showPollModal}
+        onClose={() => setShowPollModal(false)}
+        initialQuestion={pollInitialQuestion}
+        initialOptions={pollInitialOptions}
+        initialCorrectIdx={pollInitialCorrect}
+      />
     </div>
   );
 }
