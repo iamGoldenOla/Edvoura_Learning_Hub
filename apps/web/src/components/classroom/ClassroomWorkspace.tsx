@@ -906,75 +906,77 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
       className="fixed inset-0 z-50 w-screen h-screen bg-[#070D18] flex flex-col overflow-hidden select-none font-sans"
     >
       {/* ============================================================
-          TOP STATUS BAR (CLEAN, MINIMALIST - NO GOOGLE MEET BUTTON)
+          TOP STATUS BAR (STREAMLINED, COMPACT & EXECUTIVE PRO DESIGN)
           ============================================================ */}
-      <header className="h-14 px-4 sm:px-6 bg-[#070D18]/95 backdrop-blur-md border-b border-white/10 flex items-center justify-between z-30 shrink-0">
-        <div className="flex items-center gap-3">
+      <header className="h-12 px-3 sm:px-4 bg-[#080F1E]/95 backdrop-blur-md border-b border-white/[0.08] flex items-center justify-between z-30 shrink-0 shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <button
             onClick={handleLeaveCall}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all"
+            className="h-8 px-2.5 rounded-lg border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-white/90 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
             title="Leave classroom"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Back to Dashboard</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-white/70" />
+            <span className="hidden sm:inline">Back</span>
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs sm:text-sm font-black text-white truncate max-w-[200px] sm:max-w-md">
+          <div className="h-4 w-px bg-white/10 mx-0.5 hidden sm:block shrink-0" />
+
+          <div className="h-8 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold flex items-center gap-2 max-w-[200px] sm:max-w-xs md:max-w-sm truncate shrink-0">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+            <span className="truncate">
               {studentDisplayName ? `1-on-1 Lesson • ${studentDisplayName}` : lesson?.title || 'Interactive Session'}
             </span>
           </div>
         </div>
 
-        {/* Top Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Top Right Actions: Strict Uniform h-8 Buttons & Sleek Badges */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Quick Mini-Video PiP Toggle when presenting and collapsed */}
           {presentationMode !== 'none' && isVideoCollapsed && (
             <button
               onClick={() => setIsPipHidden(!isPipHidden)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+              className={`h-8 px-2.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer ${
                 !isPipHidden
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 shadow-sm'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20 border-white/20'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                  : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.1] border-white/10'
               }`}
               title="Toggle floating mini camera video preview"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>{isPipHidden ? 'Show Mini Video' : 'Mini Video: ON'}</span>
+              <span>{isPipHidden ? 'Show Mini Video' : 'Mini Video: On'}</span>
             </button>
           )}
 
-          {/* HD Network Health Pill */}
-          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-white text-[11px] font-bold">
-            <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-white/80">HD 1080p</span>
-            <span className="text-white/40">•</span>
-            <span className="text-emerald-400 font-black">Low Latency</span>
+          {/* HD Network Health Pill - Sleek Broadcast Status Badge */}
+          <div className="hidden lg:flex items-center gap-1.5 h-8 px-2.5 rounded-lg bg-emerald-500/[0.06] border border-emerald-500/20 text-[11px] font-medium text-emerald-300 select-none">
+            <Wifi className="w-3 h-3 text-emerald-400" />
+            <span className="font-semibold text-emerald-200">1080p HD</span>
+            <span className="text-emerald-500/40">•</span>
+            <span className="text-emerald-400/80">Low Latency</span>
           </div>
 
-          {/* Quick Snapshot Stage Button (Saves to Study Notes) */}
+          {/* Quick Snapshot Stage Button */}
           <button
             onClick={handleTakeStageSnapshot}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all active:scale-95 cursor-pointer"
+            className="h-8 px-2.5 rounded-lg border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-white/80 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
             title="Take instant snapshot of current whiteboard, worksheet, or stage to save into study notes"
           >
             <Camera className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden sm:inline">Snapshot</span>
+            <span className="hidden md:inline">Snapshot</span>
           </button>
 
           {/* Quick Camera Switcher / Video Reconnect */}
           <div className="relative">
             <button
               onClick={() => setShowCameraPicker(!showCameraPicker)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all active:scale-95"
+              className="h-8 px-2.5 rounded-lg border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-white/80 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95"
               title="Switch camera or reconnect video stream"
             >
               <Video className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden md:inline">Camera &amp; Video</span>
+              <span className="hidden md:inline">Camera</span>
             </button>
             {showCameraPicker && (
-              <div className="absolute right-0 top-10 w-64 bg-[#0f172a] border-2 border-white/20 rounded-2xl shadow-2xl p-3 z-50 space-y-2 text-left">
+              <div className="absolute right-0 top-10 w-64 bg-[#0f172a] border border-white/20 rounded-2xl shadow-2xl p-3 z-50 space-y-2 text-left">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <span className="text-[10px] font-black uppercase tracking-wider text-yellow">Video Controls</span>
                   <button
@@ -1023,53 +1025,54 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             )}
           </div>
 
-          {/* Eddy AI Co-Teacher Trigger (Tutor Whisper Assistant) */}
+          {/* Tutor Teaching Tools Group (Separated by subtle vertical divider) */}
           {role === 'tutor' && (
-            <button
-              onClick={() => setShowEddyDrawer(!showEddyDrawer)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-purple-500/50 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
-              title="Open Eddy AI Co-Teacher Whisper Drawer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-yellow" />
-              <span className="hidden sm:inline">Eddy AI</span>
-            </button>
-          )}
+            <>
+              <div className="h-4 w-px bg-white/10 mx-0.5 hidden sm:block shrink-0" />
 
-          {/* Quick Quiz Poll Trigger (Tutors Only: Teachers launch polls for students) */}
-          {role === 'tutor' && (
-            <button
-              onClick={() => {
-                setPollInitialQuestion('');
-                setPollInitialOptions([]);
-                setShowPollModal(true);
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/40 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
-              title="Launch Interactive Pop Check / Poll for Students"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Quiz Poll</span>
-            </button>
-          )}
+              {/* Eddy AI Co-Teacher Trigger (Tutor Whisper Assistant) */}
+              <button
+                onClick={() => setShowEddyDrawer(!showEddyDrawer)}
+                className="h-8 px-2.5 sm:px-3 rounded-lg border border-purple-500/30 bg-purple-500/15 hover:bg-purple-500/25 text-purple-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Open Eddy AI Co-Teacher Whisper Drawer"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-300" />
+                <span className="hidden sm:inline">Eddy AI</span>
+              </button>
 
-          {/* Quick AI Worksheet Studio trigger (Tutors Only) */}
-          {role === 'tutor' && (
-            <button
-              onClick={() => setShowAiWorksheetModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-yellow/40 bg-yellow hover:bg-yellow/90 text-dark text-xs font-black shadow-md transition-all active:scale-95"
-              title="Open AI Worksheet Studio (Canva Style)"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">AI Worksheets</span>
-            </button>
+              {/* Quick Quiz Poll Trigger (Tutors Only) */}
+              <button
+                onClick={() => {
+                  setPollInitialQuestion('');
+                  setPollInitialOptions([]);
+                  setShowPollModal(true);
+                }}
+                className="h-8 px-2.5 sm:px-3 rounded-lg border border-rose-500/30 bg-rose-500/15 hover:bg-rose-500/25 text-rose-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Launch Interactive Pop Check / Poll for Students"
+              >
+                <Zap className="w-3.5 h-3.5 text-rose-300" />
+                <span className="hidden md:inline">Quiz Poll</span>
+              </button>
+
+              {/* Quick AI Worksheet Studio trigger (Tutors Only) */}
+              <button
+                onClick={() => setShowAiWorksheetModal(true)}
+                className="h-8 px-2.5 sm:px-3 rounded-lg border border-amber-500/30 bg-amber-500/15 hover:bg-amber-500/25 text-amber-200 text-xs font-medium flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-sm"
+                title="Open AI Worksheet Studio (Canva Style)"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">AI Worksheets</span>
+              </button>
+            </>
           )}
 
           {/* Fullscreen Toggle */}
           <button
             onClick={toggleNativeFullscreen}
-            className="w-8 h-8 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all"
+            className="h-8 w-8 rounded-lg border border-white/10 bg-white/[0.05] hover:bg-white/[0.1] text-white/80 hover:text-white flex items-center justify-center transition-all active:scale-95 shrink-0"
             title={isNativeFullscreen ? 'Exit Fullscreen' : 'Edge-to-Edge Fullscreen'}
           >
-            {isNativeFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            {isNativeFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
         </div>
       </header>
@@ -1139,43 +1142,43 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             ========================================================== */}
         {presentationMode !== 'none' && (
           <div ref={mainStageRef} className="flex-1 h-full min-w-0 bg-white relative flex flex-col overflow-hidden animate-in fade-in duration-150">
-            {/* Presentation Header Strip */}
-            <div className="h-12 px-3 sm:px-4 bg-yellow/20 border-b-[2.5px] border-dark flex items-center justify-between shrink-0">
+            {/* Presentation Header Strip (Refined & Unified Pro Aesthetics) */}
+            <div className="h-10 px-3 sm:px-4 bg-[#0A1424] border-b border-white/[0.08] flex items-center justify-between shrink-0 shadow-sm">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-black text-dark flex items-center gap-1.5 uppercase tracking-wide truncate">
+                <span className="text-xs font-semibold text-white/90 flex items-center gap-1.5 uppercase tracking-wide truncate">
                   {presentationMode === 'whiteboard' && (
                     <>
-                      <Presentation className="w-4 h-4 text-dark shrink-0" />
+                      <Presentation className="w-3.5 h-3.5 text-yellow shrink-0" />
                       <span>Interactive Whiteboard</span>
                     </>
                   )}
                   {presentationMode === 'worksheet' && (
                     <>
-                      <BookOpen className="w-4 h-4 text-dark shrink-0" />
+                      <BookOpen className="w-3.5 h-3.5 text-yellow shrink-0" />
                       <span className="truncate">Worksheet: {selectedPdfTitle || 'Lesson Tutorial'}</span>
                     </>
                   )}
                   {presentationMode === 'desks' && (
                     <>
-                      <Users className="w-4 h-4 text-dark shrink-0" />
+                      <Users className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                       <span>Student Desks &amp; Seatwork</span>
                     </>
                   )}
                   {presentationMode === 'youtube' && (
                     <>
-                      <Video className="w-4 h-4 text-rose-600 shrink-0" />
+                      <Video className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                       <span>Educational YouTube Video</span>
                     </>
                   )}
                   {presentationMode === 'vrlab' && (
                     <>
-                      <Glasses className="w-4 h-4 text-purple-700 shrink-0" />
+                      <Glasses className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                       <span>3D &amp; Virtual Reality Lab</span>
                     </>
                   )}
                   {presentationMode === 'screenshare' && (
                     <>
-                      <ScreenShare className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <ScreenShare className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                       <span className="truncate">
                         {activeScreenShare?.isLocal
                           ? 'Sharing Your Screen (1080p HD)'
@@ -1187,15 +1190,15 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               </div>
 
               {/* Presentation Switchers & Stop Button */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 {role === 'tutor' ? (
                   <>
                     <button
                       onClick={() => switchPresentationMode('whiteboard')}
-                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                      className={`h-7 px-2.5 rounded-md text-xs font-semibold transition-all border ${
                         presentationMode === 'whiteboard'
-                          ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                          ? 'bg-yellow text-dark border-yellow font-bold shadow-sm'
+                          : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.1] border-white/10 hover:text-white'
                       }`}
                       title="Switch to Whiteboard"
                     >
@@ -1205,10 +1208,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     {selectedPdfUrl && (
                       <button
                         onClick={() => switchPresentationMode('worksheet')}
-                        className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                        className={`h-7 px-2.5 rounded-md text-xs font-semibold transition-all border ${
                           presentationMode === 'worksheet'
-                            ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                            : 'bg-white text-dark/70 hover:bg-slate-50'
+                            ? 'bg-yellow text-dark border-yellow font-bold shadow-sm'
+                            : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.1] border-white/10 hover:text-white'
                         }`}
                         title="Switch to Worksheet"
                       >
@@ -1218,10 +1221,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
                     <button
                       onClick={() => switchPresentationMode('desks')}
-                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                      className={`h-7 px-2.5 rounded-md text-xs font-semibold transition-all border ${
                         presentationMode === 'desks'
-                          ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                          ? 'bg-yellow text-dark border-yellow font-bold shadow-sm'
+                          : 'bg-white/[0.05] text-white/70 hover:bg-white/[0.1] border-white/10 hover:text-white'
                       }`}
                       title="Switch to Student Desks"
                     >
@@ -1230,41 +1233,41 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
                     <button
                       onClick={() => setShowYoutubeModal(true)}
-                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                      className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all border ${
                         presentationMode === 'youtube'
-                          ? 'bg-rose-600 text-white shadow-[1px_1px_0px_#060E1C]'
-                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                          ? 'bg-rose-600 text-white border-rose-500 font-bold shadow-sm'
+                          : 'bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 border-rose-500/25'
                       }`}
                       title="Share YouTube Video for Pupils"
                     >
-                      <Video className="w-3.5 h-3.5 text-rose-600" />
+                      <Video className="w-3 h-3 text-rose-400" />
                       <span>YouTube</span>
                     </button>
 
                     <button
                       onClick={() => switchPresentationMode('vrlab')}
-                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                      className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all border ${
                         presentationMode === 'vrlab'
-                          ? 'bg-purple-600 text-white shadow-[1px_1px_0px_#060E1C]'
-                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                          ? 'bg-purple-600 text-white border-purple-500 font-bold shadow-sm'
+                          : 'bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border-purple-500/25'
                       }`}
-                      title="Launch 3D & Virtual Reality Lab (Solar System, Heart, Geometry, Volcano)"
+                      title="Launch 3D & Virtual Reality Lab"
                     >
-                      <Glasses className="w-3.5 h-3.5 text-purple-600" />
+                      <Glasses className="w-3 h-3 text-purple-400" />
                       <span>3D/VR Lab</span>
                     </button>
 
                     {activeScreenShare && (
                       <button
                         onClick={() => switchPresentationMode('screenshare')}
-                        className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                        className={`h-7 px-2.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all border ${
                           presentationMode === 'screenshare'
-                            ? 'bg-emerald-600 text-white shadow-[1px_1px_0px_#060E1C]'
-                            : 'bg-white text-dark/70 hover:bg-slate-50'
+                            ? 'bg-emerald-600 text-white border-emerald-500 font-bold shadow-sm'
+                            : 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border-emerald-500/25'
                         }`}
                         title="Switch to Shared Screen Stage"
                       >
-                        <ScreenShare className="w-3.5 h-3.5" />
+                        <ScreenShare className="w-3 h-3 text-emerald-400" />
                         <span>Screen Share</span>
                       </button>
                     )}
@@ -1272,10 +1275,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     {/* Stop Presentation -> Restores 100% Video immediately */}
                     <button
                       onClick={handleStopPresenting}
-                      className="flex items-center gap-1 px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ml-1"
+                      className="h-7 px-2.5 rounded-md bg-rose-600/20 hover:bg-rose-600/30 text-rose-200 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 ml-1"
                       title="Stop presentation and restore full video"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-3 h-3" />
                       <span className="hidden sm:inline">Stop Presenting</span>
                     </button>
                   </>
@@ -1285,10 +1288,10 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     {activeScreenShare?.isLocal && (
                       <button
                         onClick={handleStopLocalScreenShare}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                        className="h-7 px-2.5 rounded-md bg-rose-600 hover:bg-rose-700 text-white border border-rose-500 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95"
                         title="Stop sharing your screen"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-3 h-3" />
                         <span>Stop Sharing My Screen</span>
                       </button>
                     )}
@@ -1302,11 +1305,11 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                       setIsVideoCollapsed(false);
                       setIsPipHidden(false);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1 bg-slate-900 text-white hover:bg-slate-800 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                    className="h-7 px-2.5 rounded-md bg-slate-900 text-white hover:bg-slate-800 border border-white/20 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95"
                     title="Expand Live Video Sidebar"
                   >
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-3 h-3" />
                     <span>Show Video</span>
                   </button>
                 )}
