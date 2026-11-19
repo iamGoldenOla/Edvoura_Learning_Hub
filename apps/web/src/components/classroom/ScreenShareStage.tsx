@@ -48,12 +48,25 @@ export function ScreenShareStage({
     const el = videoRef.current;
     if (!el) return;
     if (stream) {
-      if (el.srcObject !== stream) {
-        el.srcObject = stream;
-      }
+      el.srcObject = stream;
       el.play().catch(() => {});
-      const audioTracks = stream.getAudioTracks();
-      setHasAudio(audioTracks.length > 0 && audioTracks.some((t) => t.enabled));
+      const updateAudio = () => {
+        const audioTracks = stream.getAudioTracks();
+        setHasAudio(audioTracks.length > 0 && audioTracks.some((t) => t.enabled));
+      };
+      updateAudio();
+      stream.onaddtrack = () => {
+        if (el.srcObject !== stream) el.srcObject = stream;
+        el.play().catch(() => {});
+        updateAudio();
+      };
+      stream.onremovetrack = () => {
+        updateAudio();
+      };
+      return () => {
+        stream.onaddtrack = null;
+        stream.onremovetrack = null;
+      };
     } else {
       el.srcObject = null;
       setHasAudio(false);

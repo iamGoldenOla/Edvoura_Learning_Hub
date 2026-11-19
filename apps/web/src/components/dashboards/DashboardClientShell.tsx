@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import {
@@ -132,9 +132,25 @@ export default function DashboardClientShell({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const [notifications, setNotifications] = useState<
     Array<{ id: string; title: string; body: string | null; status: string; created_at: string }>
   >([]);
+
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+    };
+  }, [notifOpen]);
 
   const quickSearchItems = React.useMemo(() => {
     const byRole: Record<'student' | 'parent' | 'tutor' | 'admin', Array<{ label: string; href: string }>> = {
@@ -505,7 +521,7 @@ export default function DashboardClientShell({
                   <p suppressHydrationWarning className="text-sm font-black text-dark">{timeLabel}</p>
                   <p className="text-[9px] font-black uppercase tracking-[0.2em] text-dark/50">Local Time</p>
                 </div>
-                <div className="relative shrink-0">
+                <div ref={notifRef} className="relative shrink-0">
                   <button
                     type="button"
                     onClick={() => setNotifOpen(!notifOpen)}

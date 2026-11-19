@@ -2255,6 +2255,39 @@ export async function POST(request: NextRequest) {
 
           const parsed = extractJsonPayload(raw);
           const validated = BlueprintSchema.parse(parsed);
+
+          // Guarantee that non-STEM / conceptual topics ALWAYS receive concept-gallery and rich station boards!
+          const qLower = topic.toLowerCase();
+          const isConceptTopic =
+            qLower.includes('part') ||
+            qLower.includes('speech') ||
+            qLower.includes('grammar') ||
+            qLower.includes('profit') ||
+            qLower.includes('loss') ||
+            qLower.includes('interest') ||
+            qLower.includes('leader') ||
+            qLower.includes('president') ||
+            qLower.includes('history') ||
+            qLower.includes('government') ||
+            qLower.includes('civic') ||
+            qLower.includes('noun') ||
+            qLower.includes('verb') ||
+            qLower.includes('adjective') ||
+            qLower.includes('fraction') ||
+            qLower.includes('algebra') ||
+            qLower.includes('ratio');
+
+          if (isConceptTopic || !validated.stations || validated.stations.length === 0) {
+            validated.sceneType = 'concept-gallery';
+            if (!validated.stations || validated.stations.length === 0) {
+              const fallback = buildSmartFallback(topic, gradeLevel);
+              validated.stations = fallback.stations;
+              if (fallback.teacherIntro && !validated.teacherIntro) {
+                validated.teacherIntro = fallback.teacherIntro;
+              }
+            }
+          }
+
           const enriched = await enrichBlueprintWithRealImages(validated);
           return NextResponse.json({ blueprint: enriched, provider: `gemini:${modelName}` });
         } catch (err) {
@@ -2288,6 +2321,39 @@ export async function POST(request: NextRequest) {
           });
           const parsed = extractJsonPayload(text);
           const validated = BlueprintSchema.parse(parsed);
+
+          // Guarantee that non-STEM / conceptual topics ALWAYS receive concept-gallery and rich station boards!
+          const qLower = topic.toLowerCase();
+          const isConceptTopic =
+            qLower.includes('part') ||
+            qLower.includes('speech') ||
+            qLower.includes('grammar') ||
+            qLower.includes('profit') ||
+            qLower.includes('loss') ||
+            qLower.includes('interest') ||
+            qLower.includes('leader') ||
+            qLower.includes('president') ||
+            qLower.includes('history') ||
+            qLower.includes('government') ||
+            qLower.includes('civic') ||
+            qLower.includes('noun') ||
+            qLower.includes('verb') ||
+            qLower.includes('adjective') ||
+            qLower.includes('fraction') ||
+            qLower.includes('algebra') ||
+            qLower.includes('ratio');
+
+          if (isConceptTopic || !validated.stations || validated.stations.length === 0) {
+            validated.sceneType = 'concept-gallery';
+            if (!validated.stations || validated.stations.length === 0) {
+              const fallback = buildSmartFallback(topic, gradeLevel);
+              validated.stations = fallback.stations;
+              if (fallback.teacherIntro && !validated.teacherIntro) {
+                validated.teacherIntro = fallback.teacherIntro;
+              }
+            }
+          }
+
           const enriched = await enrichBlueprintWithRealImages(validated);
           return NextResponse.json({ blueprint: enriched, provider: `openrouter:${modelName}` });
         } catch (err) {

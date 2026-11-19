@@ -929,6 +929,22 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
         {/* Top Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Quick Mini-Video PiP Toggle when presenting and collapsed */}
+          {presentationMode !== 'none' && isVideoCollapsed && (
+            <button
+              onClick={() => setIsPipHidden(!isPipHidden)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                !isPipHidden
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/50 shadow-sm'
+                  : 'bg-white/10 text-white/70 hover:bg-white/20 border-white/20'
+              }`}
+              title="Toggle floating mini camera video preview"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>{isPipHidden ? 'Show Mini Video' : 'Mini Video: ON'}</span>
+            </button>
+          )}
+
           {/* HD Network Health Pill */}
           <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/15 text-white text-[11px] font-bold">
             <Wifi className="w-3.5 h-3.5 text-emerald-400" />
@@ -1406,9 +1422,9 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               ? isVideoCollapsed
                 ? isPipHidden
                   ? 'w-0 h-0 overflow-hidden border-none shrink-0 pointer-events-none'
-                  : `${pipPos ? 'fixed' : 'absolute top-14 right-3'} z-50 ${
-                      participantCount > 1 ? 'w-[280px] sm:w-[320px]' : 'w-[180px] sm:w-[205px]'
-                    } h-[132px] rounded-2xl border-[2.5px] border-yellow/80 shadow-[5px_5px_0px_#060E1C] overflow-hidden`
+                  : `${pipPos ? 'fixed' : 'fixed top-16 right-4'} z-50 ${
+                      participantCount > 1 ? 'w-[280px] sm:w-[320px]' : 'w-[190px] sm:w-[220px]'
+                    } h-[138px] rounded-2xl border-[3px] border-yellow/90 shadow-[5px_5px_0px_#060E1C] overflow-hidden`
                 : 'h-full relative w-[220px] sm:w-[250px] xl:w-[275px] border-l-[3px] border-dark shrink-0 z-20'
               : 'h-full relative flex-1 min-w-0'
           }`}

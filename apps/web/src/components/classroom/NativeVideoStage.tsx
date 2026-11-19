@@ -383,9 +383,16 @@ export function NativeVideoStage({
 
     if (targetVideoTrack) {
       pcsRef.current.forEach((pc) => {
-        const videoSender = pc.getSenders().find((s) => s.track?.kind === 'video');
+        const vTransceiver = pc.getTransceivers?.().find(
+          (t) => t.sender.track?.kind === 'video' || t.receiver.track?.kind === 'video'
+        );
+        const videoSender = vTransceiver?.sender || pc.getSenders().find((s) => s.track?.kind === 'video');
         if (videoSender) {
-          void videoSender.replaceTrack(targetVideoTrack).catch(() => {});
+          void videoSender.replaceTrack(targetVideoTrack).catch((err) => console.warn('replaceTrack video error:', err));
+        } else if (pc.signalingState !== 'closed') {
+          try {
+            pc.addTrack(targetVideoTrack, localStreamRef.current || screenStream!);
+          } catch (_) {}
         }
       });
     }
@@ -394,15 +401,25 @@ export function NativeVideoStage({
     const screenAudioTrack = screenStream?.getAudioTracks()[0];
     if (screenAudioTrack) {
       pcsRef.current.forEach((pc) => {
-        const audioSender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+        const aTransceiver = pc.getTransceivers?.().find(
+          (t) => t.sender.track?.kind === 'audio' || t.receiver.track?.kind === 'audio'
+        );
+        const audioSender = aTransceiver?.sender || pc.getSenders().find((s) => s.track?.kind === 'audio');
         if (audioSender) {
           void audioSender.replaceTrack(screenAudioTrack).catch(() => {});
+        } else if (pc.signalingState !== 'closed') {
+          try {
+            pc.addTrack(screenAudioTrack, screenStream!);
+          } catch (_) {}
         }
       });
     } else if (localStreamRef.current?.getAudioTracks()[0]) {
       const micTrack = localStreamRef.current.getAudioTracks()[0];
       pcsRef.current.forEach((pc) => {
-        const audioSender = pc.getSenders().find((s) => s.track?.kind === 'audio');
+        const aTransceiver = pc.getTransceivers?.().find(
+          (t) => t.sender.track?.kind === 'audio' || t.receiver.track?.kind === 'audio'
+        );
+        const audioSender = aTransceiver?.sender || pc.getSenders().find((s) => s.track?.kind === 'audio');
         if (audioSender && audioSender.track !== micTrack) {
           void audioSender.replaceTrack(micTrack).catch(() => {});
         }

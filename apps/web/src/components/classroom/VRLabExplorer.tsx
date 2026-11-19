@@ -365,6 +365,8 @@ export function VRLabExplorer({
   const [customAiKind, setCustomAiKind] = useState<CustomAiSceneKind>('rocket');
   const [customAiDescription, setCustomAiDescription] = useState<string>('');
   const [aiBlueprint, setAiBlueprint] = useState<AI3DBlueprintSpec | null>(null);
+  const aiBlueprintRef = useRef<AI3DBlueprintSpec | null>(null);
+  aiBlueprintRef.current = aiBlueprint;
   const [activeStationIdx, setActiveStationIdx] = useState<number>(0);
   const [aiGenError, setAiGenError] = useState<string | null>(null);
   const [isTeacherTourActive, setIsTeacherTourActive] = useState<boolean>(false);
@@ -375,7 +377,7 @@ export function VRLabExplorer({
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [showQuizHint, setShowQuizHint] = useState<Record<number, boolean>>({});
   const [showQuizWork, setShowQuizWork] = useState<Record<number, boolean>>({});
-  const [aiBoardView, setAiBoardView] = useState<'sidebar' | 'wide'>('sidebar');
+  const [aiBoardView, setAiBoardView] = useState<'sidebar' | 'wide'>('wide');
   const teacherTourTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const teacherTourActiveRef = useRef<boolean>(false);
   const teachSequenceIdRef = useRef<number>(0);
@@ -966,9 +968,16 @@ export function VRLabExplorer({
   const focusAIStation = useCallback(
     (
       idx: number,
-      opts?: { speak?: boolean; fullCard?: boolean; broadcast?: boolean; onDone?: () => void }
+      opts?: {
+        speak?: boolean;
+        fullCard?: boolean;
+        broadcast?: boolean;
+        onDone?: () => void;
+        overrideBlueprint?: AI3DBlueprintSpec;
+      }
     ) => {
-      const stations = aiBlueprint?.stations;
+      const activeBp = opts?.overrideBlueprint || aiBlueprintRef.current || aiBlueprint;
+      const stations = activeBp?.stations;
       if (!stations || stations.length === 0) return;
       const safeIdx = ((idx % stations.length) + stations.length) % stations.length;
       const st = stations[safeIdx];
@@ -980,7 +989,7 @@ export function VRLabExplorer({
       const state = threeStateRef.current;
       if (state) {
         const isGallery =
-          aiBlueprint?.sceneType === 'concept-gallery' || stations.length >= 3;
+          activeBp?.sceneType === 'concept-gallery' || stations.length >= 3;
         const targetAngle = (safeIdx / stations.length) * Math.PI * 2;
         state.controls.targetRotY = targetAngle;
         state.controls.targetRotX = isGallery ? 0.08 : 0.16;
@@ -1009,8 +1018,9 @@ export function VRLabExplorer({
 
   // Automated Full Explanation-Video VR Teacher Tour: reads EVERY card, works every problem, reads every activity!
   const startTeacherTour = useCallback(
-    (startIndex = 0) => {
-      const stations = aiBlueprint?.stations;
+    (startIndex = 0, overrideBlueprint?: AI3DBlueprintSpec) => {
+      const activeBp = overrideBlueprint || aiBlueprintRef.current || aiBlueprint;
+      const stations = activeBp?.stations;
       if (!stations || stations.length === 0) return;
       stopTeacherTour();
       setIsTeacherTourActive(true);
@@ -1022,7 +1032,7 @@ export function VRLabExplorer({
         if (stepIdx >= stations.length) {
           stopTeacherTour();
           speakNarration(
-            `Fantastic job! You completed the full ${aiBlueprint?.title || 'VR'} video lesson! You can revisit any station or practice the quizzes anytime.`
+            `Fantastic job! You completed the full ${activeBp?.title || 'VR'} video lesson! You can revisit any station or practice the quizzes anytime.`
           );
           return;
         }
@@ -1030,6 +1040,7 @@ export function VRLabExplorer({
           speak: true,
           fullCard: true,
           broadcast: true,
+          overrideBlueprint: activeBp,
           onDone: () => {
             if (!teacherTourActiveRef.current) return;
             // Give pupil a comfortable pause at the end of each station's activity before gliding to next board
@@ -2660,7 +2671,8 @@ export function VRLabExplorer({
         const stations = Array.isArray(aiBlueprint.stations) ? aiBlueprint.stations : [];
         const isGallery =
           aiBlueprint.sceneType === 'concept-gallery' ||
-          (aiBlueprint.sceneType !== 'object' && stations.length >= 2);
+          stations.length > 0 ||
+          aiBlueprint.sceneType !== 'object';
         customGroup.userData = { isConceptGallery: isGallery };
 
         if (isGallery) {
@@ -3859,6 +3871,7 @@ export function VRLabExplorer({
 
       const bp: AI3DBlueprintSpec = data.blueprint;
       stopTeacherTour();
+      aiBlueprintRef.current = bp;
       setAiBlueprint(bp);
       setActiveStationIdx(0);
       setQuizAnswers({});
@@ -3870,16 +3883,19 @@ export function VRLabExplorer({
       setCustomAiDescription(bp.description);
       setActiveModule('ai-custom');
       setShowInfoCard(true);
+      setAiBoardView('wide');
       setAiPromptOpen(false);
       broadcastVRState({ activeModule: 'ai-custom', aiBlueprint: bp, activeStationIdx: 0 });
       if (autoNarrate) {
         const opening = bp.teacherIntro || bp.narration || bp.description;
         if (bp.stations && bp.stations.length > 0) {
-          const introSeg = opening
-            ? [{ phase: 'definition' as const, sectionId: 'vr-sec-definition', text: opening }]
-            : [];
-          const station0Segs = buildStationFullSegments(bp.stations[0], 0);
-          runSpeechQueue([...introSeg, ...station0Segs]);
+          if (opening) {
+            speakNarration(opening, () => {
+              startTeacherTour(0, bp);
+            });
+          } else {
+            startTeacherTour(0, bp);
+          }
         } else if (opening) {
           speakNarration(opening);
         }
@@ -4053,18 +4069,35 @@ export function VRLabExplorer({
               AI VR Teacher Studio:
             </span>
             {/* Class / Grade Level Picker */}
-            <select
-              value={aiGradeLevel}
-              onChange={(e) => setAiGradeLevel(e.target.value)}
-              className="bg-slate-900/95 border border-yellow/50 rounded-xl px-2.5 py-1 text-xs font-bold text-yellow focus:outline-none focus:border-yellow cursor-pointer shrink-0"
-              title="Select student class or grade level"
-            >
-              <option value="Nursery / KG (Ages 3–5)">Nursery / KG</option>
-              <option value="Grade 1–3 (Lower Primary)">Grade 1–3 (Lower Primary)</option>
-              <option value="Grade 4–6 (Upper Primary)">Grade 4–6 (Upper Primary)</option>
-              <option value="JSS 1–3 (Grade 7–9)">JSS 1–3 (Grade 7–9)</option>
-              <option value="SSS 1–3 (Grade 10–12)">SSS 1–3 (Grade 10–12)</option>
-            </select>
+            <div className="flex items-center gap-1.5 bg-slate-900 border-2 border-yellow/70 rounded-xl px-2.5 py-1 shrink-0 shadow-sm">
+              <span className="text-[10px] font-black uppercase tracking-wider text-yellow flex items-center gap-1 shrink-0">
+                🎓 Grade / Class:
+              </span>
+              <select
+                value={aiGradeLevel}
+                onChange={(e) => setAiGradeLevel(e.target.value)}
+                className="bg-transparent text-xs font-black text-white focus:outline-none cursor-pointer"
+                title="Select student class or grade level"
+              >
+                <option value="Nursery / KG (Ages 3–5)" className="bg-slate-900 text-white">Nursery / KG (Ages 3–5)</option>
+                <option value="Grade 1–3 (Lower Primary)" className="bg-slate-900 text-white">Grade 1–3 (Lower Primary)</option>
+                <option value="Grade 4–6 (Upper Primary)" className="bg-slate-900 text-white">Grade 4–6 (Upper Primary)</option>
+                <option value="JSS 1–3 (Grade 7–9)" className="bg-slate-900 text-white">JSS 1–3 (Grade 7–9)</option>
+                <option value="SSS 1–3 (Grade 10–12)" className="bg-slate-900 text-white">SSS 1–3 (Grade 10–12)</option>
+                <option value="Primary 1 / Grade 1" className="bg-slate-900 text-white">Primary 1 / Grade 1</option>
+                <option value="Primary 2 / Grade 2" className="bg-slate-900 text-white">Primary 2 / Grade 2</option>
+                <option value="Primary 3 / Grade 3" className="bg-slate-900 text-white">Primary 3 / Grade 3</option>
+                <option value="Primary 4 / Grade 4" className="bg-slate-900 text-white">Primary 4 / Grade 4</option>
+                <option value="Primary 5 / Grade 5" className="bg-slate-900 text-white">Primary 5 / Grade 5</option>
+                <option value="Primary 6 / Grade 6" className="bg-slate-900 text-white">Primary 6 / Grade 6</option>
+                <option value="JSS 1 (Grade 7)" className="bg-slate-900 text-white">JSS 1 (Grade 7)</option>
+                <option value="JSS 2 (Grade 8)" className="bg-slate-900 text-white">JSS 2 (Grade 8)</option>
+                <option value="JSS 3 (Grade 9)" className="bg-slate-900 text-white">JSS 3 (Grade 9)</option>
+                <option value="SSS 1 (Grade 10)" className="bg-slate-900 text-white">SSS 1 (Grade 10)</option>
+                <option value="SSS 2 (Grade 11)" className="bg-slate-900 text-white">SSS 2 (Grade 11)</option>
+                <option value="SSS 3 (Grade 12)" className="bg-slate-900 text-white">SSS 3 (Grade 12)</option>
+              </select>
+            </div>
             <div className="relative flex-1 min-w-[200px]">
               <input
                 type="text"
@@ -4990,9 +5023,41 @@ export function VRLabExplorer({
                         <span className="text-[9px] uppercase font-black tracking-wider px-1.5 py-0.5 rounded bg-yellow/20 text-yellow border border-yellow/30">
                           AI VR Teacher
                         </span>
-                        <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-200 border border-sky-400/30 truncate max-w-[155px]">
-                          {aiBlueprint?.gradeLevel || aiGradeLevel}
-                        </span>
+                        <label
+                          className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/35 text-sky-200 border border-sky-400/40 cursor-pointer shadow-sm transition-all"
+                          title="Click to switch student grade or class"
+                        >
+                          <span>🎓</span>
+                          <select
+                            value={aiBlueprint?.gradeLevel || aiGradeLevel}
+                            onChange={(e) => {
+                              const nextGrade = e.target.value;
+                              setAiGradeLevel(nextGrade);
+                              if (aiBlueprint) {
+                                setAiBlueprint({ ...aiBlueprint, gradeLevel: nextGrade });
+                              }
+                            }}
+                            className="bg-transparent text-sky-200 font-black text-[9px] focus:outline-none cursor-pointer"
+                          >
+                            <option value="Nursery / KG (Ages 3–5)" className="bg-slate-900 text-white">Nursery / KG</option>
+                            <option value="Grade 1–3 (Lower Primary)" className="bg-slate-900 text-white">Grade 1–3</option>
+                            <option value="Grade 4–6 (Upper Primary)" className="bg-slate-900 text-white">Grade 4–6</option>
+                            <option value="JSS 1–3 (Grade 7–9)" className="bg-slate-900 text-white">JSS 1–3</option>
+                            <option value="SSS 1–3 (Grade 10–12)" className="bg-slate-900 text-white">SSS 1–3</option>
+                            <option value="Primary 1 / Grade 1" className="bg-slate-900 text-white">Primary 1</option>
+                            <option value="Primary 2 / Grade 2" className="bg-slate-900 text-white">Primary 2</option>
+                            <option value="Primary 3 / Grade 3" className="bg-slate-900 text-white">Primary 3</option>
+                            <option value="Primary 4 / Grade 4" className="bg-slate-900 text-white">Primary 4</option>
+                            <option value="Primary 5 / Grade 5" className="bg-slate-900 text-white">Primary 5</option>
+                            <option value="Primary 6 / Grade 6" className="bg-slate-900 text-white">Primary 6</option>
+                            <option value="JSS 1 (Grade 7)" className="bg-slate-900 text-white">JSS 1</option>
+                            <option value="JSS 2 (Grade 8)" className="bg-slate-900 text-white">JSS 2</option>
+                            <option value="JSS 3 (Grade 9)" className="bg-slate-900 text-white">JSS 3</option>
+                            <option value="SSS 1 (Grade 10)" className="bg-slate-900 text-white">SSS 1</option>
+                            <option value="SSS 2 (Grade 11)" className="bg-slate-900 text-white">SSS 2</option>
+                            <option value="SSS 3 (Grade 12)" className="bg-slate-900 text-white">SSS 3</option>
+                          </select>
+                        </label>
                       </div>
                       <h3 className="font-black text-sm text-white truncate mt-0.5">
                         {aiBlueprint?.title || customAiModelTitle || 'Interactive VR Lesson'}

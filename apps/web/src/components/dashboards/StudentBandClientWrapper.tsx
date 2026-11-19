@@ -153,8 +153,10 @@ export default function StudentBandClientWrapper({
 
   if (band === '1-3') {
     const stars = dashboard.stats.completedAssignments * 8 + dashboard.stats.activeClasses * 4;
-    const stickers = Math.max(2, dashboard.stats.completedAssignments);
     const streak = Math.max(1, dashboard.progress.length);
+    const goalTarget = 3;
+    const completedMissions = Math.min(goalTarget, Math.max(0, dashboard.stats.completedAssignments));
+    const goalPercent = Math.round((completedMissions / goalTarget) * 100);
 
     return (
       <div className="space-y-6 sm:space-y-8 pb-12 animate-in fade-in duration-700 w-full min-w-0">
@@ -196,15 +198,15 @@ export default function StudentBandClientWrapper({
                 Active Target
               </span>
             </div>
-            <p className="text-xs font-bold text-dark/70">Complete 2 daily learning missions or quizzes to keep your streak glowing!</p>
+            <p className="text-xs font-bold text-dark/70">Complete {goalTarget} daily learning missions or quizzes to keep your streak glowing!</p>
           </div>
           <div className="w-full sm:w-64 space-y-1.5 shrink-0">
             <div className="flex justify-between items-center text-xs font-black text-dark">
               <span>Goal Progress</span>
-              <span>2 / 3 Missions</span>
+              <span>{completedMissions} / {goalTarget} Missions</span>
             </div>
             <div className="h-4 w-full rounded-full border-[2.5px] border-dark bg-white overflow-hidden shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]">
-              <div className="h-full bg-emerald-400 border-r-[2px] border-dark" style={{ width: '66%' }} />
+              <div className="h-full bg-emerald-400 border-r-[2px] border-dark transition-all duration-500" style={{ width: `${Math.max(6, goalPercent)}%` }} />
             </div>
           </div>
         </div>

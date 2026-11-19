@@ -1502,6 +1502,13 @@ export function CollaborativeWhiteboard({
           onTouchMove={handlePointerMove}
           onTouchEnd={handlePointerUp}
           className="absolute inset-0 w-full h-full block z-10"
+          style={{
+            cursor: canDraw
+              ? selectedStamp || selectedEmoji
+                ? getDrawingCursor('stamp')
+                : getDrawingCursor(activeTool, selectedColor)
+              : 'not-allowed',
+          }}
         />
 
         {/* INLINE TEXT INPUT OVERLAY (NO BROWSER PROMPT POPUP!) */}
