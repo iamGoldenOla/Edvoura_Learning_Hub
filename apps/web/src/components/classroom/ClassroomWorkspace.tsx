@@ -1035,21 +1035,23 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             </button>
           )}
 
-          {/* Quick Quiz Poll Trigger */}
-          <button
-            onClick={() => {
-              setPollInitialQuestion('');
-              setPollInitialOptions([]);
-              setShowPollModal(true);
-            }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/40 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
-            title="Launch Interactive Pop Check / Poll"
-          >
-            <Zap className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Quiz Poll</span>
-          </button>
+          {/* Quick Quiz Poll Trigger (Tutors Only: Teachers launch polls for students) */}
+          {role === 'tutor' && (
+            <button
+              onClick={() => {
+                setPollInitialQuestion('');
+                setPollInitialOptions([]);
+                setShowPollModal(true);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/40 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md transition-all active:scale-95 cursor-pointer"
+              title="Launch Interactive Pop Check / Poll for Students"
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Quiz Poll</span>
+            </button>
+          )}
 
-          {/* Quick AI Worksheet Studio trigger */}
+          {/* Quick AI Worksheet Studio trigger (Tutors Only) */}
           {role === 'tutor' && (
             <button
               onClick={() => setShowAiWorksheetModal(true)}
@@ -1186,88 +1188,114 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
 
               {/* Presentation Switchers & Stop Button */}
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => switchPresentationMode('whiteboard')}
-                  className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
-                    presentationMode === 'whiteboard'
-                      ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                      : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Switch to Whiteboard"
-                >
-                  Whiteboard
-                </button>
+                {role === 'tutor' ? (
+                  <>
+                    <button
+                      onClick={() => switchPresentationMode('whiteboard')}
+                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                        presentationMode === 'whiteboard'
+                          ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                      }`}
+                      title="Switch to Whiteboard"
+                    >
+                      Whiteboard
+                    </button>
 
-                {selectedPdfUrl && (
-                  <button
-                    onClick={() => switchPresentationMode('worksheet')}
-                    className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
-                      presentationMode === 'worksheet'
-                        ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                        : 'bg-white text-dark/70 hover:bg-slate-50'
-                    }`}
-                    title="Switch to Worksheet"
-                  >
-                    Worksheet
-                  </button>
+                    {selectedPdfUrl && (
+                      <button
+                        onClick={() => switchPresentationMode('worksheet')}
+                        className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                          presentationMode === 'worksheet'
+                            ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                            : 'bg-white text-dark/70 hover:bg-slate-50'
+                        }`}
+                        title="Switch to Worksheet"
+                      >
+                        Worksheet
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => switchPresentationMode('desks')}
+                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
+                        presentationMode === 'desks'
+                          ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
+                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                      }`}
+                      title="Switch to Student Desks"
+                    >
+                      Desks
+                    </button>
+
+                    <button
+                      onClick={() => setShowYoutubeModal(true)}
+                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                        presentationMode === 'youtube'
+                          ? 'bg-rose-600 text-white shadow-[1px_1px_0px_#060E1C]'
+                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                      }`}
+                      title="Share YouTube Video for Pupils"
+                    >
+                      <Video className="w-3.5 h-3.5 text-rose-600" />
+                      <span>YouTube</span>
+                    </button>
+
+                    <button
+                      onClick={() => switchPresentationMode('vrlab')}
+                      className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                        presentationMode === 'vrlab'
+                          ? 'bg-purple-600 text-white shadow-[1px_1px_0px_#060E1C]'
+                          : 'bg-white text-dark/70 hover:bg-slate-50'
+                      }`}
+                      title="Launch 3D & Virtual Reality Lab (Solar System, Heart, Geometry, Volcano)"
+                    >
+                      <Glasses className="w-3.5 h-3.5 text-purple-600" />
+                      <span>3D/VR Lab</span>
+                    </button>
+
+                    {activeScreenShare && (
+                      <button
+                        onClick={() => switchPresentationMode('screenshare')}
+                        className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
+                          presentationMode === 'screenshare'
+                            ? 'bg-emerald-600 text-white shadow-[1px_1px_0px_#060E1C]'
+                            : 'bg-white text-dark/70 hover:bg-slate-50'
+                        }`}
+                        title="Switch to Shared Screen Stage"
+                      >
+                        <ScreenShare className="w-3.5 h-3.5" />
+                        <span>Screen Share</span>
+                      </button>
+                    )}
+
+                    {/* Stop Presentation -> Restores 100% Video immediately */}
+                    <button
+                      onClick={handleStopPresenting}
+                      className="flex items-center gap-1 px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ml-1"
+                      title="Stop presentation and restore full video"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Stop Presenting</span>
+                    </button>
+                  </>
+                ) : (
+                  /* Student View: Students only control their own screen share if sharing */
+                  <>
+                    {activeScreenShare?.isLocal && (
+                      <button
+                        onClick={handleStopLocalScreenShare}
+                        className="flex items-center gap-1.5 px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all"
+                        title="Stop sharing your screen"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Stop Sharing My Screen</span>
+                      </button>
+                    )}
+                  </>
                 )}
 
-                <button
-                  onClick={() => switchPresentationMode('desks')}
-                  className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black transition-all ${
-                    presentationMode === 'desks'
-                      ? 'bg-yellow text-dark shadow-[1px_1px_0px_#060E1C]'
-                      : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Switch to Student Desks"
-                >
-                  Desks
-                </button>
-
-                {role === 'tutor' && (
-                  <button
-                    onClick={() => setShowYoutubeModal(true)}
-                    className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
-                      presentationMode === 'youtube'
-                        ? 'bg-rose-600 text-white shadow-[1px_1px_0px_#060E1C]'
-                        : 'bg-white text-dark/70 hover:bg-slate-50'
-                    }`}
-                    title="Share YouTube Video for Pupils"
-                  >
-                    <Video className="w-3.5 h-3.5 text-rose-600" />
-                    <span>YouTube</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={() => switchPresentationMode('vrlab')}
-                  className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
-                    presentationMode === 'vrlab'
-                      ? 'bg-purple-600 text-white shadow-[1px_1px_0px_#060E1C]'
-                      : 'bg-white text-dark/70 hover:bg-slate-50'
-                  }`}
-                  title="Launch 3D & Virtual Reality Lab (Solar System, Heart, Geometry, Volcano)"
-                >
-                  <Glasses className="w-3.5 h-3.5 text-purple-600" />
-                  <span>3D/VR Lab</span>
-                </button>
-
-                {activeScreenShare && (
-                  <button
-                    onClick={() => switchPresentationMode('screenshare')}
-                    className={`px-2.5 py-1 rounded-lg border-[2px] border-dark text-xs font-black flex items-center gap-1.5 transition-all ${
-                      presentationMode === 'screenshare'
-                        ? 'bg-emerald-600 text-white shadow-[1px_1px_0px_#060E1C]'
-                        : 'bg-white text-dark/70 hover:bg-slate-50'
-                    }`}
-                    title="Switch to Shared Screen Stage"
-                  >
-                    <ScreenShare className="w-3.5 h-3.5" />
-                    <span>Screen Share</span>
-                  </button>
-                )}
-
-                {/* Collapsed Video Quick Expand Pill */}
+                {/* Collapsed Video Quick Expand Pill (Available to both Tutor & Student) */}
                 {isVideoCollapsed && (
                   <button
                     onClick={() => {
@@ -1282,16 +1310,6 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
                     <span>Show Video</span>
                   </button>
                 )}
-
-                {/* Stop Presentation -> Restores 100% Video immediately */}
-                <button
-                  onClick={handleStopPresenting}
-                  className="flex items-center gap-1 px-3 py-1 bg-white hover:bg-rose-50 text-rose-600 border-[2px] border-dark rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_#060E1C] active:scale-95 transition-all ml-1"
-                  title="Stop presentation and restore full video"
-                >
-                  <X className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Stop Presenting</span>
-                </button>
               </div>
             </div>
 
@@ -1885,91 +1903,96 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
             )}
           </div>
 
-          {/* Whiteboard Toggle (Opens Whiteboard in Main Stage) */}
-          <button
-            onClick={handleToggleWhiteboard}
-            className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-              presentationMode === 'whiteboard'
-                ? 'bg-yellow text-dark shadow-md'
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-            title={presentationMode === 'whiteboard' ? 'Stop Presenting Whiteboard' : 'Present Whiteboard on Main Stage'}
-            aria-label="Whiteboard"
-          >
-            <Presentation className="w-4 h-4" />
-            <span className="hidden sm:inline">Whiteboard</span>
-          </button>
+          {/* Tutor-Only Presentation & Spotlight Controls in Dock */}
+          {role === 'tutor' && (
+            <>
+              {/* Whiteboard Toggle (Opens Whiteboard in Main Stage) */}
+              <button
+                onClick={handleToggleWhiteboard}
+                className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                  presentationMode === 'whiteboard'
+                    ? 'bg-yellow text-dark shadow-md'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title={presentationMode === 'whiteboard' ? 'Stop Presenting Whiteboard' : 'Present Whiteboard on Main Stage'}
+                aria-label="Whiteboard"
+              >
+                <Presentation className="w-4 h-4" />
+                <span className="hidden sm:inline">Whiteboard</span>
+              </button>
 
-          {/* 3D / VR Lab Quick Button in Dock */}
-          <button
-            onClick={() => switchPresentationMode('vrlab')}
-            className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-              presentationMode === 'vrlab'
-                ? 'bg-purple-600 text-white shadow-md'
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-            title={presentationMode === 'vrlab' ? 'Stop 3D Lab' : 'Launch 3D & VR Lab on Main Stage'}
-            aria-label="3D / VR Lab"
-          >
-            <Glasses className="w-4 h-4 text-purple-400" />
-            <span className="hidden sm:inline">3D Lab</span>
-          </button>
+              {/* 3D / VR Lab Quick Button in Dock */}
+              <button
+                onClick={() => switchPresentationMode('vrlab')}
+                className={`px-3.5 h-11 rounded-full font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                  presentationMode === 'vrlab'
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title={presentationMode === 'vrlab' ? 'Stop 3D Lab' : 'Launch 3D & VR Lab on Main Stage'}
+                aria-label="3D / VR Lab"
+              >
+                <Glasses className="w-4 h-4 text-purple-400" />
+                <span className="hidden sm:inline">3D Lab</span>
+              </button>
 
-          {/* Laser Pointer Attention Tool */}
-          <button
-            onClick={() => {
-              setIsLaserActive(!isLaserActive);
-              if (isSpotlightActive) setIsSpotlightActive(false);
-            }}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-              isLaserActive
-                ? 'bg-red-600 text-white shadow-lg ring-2 ring-red-300 animate-pulse'
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-            title={isLaserActive ? 'Turn off Laser Pointer' : 'Turn on Synchronized Neon Laser Pointer'}
-            aria-label="Laser Pointer"
-          >
-            <span className="text-base select-none">🔴</span>
-          </button>
+              {/* Laser Pointer Attention Tool */}
+              <button
+                onClick={() => {
+                  setIsLaserActive(!isLaserActive);
+                  if (isSpotlightActive) setIsSpotlightActive(false);
+                }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  isLaserActive
+                    ? 'bg-red-600 text-white shadow-lg ring-2 ring-red-300 animate-pulse'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title={isLaserActive ? 'Turn off Laser Pointer' : 'Turn on Synchronized Neon Laser Pointer'}
+                aria-label="Laser Pointer"
+              >
+                <span className="text-base select-none">🔴</span>
+              </button>
 
-          {/* Attention Spotlight Focus Tool */}
-          <button
-            onClick={() => {
-              setIsSpotlightActive(!isSpotlightActive);
-              if (isLaserActive) setIsLaserActive(false);
-            }}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-              isSpotlightActive
-                ? 'bg-amber-500 text-dark shadow-lg ring-2 ring-amber-300'
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-            title={isSpotlightActive ? 'Turn off Spotlight' : 'Turn on Attention Spotlight Mode'}
-            aria-label="Attention Spotlight"
-          >
-            <span className="text-base select-none">🔦</span>
-          </button>
+              {/* Attention Spotlight Focus Tool */}
+              <button
+                onClick={() => {
+                  setIsSpotlightActive(!isSpotlightActive);
+                  if (isLaserActive) setIsLaserActive(false);
+                }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  isSpotlightActive
+                    ? 'bg-amber-500 text-dark shadow-lg ring-2 ring-amber-300'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title={isSpotlightActive ? 'Turn off Spotlight' : 'Turn on Attention Spotlight Mode'}
+                aria-label="Attention Spotlight"
+              >
+                <span className="text-base select-none">🔦</span>
+              </button>
 
-          {/* Teaching Tools / Worksheets Toggle */}
-          <button
-            onClick={() => {
-              if (presentationMode === 'worksheet') {
-                setPresentationMode('none');
-              } else if (selectedPdfUrl) {
-                setPresentationMode('worksheet');
-              } else {
-                setIsToolsOpen(!isToolsOpen);
-              }
-            }}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
-              presentationMode === 'worksheet' || isToolsOpen
-                ? 'bg-white text-dark shadow-md'
-                : 'bg-white/10 hover:bg-white/20 text-white'
-            }`}
-            title="Classroom Worksheets & Activities"
-            aria-label="Teaching Tools"
-          >
-            <BookOpen className="w-5 h-5" />
-          </button>
+              {/* Teaching Tools / Worksheets Toggle */}
+              <button
+                onClick={() => {
+                  if (presentationMode === 'worksheet') {
+                    setPresentationMode('none');
+                  } else if (selectedPdfUrl) {
+                    setPresentationMode('worksheet');
+                  } else {
+                    setIsToolsOpen(!isToolsOpen);
+                  }
+                }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                  presentationMode === 'worksheet' || isToolsOpen
+                    ? 'bg-white text-dark shadow-md'
+                    : 'bg-white/10 hover:bg-white/20 text-white'
+                }`}
+                title="Classroom Worksheets & Activities"
+                aria-label="Teaching Tools"
+              >
+                <BookOpen className="w-5 h-5" />
+              </button>
+            </>
+          )}
 
           {/* Red Hangup Button (Only Hangup Button on Screen - Triggers Branded Exit Screen) */}
           <button

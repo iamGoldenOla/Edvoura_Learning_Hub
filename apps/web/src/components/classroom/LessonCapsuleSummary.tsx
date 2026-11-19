@@ -140,7 +140,7 @@ export function LessonCapsuleSummary({
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-black uppercase tracking-wider text-yellow flex items-center gap-1.5">
               <MessageSquare className="w-3.5 h-3.5" />
-              <span>Tutor Commendation Note for Parent &amp; Student</span>
+              <span>{role === 'tutor' ? 'Tutor Commendation Note for Parent & Student' : 'Tutor Commendation for You'}</span>
             </p>
             {role === 'tutor' && (
               <button
@@ -166,25 +166,37 @@ export function LessonCapsuleSummary({
           )}
         </div>
 
-        {/* Actions */}
+        {/* Actions (Role-Differentiated: Tutors share reports; Students return with rewards) */}
         <div className="space-y-2.5 pt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            <Button
-              onClick={handleShareToParent}
-              className="h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase border border-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {copiedShareLink ? <Check className="w-4 h-4 text-white" /> : <Share2 className="w-4 h-4" />}
-              <span>{copiedShareLink ? 'Report Copied to Clipboard!' : 'Share Capsule to Parent'}</span>
-            </Button>
+          {role === 'tutor' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <Button
+                onClick={handleShareToParent}
+                className="h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase border border-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {copiedShareLink ? <Check className="w-4 h-4 text-white" /> : <Share2 className="w-4 h-4" />}
+                <span>{copiedShareLink ? 'Report Copied to Clipboard!' : 'Share Capsule to Parent'}</span>
+              </Button>
 
-            <Button
-              onClick={onReturnDashboard}
-              className="h-11 bg-yellow hover:bg-yellow/90 text-dark font-black text-xs uppercase border border-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Home className="w-4 h-4" />
-              <span>Return to Dashboard</span>
-            </Button>
-          </div>
+              <Button
+                onClick={onReturnDashboard}
+                className="h-11 bg-yellow hover:bg-yellow/90 text-dark font-black text-xs uppercase border border-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Home className="w-4 h-4" />
+                <span>Return to Dashboard</span>
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Button
+                onClick={onReturnDashboard}
+                className="w-full h-12 bg-yellow hover:bg-yellow/90 text-dark font-black text-sm uppercase border-[2.5px] border-dark shadow-[4px_4px_0px_#060E1C] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Home className="w-5 h-5" />
+                <span>Return to Student Dashboard (+150 XP Saved)</span>
+              </Button>
+            </div>
+          )}
 
           <Button
             variant="outline"
