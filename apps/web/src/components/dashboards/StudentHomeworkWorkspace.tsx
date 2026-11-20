@@ -54,11 +54,13 @@ export default function StudentHomeworkWorkspace({
   return (
     <div className="space-y-8">
       <div className="border-[4px] border-dark bg-white rounded-[28px] shadow-[8px_8px_0px_#060E1C] p-8">
-        <h1 className="text-4xl font-heading tracking-tight text-dark">Home Work Workspace</h1>
+        <h1 className="text-4xl font-heading tracking-tight text-dark">Homework Workspace</h1>
         
         {/* Tab Buttons */}
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex gap-4" role="tablist">
           <button
+            role="tab"
+            aria-selected={activeTab === 'todo'}
             onClick={() => setActiveTab('todo')}
             className={`px-8 py-3 rounded-xl border-[3px] border-dark font-black uppercase text-xs tracking-widest transition-all ${
               activeTab === 'todo' 
@@ -69,6 +71,8 @@ export default function StudentHomeworkWorkspace({
             To Do ({pending.length})
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'graded'}
             onClick={() => setActiveTab('graded')}
             className={`px-8 py-3 rounded-xl border-[3px] border-dark font-black uppercase text-xs tracking-widest transition-all ${
               activeTab === 'graded' 
@@ -81,7 +85,7 @@ export default function StudentHomeworkWorkspace({
         </div>
       </div>
 
-      <div className="max-w-3xl">
+      <div className="max-w-4xl">
         {activeTab === 'todo' ? (
           <AssignmentBucket title="Waiting for you" items={pending} />
         ) : (

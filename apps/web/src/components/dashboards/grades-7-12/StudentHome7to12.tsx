@@ -139,10 +139,10 @@ export default function StudentHome7to12({ enrollments, assignments, upcomingLes
               <h3 className="text-3xl font-black uppercase tracking-tighter">Enrolled Sectors</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                  {[
-                   { name: 'Physics AP', prof: 'Dr. Sarah', progress: 85, color: 'bg-blue-100', text: 'text-info' },
-                   { name: 'Chemistry', prof: 'Prof. Ade', progress: 62, color: 'bg-green-100', text: 'text-success' },
-                   { name: 'Pure Math', prof: 'Dr. Mike', progress: 41, color: 'bg-yellow-100', text: 'text-yellow' },
-                   { name: 'Government', prof: 'Prof. Chen', progress: 95, color: 'bg-pink-100', text: 'text-error' }
+                   { name: 'Physics AP', prof: 'Dr. Sarah', progress: 85, color: 'bg-blue-100', text: 'text-blue-600', barColor: 'bg-blue-500' },
+                   { name: 'Chemistry', prof: 'Prof. Ade', progress: 62, color: 'bg-green-100', text: 'text-emerald-600', barColor: 'bg-emerald-500' },
+                   { name: 'Pure Math', prof: 'Dr. Mike', progress: 41, color: 'bg-yellow-100', text: 'text-amber-600', barColor: 'bg-amber-500' },
+                   { name: 'Government', prof: 'Prof. Chen', progress: 95, color: 'bg-pink-100', text: 'text-rose-600', barColor: 'bg-rose-500' }
                  ].map((sub, i) => (
                    <div key={i} className={`brutalist-card p-8 group cursor-pointer transition-all brutalist-3d ${sub.color} hover:bg-white`}>
                       <div className="flex justify-between items-start mb-8">
@@ -158,7 +158,7 @@ export default function StudentHome7to12({ enrollments, assignments, upcomingLes
                       
                       <div className="flex items-center gap-4">
                          <div className="flex-1 h-3 border-[2px] border-dark bg-white">
-                            <div className={`h-full ${sub.text.replace('text-', 'bg-')} border-r-[2px] border-dark`} style={{ width: `${sub.progress}%` }} />
+                            <div className={`h-full ${sub.barColor} border-r-[2px] border-dark`} style={{ width: `${sub.progress}%` }} />
                          </div>
                          <span className="text-[10px] font-black">{sub.progress}%</span>
                       </div>

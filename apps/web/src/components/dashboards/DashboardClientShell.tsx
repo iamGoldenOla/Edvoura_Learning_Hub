@@ -304,17 +304,13 @@ export default function DashboardClientShell({
   }, [viewerAvatarPath, viewerName]);
 
   // Close mobile menu on navigation
+  const prevPathnameRef = useRef(pathname);
   useEffect(() => {
-    if (!isMobileMenuOpen) {
-      return;
-    }
-
-    const frame = window.requestAnimationFrame(() => {
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname;
       setIsMobileMenuOpen(false);
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [pathname, isMobileMenuOpen]);
+    }
+  }, [pathname]);
 
   return (
     <BandProvider initialBand={initialBand}>
@@ -430,6 +426,7 @@ export default function DashboardClientShell({
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
                   className="rounded-xl border-[3px] border-dark bg-white p-2 text-dark shadow-[2px_2px_0px_#060E1C] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none lg:hidden shrink-0"
                 >
                   {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -537,7 +534,7 @@ export default function DashboardClientShell({
                   </button>
 
                   {notifOpen && (
-                    <div className="absolute right-0 top-13 w-80 max-w-[90vw] rounded-2xl border-[3px] border-dark bg-white shadow-[6px_6px_0px_#060E1C] z-50 overflow-hidden">
+                    <div className="absolute right-0 top-12 sm:top-14 w-80 max-w-[90vw] rounded-2xl border-[3px] border-dark bg-white shadow-[6px_6px_0px_#060E1C] z-50 overflow-hidden">
                       <div className="flex items-center justify-between px-4 py-3 bg-yellow/40 border-b-[2px] border-dark">
                         <span className="text-xs font-black uppercase tracking-wider text-dark">
                           Notifications ({unreadCount} unread)

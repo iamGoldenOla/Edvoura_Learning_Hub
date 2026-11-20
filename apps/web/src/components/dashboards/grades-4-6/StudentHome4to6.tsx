@@ -169,14 +169,14 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
               <h3 className="text-3xl font-black uppercase tracking-tighter pl-1 text-dark">Sector Objectives</h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
                  {[
-                   { name: 'Mathematics', icon: Map, color: 'bg-blue-100', text: 'text-info', progress: 85, badge: 'READY' },
-                   { name: 'Science', icon: Rocket, color: 'bg-green-100', text: 'text-success', progress: 62, badge: 'ACTIVE' },
-                   { name: 'Coding Hub', icon: Gamepad2, color: 'bg-yellow-100', text: 'text-yellow', progress: 41, badge: 'NEW' },
-                   { name: 'Literature', icon: BookMarked, color: 'bg-pink-100', text: 'text-error', progress: 95, badge: 'SYNCED' }
+                   { name: 'Mathematics', icon: Map, color: 'bg-blue-100', barColor: 'bg-blue-500', textColor: 'text-blue-600', progress: 85, badge: 'READY' },
+                   { name: 'Science', icon: Rocket, color: 'bg-green-100', barColor: 'bg-emerald-500', textColor: 'text-emerald-600', progress: 62, badge: 'ACTIVE' },
+                   { name: 'Coding Hub', icon: Gamepad2, color: 'bg-yellow-100', barColor: 'bg-amber-500', textColor: 'text-amber-600', progress: 41, badge: 'NEW' },
+                   { name: 'Literature', icon: BookMarked, color: 'bg-pink-100', barColor: 'bg-rose-500', textColor: 'text-rose-600', progress: 95, badge: 'SYNCED' }
                  ].map((sub, i) => (
                    <div key={i} className={`brutalist-card p-10 group cursor-pointer transition-all brutalist-3d ${sub.color} hover:bg-white`}>
                       <div className="flex justify-between items-start mb-10">
-                         <div className={`w-14 h-14 border-[3px] border-dark rounded-2xl bg-white flex items-center justify-center group-hover:${sub.text} transition-colors`}>
+                         <div className={`w-14 h-14 border-[3px] border-dark rounded-2xl bg-white flex items-center justify-center ${sub.textColor} transition-colors`}>
                             <sub.icon className="w-7 h-7" />
                          </div>
                          <span className={`text-[9px] font-black px-4 py-2 border-[2px] border-dark shadow-[3px_3px_0px_#060E1C] ${sub.badge === 'NEW' ? 'bg-yellow text-dark' : 'bg-white text-dark'}`}>
@@ -188,7 +188,7 @@ export default function StudentHome4to6({ enrollments, assignments, upcomingLess
                          <motion.div 
                            initial={{ width: 0 }}
                            whileInView={{ width: `${sub.progress}%` }}
-                           className={`h-full ${sub.text.replace('text-', 'bg-')} border-r-[2px] border-dark`} 
+                           className={`h-full ${sub.barColor} border-r-[2px] border-dark`} 
                          />
                       </div>
                       <span className="text-[10px] font-black uppercase opacity-30 tracking-widest">{sub.progress}% SYNCED</span>

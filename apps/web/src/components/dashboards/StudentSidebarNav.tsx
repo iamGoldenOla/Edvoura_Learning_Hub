@@ -250,7 +250,9 @@ class SidebarErrorBoundary extends React.Component<
     this.state = { hasError: false };
   }
   static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch() {}
+  componentDidCatch(error: any) {
+    console.error('StudentSidebarNav caught error:', error);
+  }
   render() {
     if (this.state.hasError) return this.props.fallback;
     return this.props.children;
@@ -262,7 +264,7 @@ const isActiveRoute = (pathname: string, href: string, exact?: boolean) =>
   exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
 const NavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
-  <Link href={safeHref(href)} className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] mb-1.5 ${active ? 'bg-yellow border-dark text-dark shadow-[3px_3px_0px_#ffffff] translate-x-[-2px] translate-y-[-2px]' : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white'}`}>
+  <Link href={safeHref(href)} aria-current={active ? 'page' : undefined} className={`flex items-center gap-3 rounded-xl px-4 py-3 transition-all border-[3px] mb-1.5 ${active ? 'bg-yellow border-dark text-dark shadow-[3px_3px_0px_#ffffff] translate-x-[-2px] translate-y-[-2px]' : 'bg-transparent border-transparent text-white/80 hover:bg-white/10 hover:border-white/20 hover:text-white'}`}>
     <Icon className="h-5 w-5 shrink-0" />
     <span className="text-sm font-black tracking-tight">{label}</span>
     {active ? <div className="ml-auto h-2.5 w-2.5 rounded-full border-[2px] border-dark bg-white" /> : null}
@@ -310,7 +312,7 @@ const PRIMARY_BOTTOM_ITEMS: NavEntry[] = [
 ];
 
 const BottomNavItem = ({ href, icon: Icon, label, active }: { href: string; icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; }) => (
-  <Link href={safeHref(href)} className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all flex-1 text-center ${
+  <Link href={safeHref(href)} aria-current={active ? 'page' : undefined} className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 text-[9px] font-black uppercase tracking-wider transition-all flex-1 text-center ${
     active
       ? 'bg-yellow border-[2px] border-dark text-dark shadow-[2px_2px_0px_#060E1C]'
       : 'text-dark/50 hover:text-dark border-[2px] border-transparent'

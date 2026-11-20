@@ -103,34 +103,9 @@ export default function StudentBandClientWrapper({
       return new Date(left.dueAt).getTime() - new Date(right.dueAt).getTime();
     })
     .slice(0, 5);
-  const featuredAssignments = dashboard.assignments.slice(0, 2);
-  const [uploadedSubmissions, setUploadedSubmissions] = useState<Record<string, string>>({});
-  const [spellingInput, setSpellingInput] = useState('');
-  const [, setSpellingFeedback] = useState<{ type: 'success' | 'error' | null; message: string }>({
-    type: null,
-    message: '',
-  });
-
-  const speakWord = (word: string) => {
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.rate = 0.9;
-      utterance.pitch = 1.1;
-      window.speechSynthesis.speak(utterance);
-    }
-  };
-
-  const checkSpelling = (word: string) => {
-    if (spellingInput.toLowerCase().trim() === word.toLowerCase().trim()) {
-      setSpellingFeedback({ type: 'success', message: 'Perfect! Well done! 🎉' });
-      speakWord('Perfect! Well done!');
-      setSpellingInput('');
-      setTimeout(() => setSpellingFeedback({ type: null, message: '' }), 3000);
-    } else {
-      setSpellingFeedback({ type: 'error', message: 'Try again, you can do it!' });
-      setTimeout(() => setSpellingFeedback({ type: null, message: '' }), 2000);
-    }
-  };
+  const featuredAssignments = (
+    pendingAssignments.length > 0 ? pendingAssignments : dashboard.assignments
+  ).slice(0, 2);
 
   const progressRows = dashboard.progress.slice(0, 4).map((entry) => ({
     id: entry.id,
@@ -288,7 +263,7 @@ export default function StudentBandClientWrapper({
                         1-on-1 Tutorial
                       </span>
                       <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">
-                        Offline 1-on-1 Class Activities &amp; Notes
+                        Offline 1-on-1 Class Activities & Notes
                       </h2>
                     </div>
                     <p className="text-xs sm:text-sm font-bold text-dark/60 mt-1">
@@ -571,21 +546,14 @@ export default function StudentBandClientWrapper({
                     </div>
 
                     <div className="mt-6 rounded-xl border-[3px] border-dark bg-white p-4 shadow-[inset_2px_2px_0px_rgba(0,0,0,0.05)]">
-                      <p className="text-xs font-black uppercase tracking-widest text-dark/60">Upload Submission</p>
-                      <input
-                        type="file"
-                        onChange={(event) => {
-                          const fileName = event.target.files?.[0]?.name ?? '';
-                          if (!fileName) return;
-                          setUploadedSubmissions((current) => ({ ...current, [assignment.id]: fileName }));
-                        }}
-                        className="mt-3 block w-full text-sm font-bold text-dark file:mr-4 file:rounded-xl file:border-[3px] file:border-dark file:bg-slate-100 file:px-4 file:py-2 file:font-black file:text-dark hover:file:bg-slate-200 transition-all"
-                      />
-                      {uploadedSubmissions[assignment.id] ? (
-                        <p className="mt-3 inline-flex rounded-xl border-[2px] border-dark bg-emerald-100 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-900 shadow-[2px_2px_0px_#060E1C]">
-                          Uploaded: {uploadedSubmissions[assignment.id]}
-                        </p>
-                      ) : null}
+                      <p className="text-xs font-black uppercase tracking-widest text-dark/60">Assignment Work</p>
+                      <Link
+                        href="/dash/student/assignments"
+                        className="mt-3 inline-flex items-center gap-2 rounded-xl border-[2px] border-dark bg-yellow hover:bg-yellow/90 px-4 py-2 text-xs font-black uppercase tracking-wider text-dark shadow-[2px_2px_0px_#060E1C] active:scale-95 transition-all"
+                      >
+                        <span>Open & Submit in Workspace</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                     </div>
                   </article>
                 ))
@@ -611,7 +579,7 @@ export default function StudentBandClientWrapper({
                     1-on-1 Tutorial
                   </span>
                   <h2 className="text-2xl sm:text-3xl font-black text-dark uppercase tracking-tight">
-                    Offline 1-on-1 Class Activities &amp; Notes
+                    Offline 1-on-1 Class Activities & Notes
                   </h2>
                 </div>
                 <p className="text-xs sm:text-sm font-bold text-dark/60 mt-1">
@@ -886,21 +854,21 @@ export default function StudentBandClientWrapper({
             role="student"
           />
 
-          <Panel title="Subscription" icon={Target} color="bg-purple-100" className="mt-auto">
+          <Panel title="Learner Membership" icon={Target} color="bg-purple-100" className="mt-auto">
             <div className="rounded-[20px] sm:rounded-2xl border-[3px] border-dark bg-white p-4 sm:p-5 shadow-[4px_4px_0px_#060E1C] space-y-4">
               <div className="flex justify-between items-center border-b-[3px] border-dark/10 pb-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Access</span>
-                <span className={`inline-flex rounded-md border-[2px] border-dark px-2 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] ${billingSummary.entitlement.hasAccess ? 'bg-emerald-300 text-dark' : 'bg-rose-100 text-rose-900'}`}>
-                  {billingSummary.entitlement.hasAccess ? 'Enabled' : 'Blocked'}
+                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Status</span>
+                <span className="inline-flex rounded-md border-[2px] border-dark px-2 py-1 text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#060E1C] bg-emerald-300 text-dark">
+                  Active Student Pass
                 </span>
               </div>
               <div className="flex justify-between items-center border-b-[3px] border-dark/10 pb-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Plan</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Program</span>
                 <span className="text-sm font-black text-dark">{planName}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Price</span>
-                <span className="text-sm font-black text-dark">{planAmount}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-dark/60">Tier</span>
+                <span className="text-sm font-black text-purple-900">Edvoura Scholar 🎓</span>
               </div>
             </div>
           </Panel>

@@ -12,30 +12,46 @@ export default function StudentLiveWaitingRoom({
   dashboard: StudentDashboardData, 
   band: '1-3' | '4-6' | '7-12' 
 }) {
-  const [isEarly, setIsEarly] = useState(true);
-  const nextLesson = dashboard.upcomingLessons[0];
+  const sortedLessons = [...(dashboard.upcomingLessons || [])].sort((a, b) => {
+    if (!a.scheduledStartAt) return 1;
+    if (!b.scheduledStartAt) return -1;
+    return new Date(a.scheduledStartAt).getTime() - new Date(b.scheduledStartAt).getTime();
+  });
+  const nextLesson = sortedLessons[0];
+
+  const checkIsLive = () => {
+    if (!nextLesson) return false;
+    const status = (nextLesson as any).status;
+    if (status === 'in_progress' || status === 'live') return true;
+    if (nextLesson.scheduledStartAt) {
+      const timeUntilStart = new Date(nextLesson.scheduledStartAt).getTime() - Date.now();
+      return timeUntilStart <= 10 * 60 * 1000;
+    }
+    return false;
+  };
+
+  const [isEarly, setIsEarly] = useState(() => !checkIsLive());
   
   // Support persistent meet links if defined in the profile
   const personalMeetUrl = dashboard.profile.personalMeetUrl;
   const joinUrl = nextLesson?.joinUrl || personalMeetUrl;
   
-  // Age-appropriate videos (using SciShow Kids as a reliable source)
+  // Age-appropriate privacy-enhanced videos
   const videos: Record<string, string> = {
-    '1-3': 'https://www.youtube.com/embed/qNM0k522R_w', // Why is the sky blue?
-    '4-6': 'https://www.youtube.com/embed/9G6u0RzR2m4', // How do volcanoes erupt?
-    '7-12': 'https://www.youtube.com/embed/0_b7X9h-S3Y', // The science of everything
+    '1-3': 'https://www.youtube-nocookie.com/embed/qNM0k522R_w', // Why is the sky blue?
+    '4-6': 'https://www.youtube-nocookie.com/embed/9G6u0RzR2m4', // How do volcanoes erupt?
+    '7-12': 'https://www.youtube-nocookie.com/embed/0_b7X9h-S3Y', // The science of everything
   };
 
   const videoUrl = videos[band] || videos['1-3'];
 
-  // Effect to "check" for tutor (mock)
+  // Periodic check for lesson start
   useEffect(() => {
-    if (nextLesson?.joinUrl) {
-       // If there's a join URL, maybe they aren't early anymore?
-       // For demo, we'll stay early for 5 seconds
-       const timer = setTimeout(() => setIsEarly(false), 5000);
-       return () => clearTimeout(timer);
-    }
+    setIsEarly(!checkIsLive());
+    const interval = setInterval(() => {
+      setIsEarly(!checkIsLive());
+    }, 10000);
+    return () => clearInterval(interval);
   }, [nextLesson]);
 
   if (!nextLesson) {
@@ -43,7 +59,7 @@ export default function StudentLiveWaitingRoom({
       <div className="py-24 text-center bg-white border-[4px] border-dark border-dashed rounded-[60px] shadow-[10px_10px_0px_#060E1C]">
         <div className="text-7xl mb-6">🏜️</div>
         <h3 className="text-3xl font-black text-dark">No Classes Right Now</h3>
-        <p className="text-xl font-semibold text-dark/40 italic text-normal">Check back later or explore your garden!</p>
+        <p className="text-xl font-semibold text-dark/40 italic">Check back later or explore your garden!</p>
       </div>
     );
   }
@@ -114,8 +130,10 @@ export default function StudentLiveWaitingRoom({
                  </h3>
                  <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                       <div className="h-10 w-10 rounded-full bg-blue-100 border-2 border-dark flex items-center justify-center font-black">U</div>
-                       <p className="text-sm font-bold text-dark">You</p>
+                       <div className="h-10 w-10 rounded-full bg-blue-100 border-2 border-dark flex items-center justify-center font-black">
+                         {dashboard.profile.fullName?.[0]?.toUpperCase() || 'U'}
+                       </div>
+                       <p className="text-sm font-bold text-dark">{dashboard.profile.fullName || 'You'}</p>
                     </div>
                     <div className="flex items-center gap-3 opacity-40 italic">
                        <div className="h-10 w-10 rounded-full bg-slate-100 border-2 border-dashed border-dark flex items-center justify-center font-black">?</div>
@@ -140,7 +158,7 @@ export default function StudentLiveWaitingRoom({
            </div>
            <div className="space-y-4">
               <h2 className="text-5xl font-black text-dark tracking-tight">Your Tutor is Ready!</h2>
-              <p className="text-2xl font-bold text-dark/60 italic text-normal">The classroom door is open. Step inside!</p>
+              <p className="text-2xl font-bold text-dark/60 italic">The classroom door is open. Step inside!</p>
            </div>
            
            <Link 

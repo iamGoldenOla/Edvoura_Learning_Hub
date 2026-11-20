@@ -28,7 +28,7 @@ import {
   Cpu,
   Heart,
   Cloud,
-  Gamepad
+  Gamepad2
 } from 'lucide-react';
 
 interface StudentProps {
@@ -218,7 +218,7 @@ export default function StudentHome1to3({ enrollments, assignments, upcomingLess
 
               <div className="space-y-6 pt-8">
                  <ActionButton label="Start Rocket!" icon={Rocket} primary />
-                 <ActionButton label="Play Zone" icon={Gamepad} />
+                 <ActionButton label="Play Zone" icon={Gamepad2} />
                  <ActionButton label="Call Mom" icon={Smile} />
               </div>
            </div>

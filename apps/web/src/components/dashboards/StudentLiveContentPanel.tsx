@@ -52,7 +52,7 @@ export default function StudentLiveContentPanel() {
     void readContent();
     const timer = setInterval(() => {
       void readContent();
-    }, 3000);
+    }, 10000);
 
     return () => {
       clearInterval(timer);
@@ -79,7 +79,7 @@ export default function StudentLiveContentPanel() {
         <a
           href={content.resourceUrl}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="inline-flex text-xs font-semibold text-blue-700 hover:underline"
         >
           Open Tutor Resource
