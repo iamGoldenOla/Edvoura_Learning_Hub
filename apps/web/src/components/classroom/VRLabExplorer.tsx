@@ -314,6 +314,56 @@ const PLANETS: PlanetData[] = [
   },
 ];
 
+/**
+ * Deep recursive disposal for Three.js scene graphs.
+ * Releases all GPU buffer geometries, textures, materials, and child nodes to prevent VRAM memory leaks.
+ */
+function disposeHierarchy(obj: any) {
+  if (!obj) return;
+  if (obj.geometry && typeof obj.geometry.dispose === 'function') {
+    try {
+      obj.geometry.dispose();
+    } catch (_) {}
+  }
+  if (obj.material) {
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    for (const m of mats) {
+      if (!m) continue;
+      const textureProps = [
+        'map',
+        'alphaMap',
+        'bumpMap',
+        'normalMap',
+        'roughnessMap',
+        'metalnessMap',
+        'emissiveMap',
+        'specularMap',
+        'envMap',
+        'lightMap',
+      ];
+      for (const prop of textureProps) {
+        if (m[prop] && typeof m[prop].dispose === 'function') {
+          try {
+            m[prop].dispose();
+          } catch (_) {}
+        }
+      }
+      try {
+        m.dispose();
+      } catch (_) {}
+    }
+  }
+  if (obj.children && Array.isArray(obj.children)) {
+    for (let i = obj.children.length - 1; i >= 0; i--) {
+      const child = obj.children[i];
+      disposeHierarchy(child);
+      try {
+        obj.remove(child);
+      } catch (_) {}
+    }
+  }
+}
+
 export function VRLabExplorer({
   lessonId,
   role = 'tutor',
@@ -533,6 +583,16 @@ export function VRLabExplorer({
     clock: any;
   } | null>(null);
 
+  // Student Follow-Tutor Camera state
+  const [studentFollowTutor, setStudentFollowTutor] = useState(true);
+  const studentFollowTutorRef = useRef(true);
+  useEffect(() => {
+    studentFollowTutorRef.current = studentFollowTutor;
+  }, [studentFollowTutor]);
+
+  const lastCameraBroadcastRef = useRef<number>(0);
+  const cameraWheelTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Supabase Realtime sync for Live Classroom Tutor -> Student 3D/VR synchronization
   const broadcastVRState = useCallback(
     (payload: Record<string, any>) => {
@@ -547,6 +607,25 @@ export function VRLabExplorer({
     },
     [onSyncState, role]
   );
+
+  // Throttled camera orientation broadcast (50ms / 20fps) for smooth tutor-to-student orbit mirroring
+  const broadcastCameraThrottled = useCallback(() => {
+    if (role !== 'tutor') return;
+    const now = Date.now();
+    if (now - lastCameraBroadcastRef.current > 50) {
+      lastCameraBroadcastRef.current = now;
+      const st = threeStateRef.current;
+      if (st?.controls) {
+        broadcastVRState({
+          camera: {
+            rotX: st.controls.rotX,
+            rotY: st.controls.rotY,
+            zoom: st.controls.zoom,
+          },
+        });
+      }
+    }
+  }, [broadcastVRState, role]);
 
   useEffect(() => {
     if (!lessonId) return;
@@ -578,9 +657,11 @@ export function VRLabExplorer({
         }
         if (payload.camera && threeStateRef.current?.controls) {
           const c = threeStateRef.current.controls;
-          if (typeof payload.camera.rotX === 'number') c.rotX = payload.camera.rotX;
-          if (typeof payload.camera.rotY === 'number') c.rotY = payload.camera.rotY;
-          if (typeof payload.camera.zoom === 'number') c.zoom = payload.camera.zoom;
+          if (studentFollowTutorRef.current || role === 'student') {
+            if (typeof payload.camera.rotX === 'number') c.rotX = payload.camera.rotX;
+            if (typeof payload.camera.rotY === 'number') c.rotY = payload.camera.rotY;
+            if (typeof payload.camera.zoom === 'number') c.zoom = payload.camera.zoom;
+          }
         }
       })
       .on('broadcast', { event: 'vr-request-sync' }, () => {
@@ -723,7 +804,31 @@ export function VRLabExplorer({
     } catch (_) {}
   }, []);
 
-  // Web Speech Synthesis (supports optional onComplete for Guided Teacher Tour)
+  // Speech Synthesis GC Keep-Alive ref & voice caching for Chromium
+  const speechKeepAliveRef = useRef<NodeJS.Timeout | null>(null);
+  const clearSpeechKeepAlive = useCallback(() => {
+    if (speechKeepAliveRef.current) {
+      clearInterval(speechKeepAliveRef.current);
+      speechKeepAliveRef.current = null;
+    }
+  }, []);
+
+  // Pre-cache natural voices on mount to prevent empty getVoices() on initial tour
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    const preloadVoices = () => {
+      try {
+        window.speechSynthesis.getVoices();
+      } catch (_) {}
+    };
+    preloadVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', preloadVoices);
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', preloadVoices);
+    };
+  }, []);
+
+  // Web Speech Synthesis (supports optional onComplete for Guided Teacher Tour + Chromium GC keep-alive)
   const speakNarration = useCallback(
     (text: string, onComplete?: () => void) => {
       if (typeof window === 'undefined' || !window.speechSynthesis) {
@@ -731,6 +836,7 @@ export function VRLabExplorer({
         return;
       }
 
+      clearSpeechKeepAlive();
       window.speechSynthesis.cancel();
       setAudioFeedbackText(text);
 
@@ -748,18 +854,30 @@ export function VRLabExplorer({
 
       if (naturalVoice) utterance.voice = naturalVoice;
 
+      // Chromium speech synthesis bug workaround: interval pause/resume prevents garbage collection stall
+      speechKeepAliveRef.current = setInterval(() => {
+        if (typeof window !== 'undefined' && window.speechSynthesis?.speaking) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        } else {
+          clearSpeechKeepAlive();
+        }
+      }, 10000);
+
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => {
+        clearSpeechKeepAlive();
         setIsSpeaking(false);
         if (onComplete) onComplete();
       };
       utterance.onerror = () => {
+        clearSpeechKeepAlive();
         setIsSpeaking(false);
       };
 
       window.speechSynthesis.speak(utterance);
     },
-    [speechSpeed]
+    [clearSpeechKeepAlive, speechSpeed]
   );
 
   const stopTeacherTour = useCallback(() => {
@@ -775,12 +893,13 @@ export function VRLabExplorer({
   }, []);
 
   const stopNarration = useCallback(() => {
+    clearSpeechKeepAlive();
     stopTeacherTour();
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel();
     }
     setIsSpeaking(false);
-  }, [stopTeacherTour]);
+  }, [clearSpeechKeepAlive, stopTeacherTour]);
 
   const scrollTeacherSection = useCallback((sectionId: string) => {
     setTimeout(() => {
@@ -1118,6 +1237,13 @@ export function VRLabExplorer({
   useEffect(() => {
     let isCancelled = false;
 
+    const CDN_SOURCES = [
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+      'https://unpkg.com/three@0.128.0/build/three.min.js',
+    ];
+    let cdnIndex = 0;
+
     const loadThreeScript = () => {
       if ((window as any).THREE) {
         initThreeEngine();
@@ -1131,17 +1257,32 @@ export function VRLabExplorer({
         return;
       }
 
-      const script = document.createElement('script');
-      script.id = 'three-cdn-script';
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-      script.async = true;
-      script.onload = () => {
-        if (!isCancelled) initThreeEngine();
+      const tryNextCdn = () => {
+        if (isCancelled) return;
+        if ((window as any).THREE) {
+          initThreeEngine();
+          return;
+        }
+        if (cdnIndex >= CDN_SOURCES.length) {
+          setThreeError('Could not load 3D graphics engine. Check your internet connection and reload.');
+          return;
+        }
+        const src = CDN_SOURCES[cdnIndex++];
+        const script = document.createElement('script');
+        script.id = 'three-cdn-script';
+        script.src = src;
+        script.async = true;
+        script.onload = () => {
+          if (!isCancelled) initThreeEngine();
+        };
+        script.onerror = () => {
+          script.remove();
+          tryNextCdn();
+        };
+        document.body.appendChild(script);
       };
-      script.onerror = () => {
-        if (!isCancelled) setThreeError('Could not load 3D graphics engine. Check your internet connection and reload.');
-      };
-      document.body.appendChild(script);
+
+      tryNextCdn();
     };
 
     const initThreeEngine = () => {
@@ -1245,10 +1386,18 @@ export function VRLabExplorer({
       if (animFrameIdRef.current) {
         cancelAnimationFrame(animFrameIdRef.current);
       }
+      if (threeStateRef.current?.scene) {
+        try {
+          disposeHierarchy(threeStateRef.current.scene);
+        } catch (_) {}
+      }
       if (threeStateRef.current?.renderer) {
         try {
           threeStateRef.current.renderer.setAnimationLoop(null);
           threeStateRef.current.renderer.dispose();
+          if (typeof threeStateRef.current.renderer.forceContextLoss === 'function') {
+            threeStateRef.current.renderer.forceContextLoss();
+          }
         } catch (_) {}
       }
       threeStateRef.current = null;
@@ -1268,45 +1417,63 @@ export function VRLabExplorer({
     }
   }, [sliceHeight, isSlicingActive]);
 
-  // Build Scene based on activeModule
+  // Build Scene based on activeModule (with deep GPU memory cleanup to prevent tab snoozing)
   const buildActiveScene = useCallback(() => {
     const state = threeStateRef.current;
     if (!state) return;
     const { THREE, scene, camera, clippingPlane } = state;
 
-    // Clean previous objects
+    // Clean previous objects and recursively release GPU buffers/textures/materials
     state.orbitMeshes.forEach((item) => {
+      disposeHierarchy(item.mesh);
+      if (item.orbitLine) disposeHierarchy(item.orbitLine);
       scene.remove(item.mesh);
       if (item.orbitLine) scene.remove(item.orbitLine);
     });
     state.orbitMeshes = [];
 
     if (state.heartMesh) {
+      disposeHierarchy(state.heartMesh);
       scene.remove(state.heartMesh);
       state.heartMesh = null;
     }
     if (state.bloodParticles) {
+      disposeHierarchy(state.bloodParticles);
       scene.remove(state.bloodParticles);
       state.bloodParticles = null;
     }
     if (state.geometryMesh) {
+      disposeHierarchy(state.geometryMesh);
       scene.remove(state.geometryMesh);
       state.geometryMesh = null;
     }
+    state.shapeFaces.forEach((f) => disposeHierarchy(f));
     state.shapeFaces = [];
-    state.cubeHinges = null;
+    if (state.cubeHinges) {
+      Object.values(state.cubeHinges).forEach((h) => disposeHierarchy(h));
+      state.cubeHinges = null;
+    }
 
-    state.earthLayers.forEach((l) => scene.remove(l));
+    state.earthLayers.forEach((l) => {
+      disposeHierarchy(l);
+      scene.remove(l);
+    });
     state.earthLayers = [];
 
     if (state.lavaParticles) {
+      disposeHierarchy(state.lavaParticles);
       scene.remove(state.lavaParticles);
       state.lavaParticles = null;
     }
     if (state.vaultMesh) {
+      disposeHierarchy(state.vaultMesh);
       scene.remove(state.vaultMesh);
       state.vaultMesh = null;
     }
+    state.atomElectrons.forEach((el) => {
+      disposeHierarchy(el.mesh);
+      scene.remove(el.mesh);
+    });
     state.atomElectrons = [];
 
     // Reset optimal camera framing per module so every 3D subject fills the stage clearly
@@ -3608,10 +3775,19 @@ export function VRLabExplorer({
     }
   }, [playSynthesizedSound]);
 
-  // Pointer Handling (Orbit Drag + Click-to-Select 3D Planets)
+  // Multi-Touch tracking for Pinch-to-Zoom on iPads/Tablets
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const prevPinchDistRef = useRef<number | null>(null);
+
+  // Pointer Handling (Orbit Drag + Multi-touch Pinch Zoom + Click-to-Select 3D Planets)
   const handlePointerDown = (e: React.PointerEvent) => {
     const state = threeStateRef.current;
     if (!state) return;
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointersRef.current.size === 2) {
+      const pts = Array.from(activePointersRef.current.values());
+      prevPinchDistRef.current = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    }
     state.controls.isDragging = true;
     state.controls.targetRotX = null;
     state.controls.targetRotY = null;
@@ -3619,11 +3795,34 @@ export function VRLabExplorer({
     state.controls.prevX = e.clientX;
     state.controls.prevY = e.clientY;
     pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+
+    if (role === 'student') {
+      setStudentFollowTutor(false);
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     const state = threeStateRef.current;
-    if (!state || !state.controls.isDragging) return;
+    if (!state) return;
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // Multi-touch Pinch to Zoom (Tablets / Mobile)
+    if (activePointersRef.current.size === 2) {
+      const pts = Array.from(activePointersRef.current.values());
+      const curDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      if (prevPinchDistRef.current !== null) {
+        const delta = curDist - prevPinchDistRef.current;
+        state.controls.targetZoom = null;
+        state.controls.zoom = Math.max(5, Math.min(80, state.controls.zoom - delta * 0.08));
+        if (role === 'tutor') {
+          broadcastCameraThrottled();
+        }
+      }
+      prevPinchDistRef.current = curDist;
+      return;
+    }
+
+    if (!state.controls.isDragging) return;
     const dx = e.clientX - state.controls.prevX;
     const dy = e.clientY - state.controls.prevY;
     state.controls.prevX = e.clientX;
@@ -3631,13 +3830,32 @@ export function VRLabExplorer({
 
     state.controls.rotY -= dx * 0.008;
     state.controls.rotX = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, state.controls.rotX + dy * 0.008));
+
+    if (role === 'tutor') {
+      broadcastCameraThrottled();
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     const state = threeStateRef.current;
     if (!state) return;
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size < 2) {
+      prevPinchDistRef.current = null;
+    }
     const wasDragging = state.controls.isDragging;
     state.controls.isDragging = false;
+
+    // Broadcast final settling camera pose from Tutor -> Student
+    if (wasDragging && role === 'tutor') {
+      broadcastVRState({
+        camera: {
+          rotX: state.controls.rotX,
+          rotY: state.controls.rotY,
+          zoom: state.controls.zoom,
+        },
+      });
+    }
 
     // Detect clean click/tap (movement < 6px) to select 3D planets OR floating AI VR station cards directly on canvas!
     if (wasDragging && canvasRef.current) {
@@ -3680,11 +3898,31 @@ export function VRLabExplorer({
     }
   };
 
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    activePointersRef.current.clear();
+    prevPinchDistRef.current = null;
+    handlePointerUp(e);
+  };
+
   const handleWheel = (e: React.WheelEvent) => {
     const state = threeStateRef.current;
     if (!state) return;
     state.controls.targetZoom = null;
     state.controls.zoom = Math.max(5, Math.min(80, state.controls.zoom + e.deltaY * 0.03));
+    if (role === 'tutor') {
+      if (cameraWheelTimerRef.current) clearTimeout(cameraWheelTimerRef.current);
+      cameraWheelTimerRef.current = setTimeout(() => {
+        broadcastVRState({
+          camera: {
+            rotX: state.controls.rotX,
+            rotY: state.controls.rotY,
+            zoom: state.controls.zoom,
+          },
+        });
+      }, 50);
+    } else if (role === 'student') {
+      setStudentFollowTutor(false);
+    }
   };
 
   // Gyroscope
@@ -4351,10 +4589,39 @@ export function VRLabExplorer({
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
         onWheel={handleWheel}
       >
         <canvas ref={canvasRef} className="w-full h-full block" />
+
+        {/* Student Camera Sync Status Pill */}
+        {role === 'student' && lessonId && (
+          <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5">
+            {studentFollowTutor ? (
+              <span className="px-2.5 py-1 rounded-full bg-emerald-950/90 border border-emerald-400/60 text-emerald-300 text-[10px] font-black uppercase flex items-center gap-1.5 shadow-lg backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Synced to Tutor View
+              </span>
+            ) : (
+              <button
+                onClick={() => {
+                  setStudentFollowTutor(true);
+                  if (vrChannelRef.current) {
+                    vrChannelRef.current.send({
+                      type: 'broadcast',
+                      event: 'vr-request-sync',
+                      payload: {},
+                    });
+                  }
+                }}
+                className="px-2.5 py-1 rounded-full bg-yellow text-dark text-[10px] font-black uppercase flex items-center gap-1.5 shadow-lg border border-dark active:scale-95 cursor-pointer"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Re-align with Tutor
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Friendly Immersive VR Mode / AI Model Generated Status Banners */}
         {(vrStatusBanner || (customAiModelTitle && !(activeModule === 'ai-custom' && showInfoCard))) && (
@@ -4453,10 +4720,10 @@ export function VRLabExplorer({
         )}
 
         {/* Instructions & Spoken Transcript (Bottom Left) */}
-        <div className="absolute bottom-3 left-3 z-20 pointer-events-none flex flex-col gap-1.5">
+        <div className={`absolute ${lessonId ? 'bottom-20 sm:bottom-24' : 'bottom-3'} left-3 z-20 pointer-events-none flex flex-col gap-1.5`}>
           <div className="bg-slate-900/80 backdrop-blur-md border border-white/20 px-3 py-1.5 rounded-xl text-[10px] font-bold text-white/80 flex items-center gap-2 shadow-lg">
             <Compass className="w-3.5 h-3.5 text-yellow animate-spin" />
-            <span>Drag to Orbit 360° • Scroll to Zoom {gazeReticleEnabled && '• Gaze Pointer Active'}</span>
+            <span>Drag to Orbit 360° • Scroll/Pinch to Zoom {gazeReticleEnabled && '• Gaze Pointer Active'}</span>
           </div>
 
           {audioFeedbackText && isSpeaking && (
@@ -4476,7 +4743,7 @@ export function VRLabExplorer({
         {/* 1. SOLAR SYSTEM */}
         {activeModule === 'solar-system' && (
           <>
-            <div className="absolute bottom-3 right-3 left-3 sm:left-auto z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur border border-white/20 p-1.5 rounded-2xl overflow-x-auto max-w-full sm:max-w-xl">
+            <div className={`absolute ${lessonId ? 'bottom-20 sm:bottom-24' : 'bottom-3'} right-3 left-3 sm:left-auto z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur border border-white/20 p-1.5 rounded-2xl overflow-x-auto max-w-full sm:max-w-xl`}>
               {PLANETS.map((p) => (
                 <button
                   key={p.name}
