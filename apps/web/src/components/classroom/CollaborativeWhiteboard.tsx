@@ -24,7 +24,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Grid,
+  BookOpen,
+  Send,
+  CheckCircle2,
+  Sparkles,
+  Edit3,
 } from 'lucide-react';
+import type { DeskStudent } from './StudentDeskManager';
 import { Button } from '@/components/ui/button';
 import { STAMP_PRESETS, EMOJI_PRESETS, StampItem } from './BoardStamps';
 import { getDrawingCursor } from './drawingCursors';
@@ -60,6 +66,15 @@ interface CollaborativeWhiteboardProps {
   seatWorkStudentId?: string;
   isSeatWorkMode?: boolean;
   onReturnToFullVideo?: () => void;
+  seatWorkStudents?: DeskStudent[];
+  activeDeskStudentId?: string;
+  onSelectDeskStudent?: (id: string) => void;
+  activeTaskPrompt?: string;
+  onUpdateTaskPrompt?: (prompt: string) => void;
+  onGiveStamp?: (stamp: string) => void;
+  isHandedIn?: boolean;
+  onStudentSubmit?: () => void;
+  recentStamp?: string | null;
 }
 
 export const BG_CONFIG: Record<
@@ -180,7 +195,25 @@ export function CollaborativeWhiteboard({
   seatWorkStudentId,
   isSeatWorkMode = false,
   onReturnToFullVideo,
+  seatWorkStudents,
+  activeDeskStudentId,
+  onSelectDeskStudent,
+  activeTaskPrompt,
+  onUpdateTaskPrompt,
+  onGiveStamp,
+  isHandedIn,
+  onStudentSubmit,
+  recentStamp,
 }: CollaborativeWhiteboardProps) {
+  // Seat-work problem modal state
+  const [showPromptModal, setShowPromptModal] = useState(false);
+  const [tempPrompt, setTempPrompt] = useState(activeTaskPrompt || '');
+
+  useEffect(() => {
+    if (activeTaskPrompt) {
+      setTempPrompt(activeTaskPrompt);
+    }
+  }, [activeTaskPrompt]);
   // Layer 1: Background & Grid canvas (underneath - NEVER erased)
   const bgCanvasRef = useRef<HTMLCanvasElement | null>(null);
   // Layer 2: Drawing ink canvas (transparent overlay - erased with destination-out)
@@ -912,79 +945,190 @@ export function CollaborativeWhiteboard({
           UNIFIED TOP BAR (ZERO HORIZONTAL SCROLL - ALWAYS FITS)
           ============================================================ */}
       <div className="h-10 border-b-[2.5px] border-dark bg-yellow/30 px-3 flex items-center justify-between shrink-0 text-xs font-black">
-        {/* Left: Title, Role Badge, Active Tool Status */}
-        <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 text-xs font-black text-dark tracking-tight">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-dark" />
-            {isSeatWorkMode ? 'Student Desk' : 'Interactive Whiteboard'}
-          </span>
+        {/* Left: Desk Switcher / Student Badges, Lock, Problem Chip */}
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+          {isSeatWorkMode ? (
+            <>
+              {/* Student Desk Selector Pills (Compact & Executive) */}
+              {seatWorkStudents && seatWorkStudents.length > 0 ? (
+                <div className="flex items-center gap-1 shrink-0">
+                  {seatWorkStudents.map((s) => {
+                    const isSelected = activeDeskStudentId === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => onSelectDeskStudent?.(s.id)}
+                        className={`flex items-center gap-1.5 h-7 px-2 sm:px-2.5 rounded-lg border text-xs font-bold transition-all active:scale-95 cursor-pointer ${
+                          isSelected
+                            ? 'bg-yellow text-dark border-dark shadow-[1px_1px_0px_#060E1C]'
+                            : 'bg-white/80 hover:bg-white text-dark/70 border-dark/25'
+                        }`}
+                        title={`View ${s.name}'s Desk`}
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full shrink-0 ${
+                            s.isSubmitted ? 'bg-blue-500 animate-pulse' : s.hasActivity ? 'bg-emerald-500' : 'bg-slate-300'
+                          }`}
+                        />
+                        <span className="truncate max-w-[85px] sm:max-w-[120px]">{s.name}</span>
+                        {s.isSubmitted && (
+                          <span className="text-[9px] bg-blue-100 text-blue-900 px-1 py-0.2 rounded font-black shrink-0">
+                            Done
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <span className="flex items-center gap-1.5 text-xs font-black text-dark tracking-tight shrink-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-dark" />
+                  Student Desk
+                </span>
+              )}
 
-          {role === 'tutor' && (
-            <button
-              onClick={toggleStudentLock}
-              className={`flex items-center gap-1 h-6 px-2 rounded-md border-[1.5px] border-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all ${
-                studentPensLocked ? 'bg-rose-400 text-dark' : 'bg-emerald-300 text-dark'
-              }`}
-              title="Lock student from drawing"
-            >
-              {studentPensLocked ? <Lock className="h-2.5 w-2.5" /> : <Unlock className="h-2.5 w-2.5" />}
-              <span>{studentPensLocked ? 'Student Locked' : 'Student Open'}</span>
-            </button>
+              {/* Tutor Student Lock Toggle */}
+              {role === 'tutor' && (
+                <button
+                  onClick={toggleStudentLock}
+                  className={`flex items-center gap-1 h-7 px-2 rounded-lg border-[1.5px] border-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all shrink-0 ${
+                    studentPensLocked ? 'bg-rose-400 text-dark' : 'bg-emerald-300 text-dark'
+                  }`}
+                  title="Lock student from drawing"
+                >
+                  {studentPensLocked ? <Lock className="h-2.5 w-2.5" /> : <Unlock className="h-2.5 w-2.5" />}
+                  <span className="hidden sm:inline">{studentPensLocked ? 'Locked' : 'Open'}</span>
+                </button>
+              )}
+
+              {/* Compact Task Problem Trigger Chip */}
+              {activeTaskPrompt && (
+                <button
+                  onClick={() => setShowPromptModal(true)}
+                  className="flex items-center gap-1.5 h-7 px-2.5 rounded-lg bg-white/85 hover:bg-white border border-dark/30 text-dark text-xs font-bold max-w-[150px] sm:max-w-xs md:max-w-sm lg:max-w-md truncate shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all cursor-pointer"
+                  title="Click to view or edit the desk problem prompt"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                  <span className="truncate text-dark/90">
+                    <span className="text-dark font-black">Problem:</span> {activeTaskPrompt}
+                  </span>
+                  {role === 'tutor' && <Edit3 className="w-3 h-3 text-dark/60 shrink-0 ml-0.5" />}
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="flex items-center gap-1.5 text-xs font-black text-dark tracking-tight">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-dark" />
+                Interactive Whiteboard
+              </span>
+
+              {role === 'tutor' && (
+                <button
+                  onClick={toggleStudentLock}
+                  className={`flex items-center gap-1 h-6 px-2 rounded-md border-[1.5px] border-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all ${
+                    studentPensLocked ? 'bg-rose-400 text-dark' : 'bg-emerald-300 text-dark'
+                  }`}
+                  title="Lock student from drawing"
+                >
+                  {studentPensLocked ? <Lock className="h-2.5 w-2.5" /> : <Unlock className="h-2.5 w-2.5" />}
+                  <span>{studentPensLocked ? 'Student Locked' : 'Student Open'}</span>
+                </button>
+              )}
+            </>
           )}
 
           {activeTool === 'eraser' ? (
-            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-300">
-              <Eraser className="h-3 w-3" /> Ink Eraser ({eraserWidth >= 100 ? 'XL' : eraserWidth >= 54 ? 'L' : 'M'})
+            <span className="hidden xl:inline-flex items-center gap-1 text-[10px] font-black uppercase text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-300">
+              <Eraser className="h-3 w-3" /> Eraser
             </span>
           ) : selectedStamp || selectedEmoji ? (
-            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-black uppercase text-purple-900 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-300 animate-pulse">
-              <Award className="h-3 w-3" /> Stamp Armed: Tap Board
+            <span className="hidden xl:inline-flex items-center gap-1 text-[10px] font-black uppercase text-purple-900 bg-purple-100 px-2 py-0.5 rounded-md border border-purple-300 animate-pulse">
+              <Award className="h-3 w-3" /> Stamp Armed
             </span>
           ) : null}
         </div>
 
-        {/* Right: Undo, Redo, Clear Ink, Save, Full Video */}
-        <div className="flex items-center gap-1">
+        {/* Right Side Controls */}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Tutor Feedback Stamps (Compact in header) */}
+          {role === 'tutor' && onGiveStamp && (
+            <div className="hidden md:flex items-center gap-1 bg-white/70 border border-dark/20 p-0.5 rounded-lg mr-1">
+              {[
+                { stamp: '⭐ Super Star (+50 XP)', label: '⭐ Star' },
+                { stamp: '💯 100% Accuracy', label: '💯 100%' },
+                { stamp: '💡 Creative Method', label: '💡 Idea' },
+                { stamp: '🔄 Check Step 2', label: '🔄 Re-check' },
+              ].map((st) => (
+                <button
+                  key={st.label}
+                  onClick={() => onGiveStamp(st.stamp)}
+                  className="h-6 px-1.5 rounded bg-yellow/20 hover:bg-yellow border border-dark/30 text-dark font-bold text-[10px] transition-all active:scale-95 cursor-pointer"
+                  title={`Send "${st.stamp}" feedback stamp to student`}
+                >
+                  {st.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Student Hand In Button */}
+          {role === 'student' && onStudentSubmit && (
+            <button
+              onClick={onStudentSubmit}
+              disabled={isHandedIn}
+              className={`flex items-center gap-1 h-7 px-2.5 rounded-lg border-[1.5px] border-dark text-xs font-bold transition-all shadow-[1px_1px_0px_#060E1C] mr-1 ${
+                isHandedIn
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-500'
+                  : 'bg-yellow hover:bg-yellow/90 text-dark active:scale-95'
+              }`}
+            >
+              {isHandedIn ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> : <Send className="w-3.5 h-3.5" />}
+              <span>{isHandedIn ? 'Handed In!' : 'Hand In Work'}</span>
+            </button>
+          )}
+
+          {/* Undo, Redo, Clear, Save PNG */}
           <button
             onClick={handleUndo}
-            className="h-6 w-6 rounded-md border-[1.5px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
+            className="h-7 w-7 rounded-lg border-[1.5px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Undo"
           >
-            <Undo2 className="h-3 w-3" />
+            <Undo2 className="h-3.5 w-3.5" />
           </button>
 
           <button
             onClick={handleRedo}
-            className="h-6 w-6 rounded-md border-[1.5px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
+            className="h-7 w-7 rounded-lg border-[1.5px] border-dark bg-white hover:bg-slate-100 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Redo"
           >
-            <Redo2 className="h-3 w-3" />
+            <Redo2 className="h-3.5 w-3.5" />
           </button>
 
           <button
             onClick={handleClear}
-            className="h-6 w-6 rounded-md border-[1.5px] border-dark bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
+            className="h-7 w-7 rounded-lg border-[1.5px] border-dark bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Clear Ink"
           >
-            <Trash2 className="h-3 w-3" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
 
           <button
             onClick={handleExportPNG}
-            className="flex items-center gap-1 h-6 px-2 rounded-md border-[1.5px] border-dark bg-white hover:bg-slate-100 font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95"
+            className="flex items-center gap-1 h-7 px-2 rounded-lg border-[1.5px] border-dark bg-white hover:bg-slate-100 font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95"
             title="Save PNG Snapshot"
           >
-            <Download className="h-3 w-3" />
+            <Download className="h-3.5 w-3.5" />
             <span className="hidden md:inline">Save</span>
           </button>
 
           {onReturnToFullVideo && (
             <button
               onClick={onReturnToFullVideo}
-              className="flex items-center gap-1 h-6 px-2.5 rounded-md border-[1.5px] border-dark bg-yellow text-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all ml-1"
+              className="flex items-center gap-1 h-7 px-2.5 rounded-lg border-[1.5px] border-dark bg-yellow text-dark font-black text-[10px] uppercase shadow-[1px_1px_0px_#060E1C] active:scale-95 transition-all ml-1"
               title="Return to Full Video View"
             >
-              <Video className="h-3 w-3" />
+              <Video className="h-3.5 w-3.5" />
               <span>Full Video</span>
             </button>
           )}
@@ -1592,6 +1736,98 @@ export function CollaborativeWhiteboard({
             )}
           </div>
         ))}
+
+        {/* Real-time Floating Seat-Work Feedback Stamp Toast */}
+        {recentStamp && (
+          <div className="absolute top-3 right-3 z-40 flex items-center gap-2 px-3.5 py-2 bg-yellow border-[2.5px] border-dark rounded-2xl shadow-[4px_4px_0px_#060E1C] font-black text-xs text-dark animate-bounce pointer-events-none">
+            <Sparkles className="w-4 h-4 text-dark" />
+            <span>Tutor Feedback: {recentStamp}</span>
+          </div>
+        )}
+
+        {/* Seat-Work Problem Prompt Modal (View & Tutor Editing) */}
+        {showPromptModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+            <div className="w-full max-w-lg bg-white border-[3px] border-dark rounded-3xl shadow-[8px_8px_0px_#060E1C] p-5 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b-[2px] border-dark">
+                <div className="flex items-center gap-2">
+                  <span className="p-2 bg-amber-100 rounded-xl border border-dark">
+                    <BookOpen className="w-4 h-4 text-amber-800" />
+                  </span>
+                  <div>
+                    <h3 className="font-black text-sm uppercase text-dark">Seat-Work Problem Prompt</h3>
+                    <p className="text-[11px] font-semibold text-dark/60">Practice exercise displayed on student desks</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowPromptModal(false)}
+                  className="w-7 h-7 rounded-lg border-[1.5px] border-dark bg-white hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center font-black cursor-pointer text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase text-dark">Practice Exercise / Task</label>
+                <textarea
+                  value={tempPrompt}
+                  onChange={(e) => setTempPrompt(e.target.value)}
+                  disabled={role !== 'tutor'}
+                  rows={3}
+                  className="w-full p-3 bg-slate-50 border-[2px] border-dark rounded-xl font-bold text-xs focus:bg-white focus:outline-none disabled:opacity-80"
+                  placeholder="Enter practice problem or exercise..."
+                />
+              </div>
+
+              {role === 'tutor' && (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] font-black uppercase text-dark/60">Quick Presets:</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[
+                      'Calculate Profit & % Profit: CP=$150, SP=$210',
+                      'Find perimeter & area: L=12cm, W=7cm',
+                      'Solve for x: 3x + 15 = 45',
+                      'Write 2 sentences with an adjective and adverb',
+                    ].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setTempPrompt(preset)}
+                        className="text-left p-1.5 rounded-lg border border-dark/20 hover:border-dark hover:bg-yellow/20 text-[11px] font-bold text-dark truncate transition-all cursor-pointer"
+                      >
+                        ✏️ {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-dark/15">
+                <button
+                  type="button"
+                  onClick={() => setShowPromptModal(false)}
+                  className="h-8 px-3 rounded-xl border-[1.5px] border-dark bg-white hover:bg-slate-100 font-black text-xs uppercase"
+                >
+                  Close
+                </button>
+                {role === 'tutor' && onUpdateTaskPrompt && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (tempPrompt.trim()) {
+                        onUpdateTaskPrompt(tempPrompt.trim());
+                      }
+                      setShowPromptModal(false);
+                    }}
+                    className="h-8 px-4 rounded-xl border-[2px] border-dark bg-yellow hover:bg-yellow/90 font-black text-xs uppercase text-dark shadow-[2px_2px_0px_#060E1C]"
+                  >
+                    Update Student Desks
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

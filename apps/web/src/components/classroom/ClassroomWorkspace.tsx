@@ -1341,7 +1341,12 @@ export function ClassroomWorkspace({ lessonId, role, userName }: ClassroomWorksp
               )}
 
               {presentationMode === 'desks' && (
-                <StudentDeskManager lessonId={lessonId} role={role} userName={userName} />
+                <StudentDeskManager
+                  lessonId={lessonId}
+                  role={role}
+                  userName={userName}
+                  studentName={studentDisplayName}
+                />
               )}
 
               {presentationMode === 'youtube' && sharedYoutubeId && (
